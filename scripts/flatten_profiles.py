@@ -23,10 +23,10 @@ MASTERS = Path(__file__).resolve().parent.parent / "slicer/filament/inslogic"
 
 # profile -> (parent in vendor bundle, reference template for the full key set)
 JOBS = {
-    "Inslogic ASA":                   ("Prusament ASA",            "YASIN ASA @0.8 nozzle"),
-    "Inslogic ASA @0.8 nozzle":       ("Prusament ASA @0.8 nozzle","YASIN ASA @0.8 nozzle"),
-    "Inslogic ASA - vase":            ("Prusament ASA",            "YASIN ASA @0.8 nozzle"),
-    "Inslogic ASA - leaves":          ("Prusament ASA",            "YASIN ASA @0.8 nozzle"),
+    "Inslogic ASA":                   ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA @0.8 nozzle":       ("Prusament ASA @0.8 nozzle","Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA - thin wall":            ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA - thin wall, flat base":          ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
     "Inslogic TPU 95A":               ("Generic FLEX",             "Ultrafuse TPU-95A - Copy"),
     "Inslogic TPU 95A @0.8 nozzle":   ("Generic FLEX @0.8 nozzle", "Ultrafuse TPU-95A - Copy"),
     "Inslogic TPU 95A - fast":        ("NinjaTek Cheetah TPU",     "Ultrafuse TPU-95A - Copy"),

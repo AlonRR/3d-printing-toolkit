@@ -7,7 +7,7 @@ Inslogic's [download center](https://www.inslogic3d.com/pages/download-center) p
 **TDS/SDS data sheets only — no slicer profiles**, for any slicer. These were derived from
 the data sheets by hand.
 
-> **Print-validated: `Inslogic ASA - vase` (29 Jul) and `Inslogic TPU 95A - fast` (30 Jul).**
+> **Print-validated: `Inslogic ASA - thin wall` (29 Jul) and `Inslogic TPU 95A - fast` (30 Jul).**
 > The rest are installed and slice correctly, but their *temperatures* are still derived from
 > the data sheet rather than validated against a printed part. Treat those as a well-reasoned
 > starting point.
@@ -70,7 +70,7 @@ thin swatch predicted. Expect larger gains on infill-heavy parts.
 **Not established:** whether 4.0 is the real limit. It was borrowed from Cheetah's rating, not
 found by testing this filament to its edge.
 
-## `Inslogic ASA - vase` — the one that's been proven on a real print
+## `Inslogic ASA - thin wall` — the one that's been proven on a real print
 
 Built 28 Jul 2026 after a vase-mode stem (21.8 mm tube, 147 mm tall, single wall, 727 layers)
 printed non-uniform on its rear face using the general-purpose `Inslogic ASA` profile.
@@ -80,7 +80,7 @@ Measured from the sliced G-code, before and after:
 | | Layer time | Speed | Fan | Nozzle | Print time |
 |---|---|---|---|---|---|
 | `Inslogic ASA` | 5.01 s | 13.7 mm/s | 20 % | 255 °C | 1 h 12 m |
-| `Inslogic ASA - vase` | **10.01 s** | 6.8 mm/s | **70 %** | 250 °C | **2 h 09 m** |
+| `Inslogic ASA - thin wall` | **10.01 s** | 6.8 mm/s | **70 %** | 250 °C | **2 h 09 m** |
 
 **Result: markedly better.** ✅
 
@@ -174,7 +174,7 @@ the TPU sheet, which reads like a template default rather than an ASA-specific
 recommendation.
 
 Both ASA profiles instead use the Prusament ASA values — **20 % fan, off for the first
-4 layers** — which is what the working `YASIN ASA @0.8 nozzle` profile on this machine
+4 layers** — which is what the working `Yasin3D ASA @0.8 nozzle` profile on this machine
 already runs.
 
 TPU **does** get the full 100 %: TPU doesn't warp, so the TDS is right there.
