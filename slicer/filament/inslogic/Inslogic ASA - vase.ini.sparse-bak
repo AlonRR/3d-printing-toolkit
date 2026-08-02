@@ -1,0 +1,40 @@
+# Inslogic ASA — vase / thin single wall — Prusa MK3S+, 0.4 nozzle
+#
+# Purpose-built for spiral-vase and thin single-wall parts, where the general
+# `Inslogic ASA` profile fails. Do NOT use this for normal multi-perimeter
+# parts — the fan is far too high for bulk ASA and will cause layer splitting.
+#
+# WHY THIS EXISTS
+# The stem print (stem_vase_mode_asa.3mf: a 21.8 mm tube, 147 mm tall, single
+# wall, 727 layers) came out non-uniform on the rear face. Measured from the
+# sliced G-code: median layer time 5.01 s, and the fan never went above 20 %.
+# ASA at 255 C laid onto a 5-second-old bead with almost no cooling does not
+# solidify between passes. The rear face is worst because the MK3's part-cooling
+# blower throws air at the nozzle from the front and the heater block shadows
+# the rear — at 20 % there is no airflow to spare for it.
+#
+# The Inslogic TDS specifies 100 % fan. The general-purpose profile overrides
+# that to 20 % to stop warping on bulk ASA, which is correct there. For a single
+# wall with no cross-section to delaminate, the TDS was closer to right.
+inherits = Prusament ASA
+filament_vendor = Inslogic
+filament_type = ASA
+filament_diameter = 1.75
+filament_density = 1.05
+filament_spool_weight = 1000
+filament_colour = #FFF2EC
+temperature = 250
+first_layer_temperature = 260
+bed_temperature = 100
+first_layer_bed_temperature = 100
+cooling = 1
+fan_always_on = 1
+min_fan_speed = 70
+max_fan_speed = 70
+bridge_fan_speed = 70
+disable_fan_first_layers = 4
+full_fan_speed_layer = 0
+fan_below_layer_time = 60
+slowdown_below_layer_time = 10
+min_print_speed = 5
+filament_notes = "Inslogic ASA, VASE / THIN WALL variant — TDS rev. 12.02.2024.\n\nUSE FOR: spiral vase mode, single-wall parts, anything with a layer time\nunder ~10 s and little cross-section.\nDO NOT USE FOR: normal parts. 70 % fan on bulk ASA causes layer splitting\nand corner lift. Use the plain 'Inslogic ASA' profile for those.\n\nWHAT CHANGED vs 'Inslogic ASA', and why:\n\n1. FAN 20 % -> 70 %. The root cause. A single wall has no neighbouring\n   perimeter to conduct heat into, so active cooling is the only thing that\n   sets the extrudate before the next pass lands on it.\n\n2. slowdown_below_layer_time 5 s -> 10 s, and min_print_speed 10 -> 5 mm/s.\n   The 5 s target was being met exactly (the slicer had already dropped speed\n   from 25 to 13.7 mm/s), but 5 s is not enough for ASA. min_print_speed had\n   to come down too or the slicer cannot slow enough to reach the new target.\n   Cost: the stem goes from ~65 min to roughly 2.2 h.\n\n3. TEMPERATURE 255 -> 250 C. The TDS's 250-260 C figure is specified for\n   50-100 mm/s. This print runs near 7 mm/s, so less heat input is needed;\n   250 C is the bottom of the vendor band. First layer stays at 260 C because\n   bed adhesion was confirmed good and there is no reason to disturb it.\n\nUNCHANGED: bed 100 C and disable_fan_first_layers = 4. The base held the bed\nwith no lift, so the first-layer behaviour is deliberately left alone.\n\nIF IT IS STILL NON-UNIFORM: raise slowdown_below_layer_time to 15 s (~3.2 h)\nbefore touching the fan again. If the upper tube shows weak layer bonding or\nsplitting instead, the fan is too high — drop to 50 %.\n\nCONFIRMED 29 Jul 2026 - the stem reprinted with this profile came out markedly\nbetter than the 20 %-fan / 5 s-layer original.\n\nWHAT THAT RESULT PROVES, and what it does not:\nThree things changed at once (fan, layer time, temperature), so which one carried\nthe fix is not isolated. The DIRECTION is conclusive though: more cooling plus more\nsolidification time made it better. Had a draft through the enclosure's open side\nbeen OVER-cooling the rear face, tripling the fan would have made it worse. It did\nnot. So the cause was under-solidification - hot ASA landing on a bead that had not\nset - and the draft theory is ruled out as the primary cause.\n\nAlso settled: 70 % fan did NOT cause the ASA layer-bonding failure that was the risk\nof going this high. No need to fall back to 50 %."

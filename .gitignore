@@ -1,0 +1,15 @@
+# Models and sliced output live in OneDrive\3D printing\, not here.
+# This repo is documentation and slicer configuration only.
+*.stl
+*.3mf
+*.gcode
+*.step
+*.obj
+*.zip
+
+# PrusaSlicer physical-printer configs hold plaintext API keys — never commit.
+physical_printer/
+*physical_printer*
+
+__pycache__/
+*.pyc

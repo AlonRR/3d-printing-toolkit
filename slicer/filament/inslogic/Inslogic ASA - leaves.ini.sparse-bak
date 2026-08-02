@@ -1,0 +1,45 @@
+# Inslogic ASA — thin stem with a FLAT PLATE base — Prusa MK3S+, 0.4 nozzle
+#
+# Sibling of `Inslogic ASA - vase`. Identical in every respect except one value:
+# disable_fan_first_layers is 10 instead of 4.
+#
+# Use for a part that is mostly thin (short layer times, needs the 70 % fan) but
+# starts with a wide flat plate on the bed that must NOT be fan-cooled.
+# Built for `Stem_for_Rose_5cm.stl` — leaves print flat as a 106.9 mm plate over
+# layers 1-9, then a solid ~5.75 mm stem runs to 198 mm.
+#
+# WHY THE ONE CHANGE MATTERS
+# The leaves are meant to be BENT UP by hand after printing. That makes interlayer
+# bonding inside the leaf plate a functional requirement, not a cosmetic one: an
+# ASA plate whose upper layers were laid down under 70 % part cooling snaps when
+# bent instead of deforming. At disable_fan_first_layers = 4 the fan reaches full
+# speed at layer 5, so five of the nine leaf layers get chilled. 10 covers the whole
+# plate, then 70 % starts for the stem where the vase print proved it is needed.
+#
+# This is NOT a bed-adhesion setting. Adhesion here is handled by Magigoo (Original
+# — label covers PLA/ABS/PET-G/TPU; ASA is not named but behaves like ABS), which is
+# why no brim is used despite a 106.9 mm flat span. Magigoo grips the bottom face to
+# the sheet; it does nothing for how layer 6 fused to layer 5, which is the bond that
+# does the work when a leaf is bent.
+inherits = Prusament ASA
+filament_vendor = Inslogic
+filament_type = ASA
+filament_diameter = 1.75
+filament_density = 1.05
+filament_spool_weight = 1000
+filament_colour = #FFF2EC
+temperature = 250
+first_layer_temperature = 260
+bed_temperature = 100
+first_layer_bed_temperature = 100
+cooling = 1
+fan_always_on = 1
+min_fan_speed = 70
+max_fan_speed = 70
+bridge_fan_speed = 70
+disable_fan_first_layers = 10
+full_fan_speed_layer = 0
+fan_below_layer_time = 60
+slowdown_below_layer_time = 10
+min_print_speed = 5
+filament_notes = "Inslogic ASA, THIN STEM + FLAT PLATE BASE variant — TDS rev. 12.02.2024.\n\nUSE FOR: a part that is mostly thin/short-layer (wants 70 % fan) but begins with a\nwide flat plate that must not be fan-cooled. Built for Stem_for_Rose_5cm.stl.\nDO NOT USE FOR: normal bulk ASA parts — 70 % fan splits layers. Use 'Inslogic ASA'.\n\nDIFFERENCE FROM 'Inslogic ASA - vase': disable_fan_first_layers 4 -> 10. Nothing\nelse. The stem behaviour is deliberately identical to the vase profile, which was\nprint-validated 29 Jul 2026.\n\nWHY: the leaves print flat over layers 1-9 and are BENT UP by hand afterwards, so\ninterlayer bonding in that plate is structural. At 4, the fan hits full speed at\nlayer 5 and chills five of the nine leaf layers; ASA bonded under high cooling snaps\nwhen bent rather than deforming. 10 covers the whole plate.\n\nMODEL FACTS worth keeping (measured from the STL, not assumed):\n- Leaves: Z 0 to ~1.75 mm, 106.9 mm span, 3090 mm2 flat plate.\n- Stem: SOLID, ~5.75 mm diameter, no interior void at any height, up to 197.92 mm\n  (MK3S+ Z limit is 210 mm).\n- Every cross-section shrinks going up, so NO SUPPORTS are needed. Thorns are small\n  outward bumps that bridge fine.\n- Measured layer times with this cooling: leaf region ~94 s, stem ~8.8 s. The stem\n  figure is the one that matters — the print that failed sat at 5.0 s.\n\n⛔ DO NOT slice this model with the print profile '0.2mm QUALITY @MK3 - ... lightning'.\nThat profile has spiral_vase = 1 baked in (the only one of the eight that does). The\nstem is SOLID, so vase mode would hollow it into a single 0.45 mm wall with no top —\na 198 mm flagpole that would not survive handling. Use the same profile name WITHOUT\n'lightning' (vase off, 2 perimeters, 15 % infill).\n\nUNTESTED - built 29 Jul 2026."
