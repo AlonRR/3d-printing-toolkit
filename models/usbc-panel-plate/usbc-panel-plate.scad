@@ -56,7 +56,7 @@ boss_r = 2.0;
 
 /* [Half-circle notches in the Y edges] */
 // Semicircular cutouts bitten out of the top and bottom edges.
-notch_r = 2.4;      // radius. Set to 0 to remove them.
+notch_r = 2.5;      // radius. Set to 0 to remove them.
 notch_x = 0;        // X offset from centre. Both notches share it, so a
                     // non-zero value shifts the pair together; use
                     // notch_mirror to put one each side instead.
