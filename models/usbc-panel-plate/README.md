@@ -146,19 +146,23 @@ openscad -o top.png --imgsize=1400,700 --camera=0,0,0,0,0,0,55 --projection=orth
 
 ## Printing
 
-**Front face down**, flat on the bed, no supports. The model is built with
-`z = 0` as the front face, so dropping it on the bed unrotated is already
-correct — but the orientation now matters, and getting it upside down costs a
-part.
+**The right orientation flipped when the protrusion was added.** With
+`prot_face = "front"` there is no longer an orientation that needs nothing:
 
-Front-down is what makes the two-level opening printable. The 0.8 mm lip lays
-down solid on the bed first, and the rear pocket then opens *outward* as Z
-increases, so every new perimeter sits on material below it. Flip the part over
-and that same lip becomes a 13.4 × 8.4 mm unsupported bridge.
+| Orientation | What happens |
+|---|---|
+| **Back face down** ← use this | Pocket prints as a plain cavity off the bed; the 0.8 mm lip then bridges **8 mm** across it — routine on an MK3S+. Protrusion stands up on top, fully supported. **One bridge, no supports.** |
+| Front face down | The protrusion lands on the bed, and the plate's rim then starts in mid-air 1.5 mm up, overhanging ~4.6 mm all round. **Needs real support material.** |
 
-The `lead_in` chamfer sits on the bed face, where it prints as a 45° overhang —
-fine on an MK3S+ — and doubles as elephant's-foot relief on the one opening
-whose size actually matters.
+So: back face down. The slicer bridges the pocket's *short* span (8 mm, not
+13.4), and the visible front face ends up as the top surface, which also
+finishes better.
+
+With `prot_t = 0` — no protrusion — front-face-down is correct again, because
+then the lip lays down solid on the bed and nothing bridges.
+
+The `lead_in` chamfer follows whichever face is outermost (`front_z` in the
+`.scad`), so it stays on the visible side either way.
 
 `hole_comp = 0.15` grows every hole radius to compensate for printed holes
 coming out undersize on an MK3S+ with a 0.4 nozzle. If the screws are tight or
