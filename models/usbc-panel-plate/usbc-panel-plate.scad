@@ -17,7 +17,7 @@
 gap_w   = 23.4;     // MEASURED. Width of the opening.
 gap_h   = 15.0;     // MEASURED. Height of the opening.
 panel_t = 0.6;      // MEASURED. Sheet thickness of the case panel.
-overlap = 2.5;      // how far the plate laps onto the panel, all the way round
+overlap = 1;      // how far the plate laps onto the panel, all the way round
 
 /* [Plate outline — derived, don't set these directly] */
 // The plate must cover the opening, AND be wide enough to keep both screw
@@ -36,8 +36,11 @@ corner_r = 1.5;     // rounding on the outline corners
 // receptacle so there is no open gap around it.
 // USB-C receptacle shell is 8.94 x 3.16 mm, fixed by the USB spec; the plug's
 // metal tongue is 8.34 x 2.56 and passes through easily at this size.
-port_w  = 9.5;      // snug around the receptacle
-port_h  = 3.7;      // snug around the receptacle
+port_w  = 9.5;      // <<CONFIRM>> width NOT yet measured. Reported as ~2 mm too
+                    // wide against the printed part, which would put it near
+                    // 7.5 -- but that is under the 8.34 mm USB-C plug tongue,
+                    // so it needs the actual measurement before being cut.
+port_h  = 4.7;      // MEASURED. Height of the exposed port area.
 port_r  = 2.0;      // clamped to a stadium shape by rrect2d()
 lip_t   = 0.8;      // thickness of the thin front lip. The rest of plate_t is
                     // relief pocket behind it.
@@ -47,9 +50,17 @@ lead_in = 0.5;      // 45 deg chamfer on the front face, guides a plug in and
 /* [Centre opening — rear relief, clears the connector's BOSS] */
 // The connector's raised rounded-rect boss nests into this pocket so the plate
 // can still sit flat on the panel.
-boss_w = 13.4;      // <<CONFIRM>> photo-scaled
-boss_h = 8.4;       // <<CONFIRM>> photo-scaled
+boss_w = 13.4;      // <<CONFIRM>> width NOT yet measured, still photo-scaled
+boss_h = 8.0;       // MEASURED. Height of the connector's raised boss.
 boss_r = 2.0;
+
+/* [Half-circle notches in the Y edges] */
+// Semicircular cutouts bitten out of the top and bottom edges.
+notch_r = 2.4;      // radius. Set to 0 to remove them.
+notch_x = 0;        // X offset from centre. Both notches share it, so a
+                    // non-zero value shifts the pair together; use
+                    // notch_mirror to put one each side instead.
+notch_mirror = false;   // true -> top notch at +notch_x, bottom at -notch_x
 
 /* [Screws] */
 // MEASURED with calipers across the connector's own flange holes:
@@ -123,6 +134,15 @@ module usbc_panel_plate() {
             translate([0, 0, -0.01])
                 chamfer_flare_down(pw, ph, port_r, lead_in);
 
+        // Half-circle cutouts in the top and bottom (Y) edges. The cylinder is
+        // centred ON the edge, so exactly half of it lands inside the plate.
+        if (notch_r > 0)
+            for (s = [-1, 1])
+                translate([notch_mirror ? s * notch_x : notch_x,
+                           s * plate_h / 2,
+                           -1])
+                    cylinder(h = plate_t + 2, r = notch_r + hole_comp);
+
         // Screw holes.
         for (s = [-1, 1]) {
             translate([s * screw_span / 2, 0, -1])
@@ -153,6 +173,30 @@ echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
 
+// The Y-edge notches eat into the same web that sits above and below the rear
+// pocket, so they are only safe while that web has material to spare.
+notch_over_pocket = notch_r > 0 && abs(notch_x) < boss_w / 2 + notch_r;
+notch_web = plate_h / 2 - notch_r - boss_h / 2;
+notch_dx = abs(abs(notch_x) - screw_span / 2);
+notch_screw_gap = sqrt(notch_dx * notch_dx + (plate_h / 2) * (plate_h / 2))
+                  - notch_r - screw_d / 2;
+if (notch_r > 0) {
+    echo(str("notch              : r ", notch_r, " mm on both Y edges at x = ",
+             notch_x, notch_mirror ? " (mirrored)" : ""));
+    echo(str("  notch -> pocket  : ",
+             notch_over_pocket ? str(notch_web, " mm")
+                               : "clear in X, does not overlap the pocket"));
+    echo(str("  notch -> screw   : ", notch_screw_gap, " mm"));
+    // Does the notch stay inside the lap, or bite through into the case
+    // opening? Positive = still covered plate. Negative = the notch opens a
+    // hole straight into the case at that point.
+    notch_vs_gap = plate_h / 2 - notch_r - gap_h / 2;
+    echo(str("  notch vs opening : ", notch_vs_gap, " mm ",
+             notch_vs_gap >= 0
+               ? "(stays within the lap)"
+               : "(BREAKS THROUGH into the case opening)"));
+}
+
 // Do the screw holes land on panel material, or over the opening?
 // If the screw envelope is narrower than the opening, the screws pass through
 // open air. The plate is then clamped to the CONNECTOR, not bolted to the
@@ -174,3 +218,9 @@ assert(port_w < boss_w && port_h < boss_h,
        "front lip must be smaller than the rear pocket, or there is no lip");
 assert(lead_in < lip_t,
        "lead_in eats the whole lip - reduce lead_in or raise lip_t");
+assert(notch_r == 0 || notch_r < plate_h / 2,
+       "notch radius is at least half the plate height - it would cut the plate in two");
+assert(!notch_over_pocket || notch_web > 0.8,
+       "Y-edge notch cuts into the rear pocket - shrink notch_r, offset notch_x, or raise overlap");
+assert(notch_r == 0 || notch_screw_gap > 0.8,
+       "Y-edge notch breaks into a screw hole - shrink notch_r or move notch_x");
