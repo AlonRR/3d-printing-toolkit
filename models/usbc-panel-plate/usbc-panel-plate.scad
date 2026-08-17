@@ -93,6 +93,11 @@ cbore_h    = 1.2;   // counterbore depth
 //   1 = a single one-layer ledge, halving the reach   <- simple and enough
 //   n = approaches a smooth 53 deg taper
 pocket_steps = 1;
+pocket_step_axis = "y";  // "y" steps the height only, "x" the width only.
+                         // Stepping BOTH leaves a ledge running right around
+                         // the opening; single-axis leaves it on two sides and
+                         // lets the other pair of pocket walls run straight
+                         // down to the lip.
 layer_h = 0.15;     // MUST match the slicer profile, or the ledges land
                     // mid-layer and the slicer rounds them away.
 
@@ -171,11 +176,14 @@ module usbc_panel_plate() {
         if (pocket_steps > 0)
             for (i = [1 : pocket_steps]) {
                 f = i / (pocket_steps + 1);
+                // Only the chosen axis narrows. The other stays at full pocket
+                // size, so those two walls drop straight to the lip with no
+                // ledge on them at all.
                 translate([0, 0, lip_t + (i - 1) * layer_h])
-                    rrect(pw + (bw - pw) * f,
-                          ph + (bh - ph) * f,
+                    rrect((pocket_step_axis == "x") ? pw + (bw - pw) * f : bw,
+                          (pocket_step_axis == "y") ? ph + (bh - ph) * f : bh,
                           plate_t,
-                          port_r + (boss_r - port_r) * f);
+                          boss_r);
             }
 
         // Rear relief pocket for the connector's raised boss, starting above
@@ -223,10 +231,15 @@ echo(str("front lip          : ", port_w, " x ", port_h, " mm, ", lip_t, " mm th
 echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm deep"));
 // How far the pocket ceiling has to reach inward, and how that reach is split.
 // The governing axis is whichever of X/Y needs the bigger jump.
-ceil_reach = max((boss_w - port_w) / 2, (boss_h - port_h) / 2);
-ceil_jump  = ceil_reach / (pocket_steps + 1);
-echo(str("ceiling reach      : ", ceil_reach, " mm, in ", pocket_steps + 1,
-         " jump", pocket_steps == 0 ? "" : "s", " of ", ceil_jump, " mm"));
+reach_x = (boss_w - port_w) / 2;
+reach_y = (boss_h - port_h) / 2;
+stepped_reach   = (pocket_step_axis == "x") ? reach_x : reach_y;
+unstepped_reach = (pocket_step_axis == "x") ? reach_y : reach_x;
+echo(str("ceiling reach      : X ", reach_x, " mm, Y ", reach_y, " mm"));
+echo(str("  stepped axis     : ", pocket_step_axis, " -> ",
+         pocket_steps + 1, " jump", pocket_steps == 0 ? "" : "s", " of ",
+         stepped_reach / (pocket_steps + 1), " mm"));
+echo(str("  other axis       : still one jump of ", unstepped_reach, " mm"));
 echo(str("  ledges           : ", pocket_steps, " x ", layer_h,
          " mm, using ", pocket_steps * layer_h, " of ", pocket_d,
          " mm pocket depth"));
@@ -311,5 +324,7 @@ assert(prot_t == 0 || screw_span / 2 - screw_d / 2 - prot_w / 2 > 0.4,
        "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
 assert(pocket_steps >= 0,
        "pocket_steps cannot be negative");
+assert(pocket_step_axis == "x" || pocket_step_axis == "y",
+       "pocket_step_axis must be \"x\" or \"y\"");
 assert(pocket_steps * layer_h < pocket_d,
        "the ledges are deeper than the pocket - reduce pocket_steps, or raise plate_t");
