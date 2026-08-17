@@ -74,16 +74,19 @@ overhang angle from vertical   =  atan(step / layer_height)
 default for a 0.4 nozzle (0.2 mm layers, 0.4 mm width) — which is why the number
 got quoted everywhere. **It is not our profile.**
 
-At **0.45 mm width and 0.15 mm layers**:
+Extrusion width is **0.45 mm on every profile in this repo**, 0.2 and 0.15 alike.
+Layer height is what varies, and it moves the answer:
 
-| Step per layer | Supported | Angle from vertical |
-|---:|---:|---:|
-| 0.225 mm | 50 % | **56°** ← theoretical limit |
-| **0.20 mm** | 56 % | **53°** ← use this |
-| 0.15 mm | 67 % | 45° (the textbook figure — needlessly conservative here) |
+| Step per layer | Supported | @ 0.15 mm layers | @ 0.20 mm layers |
+|---:|---:|---:|---:|
+| 0.225 mm | 50 % | **56°** | **48°** |
+| **0.20 mm** | 56 % | **53°** | **45°** |
+| 0.15 mm | 67 % | 45° | 37° |
 
-Thin layers buy overhang. Because our layers are only a third of the extrusion
-width, we can hold **53°** where the generic advice says 45°.
+**Thin layers buy overhang.** On the 0.15 profiles the layer is a third of the
+extrusion width and 53° holds; on the 0.20 profiles the same 0.2 mm step is
+exactly the textbook 45°. Check which profile you're slicing with before
+trusting an angle.
 
 ### The 0.2 mm step — faking a 90° overhang
 
@@ -104,14 +107,16 @@ it can carry.
          |  |                     |  |
 ```
 
-The cost is height, and the exchange rate is fixed by the profile:
+The cost is height, and the exchange rate is `layer_height / step`:
 
-> **0.75 mm of height per 1 mm of horizontal reach.**
-> (`0.15 / 0.20` — layer height divided by step)
+| Profile | Height per 1 mm of reach |
+|---|---:|
+| 0.15 mm layers, 0.2 mm step | **0.75 mm** |
+| 0.20 mm layers, 0.2 mm step | **1.00 mm** |
 
-So before staircasing anything, check the depth is there. Crossing 2 mm
-horizontally needs 1.5 mm of vertical room; if you only have 1 mm, the geometry
-cannot absorb it and you bridge or support instead.
+So before staircasing anything, check the depth is there — and check it against
+the profile you'll actually print with. Coarser layers make a staircase cost
+*more* height, not less, which is the opposite of most people's intuition.
 
 ### Holes with a horizontal axis
 
@@ -156,6 +161,21 @@ Round or chamfer everything you can. Sharp internal corners are stress
 concentrators and crack-initiation sites; sharp external corners at the bed
 amplify elephant's foot. A small chamfer on the bed face costs nothing and
 fixes both.
+
+## 5a. One profile in this repo is vase mode
+
+`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, **lightning**`
+carries `spiral_vase = 1`, `perimeters = 1`, `top_solid_layers = 0` and
+`fill_density = 0%`. Slice a functional part with it and you get a single-wall
+open shell — it will look plausible in preview and be useless in the hand.
+
+The two safe 0.2 mm profiles are `0.20mm QUALITY @MK3 no skirt` and
+`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` (no `lightning`
+suffix). Worth grepping the sliced G-code rather than trusting the dropdown:
+
+```sh
+grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
+```
 
 ## 6. Material notes for what's on the shelf
 
@@ -211,23 +231,26 @@ staircased at 0.2 mm per layer instead — and here the depth happens to be ther
 pocket 13.4 x 8.0  ->  lip 9.3 x 3.6
 
 horizontal reach : 2.20 mm   (the Y axis governs: (8.0 - 3.6) / 2)
-height needed    : 1.65 mm   (2.20 x 0.75)
 depth available  : 1.70 mm   (plate_t 2.5 - lip_t 0.8)
-                   ---------
-VERDICT          : FITS, margin +0.05 mm
+
+@ 0.15 mm layers : needs 1.65 mm  -> FITS, margin +0.05 mm
+@ 0.20 mm layers : needs 2.20 mm  -> DOES NOT FIT, short by 0.50 mm
 ```
 
-Taper the pocket into the lip over its full 1.7 mm depth and the bridge
-disappears — the ceiling prints onto itself, one 0.2 mm step at a time.
+**The part is printed on a 0.20 mm profile, so the full staircase is off the
+table.** It only ever fitted by 0.05 mm at 0.15 mm layers, and the coarser
+profile costs 1.00 mm of height per 1 mm of reach instead of 0.75 — which wipes
+out the margin and then some.
 
-**The margin is 0.05 mm, so this is not a robust win.** Anything that reduces
-the pocket depth or widens it breaks it: raising `lip_t`, thinning `plate_t`, or
-growing `boss_h` all consume the 0.05 mm immediately. Recompute before relying
-on it, rather than assuming it still holds.
+This is exactly the trap the exchange-rate table exists to catch: the geometry
+did not change, the *profile* did, and a staircase that was feasible became
+impossible without anything in the model moving.
 
-An 8 mm bridge is comfortably within what the machine does anyway, so this buys
-surface finish on a face that ends up hidden against the connector — worth
-doing if the numbers hold, not worth distorting the design for.
+What the model does instead is a **single 0.2 mm ledge, one layer tall**, sitting
+hard against the hole. It costs 0.2 mm of pocket depth rather than 2.2 mm, and
+gives the ceiling something to start from. The remaining reach is still made in
+one jump — which is fine, because an 8 mm bridge is comfortably within what the
+machine does, on a face that ends up hidden against the connector anyway.
 
 ---
 
