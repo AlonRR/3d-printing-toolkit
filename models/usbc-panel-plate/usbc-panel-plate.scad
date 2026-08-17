@@ -87,8 +87,8 @@ cbore_h    = 1.2;   // counterbore depth
 /* [Pocket -> lip transition] */
 // Two straight ledges, one layer each, giving the pocket ceiling something to
 // bridge from instead of reaching the whole way off the lip.
-//   layer 1 : steps X and Y  -- both, to compensate for the opening's rounding
-//   layer 2 : steps X only   -- Y holds where layer 1 left it
+//   layer 1 : the same rounded slot, grown in Y only
+//   layer 2 : a plain rectangle -- square corners take out the slot's rounding
 step    = 0.2;      // step out per side, per ledge. 0 = no ledges
 layer_h = 0.2;      // must match the slicer, or a ledge lands mid-layer
 
@@ -162,17 +162,18 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Two straight ledges, one layer each. Square corners, not rounded.
+        // Two ledges, one layer each, working outward from the lip.
         if (step > 0) {
-            // Layer 1 - X and Y together.
+            // Layer 1 - the same rounded slot, grown in Y only.
             translate([0, 0, lip_t])
                 linear_extrude(plate_t)
-                    square([pw + 2 * step, ph + 2 * step], center = true);
+                    rrect2d(pw, ph + 2 * step, port_r);
 
-            // Layer 2 - X only; Y stays where layer 1 put it.
+            // Layer 2 - a plain rectangle. The square corners are what take
+            // out the slot's rounded ends before the ceiling closes over it.
             translate([0, 0, lip_t + layer_h])
                 linear_extrude(plate_t)
-                    square([pw + 4 * step, ph + 2 * step], center = true);
+                    square([pw + 2 * step, ph + 2 * step], center = true);
         }
 
         // Rear relief pocket for the connector's raised boss, above the ledges.
@@ -232,18 +233,7 @@ echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm
 echo(str("ceiling reach      : X ", (boss_w - port_w) / 2,
          " mm, Y ", (boss_h - port_h) / 2, " mm"));
 echo(str("ledges             : ", step, " mm/side, ", layer_h,
-         " mm tall each -- L1 x+y, L2 x only"));
-// Printed back-face-down the ceiling closes going UP, so the transitions run
-// pocket -> ledge2 -> ledge1 -> lip. Report the per-side reach of each, in
-// print order, because that is where an overhang actually gets carried.
-l1w = port_w + 2 * hole_comp + 2 * step;   l1h = port_h + 2 * hole_comp + 2 * step;
-l2w = port_w + 2 * hole_comp + 4 * step;   l2h = l1h;
-echo(str("  reach per layer, printed flipped (per side):"));
-echo(str("    pocket->L2     : X ", ((boss_w + 2 * hole_comp) - l2w) / 2,
-         "  Y ", ((boss_h + 2 * hole_comp) - l2h) / 2, "   <-- the big one"));
-echo(str("    L2->L1         : X ", (l2w - l1w) / 2, "  Y ", (l2h - l1h) / 2));
-echo(str("    L1->lip        : X ", (l1w - (port_w + 2 * hole_comp)) / 2,
-         "  Y ", (l1h - (port_h + 2 * hole_comp)) / 2));
+         " mm tall each -- L1 slot (y only), L2 rectangle"));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
