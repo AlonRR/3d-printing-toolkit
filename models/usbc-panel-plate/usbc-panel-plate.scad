@@ -17,14 +17,14 @@
 gap_w   = 23.4;     // MEASURED. Width of the opening.
 gap_h   = 15.0;     // MEASURED. Height of the opening.
 panel_t = 0.6;      // MEASURED. Sheet thickness of the case panel.
-overlap = 1;      // how far the plate laps onto the panel, all the way round
+overlap = 0.2;      // how far the plate laps onto the panel, all the way round
 
 /* [Plate outline — derived, don't set these directly] */
 // The plate must cover the opening, AND be wide enough to keep both screw
 // holes inside its own edge. The screws span 22.70 mm outer-to-outer, so
 // anything narrower than that plus a margin breaks out of the side.
 screw_envelope = 22.70;                 // measured, outer edge to outer edge
-min_w = screw_envelope + 2 * 1.5;       // + 1.5 mm of material outboard
+min_w = screw_envelope;// + 2 * 1;       // + 1.5 mm of material outboard
 plate_w = max(gap_w + 2 * overlap, min_w);
 plate_h = gap_h + 2 * overlap;
 
@@ -50,8 +50,10 @@ lead_in = 0.5;      // 45 deg chamfer on the front face, guides a plug in and
 /* [Centre opening — rear relief, clears the connector's BOSS] */
 // The connector's raised rounded-rect boss nests into this pocket so the plate
 // can still sit flat on the panel.
-boss_w = 13.4;      // <<CONFIRM>> width NOT yet measured, still photo-scaled
-boss_h = 8.0;       // MEASURED. Height of the connector's raised boss.
+boss_w = 14.7;      // MEASURED. "the port rectangle is 6.1 x 14.7".
+boss_h = 6.1;       // MEASURED. Supersedes an earlier 8.0 for this feature --
+                    // 8.0 and 6.1 were reported for different rectangles, and
+                    // 6.1 is the one that came as a matched pair with 14.7.
 boss_r = 2.0;
 
 /* [Half-circle notches in the Y edges] */
