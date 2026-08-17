@@ -36,11 +36,10 @@ corner_r = 1.5;     // rounding on the outline corners
 // receptacle so there is no open gap around it.
 // USB-C receptacle shell is 8.94 x 3.16 mm, fixed by the USB spec; the plug's
 // metal tongue is 8.34 x 2.56 and passes through easily at this size.
-port_w  = 9.3;      // <<CONFIRM>> width NOT yet measured. Reported as ~2 mm too
-                    // wide against the printed part, which would put it near
-                    // 7.5 -- but that is under the 8.34 mm USB-C plug tongue,
-                    // so it needs the actual measurement before being cut.
-port_h  = 3.6;      // MEASURED. Height of the exposed port area.
+port_w  = 9.3;      // Set to hug the 8.94 mm receptacle shell with ~0.18 mm a
+                    // side. Clears the 8.34 mm plug tongue with room, so the
+                    // earlier "could be too narrow for a cable" risk is gone.
+port_h  = 3.6;      // Ditto against the 3.16 mm shell height.
 port_r  = 2.0;      // clamped to a stadium shape by rrect2d()
 lip_t   = 0.8;      // thickness of the thin front lip. The rest of plate_t is
                     // relief pocket behind it.
@@ -84,6 +83,18 @@ screw_d    = 2.9;   // MEASURED. Clearance for M2.5. If the screws instead
 screw_span = 19.8;  // MEASURED. THE critical dimension.
 cbore_d    = 0;     // counterbore diameter, 0 = none. M2.5 socket head = 4.5
 cbore_h    = 1.2;   // counterbore depth
+
+/* [Pocket -> lip transition] */
+// Printed back-face-down, the pocket's ceiling has to reach inward from the
+// pocket wall to the lip opening in one go -- 2.2 mm on the governing axis.
+// Intermediate ledges split that into smaller jumps, each one layer tall, so
+// no single layer carries the whole reach.
+//   0 = abrupt step (one big jump)
+//   1 = a single one-layer ledge, halving the reach   <- simple and enough
+//   n = approaches a smooth 53 deg taper
+pocket_steps = 1;
+layer_h = 0.15;     // MUST match the slicer profile, or the ledges land
+                    // mid-layer and the slicer rounds them away.
 
 /* [Printing] */
 hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
@@ -152,8 +163,24 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Rear relief pocket for the connector's raised boss.
-        translate([0, 0, lip_t])
+        // Stepped transition from the lip up into the pocket. Each ledge is one
+        // layer tall and sits at a size interpolated between the two, so the
+        // ceiling reaches inward in equal jumps instead of one. Each cut runs
+        // to the top; the wider ones above simply win, which is what forms the
+        // steps.
+        if (pocket_steps > 0)
+            for (i = [1 : pocket_steps]) {
+                f = i / (pocket_steps + 1);
+                translate([0, 0, lip_t + (i - 1) * layer_h])
+                    rrect(pw + (bw - pw) * f,
+                          ph + (bh - ph) * f,
+                          plate_t,
+                          port_r + (boss_r - port_r) * f);
+            }
+
+        // Rear relief pocket for the connector's raised boss, starting above
+        // the last ledge.
+        translate([0, 0, lip_t + pocket_steps * layer_h])
             rrect(bw, bh, plate_t, boss_r);
 
         // Lead-in chamfer, on whichever face is now the outermost one.
@@ -194,6 +221,15 @@ echo(str("plate              : ", plate_w, " x ", plate_h, " x ", plate_t, " mm"
 echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap, " mm"));
 echo(str("front lip          : ", port_w, " x ", port_h, " mm, ", lip_t, " mm thick"));
 echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm deep"));
+// How far the pocket ceiling has to reach inward, and how that reach is split.
+// The governing axis is whichever of X/Y needs the bigger jump.
+ceil_reach = max((boss_w - port_w) / 2, (boss_h - port_h) / 2);
+ceil_jump  = ceil_reach / (pocket_steps + 1);
+echo(str("ceiling reach      : ", ceil_reach, " mm, in ", pocket_steps + 1,
+         " jump", pocket_steps == 0 ? "" : "s", " of ", ceil_jump, " mm"));
+echo(str("  ledges           : ", pocket_steps, " x ", layer_h,
+         " mm, using ", pocket_steps * layer_h, " of ", pocket_d,
+         " mm pocket depth"));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
@@ -273,3 +309,7 @@ assert(prot_t == 0 || (prot_w <= plate_w && prot_h <= plate_h),
        "protrusion is bigger than the plate it stands on");
 assert(prot_t == 0 || screw_span / 2 - screw_d / 2 - prot_w / 2 > 0.4,
        "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
+assert(pocket_steps >= 0,
+       "pocket_steps cannot be negative");
+assert(pocket_steps * layer_h < pocket_d,
+       "the ledges are deeper than the pocket - reduce pocket_steps, or raise plate_t");
