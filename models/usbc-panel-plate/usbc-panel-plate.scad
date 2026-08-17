@@ -85,10 +85,11 @@ cbore_d    = 0;     // counterbore diameter, 0 = none. M2.5 socket head = 4.5
 cbore_h    = 1.2;   // counterbore depth
 
 /* [Pocket -> lip transition] */
-// One straight-sided ledge, one layer tall, sitting hard against the hole.
-step_out  = 0.2;    // how far each side steps out from the hole. 0 = no ledge
-step_axis = "x";    // which axis steps; the other runs straight down
-layer_h   = 0.2;    // must match the slicer, or the ledge lands mid-layer
+// Straight-sided ledges, one layer tall each, stacked from the hole outward:
+// X steps first, then Y, then the pocket opens fully.
+step_x  = 0.1;      // X step out per side, at the lip.       0 = none
+step_y  = 0.1;      // Y step out per side, one layer above.  0 = none
+layer_h = 0.4;      // must match the slicer, or a ledge lands mid-layer
 
 /* [Printing] */
 hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
@@ -157,17 +158,20 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // One straight-sided ledge, one layer tall, hard against the hole.
+        // Straight-sided ledges, one layer tall each. X steps first, then Y.
         // Square corners, not rounded.
-        if (step_out > 0)
+        if (step_x > 0)
             translate([0, 0, lip_t])
                 linear_extrude(plate_t)
-                    square([(step_axis == "x") ? pw + 2 * step_out : bw,
-                            (step_axis == "y") ? ph + 2 * step_out : bh],
-                           center = true);
+                    square([pw + 2 * step_x, ph], center = true);
 
-        // Rear relief pocket for the connector's raised boss, above the ledge.
-        translate([0, 0, lip_t + (step_out > 0 ? layer_h : 0)])
+        if (step_y > 0)
+            translate([0, 0, lip_t + (step_x > 0 ? layer_h : 0)])
+                linear_extrude(plate_t)
+                    square([pw + 2 * step_x, ph + 2 * step_y], center = true);
+
+        // Rear relief pocket for the connector's raised boss, above the ledges.
+        translate([0, 0, lip_t + ((step_x > 0 ? 1 : 0) + (step_y > 0 ? 1 : 0)) * layer_h])
             rrect(bw, bh, plate_t, boss_r);
 
         // Lead-in chamfer, on whichever face is now the outermost one.
@@ -212,8 +216,8 @@ echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm
 // The governing axis is whichever of X/Y needs the bigger jump.
 echo(str("ceiling reach      : X ", (boss_w - port_w) / 2,
          " mm, Y ", (boss_h - port_h) / 2, " mm"));
-echo(str("ledge              : ", step_out, " mm on ", step_axis,
-         ", ", layer_h, " mm tall"));
+echo(str("ledges             : X ", step_x, " mm, Y ", step_y,
+         " mm, ", layer_h, " mm tall each"));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
@@ -293,5 +297,5 @@ assert(prot_t == 0 || (prot_w <= plate_w && prot_h <= plate_h),
        "protrusion is bigger than the plate it stands on");
 assert(prot_t == 0 || screw_span / 2 - screw_d / 2 - prot_w / 2 > 0.4,
        "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
-assert(step_axis == "x" || step_axis == "y",
-       "step_axis must be \"x\" or \"y\"");
+assert(((step_x > 0 ? 1 : 0) + (step_y > 0 ? 1 : 0)) * layer_h < pocket_d,
+       "the ledges are deeper than the pocket - reduce layer_h or raise plate_t");
