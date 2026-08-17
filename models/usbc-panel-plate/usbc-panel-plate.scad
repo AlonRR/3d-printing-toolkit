@@ -87,10 +87,12 @@ cbore_h    = 1.2;   // counterbore depth
 /* [Pocket -> lip transition] */
 // Two straight ledges, one layer each, giving the pocket ceiling something to
 // bridge from instead of reaching the whole way off the lip.
-//   layer 1 : the same rounded slot, grown in Y only
-//   layer 2 : a plain rectangle -- square corners take out the slot's rounding
-step    = 0.2;      // step out per side, per ledge. 0 = no ledges
-layer_h = 0.2;      // must match the slicer, or a ledge lands mid-layer
+//   layer 1 : a plain rectangle
+//   layer 2 : two lines running in Y only, one at each end   | |
+step     = 0.2;     // how far layer 1 steps out per side. 0 = no ledges
+layer_h  = 0.2;     // must match the slicer, or a ledge lands mid-layer
+line_w   = 0.45;    // width of each layer-2 line. One extrusion by default
+line_len = 8.0;     // length of each line along Y
 
 /* [Printing] */
 flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed.
@@ -164,16 +166,17 @@ module usbc_panel_plate() {
 
         // Two ledges, one layer each, working outward from the lip.
         if (step > 0) {
-            // Layer 1 - the same rounded slot, grown in Y only.
+            // Layer 1 - a plain rectangle.
             translate([0, 0, lip_t])
                 linear_extrude(plate_t)
-                    rrect2d(pw, ph + 2 * step, port_r);
-
-            // Layer 2 - a plain rectangle. The square corners are what take
-            // out the slot's rounded ends before the ceiling closes over it.
-            translate([0, 0, lip_t + layer_h])
-                linear_extrude(plate_t)
                     square([pw + 2 * step, ph + 2 * step], center = true);
+
+            // Layer 2 - two lines running in Y only, one at each end.  | |
+            for (s = [-1, 1])
+                translate([s * (pw / 2 + step + line_w / 2), 0,
+                           lip_t + layer_h])
+                    linear_extrude(plate_t)
+                        square([line_w, line_len], center = true);
         }
 
         // Rear relief pocket for the connector's raised boss, above the ledges.
@@ -233,7 +236,7 @@ echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm
 echo(str("ceiling reach      : X ", (boss_w - port_w) / 2,
          " mm, Y ", (boss_h - port_h) / 2, " mm"));
 echo(str("ledges             : ", step, " mm/side, ", layer_h,
-         " mm tall each -- L1 slot (y only), L2 rectangle"));
+         " mm tall each -- L1 rectangle, L2 two Y lines"));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
