@@ -1,21 +1,22 @@
 // ---------------------------------------------------------------------------
 // USB-C panel plate — a rectangle with three holes.
 //
-//   centre  : opening for the USB-C connector
+//   centre  : two-level opening — a thin lip at the front sized to the PORT,
+//             opening out behind into a relief pocket for the connector's boss
 //   2 sides : screw holes
 //
 // Fits the commodity IP67-style panel-mount USB-C feedthrough (the moulded
 // black flange with a raised rounded-rect boss and one screw hole each side).
 //
-// !! Every value tagged <<CONFIRM>> was scaled off a photograph, using the
-// !! USB-C receptacle mouth (8.9 mm, fixed by the USB spec) as the ruler.
-// !! They are good to roughly +/-10 %. Measure with calipers before printing —
-// !! screw_span in particular is the one number that makes this bolt on or not.
+// ORIENTATION: z = 0 is the FRONT face — the visible one, outside the case.
+//              z = plate_t is the BACK, facing the connector.
+//              Print FRONT FACE DOWN on the bed. See "Printing" below.
 // ---------------------------------------------------------------------------
 
 /* [The opening in the case panel — what the plate has to cover] */
-gap_w = 23.4;       // MEASURED.
-gap_h = 15.0;       // MEASURED.
+gap_w   = 23.4;     // MEASURED. Width of the opening.
+gap_h   = 15.0;     // MEASURED. Height of the opening.
+panel_t = 0.6;      // MEASURED. Sheet thickness of the case panel.
 overlap = 2.5;      // how far the plate laps onto the panel, all the way round
 
 /* [Plate outline — derived, don't set these directly] */
@@ -30,12 +31,25 @@ plate_h = gap_h + 2 * overlap;
 plate_t  = 2.5;     // thickness
 corner_r = 1.5;     // rounding on the outline corners
 
-/* [Centre opening] */
-open_w  = 13.4;     // <<CONFIRM>> width  — clears the connector's raised boss
-open_h  = 8.4;      // <<CONFIRM>> height — clears the connector's raised boss
-open_r  = 2.0;      // rounding on the opening corners
-lead_in = 0.6;      // 45 deg chamfer on the front face, guides a plug in.
-                    // Set to 0 for a plain square-edged opening.
+/* [Centre opening — front lip, sized to the PORT] */
+// This is the hole you actually see. It closes right down around the USB-C
+// receptacle so there is no open gap around it.
+// USB-C receptacle shell is 8.94 x 3.16 mm, fixed by the USB spec; the plug's
+// metal tongue is 8.34 x 2.56 and passes through easily at this size.
+port_w  = 9.5;      // snug around the receptacle
+port_h  = 3.7;      // snug around the receptacle
+port_r  = 2.0;      // clamped to a stadium shape by rrect2d()
+lip_t   = 0.8;      // thickness of the thin front lip. The rest of plate_t is
+                    // relief pocket behind it.
+lead_in = 0.5;      // 45 deg chamfer on the front face, guides a plug in and
+                    // fights elephant's foot. Set to 0 for a square edge.
+
+/* [Centre opening — rear relief, clears the connector's BOSS] */
+// The connector's raised rounded-rect boss nests into this pocket so the plate
+// can still sit flat on the panel.
+boss_w = 13.4;      // <<CONFIRM>> photo-scaled
+boss_h = 8.4;       // <<CONFIRM>> photo-scaled
+boss_r = 2.0;
 
 /* [Screws] */
 // MEASURED with calipers across the connector's own flange holes:
@@ -47,7 +61,7 @@ screw_d    = 2.9;   // MEASURED. Clearance for M2.5. If the screws instead
                     // thread INTO this plate, drop to ~2.1 for a self-tap
                     // pilot rather than leaving it at clearance.
 screw_span = 19.8;  // MEASURED. THE critical dimension.
-cbore_d    = 0;     // counterbore diameter, 0 = none. M2 socket head = 4.0
+cbore_d    = 0;     // counterbore diameter, 0 = none. M2.5 socket head = 4.5
 cbore_h    = 1.2;   // counterbore depth
 
 /* [Printing] */
@@ -58,7 +72,8 @@ $fn = 64;
 
 // ---------------------------------------------------------------------------
 
-// 2D rounded rectangle, centred on the origin.
+// 2D rounded rectangle, centred on the origin. r is clamped so an over-large
+// value degrades to a stadium rather than erroring.
 module rrect2d(w, h, r) {
     rr = min(r, w / 2, h / 2);
     hull()
@@ -72,33 +87,41 @@ module rrect(w, h, t, r) {
     linear_extrude(height = t) rrect2d(w, h, r);
 }
 
-// A tapered opening: `lead` tall, growing outward by `lead` toward +Z.
-module chamfer_flare(w, h, r, lead) {
+// Tapered opening, WIDE at z = 0 and narrowing to nominal at z = lead.
+// Printed front-face-down this is a 45 deg overhang, which prints cleanly.
+module chamfer_flare_down(w, h, r, lead) {
     hull() {
         linear_extrude(height = 0.01)
-            rrect2d(w, h, r);
+            rrect2d(w + 2 * lead, h + 2 * lead, r + lead);
         translate([0, 0, lead])
             linear_extrude(height = 0.01)
-                rrect2d(w + 2 * lead, h + 2 * lead, r + lead);
+                rrect2d(w, h, r);
     }
 }
 
 module usbc_panel_plate() {
-    ow = open_w + 2 * hole_comp;
-    oh = open_h + 2 * hole_comp;
+    pw = port_w + 2 * hole_comp;
+    ph = port_h + 2 * hole_comp;
+    bw = boss_w + 2 * hole_comp;
+    bh = boss_h + 2 * hole_comp;
     sd = screw_d + 2 * hole_comp;
 
     difference() {
         rrect(plate_w, plate_h, plate_t, corner_r);
 
-        // Centre opening, straight through.
+        // Front lip opening — runs the full depth; the rear pocket below then
+        // opens it out from lip_t upward.
         translate([0, 0, -1])
-            rrect(ow, oh, plate_t + 2, open_r);
+            rrect(pw, ph, plate_t + 2, port_r);
 
-        // Lead-in chamfer on the front (+Z) face.
+        // Rear relief pocket for the connector's raised boss.
+        translate([0, 0, lip_t])
+            rrect(bw, bh, plate_t, boss_r);
+
+        // Lead-in chamfer on the front face.
         if (lead_in > 0)
-            translate([0, 0, plate_t - lead_in])
-                chamfer_flare(ow, oh, open_r, lead_in + 0.01);
+            translate([0, 0, -0.01])
+                chamfer_flare_down(pw, ph, port_r, lead_in);
 
         // Screw holes.
         for (s = [-1, 1]) {
@@ -106,8 +129,8 @@ module usbc_panel_plate() {
                 cylinder(h = plate_t + 2, d = sd);
 
             if (cbore_d > 0)
-                translate([s * screw_span / 2, 0, plate_t - cbore_h])
-                    cylinder(h = cbore_h + 1, d = cbore_d + 2 * hole_comp);
+                translate([s * screw_span / 2, 0, -0.01])
+                    cylinder(h = cbore_h, d = cbore_d + 2 * hole_comp);
         }
     }
 }
@@ -115,14 +138,18 @@ module usbc_panel_plate() {
 usbc_panel_plate();
 
 // --- sanity check -----------------------------------------------------------
-// Material left between the opening and each screw hole, and above/below the
-// opening. Both want to be >= 1.2 mm (three perimeters at a 0.4 nozzle) or the
-// plate snaps when you tighten the screws.
-web_side = (screw_span - screw_d) / 2 - open_w / 2;
-web_topbot = (plate_h - open_h) / 2;
+pocket_d = plate_t - lip_t;
+web_side = (screw_span - screw_d) / 2 - boss_w / 2;
+web_topbot = (plate_h - boss_h) / 2;
+
 echo(str("plate              : ", plate_w, " x ", plate_h, " x ", plate_t, " mm"));
 echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap, " mm"));
-echo(str("web beside opening : ", web_side, " mm"));
+echo(str("front lip          : ", port_w, " x ", port_h, " mm, ", lip_t, " mm thick"));
+echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm deep"));
+echo(str("max boss height    : ", pocket_d + panel_t,
+         " mm from the connector flange (pocket ", pocket_d,
+         " + panel ", panel_t, ")"));
+echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
 
@@ -133,14 +160,17 @@ echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
 // connector's flange. That still works, but it means the lap is doing all the
 // retention -- so don't shrink `overlap` in that case.
 screws_over_air = screw_envelope < gap_w;
-echo(str("screws land on    : ",
+echo(str("screws land on     : ",
          screws_over_air ? "OPEN AIR - plate clamps to the connector, panel trapped by the lap"
                          : "panel material - plate bolts through the panel"));
-echo(str("lap on the panel  : ", overlap, " mm all round"));
 
-// The screw holes sit on the horizontal centreline, level with the opening.
-// Check they clear it rather than merging into it.
-assert(screw_span / 2 - screw_d / 2 > open_w / 2,
-       "screw holes overlap the centre opening — widen screw_span or narrow open_w");
+assert(screw_span / 2 - screw_d / 2 > boss_w / 2,
+       "screw holes overlap the rear relief pocket - widen screw_span or narrow boss_w");
 assert(plate_w >= gap_w + 2 * overlap - 0.01,
        "plate is narrower than the opening it must cover");
+assert(lip_t > 0 && lip_t < plate_t,
+       "lip_t must be between 0 and plate_t");
+assert(port_w < boss_w && port_h < boss_h,
+       "front lip must be smaller than the rear pocket, or there is no lip");
+assert(lead_in < lip_t,
+       "lead_in eats the whole lip - reduce lead_in or raise lip_t");

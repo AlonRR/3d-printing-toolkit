@@ -28,10 +28,13 @@ and is good to roughly ±10 %.
 | `screw_span` | **19.8** | **MEASURED** — see derivation below |
 | `screw_d` | **2.9** (M2.5 clearance) | **MEASURED** — see derivation below |
 | `gap_w` × `gap_h` | **23.4 × 15.0** | **MEASURED** — the case opening |
+| `panel_t` | **0.6** | **MEASURED** — case sheet thickness |
 | `overlap` | 2.5 | chosen — how far the plate laps onto the panel |
 | `plate_w` × `plate_h` | 28.4 × 20.0 | **derived** from `gap_*` + `overlap`, floored by the screw envelope |
 | `plate_t` | 2.5 | chosen |
-| `open_w` × `open_h` | 13.4 × 8.4 | photo-scaled, clears the connector's raised boss |
+| `port_w` × `port_h` | 9.5 × 3.7 | front lip — snug on the 8.94 × 3.16 receptacle shell |
+| `lip_t` | 0.8 | chosen — thickness of the thin front lip |
+| `boss_w` × `boss_h` | 13.4 × 8.4 | photo-scaled rear relief, clears the connector's raised boss |
 
 `plate_w` and `plate_h` are computed, not set. The plate must cover the opening
 *and* keep both screw holes inside its own edge, so:
@@ -44,6 +47,33 @@ plate_h = gap_h + 2*overlap
 The `max()` floor means the width only responds to `gap_w` once the opening
 exceeds 21 mm. The measured 23.4 mm is past that, so the opening governs and
 the plate came out 28.4 mm.
+
+## The centre opening has two levels
+
+The visible hole closes right down around the USB-C receptacle, so no gap shows
+around the port. That is only possible because the connector's raised boss gets
+its own relief pocket behind the lip:
+
+```
+   FRONT (visible, outside the case)          BACK (toward the connector)
+                    |
+   ---------+       |       +---------
+            |  9.5 x 3.7    |            <- lip_t = 0.8 mm, sized to the PORT
+            +---+       +---+
+                |       |
+                | 13.4 x 8.4 |           <- pocket 1.7 mm deep, clears the BOSS
+   -------------+       +-------------
+```
+
+The pocket swallows a boss standing up to **2.3 mm** proud of the connector
+flange — 1.7 mm of pocket plus the 0.6 mm the panel itself absorbs. If the plate
+will not sit flat on the panel, the boss is taller than that: reduce `lip_t` or
+raise `plate_t`.
+
+The lip only has to clear the plug's metal tongue (8.34 × 2.56 mm, fixed by the
+USB spec), and 9.5 × 3.7 clears it comfortably. The plug's overmould bottoms
+against the lip, which at 0.8 mm is close enough to flush that the tongue still
+reaches the receptacle.
 
 ## The screws pass through open air — this is how the part is held
 
@@ -88,13 +118,18 @@ independently corroborates the photo-scaled 26 mm width.
 
 The `.scad` echoes the three material webs on every render. All three want to be
 ≥ 1.2 mm (three perimeters at a 0.4 nozzle) or the plate cracks when the screws
-are tightened. At the defaults above:
+are tightened. At the values above:
 
 ```
-web beside opening : 2.1 mm
-web above/below    : 1.3 mm     <- the tight one; raise plate_h to improve
-outboard of screw  : 1.8 mm
+web beside pocket  : 1.75 mm
+web above/below    : 5.80 mm
+outboard of screw  : 2.85 mm
 ```
+
+Five asserts also fire on render rather than letting a bad edit through: screw
+holes must not merge into the rear pocket, the plate must not be narrower than
+what it covers, `lip_t` must lie inside `plate_t`, the front lip must be smaller
+than the rear pocket, and `lead_in` must not eat the whole lip.
 
 ## Regenerating
 
@@ -111,9 +146,19 @@ openscad -o top.png --imgsize=1400,700 --camera=0,0,0,0,0,0,55 --projection=orth
 
 ## Printing
 
-Flat on the bed, no supports — all three holes run straight through vertically.
-The lead-in chamfer is on the top (`+Z`) face, so that face is the one a plug
-enters from.
+**Front face down**, flat on the bed, no supports. The model is built with
+`z = 0` as the front face, so dropping it on the bed unrotated is already
+correct — but the orientation now matters, and getting it upside down costs a
+part.
+
+Front-down is what makes the two-level opening printable. The 0.8 mm lip lays
+down solid on the bed first, and the rear pocket then opens *outward* as Z
+increases, so every new perimeter sits on material below it. Flip the part over
+and that same lip becomes a 13.4 × 8.4 mm unsupported bridge.
+
+The `lead_in` chamfer sits on the bed face, where it prints as a 45° overhang —
+fine on an MK3S+ — and doubles as elephant's-foot relief on the one opening
+whose size actually matters.
 
 `hole_comp = 0.15` grows every hole radius to compensate for printed holes
 coming out undersize on an MK3S+ with a 0.4 nozzle. If the screws are tight or
