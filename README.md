@@ -151,6 +151,20 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
 4. ~~**Nested stale repo copy**~~ — **done 2 Aug 2026**, see §5.
 5. ~~**`OneDrive\3D printing\` is not version controlled.**~~ **Done 2 Aug 2026** — this repo, `alon/3d-printing`, synced back to `OneDrive\Tools\3d-printing` via `ods`. Documentation and slicer config are versioned; models and G-code deliberately stay in OneDrive as binaries. Still unversioned and remaining candidates: `PrusaSlicer_config_bundle.ini` and the `.scad` sources.
 6. **Yasin PLA profile is a bare clone** of `Generic PLA @0.8 nozzle` at stock 220/60 with `filament_vendor = Generic` and empty notes — no calibration of its own. The ASA profile, by contrast, is properly tuned.
+7. **The stored PrusaLink API key is stale — remote upload is broken** (found 17 Aug 2026). Both
+   `physical_printer` entries (`Prusa mk3S+` → `192.0.2.128`, `Mk` → `prusalink.local`) hold the
+   *same* 14-character key, and both endpoints reject it with `403 Bad X-Api-Key`. The printer
+   itself is fine: it answers ping and serves a proper `401` challenge.
+   - **Not** a CRLF/extraction artefact — the key was verified clean (no trailing `\r`), and the
+     403 persists on both hosts.
+   - **Not** an auth-*mode* problem. `GET /` returns
+     `WWW-Authenticate: Digest realm="Administrator"`, which is the **web UI** login and is easy to
+     misread as "PrusaLink switched to Digest". It hasn't — a `403 Bad X-Api-Key` on `/api/*` proves
+     the API-key path exists and was evaluated. The key is simply wrong.
+   - **Fix:** read the current key from the PrusaLink web UI at `http://192.0.2.128` → Settings,
+     and paste it into *both* physical-printer entries. Don't change
+     `printhost_authorization_type`; `key` is correct.
+   - Workaround meanwhile: drag the `.gcode` into the PrusaLink web UI, or use the SD card.
 
 ---
 
