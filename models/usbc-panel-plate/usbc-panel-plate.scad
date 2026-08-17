@@ -93,6 +93,9 @@ step    = 0.2;      // step out per side, per ledge. 0 = no ledges
 layer_h = 0.2;      // must match the slicer, or a ledge lands mid-layer
 
 /* [Printing] */
+flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed.
+                        // Set false to work in design orientation (front at
+                        // z = 0), which is what all the comments describe.
 hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
                     // arc effect). Every hole is grown by this on each side.
                     // MK3S+ / 0.4 nozzle: 0.15 is a good starting point.
@@ -203,7 +206,17 @@ module usbc_panel_plate() {
     }
 }
 
-usbc_panel_plate();
+// Rotate 180 about X so the BACK face lands on the bed. That is the
+// orientation this actually prints in, so the STL now arrives already
+// oriented instead of needing a flip in the slicer.
+// The part spans -prot_t .. plate_t before rotation, so lifting by plate_t
+// puts its lowest point back on z = 0.
+if (flip_for_print)
+    translate([0, 0, plate_t])
+        rotate([180, 0, 0])
+            usbc_panel_plate();
+else
+    usbc_panel_plate();
 
 // --- sanity check -----------------------------------------------------------
 pocket_d = plate_t - lip_t;
