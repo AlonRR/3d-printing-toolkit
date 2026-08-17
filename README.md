@@ -14,6 +14,8 @@ every number, and the hard-won gotchas that took a wasted print or a wasted roun
 | [`slicer/print/`](slicer/print/) | The 8 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
 | [`slicer/reference/`](slicer/reference/) | Inslogic ASA + TPU 95A technical data sheets (the source for every temperature here) |
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
+| [`docs/fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to **this** printer — the governing number is the 0.45 mm extrusion width, not the 0.4 mm nozzle, so walls quantise to multiples of 0.45 |
+| [`models/`](models/) | Parametric OpenSCAD sources for one-off parts. STLs stay in OneDrive; the `.scad` is the artefact |
 
 ## What's deliberately *not* here
 

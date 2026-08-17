@@ -36,11 +36,11 @@ corner_r = 1.5;     // rounding on the outline corners
 // receptacle so there is no open gap around it.
 // USB-C receptacle shell is 8.94 x 3.16 mm, fixed by the USB spec; the plug's
 // metal tongue is 8.34 x 2.56 and passes through easily at this size.
-port_w  = 9.5;      // <<CONFIRM>> width NOT yet measured. Reported as ~2 mm too
+port_w  = 9.3;      // <<CONFIRM>> width NOT yet measured. Reported as ~2 mm too
                     // wide against the printed part, which would put it near
                     // 7.5 -- but that is under the 8.34 mm USB-C plug tongue,
                     // so it needs the actual measurement before being cut.
-port_h  = 4.7;      // MEASURED. Height of the exposed port area.
+port_h  = 3.6;      // MEASURED. Height of the exposed port area.
 port_r  = 2.0;      // clamped to a stadium shape by rrect2d()
 lip_t   = 0.8;      // thickness of the thin front lip. The rest of plate_t is
                     // relief pocket behind it.
