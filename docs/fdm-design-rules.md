@@ -59,10 +59,79 @@ undersize on a 0.4 nozzle.
 - A horizontal hole (axis parallel to the bed) prints as an oval and needs a
   **teardrop** profile to avoid the unsupported top arc.
 
-## 3. Overhangs, bridges, orientation
+## 3. Overhangs — the 45° rule is not the real rule
 
-- **45°** from vertical is the practical overhang limit. Past it, droop.
-- **Bridges** are fine to ~10 mm on a well-cooled machine; the slicer spans the
+45° is a *consequence*, not a law. The actual constraint is that **each new
+extrusion must land with at least ~50 % of its width sitting on the layer
+below**. Everything else follows from that:
+
+```
+max horizontal step per layer  =  0.5 x extrusion_width
+overhang angle from vertical   =  atan(step / layer_height)
+```
+
+45° only pops out when `layer_height == 0.5 x extrusion_width`. That is the Cura
+default for a 0.4 nozzle (0.2 mm layers, 0.4 mm width) — which is why the number
+got quoted everywhere. **It is not our profile.**
+
+At **0.45 mm width and 0.15 mm layers**:
+
+| Step per layer | Supported | Angle from vertical |
+|---:|---:|---:|
+| 0.225 mm | 50 % | **56°** ← theoretical limit |
+| **0.20 mm** | 56 % | **53°** ← use this |
+| 0.15 mm | 67 % | 45° (the textbook figure — needlessly conservative here) |
+
+Thin layers buy overhang. Because our layers are only a third of the extrusion
+width, we can hold **53°** where the generic advice says 45°.
+
+### The 0.2 mm step — faking a 90° overhang
+
+A true 90° overhang (a flat ceiling) cannot be printed onto air; it must be
+bridged or supported. But it can be **staircased**: break the horizontal jump
+into 0.2 mm steps, one per layer, and no single layer ever overhangs more than
+it can carry.
+
+```
+   abrupt 90 deg ceiling          staircased at 0.2 mm/layer
+   -- must bridge --              -- prints onto itself --
+
+   +--------------+               +--------------+
+   |              |               |            __|
+   |              |               |         __|
+   +-----+  +-----+               |      __|
+         |  |                     |   __|
+         |  |                     |  |
+```
+
+The cost is height, and the exchange rate is fixed by the profile:
+
+> **0.75 mm of height per 1 mm of horizontal reach.**
+> (`0.15 / 0.20` — layer height divided by step)
+
+So before staircasing anything, check the depth is there. Crossing 2 mm
+horizontally needs 1.5 mm of vertical room; if you only have 1 mm, the geometry
+cannot absorb it and you bridge or support instead.
+
+### Holes with a horizontal axis
+
+A round hole lying parallel to the bed is the classic 90° case: its top arc
+reaches horizontal at the apex, so it droops and closes up. Three fixes, in
+order of preference:
+
+1. **Teardrop** — keep the bottom semicircle, replace the top with a point. With
+   a 53° capability the apex can be steeper than the usual 45°, but 45° is the
+   safe default and costs nothing.
+2. **Diamond / hexagon** — same idea, easier to model, uglier bore.
+3. **Sacrificial bridge layer** — let the slicer bridge one flat layer across
+   the top and drill it out after. Fine when the bore finish doesn't matter.
+
+Vertical holes (axis along Z) have none of this problem — they are just
+undersized per §2.
+
+### Bridges and orientation
+
+- **Bridges** are fine to ~10 mm on a well-cooled machine. The slicer spans the
   **short** axis of an opening, so a 13.4 × 8.0 pocket is an 8 mm bridge, not a
   13.4 mm one.
 - **Parts are weak between layers.** XY is filament-strong, Z is
@@ -131,6 +200,34 @@ is commented out — that guard existed to enforce this rule. Three ways out:
 The three ⚠️ rows are not failures, just wasted material — each is a void the
 slicer has to paper over. Rounding them to 1.35 mm makes them genuinely stronger
 *and* faster to print.
+
+### The pocket ceiling can be staircased instead of bridged
+
+Printed back-face-down, the step from the rear pocket to the front lip is a flat
+90° ceiling, and the lip has to bridge 8 mm across it. §3 says that jump can be
+staircased at 0.2 mm per layer instead — and here the depth happens to be there:
+
+```
+pocket 13.4 x 8.0  ->  lip 9.3 x 3.6
+
+horizontal reach : 2.20 mm   (the Y axis governs: (8.0 - 3.6) / 2)
+height needed    : 1.65 mm   (2.20 x 0.75)
+depth available  : 1.70 mm   (plate_t 2.5 - lip_t 0.8)
+                   ---------
+VERDICT          : FITS, margin +0.05 mm
+```
+
+Taper the pocket into the lip over its full 1.7 mm depth and the bridge
+disappears — the ceiling prints onto itself, one 0.2 mm step at a time.
+
+**The margin is 0.05 mm, so this is not a robust win.** Anything that reduces
+the pocket depth or widens it breaks it: raising `lip_t`, thinning `plate_t`, or
+growing `boss_h` all consume the 0.05 mm immediately. Recompute before relying
+on it, rather than assuming it still holds.
+
+An 8 mm bridge is comfortably within what the machine does anyway, so this buys
+surface finish on a face that ends up hidden against the connector — worth
+doing if the numbers hold, not worth distorting the design for.
 
 ---
 
