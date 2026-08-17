@@ -13,3 +13,6 @@ physical_printer/
 
 __pycache__/
 *.pyc
+
+# scad-preview.sh scratch output
+preview/
