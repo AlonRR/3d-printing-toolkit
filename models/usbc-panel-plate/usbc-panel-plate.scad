@@ -220,8 +220,17 @@ echo(str("ceiling reach      : X ", (boss_w - port_w) / 2,
          " mm, Y ", (boss_h - port_h) / 2, " mm"));
 echo(str("ledges             : ", step, " mm/side, ", layer_h,
          " mm tall each -- L1 x+y, L2 x only"));
-echo(str("  bridge span      : ", (boss_h + 2 * hole_comp) - (port_h + 2 * hole_comp + 2 * step),
-         " mm after the ledges (was ", (boss_h - port_h), " mm)"));
+// Printed back-face-down the ceiling closes going UP, so the transitions run
+// pocket -> ledge2 -> ledge1 -> lip. Report the per-side reach of each, in
+// print order, because that is where an overhang actually gets carried.
+l1w = port_w + 2 * hole_comp + 2 * step;   l1h = port_h + 2 * hole_comp + 2 * step;
+l2w = port_w + 2 * hole_comp + 4 * step;   l2h = l1h;
+echo(str("  reach per layer, printed flipped (per side):"));
+echo(str("    pocket->L2     : X ", ((boss_w + 2 * hole_comp) - l2w) / 2,
+         "  Y ", ((boss_h + 2 * hole_comp) - l2h) / 2, "   <-- the big one"));
+echo(str("    L2->L1         : X ", (l2w - l1w) / 2, "  Y ", (l2h - l1h) / 2));
+echo(str("    L1->lip        : X ", (l1w - (port_w + 2 * hole_comp)) / 2,
+         "  Y ", (l1h - (port_h + 2 * hole_comp)) / 2));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
