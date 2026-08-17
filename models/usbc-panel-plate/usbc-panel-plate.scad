@@ -50,11 +50,19 @@ lead_in = 0.5;      // 45 deg chamfer on the front face, guides a plug in and
 /* [Centre opening — rear relief, clears the connector's BOSS] */
 // The connector's raised rounded-rect boss nests into this pocket so the plate
 // can still sit flat on the panel.
-boss_w = 14.7;      // MEASURED. "the port rectangle is 6.1 x 14.7".
-boss_h = 6.1;       // MEASURED. Supersedes an earlier 8.0 for this feature --
-                    // 8.0 and 6.1 were reported for different rectangles, and
-                    // 6.1 is the one that came as a matched pair with 14.7.
+boss_w = 13.4;      // <<CONFIRM>> width NOT yet measured, still photo-scaled
+boss_h = 8.0;       // MEASURED. Height of the connector's raised boss.
 boss_r = 2.0;
+
+/* [Raised rectangle protrusion] */
+// A rectangular boss standing proud of the plate, with the port opening
+// running through it. MEASURED 14.7 x 6.1.
+prot_w = 14.7;      // MEASURED
+prot_h = 6.1;       // MEASURED
+prot_t = 1.5;       // <<CONFIRM>> how far it stands proud. NOT measured.
+prot_r = 1.5;       // corner rounding
+prot_face = "front";  // "front" = the visible side (-Z), "back" = toward the
+                      // connector (+Z). See the note in "Printing".
 
 /* [Half-circle notches in the Y edges] */
 // Semicircular cutouts bitten out of the top and bottom edges.
@@ -119,39 +127,57 @@ module usbc_panel_plate() {
     bh = boss_h + 2 * hole_comp;
     sd = screw_d + 2 * hole_comp;
 
-    difference() {
-        rrect(plate_w, plate_h, plate_t, corner_r);
+    // With a front protrusion the visible face moves out to -prot_t, so every
+    // cut has to start beyond it rather than at the old z = 0.
+    pt = (prot_face == "front") ? prot_t : 0;
+    front_z = -pt;
+    cut_lo = front_z - 1;
+    cut_len = pt + plate_t + ((prot_face == "back") ? prot_t : 0) + 2;
 
-        // Front lip opening — runs the full depth; the rear pocket below then
-        // opens it out from lip_t upward.
-        translate([0, 0, -1])
-            rrect(pw, ph, plate_t + 2, port_r);
+    difference() {
+        union() {
+            rrect(plate_w, plate_h, plate_t, corner_r);
+
+            // The raised rectangle. Overlaps the plate by 0.01 so the union is
+            // manifold rather than two solids touching on a plane.
+            if (prot_t > 0)
+                translate([0, 0, (prot_face == "front")
+                                   ? -prot_t
+                                   : plate_t - 0.01])
+                    rrect(prot_w, prot_h, prot_t + 0.01, prot_r);
+        }
+
+        // Front lip opening — runs the full depth, through the protrusion too;
+        // the rear pocket below then opens it out from lip_t upward.
+        translate([0, 0, cut_lo])
+            rrect(pw, ph, cut_len, port_r);
 
         // Rear relief pocket for the connector's raised boss.
         translate([0, 0, lip_t])
             rrect(bw, bh, plate_t, boss_r);
 
-        // Lead-in chamfer on the front face.
+        // Lead-in chamfer, on whichever face is now the outermost one.
         if (lead_in > 0)
-            translate([0, 0, -0.01])
+            translate([0, 0, front_z - 0.01])
                 chamfer_flare_down(pw, ph, port_r, lead_in);
 
         // Half-circle cutouts in the top and bottom (Y) edges. The cylinder is
         // centred ON the edge, so exactly half of it lands inside the plate.
+        // Cut through the protrusion too, so it does not leave a stub behind.
         if (notch_r > 0)
             for (s = [-1, 1])
                 translate([notch_mirror ? s * notch_x : notch_x,
                            s * plate_h / 2,
-                           -1])
-                    cylinder(h = plate_t + 2, r = notch_r + hole_comp);
+                           cut_lo])
+                    cylinder(h = cut_len, r = notch_r + hole_comp);
 
         // Screw holes.
         for (s = [-1, 1]) {
-            translate([s * screw_span / 2, 0, -1])
-                cylinder(h = plate_t + 2, d = sd);
+            translate([s * screw_span / 2, 0, cut_lo])
+                cylinder(h = cut_len, d = sd);
 
             if (cbore_d > 0)
-                translate([s * screw_span / 2, 0, -0.01])
+                translate([s * screw_span / 2, 0, front_z - 0.01])
                     cylinder(h = cbore_h, d = cbore_d + 2 * hole_comp);
         }
     }
@@ -174,6 +200,19 @@ echo(str("max boss height    : ", pocket_d + panel_t,
 echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
+
+// The raised rectangle. Its own frame around the port is the thing most likely
+// to come out too thin, because prot_h and port_h are close together.
+if (prot_t > 0) {
+    prot_frame_x = (prot_w - port_w) / 2;
+    prot_frame_y = (prot_h - port_h) / 2;
+    prot_screw_gap = screw_span / 2 - screw_d / 2 - prot_w / 2;
+    echo(str("protrusion         : ", prot_w, " x ", prot_h, " x ", prot_t,
+             " mm on the ", prot_face));
+    echo(str("  frame beside port: ", prot_frame_x, " mm"));
+    echo(str("  frame over/under : ", prot_frame_y, " mm"));
+    echo(str("  prot -> screw    : ", prot_screw_gap, " mm"));
+}
 
 // The Y-edge notches eat into the same web that sits above and below the rear
 // pocket, so they are only safe while that web has material to spare.
@@ -226,3 +265,11 @@ assert(!notch_over_pocket || notch_web > 0.8,
        "Y-edge notch cuts into the rear pocket - shrink notch_r, offset notch_x, or raise overlap");
 assert(notch_r == 0 || notch_screw_gap > 0.8,
        "Y-edge notch breaks into a screw hole - shrink notch_r or move notch_x");
+assert(prot_face == "front" || prot_face == "back",
+       "prot_face must be \"front\" or \"back\"");
+assert(prot_t == 0 || (prot_w > port_w && prot_h > port_h),
+       "protrusion is not bigger than the port opening - it would vanish");
+assert(prot_t == 0 || (prot_w <= plate_w && prot_h <= plate_h),
+       "protrusion is bigger than the plate it stands on");
+assert(prot_t == 0 || screw_span / 2 - screw_d / 2 - prot_w / 2 > 0.4,
+       "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
