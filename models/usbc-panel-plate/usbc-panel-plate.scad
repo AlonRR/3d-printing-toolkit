@@ -87,9 +87,9 @@ cbore_h    = 1.2;   // counterbore depth
 /* [Pocket -> lip transition] */
 // Straight-sided ledges, one layer tall each, stacked from the hole outward:
 // X steps first, then Y, then the pocket opens fully.
-step_x  = 0.1;      // X step out per side, at the lip.       0 = none
-step_y  = 0.1;      // Y step out per side, one layer above.  0 = none
-layer_h = 0.4;      // must match the slicer, or a ledge lands mid-layer
+step_x  = 0.2;      // X step out per side, at the lip.       0 = none
+step_y  = 0.2;      // Y step out per side, one layer above.  0 = none
+layer_h = 0.2;      // must match the slicer, or a ledge lands mid-layer
 
 /* [Printing] */
 hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
