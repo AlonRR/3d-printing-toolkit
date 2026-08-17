@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------
 
 /* [The opening in the case panel — what the plate has to cover] */
-gap_w = 21.0;       // <<CONFIRM>> width of the opening. NOT YET MEASURED.
+gap_w = 23.4;       // MEASURED.
 gap_h = 15.0;       // MEASURED.
 overlap = 2.5;      // how far the plate laps onto the panel, all the way round
 
@@ -125,6 +125,18 @@ echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap, " m
 echo(str("web beside opening : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
+
+// Do the screw holes land on panel material, or over the opening?
+// If the screw envelope is narrower than the opening, the screws pass through
+// open air. The plate is then clamped to the CONNECTOR, not bolted to the
+// panel, and the sheet metal is trapped between the plate's lap and the
+// connector's flange. That still works, but it means the lap is doing all the
+// retention -- so don't shrink `overlap` in that case.
+screws_over_air = screw_envelope < gap_w;
+echo(str("screws land on    : ",
+         screws_over_air ? "OPEN AIR - plate clamps to the connector, panel trapped by the lap"
+                         : "panel material - plate bolts through the panel"));
+echo(str("lap on the panel  : ", overlap, " mm all round"));
 
 // The screw holes sit on the horizontal centreline, level with the opening.
 // Check they clear it rather than merging into it.

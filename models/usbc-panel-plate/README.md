@@ -27,10 +27,9 @@ and is good to roughly ±10 %.
 |---|---|---|
 | `screw_span` | **19.8** | **MEASURED** — see derivation below |
 | `screw_d` | **2.9** (M2.5 clearance) | **MEASURED** — see derivation below |
-| `gap_h` | **15.0** | **MEASURED** — height of the case opening |
-| `gap_w` | 21.0 | ⚠️ **NOT MEASURED** — placeholder |
+| `gap_w` × `gap_h` | **23.4 × 15.0** | **MEASURED** — the case opening |
 | `overlap` | 2.5 | chosen — how far the plate laps onto the panel |
-| `plate_w` × `plate_h` | 26.0 × 20.0 | **derived** from `gap_*` + `overlap`, floored by the screw envelope |
+| `plate_w` × `plate_h` | 28.4 × 20.0 | **derived** from `gap_*` + `overlap`, floored by the screw envelope |
 | `plate_t` | 2.5 | chosen |
 | `open_w` × `open_h` | 13.4 × 8.4 | photo-scaled, clears the connector's raised boss |
 
@@ -43,8 +42,31 @@ plate_h = gap_h + 2*overlap
 ```
 
 The `max()` floor means the width only responds to `gap_w` once the opening
-exceeds 21 mm — below that, the screw envelope dominates and the plate stays
-26 mm wide.
+exceeds 21 mm. The measured 23.4 mm is past that, so the opening governs and
+the plate came out 28.4 mm.
+
+## The screws pass through open air — this is how the part is held
+
+The opening is **23.4 mm** wide. The screws span **22.70 mm** outer-to-outer.
+So both screw holes sit *inside* the opening, clearing the panel edge by only
+about **0.35 mm per side**.
+
+Two consequences:
+
+1. **The plate is not bolted to the panel.** It is clamped to the *connector*,
+   and the sheet metal is trapped between the plate's 2.5 mm lap and the
+   connector's own flange. The lap is doing all the retention — so if this ever
+   gets re-parameterised, do not shrink `overlap`.
+2. **The screws only just clear.** 0.35 mm per side means the connector has to
+   sit close to centred in the opening or a screw shank will foul the panel
+   edge and the assembly won't pull up tight. If it binds, that's the cause —
+   not the plate.
+
+The `.scad` echoes which case applies on every render:
+
+```
+screws land on    : OPEN AIR - plate clamps to the connector, panel trapped by the lap
+```
 
 ### Screw pattern derivation
 
