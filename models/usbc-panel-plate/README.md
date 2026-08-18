@@ -107,29 +107,41 @@ the bridge slot and the lip at print z **1.0 / 1.4 / 1.6 / 2.4** — all on-grid
 every one lands mid-layer and the bridge slot resolves on a
 slicer tie-break rather than on the geometry. Asserted.
 
-## The two-bridge trick
+## The two-bridge trick — three staged layers
 
 Printed back-face-down, the layer closing over the pocket **is the lip, and the
 lip has the port hole in it**. That is not a plain bridge — the printer would be
-drawing the hole's outline in mid-air. The fix is two anchored stages:
+drawing the hole outline in mid-air.
+
+It is split across three layers, and the point is that **each layer does exactly
+one thing**. No layer has to lay a straight run and a curve in the same pass.
 
 ```
-  stage 1   opening is a full-height SLOT (9.6 x 8.8), so what remains is two
-            strips spanning wall-to-wall, each anchored at BOTH ends   8.8 mm
-  stage 2   opening closes to the real port; the bands above and below it
-            bridge across and land on stage 1's strips                 9.6 mm
+  L1  THE TWO BRIDGE   slot 9.6 x 8.8  -> two strips spanning 8.8 mm,
+                                          each anchored at BOTH ends
+  L2  THE RECTANGLE    9.6 x 3.9 square -> the other two sides bridge 9.6 mm
+                                          onto those strips
+  L3  THE CORNERS      r2 fillets only  -> laid on the solid rectangle below
+
+     L1                 L2                 L3
+  +--+      +--+     +--+------+--+     +--+------+--+
+  |  |      |  |     |  |      |  |     |  /      \  |
+  |  |  gap |  |     |  | rect |  |     |  | port |  |
+  |  |      |  |     |  |      |  |     |  \      /  |
+  +--+      +--+     +--+------+--+     +--+------+--+
 ```
 
-Both spans are under the ~10 mm ceiling and both are asserted. The slot is
-square on purpose — a rounded one would put an arc back in mid-air, which is the
-thing being removed.
+Both spans are under the ~10 mm ceiling and both are asserted. So is the thing
+that makes the staging meaningful: if the slot were no taller than the port, L1
+and L2 would be the same shape; if `port_r` were 0, L2 and L3 would be. Either
+way the render still succeeds while silently doing less than it claims.
 
-**Nothing is sacrificial.** Both stages are load-bearing part geometry, nothing
+**Nothing is sacrificial.** All three layers are load-bearing geometry, nothing
 is snipped or drilled afterwards, and the sliced G-code carries
-`support_material = 0`. That is the house rule: prefer no support, prefer
-permanent over sacrificial, and treat "this needs a sacrificial feature" as a
-sign a better design exists. See
-[`docs/fdm-design-rules.md`](../../docs/fdm-design-rules.md) §3b–3c.
+`support_material = 0`. House rule: prefer no support, prefer permanent over
+sacrificial, and read "this needs a sacrificial feature" as a sign a better
+design exists. See [`docs/fdm-design-rules.md`](../../docs/fdm-design-rules.md)
+§3b–3c.
 
 ## Printing
 

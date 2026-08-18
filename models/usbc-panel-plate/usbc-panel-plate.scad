@@ -109,27 +109,33 @@ cbore_h    = 1.2;   // counterbore depth, measured from the PLATE face
 // "bridge with a hole in it" and comes out as spaghetti.
 //
 // The two-bridge trick (Hackaday calls it a sacrificial bridge; nophead called
-// it hanging holes) splits it into two anchored stages:
+// it hanging holes) fixes it. Here it runs over THREE layers, and the point is
+// that each layer does exactly ONE thing — it never has to lay a straight run
+// and a curve in the same pass.
 //
-//   stage 1, first layer over the pocket
-//     the opening is a full-height SLOT, pw wide x bh tall. The material left
-//     is two strips running the short axis, EACH ANCHORED AT BOTH ENDS on the
-//     pocket walls. Nothing is drawn in air.
+//   layer 1  THE TWO BRIDGE, first layer over the pocket
+//            opening is a full-height SLOT, pw x bh. What is laid is two
+//            strips spanning bh wall-to-wall, each anchored at BOTH ends.
 //
-//   stage 2, the layer above
-//     the opening closes down to the real port. The new material -- the bands
-//     above and below the port -- bridges pw across, landing on stage 1's two
-//     strips. Again anchored at both ends.
+//   layer 2  THE RECTANGLE
+//            opening closes to a plain pw x ph rectangle, square corners. The
+//            two remaining sides are laid here, bridging pw onto the strips.
 //
-//        stage 1              stage 2              (looking down the bore)
-//     +--+      +--+       +--+------+--+
-//     |  |      |  |       |  |      |  |          two strips, then the
-//     |  |  gap |  |       |  | port |  |          bands close onto them
-//     |  |      |  |       |  |      |  |
-//     +--+      +--+       +--+------+--+
+//   layer 3  THE ROUNDED CORNERS
+//            opening becomes the real port, port_r rounding and all. The only
+//            new material is four small fillets, each sitting on the solid
+//            rectangle below. The curve is never drawn in air.
+//
+//      layer 1            layer 2            layer 3
+//   +--+      +--+     +--+------+--+     +--+------+--+
+//   |  |      |  |     |  |      |  |     |  /      \  |
+//   |  |  gap |  |     |  | rect |  |     |  | port |  |
+//   |  |      |  |     |  |      |  |     |  \      /  |
+//   +--+      +--+     +--+------+--+     +--+------+--+
+//     two strips        sides close        corners added
 //
 bridge_slot = true; // false = lip closes in one go, and the hole is drawn in air
-layer_h     = 0.2;  // must match the slicer, or the slot lands mid-layer
+layer_h     = 0.2;  // must match the slicer, or the stages land mid-layer
 
 /* [Printing] */
 flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed
@@ -154,7 +160,7 @@ eps = 0.01;         // nudge for cut solids that would otherwise end exactly
                     // on another cut's plane -- a shared coplanar face is
                     // what breaks 2-manifoldness
 
-slot_n      = bridge_slot ? 1 : 0;              // layers the slot consumes
+slot_n      = bridge_slot ? 2 : 0;              // staged layers before the lip
 pocket_z    = lip_t + slot_n * layer_h;         // where the pocket floor sits
 pocket_d    = plate_t - pocket_z;               // usable pocket depth
 port_recess = lip_t + ((prot_face == "front") ? prot_t : 0);
@@ -215,20 +221,28 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Stage 1: one layer where the opening is a CROSS — the port slotted
-        // out to full height AND full width. What survives is four small
-        // corner pieces, each bounded by the pocket's own rounded corner, so
-        // each is a little rounded triangle hanging off the pocket wall.
+        // The three staged layers. Ordered from the LIP outward, which is the
+        // reverse of print order — printed back-face-down the pocket comes
+        // first, so layer 1 below is the one nearest the pocket and prints
+        // first, and the rounded lip prints last.
         //
-        // Those four corners are the anchors stage 2 bridges between. Squares,
-        // not rounded — a rounded slot would put an arc back in mid-air, which
-        // is the exact thing this removes.
-        if (bridge_slot)
+        // Each cut runs one layer and is a superset of the one under it, so the
+        // larger opening simply wins at its own height. Nothing here relies on
+        // the order the cuts are written in.
+        if (bridge_slot) {
+            // layer 2 — the RECTANGLE. Square corners, port-sized. Sits
+            // between the slot and the rounded lip, and is what lets layer 3
+            // add nothing but curves.
             translate([0, 0, lip_t])
-                linear_extrude(layer_h + eps) {
-                    square([pw, bh], center = true);   // slot up the Y axis
-                    square([bw, ph], center = true);   // slot across the X axis
-                }
+                linear_extrude(layer_h + eps)
+                    square([pw, ph], center = true);
+
+            // layer 1 — THE TWO BRIDGE. Full-height slot, so what gets laid is
+            // two strips spanning bh wall-to-wall, anchored at both ends.
+            translate([0, 0, lip_t + layer_h])
+                linear_extrude(layer_h + eps)
+                    square([pw, bh], center = true);
+        }
 
         // Rear relief pocket for the connector's raised boss, above the slot.
         // Extruded with cut_len so it still reaches the rear face on the
@@ -297,13 +311,12 @@ edge_dist  = (plate_w - screw_span - sd) / 2;
 corner_min = corner_r * (1 - 1 / sqrt(2));
 // Stage 1 leaves four corner pieces. They are not bridges — each hangs off the
 // pocket's own rounded corner — so what matters is how far each reaches in.
-corner_x   = (bw - pw) / 2;      // corner piece width
-corner_y   = (bh - ph) / 2;      // corner piece height
+bridge_1   = bh;   // layer 1: two strips span this, wall to wall
+bridge_2   = pw;   // layer 2: the two remaining sides span this, onto the strips
 // Stage 2 then bridges BETWEEN those corners: the top and bottom arms span pw
 // in X, the left and right arms span ph in Y. Cutting the cross both ways is
 // what turns the old single 8.8 mm span into a 9.6 and a 3.9.
-bridge_x   = pw;                 // top/bottom arms, corner to corner
-bridge_y   = ph;                 // left/right arms, corner to corner
+bridge_3   = port_r; // layer 3: only fillets of this radius, on solid material
 prot_screw_gap = screw_span / 2 - sd / 2 - prot_w / 2;
 
 notch_over_pocket = notch_r > 0 && abs(notch_x) < bw / 2 + nr;
@@ -326,14 +339,14 @@ echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
 echo(str("two-bridge trick   : ", bridge_slot ? "ON" : "OFF",
-         bridge_slot ? str(" -- cross ", pw, " x ", bh, " + ", bw, " x ", ph,
-                           " for ", layer_h, " mm")
+         bridge_slot ? str(" -- ", slot_n + 1, " staged layers of ", layer_h, " mm")
                      : " -- the port outline is drawn in mid-air"));
-echo(str("  stage 1 corners  : ", corner_x, " x ", corner_y,
-         " mm, rounded r", boss_r,
-         "  (4 pieces, each hanging off the pocket corner)"));
-echo(str("  stage 2 spans    : X ", bridge_x, " mm, Y ", bridge_y,
-         " mm  (arms bridge corner to corner)"));
+echo(str("  L1 two bridge    : slot ", pw, " x ", bh,
+         "  -> two strips spanning ", bridge_1, " mm, anchored both ends"));
+echo(str("  L2 rectangle     : ", pw, " x ", ph,
+         " square  -> the other two sides bridge ", bridge_2, " mm"));
+echo(str("  L3 rounded       : r", bridge_3,
+         " fillets only, laid on the solid rectangle below"));
 echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", edge_dist, " mm"));
@@ -423,19 +436,18 @@ assert(abs(lip_t / layer_h - round(lip_t / layer_h)) < 1e-6,
 assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
        "prot_face=\"back\": the rear pocket swallows the protrusion - it would print as two slivers");
 
-// The trick only helps if stage 2's arms are actually bridgeable. ~10 mm is the
-// practical ceiling on a well-cooled machine (docs/fdm-design-rules.md §3).
-assert(!bridge_slot || bridge_x <= 10,
-       "stage-2 X arms are over 10 mm - they will sag onto the port");
-assert(!bridge_slot || bridge_y <= 10,
-       "stage-2 Y arms are over 10 mm - they will sag onto the port");
+// Both spans must be bridgeable. ~10 mm is the practical ceiling on a
+// well-cooled machine (docs/fdm-design-rules.md §3).
+assert(!bridge_slot || bridge_1 <= 10,
+       "L1 strips span over 10 mm - they will sag");
+assert(!bridge_slot || bridge_2 <= 10,
+       "L2 sides span over 10 mm - they will sag onto the port");
 
-// The four corner pieces are the anchors everything else lands on. Cutting the
-// cross too generously eats them, and they vanish without any span changing —
-// the render would still succeed and stage 2 would have nothing to bridge to.
-assert(!bridge_slot || corner_x >= 0.9,
-       "stage-1 corner pieces are under 2 perimeters wide - nothing to anchor to");
-assert(!bridge_slot || corner_y >= 0.9,
-       "stage-1 corner pieces are under 2 perimeters tall - nothing to anchor to");
+// The staging only means anything while each layer is genuinely different from
+// the one under it. If the slot is no taller than the port, L1 and L2 are the
+// same shape; if the port is not rounded, L2 and L3 are. Either way the render
+// still succeeds and silently does less than it claims.
 assert(!bridge_slot || bh > ph,
-       "bridge slot is not taller than the port - there is nothing to stage");
+       "L1 slot is no taller than the port - L1 and L2 would be the same layer");
+assert(!bridge_slot || port_r > 0,
+       "port_r is 0 - L2 and L3 would be the same layer, so drop to one stage");
