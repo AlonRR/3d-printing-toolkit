@@ -1,73 +1,91 @@
 // ---------------------------------------------------------------------------
 // USB-C panel plate — a rectangle with three holes.
 //
-//   centre  : two-level opening — a thin lip at the front sized to the PORT,
-//             opening out behind into a relief pocket for the connector's boss
+//   centre  : two-level opening — a thin lip sized to the PORT, opening out
+//             behind into a relief pocket for the connector's boss
 //   2 sides : screw holes
 //
 // Fits the commodity IP67-style panel-mount USB-C feedthrough (the moulded
 // black flange with a raised rounded-rect boss and one screw hole each side).
 //
-// ORIENTATION: z = 0 is the FRONT face — the visible one, outside the case.
-//              z = plate_t is the BACK, facing the connector.
-//              Print FRONT FACE DOWN on the bed. See "Printing" below.
+// ORIENTATION
+//   AUTHORED with the plate body spanning z = 0 .. plate_t, z = 0 being the
+//   face that ends up outside the case. With the default prot_face = "front"
+//   the raised rectangle extends to z = -prot_t, so the visible face is at
+//   -prot_t, not 0.
+//
+//   EXPORTED rotated: flip_for_print puts the BACK face on the bed.
+//   PRINT BACK FACE DOWN — the STL already arrives that way, so do NOT flip it
+//   again in the slicer. Front-face-down lands the protrusion on the bed and
+//   leaves the plate rim overhanging ~4.6 mm in mid-air.
 // ---------------------------------------------------------------------------
 
 /* [The opening in the case panel — what the plate has to cover] */
 gap_w   = 23.4;     // MEASURED. Width of the opening.
 gap_h   = 15.0;     // MEASURED. Height of the opening.
 panel_t = 0.6;      // MEASURED. Sheet thickness of the case panel.
-overlap = 0.2;      // how far the plate laps onto the panel, all the way round
+overlap = 2.5;      // how far the plate laps onto the panel, all the way round.
+                    // The screws pass through open air, so this lap is the ONLY
+                    // thing retaining the plate.
+                    // Hard floor: corner_r * (1 - 1/sqrt(2)). Below that the
+                    // rounded corners fall INSIDE the aperture and leave four
+                    // open gaps into the case even though every edge "covers".
 
 /* [Plate outline — derived, don't set these directly] */
-// The plate must cover the opening, AND be wide enough to keep both screw
-// holes inside its own edge. The screws span 22.70 mm outer-to-outer, so
-// anything narrower than that plus a margin breaks out of the side.
+// The plate must cover the opening AND keep both screw holes inside its own
+// edge with enough material to survive a screw being tightened. The screws span
+// 22.70 mm outer-to-outer; that plus 1.5 mm a side is the floor.
 screw_envelope = 22.70;                 // measured, outer edge to outer edge
-min_w = screw_envelope;// + 2 * 1;       // + 1.5 mm of material outboard
+min_w = screw_envelope + 2 * 1.5;
 plate_w = max(gap_w + 2 * overlap, min_w);
 plate_h = gap_h + 2 * overlap;
 
-plate_t  = 2.5;     // thickness
+// plate_t is chosen so every internal transition lands ON a layer boundary in
+// the print orientation. At 0.2 mm layers, 2.4 puts the pocket floor, both
+// ledges and the lip at print z 1.2 / 1.4 / 1.6 / 2.4. At 2.5 they all land
+// mid-layer and the whole ledge scheme resolves on a slicer tie-break.
+plate_t  = 2.4;
 corner_r = 1.5;     // rounding on the outline corners
 
-/* [Centre opening — front lip, sized to the PORT] */
-// This is the hole you actually see. It closes right down around the USB-C
-// receptacle so there is no open gap around it.
+/* [Centre opening — lip, sized to the PORT] */
 // USB-C receptacle shell is 8.94 x 3.16 mm, fixed by the USB spec; the plug's
 // metal tongue is 8.34 x 2.56 and passes through easily at this size.
-port_w  = 9.3;      // Set to hug the 8.94 mm receptacle shell with ~0.18 mm a
-                    // side. Clears the 8.34 mm plug tongue with room, so the
-                    // earlier "could be too narrow for a cable" risk is gone.
-port_h  = 3.6;      // Ditto against the 3.16 mm shell height.
+port_w  = 9.3;      // hugs the 8.94 mm receptacle shell with ~0.18 mm a side
+port_h  = 3.6;      // ditto against the 3.16 mm shell height
 port_r  = 2.0;      // clamped to a stadium shape by rrect2d()
-lip_t   = 0.8;      // thickness of the thin front lip. The rest of plate_t is
-                    // relief pocket behind it.
-lead_in = 0.5;      // 45 deg chamfer on the front face, guides a plug in and
-                    // fights elephant's foot. Set to 0 for a square edge.
+lip_t   = 0.8;      // thickness of the lip itself. NOT how far a plug must
+                    // reach: with a front protrusion the port sits
+                    // lip_t + prot_t back. The echo reports that figure.
+lead_in = 0.5;      // 45 deg chamfer on the outermost face, guides a plug in.
+                    // Printed back-face-down this is a TOP-face feature, so it
+                    // is a lead-in only — it does not relieve elephant's foot.
 
 /* [Centre opening — rear relief, clears the connector's BOSS] */
-// The connector's raised rounded-rect boss nests into this pocket so the plate
-// can still sit flat on the panel.
 boss_w = 13.4;      // <<CONFIRM>> width NOT yet measured, still photo-scaled
 boss_h = 8.0;       // MEASURED. Height of the connector's raised boss.
 boss_r = 2.0;
+boss_clear = 0.25;  // REAL clearance per side, on top of hole_comp.
+                    // hole_comp only cancels print shrink — it lands the
+                    // feature ON nominal, which for a pocket means line-to-line
+                    // on the boss. Fit needs its own allowance.
+pocket_chamfer = 0.4;   // chamfer at the pocket mouth. That mouth is the bed
+                        // face, so this is free and eases the boss in. 0 = none
 
 /* [Raised rectangle protrusion] */
-// A rectangular boss standing proud of the plate, with the port opening
-// running through it. MEASURED 14.7 x 6.1.
 prot_w = 14.7;      // MEASURED
 prot_h = 6.1;       // MEASURED
 prot_t = 1.5;       // <<CONFIRM>> how far it stands proud. NOT measured.
 prot_r = 1.5;       // corner rounding
 prot_face = "front";  // "front" = the visible side (-Z), "back" = toward the
-                      // connector (+Z). See the note in "Printing".
+                      // connector (+Z)
 
 /* [Half-circle notches in the Y edges] */
 // Semicircular cutouts bitten out of the top and bottom edges.
-notch_r = 2.5;      // radius. Set to 0 to remove them.
-notch_x = 0;        // X offset from centre. Both notches share it, so a
-                    // non-zero value shifts the pair together; use
+// Sized so the cut — INCLUDING hole_comp — still leaves lap on the panel.
+// At overlap 2.5 the ceiling is about 1.9; beyond that the notch opens a hole
+// straight into the case and severs the lap across its whole chord.
+notch_r = 1.8;      // radius. Set to 0 to remove them.
+notch_x = 0;        // X offset from centre. Both notches share it; use
                     // notch_mirror to put one each side instead.
 notch_mirror = false;   // true -> top notch at +notch_x, bottom at -notch_x
 
@@ -82,26 +100,51 @@ screw_d    = 2.9;   // MEASURED. Clearance for M2.5. If the screws instead
                     // pilot rather than leaving it at clearance.
 screw_span = 19.8;  // MEASURED. THE critical dimension.
 cbore_d    = 0;     // counterbore diameter, 0 = none. M2.5 socket head = 4.5
-cbore_h    = 1.2;   // counterbore depth
+cbore_h    = 1.2;   // counterbore depth, measured from the PLATE face
 
 /* [Pocket -> lip transition] */
-// Two straight ledges, one layer each, giving the pocket ceiling something to
-// bridge from instead of reaching the whole way off the lip.
-//   layer 1 : a plain rectangle
-//   layer 2 : two lines running in Y only, one at each end   | |
-step     = 0.2;     // how far layer 1 steps out per side. 0 = no ledges
-layer_h  = 0.2;     // must match the slicer, or a ledge lands mid-layer
-line_w   = 0.45;    // width of each layer-2 line. One extrusion by default
-line_len = 8.0;     // length of each line along Y
+// Two ledges, one layer each, giving the pocket ceiling something to bridge
+// from instead of reaching the whole way off the lip.
+//   layer 1 : a rounded step, same profile as the lip
+//   layer 2 : two relief lines
+step      = 0.2;    // how far layer 1 steps out per side. 0 = no ledges
+layer_h   = 0.2;    // must match the slicer, or a ledge lands mid-layer
+line_w    = 0.45;   // width of each layer-2 line. One extrusion by default
+line_len  = 8.0;    // length of each line
+line_axis = "x";    // "x" -> lines at the X ends, running along Y  ( | | )
+                    // "y" -> lines at the Y ends, running along X
+                    // These relieve the axis they sit at the ends of. The echo
+                    // reports which axis actually governs the reach; "x" is the
+                    // shape asked for, not the one the numbers would pick.
 
 /* [Printing] */
-flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed.
-                        // Set false to work in design orientation (front at
-                        // z = 0), which is what all the comments describe.
+flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed
 hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
                     // arc effect). Every hole is grown by this on each side.
                     // MK3S+ / 0.4 nozzle: 0.15 is a good starting point.
 $fn = 64;
+
+// ---------------------------------------------------------------------------
+// AS-CUT dimensions. Every cut, echo and assert below uses these, so what gets
+// audited is the geometry actually produced. Computing a web from nominal while
+// cutting with hole_comp reports it 0.15-0.30 mm better than it really is.
+// ---------------------------------------------------------------------------
+pw  = port_w  + 2 * hole_comp;                  // lip opening, as cut
+ph  = port_h  + 2 * hole_comp;
+bw  = boss_w  + 2 * (hole_comp + boss_clear);   // pocket, as cut
+bh  = boss_h  + 2 * (hole_comp + boss_clear);
+sd  = screw_d + 2 * hole_comp;                  // screw hole, as cut
+nr  = notch_r + hole_comp;                      // notch radius, as cut
+cbd = cbore_d + 2 * hole_comp;                  // counterbore, as cut
+eps = 0.01;         // nudge for cut solids that would otherwise end exactly
+                    // on another cut's plane -- a shared coplanar face is
+                    // what breaks 2-manifoldness
+
+ledge_n     = (step > 0) ? 2 : 0;               // ledge layers consumed
+pocket_z    = lip_t + ledge_n * layer_h;        // where the pocket floor sits
+pocket_d    = plate_t - pocket_z;               // usable pocket depth
+port_recess = lip_t + ((prot_face == "front") ? prot_t : 0);
+top_z       = plate_t + ((prot_face == "back") ? prot_t : 0);
 
 // ---------------------------------------------------------------------------
 
@@ -120,8 +163,9 @@ module rrect(w, h, t, r) {
     linear_extrude(height = t) rrect2d(w, h, r);
 }
 
-// Tapered opening, WIDE at z = 0 and narrowing to nominal at z = lead.
-// Printed front-face-down this is a 45 deg overhang, which prints cleanly.
+// Tapered opening, WIDE at z = 0 and narrowing to nominal at z = lead. On
+// whichever face it sits, the hole is largest at that face and closes inward,
+// so it is a 45 deg feature rather than an unsupported ledge.
 module chamfer_flare_down(w, h, r, lead) {
     hull() {
         linear_extrude(height = 0.01)
@@ -133,17 +177,11 @@ module chamfer_flare_down(w, h, r, lead) {
 }
 
 module usbc_panel_plate() {
-    pw = port_w + 2 * hole_comp;
-    ph = port_h + 2 * hole_comp;
-    bw = boss_w + 2 * hole_comp;
-    bh = boss_h + 2 * hole_comp;
-    sd = screw_d + 2 * hole_comp;
-
-    // With a front protrusion the visible face moves out to -prot_t, so every
-    // cut has to start beyond it rather than at the old z = 0.
-    pt = (prot_face == "front") ? prot_t : 0;
+    // With a front protrusion the outermost face moves out to -prot_t, so cuts
+    // that must pass through everything start beyond it.
+    pt      = (prot_face == "front") ? prot_t : 0;
     front_z = -pt;
-    cut_lo = front_z - 1;
+    cut_lo  = front_z - 1;
     cut_len = pt + plate_t + ((prot_face == "back") ? prot_t : 0) + 2;
 
     difference() {
@@ -159,162 +197,206 @@ module usbc_panel_plate() {
                     rrect(prot_w, prot_h, prot_t + 0.01, prot_r);
         }
 
-        // Front lip opening — runs the full depth, through the protrusion too;
-        // the rear pocket below then opens it out from lip_t upward.
+        // Lip opening — runs the full depth, through the protrusion too.
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Two ledges, one layer each, working outward from the lip.
+        // Two ledges, one layer each. Each is extruded to its OWN height and
+        // stops exactly where the pocket begins, rather than relying on being
+        // swallowed by a larger cut above — that containment silently breaks if
+        // step, line_len, line_w or boss_r is tweaked.
         if (step > 0) {
-            // Layer 1 - a plain rectangle.
+            // Layer 1 — same rounded profile as the lip, so the step is `step`
+            // on every side rather than only along the flat mid-sides.
             translate([0, 0, lip_t])
-                linear_extrude(plate_t)
-                    square([pw + 2 * step, ph + 2 * step], center = true);
+                linear_extrude(2 * layer_h + eps)
+                    rrect2d(pw + 2 * step, ph + 2 * step, port_r + step);
 
-            // Layer 2 - two lines running in Y only, one at each end.  | |
-            for (s = [-1, 1])
-                translate([s * (pw / 2 + step + line_w / 2), 0,
-                           lip_t + layer_h])
-                    linear_extrude(plate_t)
-                        square([line_w, line_len], center = true);
+            // Layer 2 — two relief lines.
+            translate([0, 0, lip_t + layer_h])
+                linear_extrude(layer_h + eps)
+                    for (s = [-1, 1])
+                        translate(line_axis == "x"
+                                    ? [s * (pw / 2 + step + line_w / 2 - eps), 0]
+                                    : [0, s * (ph / 2 + step + line_w / 2 - eps)])
+                            square(line_axis == "x" ? [line_w, line_len]
+                                                    : [line_len, line_w],
+                                   center = true);
         }
 
         // Rear relief pocket for the connector's raised boss, above the ledges.
-        translate([0, 0, lip_t + (step > 0 ? 2 * layer_h : 0)])
-            rrect(bw, bh, plate_t, boss_r);
+        // Extruded with cut_len so it still reaches the rear face on the
+        // prot_face = "back" branch.
+        translate([0, 0, pocket_z])
+            rrect(bw, bh, cut_len, boss_r);
 
-        // Lead-in chamfer, on whichever face is now the outermost one.
+        // Chamfer at the pocket mouth. Printed back-face-down that mouth is the
+        // bed face, so this costs nothing and eases the boss in.
+        if (pocket_chamfer > 0)
+            translate([0, 0, top_z + 0.01])
+                mirror([0, 0, 1])
+                    chamfer_flare_down(bw, bh, boss_r, pocket_chamfer);
+
+        // Lead-in chamfer, on whichever face is the outermost one.
         if (lead_in > 0)
             translate([0, 0, front_z - 0.01])
                 chamfer_flare_down(pw, ph, port_r, lead_in);
 
         // Half-circle cutouts in the top and bottom (Y) edges. The cylinder is
         // centred ON the edge, so exactly half of it lands inside the plate.
-        // Cut through the protrusion too, so it does not leave a stub behind.
         if (notch_r > 0)
             for (s = [-1, 1])
                 translate([notch_mirror ? s * notch_x : notch_x,
                            s * plate_h / 2,
                            cut_lo])
-                    cylinder(h = cut_len, r = notch_r + hole_comp);
+                    cylinder(h = cut_len, r = nr);
 
         // Screw holes.
         for (s = [-1, 1]) {
             translate([s * screw_span / 2, 0, cut_lo])
                 cylinder(h = cut_len, d = sd);
 
+            // Counterbore is anchored to the PLATE face, not the protrusion's
+            // outer face — otherwise the protrusion swallows it and it becomes
+            // a silent no-op whenever one exists.
             if (cbore_d > 0)
-                translate([s * screw_span / 2, 0, front_z - 0.01])
-                    cylinder(h = cbore_h, d = cbore_d + 2 * hole_comp);
+                translate([s * screw_span / 2, 0, -0.01])
+                    cylinder(h = cbore_h + 0.01, d = cbd);
         }
     }
 }
 
-// Rotate 180 about X so the BACK face lands on the bed. That is the
-// orientation this actually prints in, so the STL now arrives already
-// oriented instead of needing a flip in the slicer.
-// The part spans -prot_t .. plate_t before rotation, so lifting by plate_t
-// puts its lowest point back on z = 0.
+// Rotate 180 about X so the BACK face lands on the bed — the orientation this
+// actually prints in, so the STL arrives already oriented. The part's top is
+// top_z, which includes prot_t again when the protrusion is on the back;
+// lifting by that puts its lowest point on z = 0.
 if (flip_for_print)
-    translate([0, 0, plate_t])
+    translate([0, 0, top_z])
         rotate([180, 0, 0])
             usbc_panel_plate();
 else
     usbc_panel_plate();
 
 // --- sanity check -----------------------------------------------------------
-pocket_d = plate_t - lip_t;
-web_side = (screw_span - screw_d) / 2 - boss_w / 2;
-web_topbot = (plate_h - boss_h) / 2;
+// All computed from the AS-CUT names above.
+web_side   = (screw_span - sd) / 2 - bw / 2;
+web_topbot = (plate_h - bh) / 2;
+edge_dist  = (plate_w - screw_span - sd) / 2;
+corner_min = corner_r * (1 - 1 / sqrt(2));
+reach_x    = (bw - (pw + 2 * step)) / 2;
+reach_y    = (bh - (ph + 2 * step)) / 2;
+prot_screw_gap = screw_span / 2 - sd / 2 - prot_w / 2;
+
+notch_over_pocket = notch_r > 0 && abs(notch_x) < bw / 2 + nr;
+notch_web         = plate_h / 2 - nr - bh / 2;
+notch_dx          = abs(abs(notch_x) - screw_span / 2);
+notch_screw_gap   = sqrt(notch_dx * notch_dx + (plate_h / 2) * (plate_h / 2))
+                    - nr - sd / 2;
+notch_vs_gap      = plate_h / 2 - nr - gap_h / 2;
 
 echo(str("plate              : ", plate_w, " x ", plate_h, " x ", plate_t, " mm"));
-echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap, " mm"));
-echo(str("front lip          : ", port_w, " x ", port_h, " mm, ", lip_t, " mm thick"));
-echo(str("rear pocket        : ", boss_w, " x ", boss_h, " mm, ", pocket_d, " mm deep"));
-// How far the pocket ceiling has to reach inward, and how that reach is split.
-// The governing axis is whichever of X/Y needs the bigger jump.
-echo(str("ceiling reach      : X ", (boss_w - port_w) / 2,
-         " mm, Y ", (boss_h - port_h) / 2, " mm"));
-echo(str("ledges             : ", step, " mm/side, ", layer_h,
-         " mm tall each -- L1 rectangle, L2 two Y lines"));
+echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap,
+         " mm (corner floor ", corner_min, ")"));
+echo(str("port opening       : ", pw, " x ", ph, " mm as cut"));
+echo(str("port recess        : ", port_recess, " mm a plug must reach in",
+         (prot_face == "front" && prot_t > 0)
+            ? str(" (lip ", lip_t, " + protrusion ", prot_t, ")") : ""));
+echo(str("rear pocket        : ", bw, " x ", bh, " mm as cut, ", pocket_d,
+         " mm deep, ", boss_clear, " mm/side clearance on the boss"));
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
+echo(str("ceiling reach      : X ", reach_x, " mm, Y ", reach_y,
+         " mm (from the ledge edge, not the lip)"));
+echo(str("ledges             : ", step, " mm/side, ", layer_h,
+         " mm tall each, lines on ", line_axis, ", using ", ledge_n * layer_h,
+         " mm of pocket depth"));
 echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
-echo(str("outboard of screw  : ", (plate_w - screw_span - screw_d) / 2, " mm"));
+echo(str("outboard of screw  : ", edge_dist, " mm"));
 
-// The raised rectangle. Its own frame around the port is the thing most likely
-// to come out too thin, because prot_h and port_h are close together.
 if (prot_t > 0) {
-    prot_frame_x = (prot_w - port_w) / 2;
-    prot_frame_y = (prot_h - port_h) / 2;
-    prot_screw_gap = screw_span / 2 - screw_d / 2 - prot_w / 2;
     echo(str("protrusion         : ", prot_w, " x ", prot_h, " x ", prot_t,
              " mm on the ", prot_face));
-    echo(str("  frame beside port: ", prot_frame_x, " mm"));
-    echo(str("  frame over/under : ", prot_frame_y, " mm"));
+    echo(str("  frame beside port: ", (prot_w - pw) / 2, " mm"));
+    echo(str("  frame over/under : ", (prot_h - ph) / 2, " mm"));
     echo(str("  prot -> screw    : ", prot_screw_gap, " mm"));
 }
 
-// The Y-edge notches eat into the same web that sits above and below the rear
-// pocket, so they are only safe while that web has material to spare.
-notch_over_pocket = notch_r > 0 && abs(notch_x) < boss_w / 2 + notch_r;
-notch_web = plate_h / 2 - notch_r - boss_h / 2;
-notch_dx = abs(abs(notch_x) - screw_span / 2);
-notch_screw_gap = sqrt(notch_dx * notch_dx + (plate_h / 2) * (plate_h / 2))
-                  - notch_r - screw_d / 2;
 if (notch_r > 0) {
-    echo(str("notch              : r ", notch_r, " mm on both Y edges at x = ",
+    echo(str("notch              : r ", notch_r, " mm (", nr, " as cut) at x = ",
              notch_x, notch_mirror ? " (mirrored)" : ""));
     echo(str("  notch -> pocket  : ",
              notch_over_pocket ? str(notch_web, " mm")
                                : "clear in X, does not overlap the pocket"));
     echo(str("  notch -> screw   : ", notch_screw_gap, " mm"));
-    // Does the notch stay inside the lap, or bite through into the case
-    // opening? Positive = still covered plate. Negative = the notch opens a
-    // hole straight into the case at that point.
-    notch_vs_gap = plate_h / 2 - notch_r - gap_h / 2;
-    echo(str("  notch vs opening : ", notch_vs_gap, " mm ",
-             notch_vs_gap >= 0
-               ? "(stays within the lap)"
-               : "(BREAKS THROUGH into the case opening)"));
+    echo(str("  lap left at notch: ", notch_vs_gap, " mm"));
 }
 
-// Do the screw holes land on panel material, or over the opening?
-// If the screw envelope is narrower than the opening, the screws pass through
-// open air. The plate is then clamped to the CONNECTOR, not bolted to the
-// panel, and the sheet metal is trapped between the plate's lap and the
-// connector's flange. That still works, but it means the lap is doing all the
-// retention -- so don't shrink `overlap` in that case.
 screws_over_air = screw_envelope < gap_w;
 echo(str("screws land on     : ",
          screws_over_air ? "OPEN AIR - plate clamps to the connector, panel trapped by the lap"
                          : "panel material - plate bolts through the panel"));
 
-assert(screw_span / 2 - screw_d / 2 > boss_w / 2,
-       "screw holes overlap the rear relief pocket - widen screw_span or narrow boss_w");
-assert(plate_w >= gap_w + 2 * overlap - 0.01,
-       "plate is narrower than the opening it must cover");
-assert(lip_t > 0 && lip_t < plate_t,
-       "lip_t must be between 0 and plate_t");
-assert(port_w < boss_w && port_h < boss_h,
-       "front lip must be smaller than the rear pocket, or there is no lip");
-assert(lead_in < lip_t,
-       "lead_in eats the whole lip - reduce lead_in or raise lip_t");
+// --- guards -----------------------------------------------------------------
+// Each of these blocks a render. Anything that merely reports is above: a check
+// that prints a warning and then builds anyway is not a check.
+
+// Coverage. The flat-edge test alone is not enough — rounded corners pull the
+// plate inside the aperture diagonally even when every edge nominally covers.
+assert(overlap > corner_min,
+       "overlap is under corner_r*(1-1/sqrt(2)) - the rounded corners fall inside the aperture");
+assert(plate_h >= gap_h + 2 * overlap - 0.01,
+       "plate is shorter than the opening it must cover");
+
+// Fasteners.
+assert(edge_dist >= 1.35,
+       "material outboard of the screw holes is under 3 perimeters (1.35 mm) as cut");
+assert(web_side > 1.0,
+       "web between the screw holes and the rear pocket is under 1.0 mm as cut");
+
+// Centre opening.
+assert(lip_t > 0 && lip_t < plate_t, "lip_t must be between 0 and plate_t");
+assert(pw < bw && ph < bh, "lip must be smaller than the pocket, or there is no lip");
+assert(lead_in < ((prot_face == "front") ? prot_t : 0) + lip_t,
+       "lead_in eats through the protrusion and the whole lip");
+assert(step == 0 || ledge_n * layer_h < plate_t - lip_t,
+       "the ledges are deeper than the space between lip and back face");
+assert(pocket_d > 0, "no pocket left once the ledges are taken out");
+assert(pocket_chamfer < pocket_d, "pocket chamfer is deeper than the pocket");
+
+// Notches.
 assert(notch_r == 0 || notch_r < plate_h / 2,
        "notch radius is at least half the plate height - it would cut the plate in two");
+assert(notch_r == 0 || notch_vs_gap > 0.4,
+       "Y-edge notch breaks through into the case opening - shrink notch_r or raise overlap");
 assert(!notch_over_pocket || notch_web > 0.8,
        "Y-edge notch cuts into the rear pocket - shrink notch_r, offset notch_x, or raise overlap");
 assert(notch_r == 0 || notch_screw_gap > 0.8,
        "Y-edge notch breaks into a screw hole - shrink notch_r or move notch_x");
+
+// Protrusion.
 assert(prot_face == "front" || prot_face == "back",
        "prot_face must be \"front\" or \"back\"");
-assert(prot_t == 0 || (prot_w > port_w && prot_h > port_h),
+assert(prot_t == 0 || (prot_w > pw && prot_h > ph),
        "protrusion is not bigger than the port opening - it would vanish");
 assert(prot_t == 0 || (prot_w <= plate_w && prot_h <= plate_h),
        "protrusion is bigger than the plate it stands on");
-assert(prot_t == 0 || screw_span / 2 - screw_d / 2 - prot_w / 2 > 0.4,
+assert(prot_t == 0 || prot_screw_gap > 0.4,
        "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
-assert(step == 0 || 2 * layer_h < pocket_d,
-       "the two ledges are deeper than the pocket - reduce layer_h or raise plate_t");
+
+// Layer alignment. Every internal transition should land on a layer boundary in
+// the print orientation, or the ledge scheme resolves on a slicer tie-break.
+assert(abs(plate_t / layer_h - round(plate_t / layer_h)) < 1e-6,
+       "plate_t is not a whole number of layers - internal steps will land mid-layer");
+assert(abs(lip_t / layer_h - round(lip_t / layer_h)) < 1e-6,
+       "lip_t is not a whole number of layers");
+
+assert(line_axis == "x" || line_axis == "y", "line_axis must be \"x\" or \"y\"");
+
+// On the "back" branch the rear pocket and the protrusion occupy the same
+// space, and the pocket is the larger of the two in Y (8.8 vs 6.1) — it eats
+// the protrusion's middle and leaves two slivers. The part still renders as a
+// valid manifold solid, which is exactly why this needs to be a guard.
+assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
+       "prot_face=\"back\": the rear pocket swallows the protrusion - it would print as two slivers");

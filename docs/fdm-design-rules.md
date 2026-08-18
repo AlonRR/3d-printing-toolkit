@@ -192,65 +192,57 @@ checking geometry, and PLA lies to you least.
 
 ## Applied: the USB-C panel plate
 
-Audit of [`models/usbc-panel-plate/`](../models/usbc-panel-plate/) as it stands,
-against §1 and §4. The `.scad` echoes all of these on every render.
+Audit of [`models/usbc-panel-plate/`](../models/usbc-panel-plate/), against §1
+and §4. The `.scad` echoes all of these on every render — and, since the review
+of 18 Aug 2026, computes them from the **as-cut** dimensions rather than the
+nominal ones.
 
-| Feature | Value | Perimeters | Verdict |
+| Feature | As cut | Perimeters | Verdict |
 |---|---:|---:|---|
-| `web above/below` | 3.70 mm | 8.2 | ✅ |
-| `web beside pocket` | 1.75 mm | 3.9 | ✅ |
-| `frame over/under` | 1.25 mm | 2.8 | ⚠️ lands between 2 and 3 — quantise to **1.35** |
-| `notch -> pocket` | 1.20 mm | 2.7 | ⚠️ same, quantise to **1.35** |
-| `prot -> screw` | 1.10 mm | 2.4 | ⚠️ same, quantise to **1.35** |
-| **`outboard of screw`** | **0.55 mm** | **1.2** | ❌ **one perimeter, and a screw pulls directly on it** |
-| `lip_t` | 0.80 mm | 5 layers | ✅ exactly `0.2 + 4 × 0.15` |
+| `web above/below` | 5.60 mm | 12.4 | ✅ |
+| `outboard of screw` | 2.70 mm | 6.0 | ✅ |
+| `frame beside port` | 2.55 mm | 5.7 | ✅ |
+| `web beside pocket` | 1.20 mm | 2.7 | ⚠️ between 2 and 3 perimeters |
+| `frame over/under` | 1.10 mm | 2.4 | ⚠️ same |
+| `prot -> screw` | 0.95 mm | 2.1 | ⚠️ same |
+| `lap left at notch` | 0.55 mm | — | ⚠️ thin, but it is lap not structure |
+| `lip_t` | 0.80 mm | 4 layers | ✅ whole layers at 0.2 mm |
 
-**`outboard of screw` is the one that will actually fail.** It is a single
-extrusion holding each screw hole to the plate edge, loaded in the exact
-direction that splits it. §4 wants 1.35 mm there; it has 0.55.
+### The trap this section exists to record
 
-It reads as acceptable only because the `min_w` margin on line 27 of the `.scad`
-is commented out — that guard existed to enforce this rule. Three ways out:
+`outboard of screw` used to read **0.55 mm** here and was graded a failure. It
+was worse than that: the echo computed `(plate_w - screw_span - screw_d) / 2`
+from the *nominal* hole, while the cut was grown by `hole_comp`. The real figure
+was **0.40 mm** — under a single extrusion.
 
-1. **Restore the margin** → plate 25.7 mm wide, 1.5 mm outboard. ✅
-2. **Edge-open U-slots** → nothing left to split; the plate slides onto the
-   screws. Best if the plate must stay 23.8 mm.
-3. Accept it, hand-tighten, treat the first print as disposable.
+> **A diagnostic that measures something adjacent to what it claims is worse
+> than no diagnostic.** It had been quoted a dozen times as evidence the part
+> was merely marginal.
 
-The three ⚠️ rows are not failures, just wasted material — each is a void the
-slicer has to paper over. Rounding them to 1.35 mm makes them genuinely stronger
-*and* faster to print.
+Every echo and assert in that model now derives from as-cut names defined once
+at file scope. The fix was not the arithmetic; it was removing the *opportunity*
+for the audited number and the built geometry to disagree.
 
-### The pocket ceiling can be staircased instead of bridged
+### Why the staircase was abandoned
 
-Printed back-face-down, the step from the rear pocket to the front lip is a flat
-90° ceiling, and the lip has to bridge 8 mm across it. §3 says that jump can be
-staircased at 0.2 mm per layer instead — and here the depth happens to be there:
+Printed back-face-down, the step from the rear pocket to the lip is a flat 90°
+ceiling. §3's staircase would need `reach × (layer_h / step)` of depth:
 
 ```
-pocket 13.4 x 8.0  ->  lip 9.3 x 3.6
+horizontal reach : 2.25 mm   (Y governs, measured from the ledge edge)
+depth available  : 1.20 mm   (plate_t 2.4 - lip_t 0.8 - two ledges 0.4)
 
-horizontal reach : 2.20 mm   (the Y axis governs: (8.0 - 3.6) / 2)
-depth available  : 1.70 mm   (plate_t 2.5 - lip_t 0.8)
-
-@ 0.15 mm layers : needs 1.65 mm  -> FITS, margin +0.05 mm
-@ 0.20 mm layers : needs 2.20 mm  -> DOES NOT FIT, short by 0.50 mm
+@ 0.20 mm layers : needs 2.25 mm  -> DOES NOT FIT, short by 1.05 mm
 ```
 
-**The part is printed on a 0.20 mm profile, so the full staircase is off the
-table.** It only ever fitted by 0.05 mm at 0.15 mm layers, and the coarser
-profile costs 1.00 mm of height per 1 mm of reach instead of 0.75 — which wipes
-out the margin and then some.
+It fitted by 0.05 mm at 0.15 mm layers and stopped fitting the moment the
+profile moved to 0.20 — the geometry never changed. That is the whole reason the
+exchange-rate table above is keyed by layer height.
 
-This is exactly the trap the exchange-rate table exists to catch: the geometry
-did not change, the *profile* did, and a staircase that was feasible became
-impossible without anything in the model moving.
-
-What the model does instead is a **single 0.2 mm ledge, one layer tall**, sitting
-hard against the hole. It costs 0.2 mm of pocket depth rather than 2.2 mm, and
-gives the ceiling something to start from. The remaining reach is still made in
-one jump — which is fine, because an 8 mm bridge is comfortably within what the
-machine does, on a face that ends up hidden against the connector anyway.
+What the model does instead is **two ledges, one layer each**: a rounded step
+matching the lip profile, then two relief lines. Together they cost 0.4 mm of
+pocket depth. The remaining reach is made in one jump, which is fine — a bridge
+of this span is well within the machine, on a face hidden against the connector.
 
 ---
 
