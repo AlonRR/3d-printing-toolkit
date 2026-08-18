@@ -5,8 +5,17 @@
 #
 #   scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]
 #
-# Exits non-zero on: a failed assert, an empty STL, a non-manifold result, a
-# multi-part result, a vase-mode profile, or a model/profile disagreement.
+# Two kinds of problem, and the distinction is the point:
+#
+#   BLOCK  the model asserts — the geometry is impossible or self-contradictory.
+#          Also: empty/non-manifold/multi-part STL, a vase-mode profile, or the
+#          model disagreeing with the profile it was sliced with.
+#
+#   WARN   the model echoes WARNING — it builds and prints, but something is
+#          compromised (a wall under the perimeter floor, a notch into the case,
+#          a stage landing mid-layer). A judgement call, so you get the STL too.
+#
+# Exit codes:  0 clean   1 will not build / must not print   2 builds, with warnings
 #
 # WHY THE CROSS-CHECK. The model carries fdm_layer_h / fdm_extrusion_w because
 # its geometry depends on them -- staged layers land mid-layer if the layer
@@ -42,15 +51,35 @@ bad()  { printf '  !! %s\n' "$1"; fail=1; }
 echo "==> render"
 rm -f "$STL"
 out=$("$OPENSCAD" -o "$STL" "$SCAD" 2>&1) || true
-printf '%s\n' "$out" | grep -E "^ECHO:" | sed 's/^ECHO: /  /' | tr -d '"'
-if printf '%s\n' "$out" | grep -qi "Assertion"; then
-    printf '%s\n' "$out" | grep -i "Assertion" | sed 's/^/  !! /'
-    echo "FAILED: an assert fired -- the model says this configuration is wrong"
+printf '%s\n' "$out" | grep -E "^ECHO:" | grep -v '"WARNING' | sed 's/^ECHO: /  /' | tr -d '"'
+
+# An assert means the geometry is IMPOSSIBLE — a feature would vanish, invert,
+# or cut the part in two. There is no STL worth producing, so stop.
+if printf '%s\n' "$out" | grep -qi "ERROR: Assertion"; then
+    printf '%s\n' "$out" | grep -i "ERROR: Assertion" | sed 's/^/  !! /'
+    echo
+    echo "BLOCKED: the model says this configuration is impossible, not merely bad"
     exit 1
 fi
-# A failed import is only a WARNING and still exits 0, so it has to be caught.
-printf '%s\n' "$out" | grep -qi "WARNING" && \
-    printf '%s\n' "$out" | grep -i "WARNING" | sed 's/^/  !! /' && fail=1
+
+# A WARNING means it builds but something is compromised. That is a judgement
+# call for the operator, so it is surfaced loudly and the STL is still made.
+nwarn=$(printf '%s\n' "$out" | grep -c '^ECHO: "WARNING' || true)
+if [ "${nwarn:-0}" -gt 0 ]; then
+    printf '%s\n' "$out" | grep '^ECHO: "WARNING' \
+        | sed 's/^ECHO: "WARNING: /  ~~ /; s/"$//'
+    warned=1
+else
+    warned=0
+fi
+# OpenSCAD's OWN warnings — a failed import is only a WARNING and still exits 0,
+# so it has to be caught. Anchored to line start: the model's design warnings
+# arrive as ECHO: "WARNING: ..." and must not be swept up here, or every
+# judgement call becomes a hard failure.
+if printf '%s\n' "$out" | grep -q "^WARNING:"; then
+    printf '%s\n' "$out" | grep "^WARNING:" | sed 's/^/  !! /'
+    fail=1
+fi
 
 [ -s "$STL" ] || { echo "FAILED: STL is empty"; exit 1; }
 
@@ -98,5 +127,14 @@ cmp_fact fdm_layer_h     "$(m fdm_layer_h)"     "$lh"
 cmp_fact fdm_extrusion_w "$(m fdm_extrusion_w)" "$ew"
 
 echo
-[ "$fail" = "0" ] && echo "PASS  $STL / $GCODE" || echo "PROBLEMS FOUND (see !! above)"
-exit "$fail"
+if [ "$fail" != "0" ]; then
+    echo "PROBLEMS FOUND (see !! above)"
+    exit 1
+elif [ "$warned" != "0" ]; then
+    echo "BUILDS WITH $nwarn WARNING(S) (see ~~ above)  $STL / $GCODE"
+    echo "  These are judgement calls, not impossibilities. Read them, then decide."
+    exit 2
+else
+    echo "PASS  $STL / $GCODE"
+    exit 0
+fi

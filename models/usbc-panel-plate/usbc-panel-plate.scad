@@ -388,83 +388,104 @@ echo(str("screws land on     : ",
          screws_over_air ? "OPEN AIR - plate clamps to the connector, panel trapped by the lap"
                          : "panel material - plate bolts through the panel"));
 
-// --- guards -----------------------------------------------------------------
-// Each of these blocks a render. Anything that merely reports is above: a check
-// that prints a warning and then builds anyway is not a check.
+// ============================================================================
+// GUARDS — two kinds, and the distinction is deliberate
+//
+//   BLOCK (assert)  the geometry is impossible or self-contradictory. A feature
+//                   would vanish, invert, or cut the part in two. There is no
+//                   sensible STL to produce, so the render stops.
+//
+//   WARN  (echo)    the part builds and can be printed, but something about it
+//                   is compromised — a wall under the perimeter floor, a notch
+//                   that opens into the case, a stage that lands mid-layer.
+//                   You get the STL AND you get told.
+//
+// The earlier version asserted both, which meant exploring a design was blocked
+// by problems that were judgement calls rather than impossibilities. Deciding to
+// accept a thin wall is the operator's call; producing a part with no lip is
+// not a call at all.
+// ============================================================================
 
-// Coverage. The flat-edge test alone is not enough — rounded corners pull the
-// plate inside the aperture diagonally even when every edge nominally covers.
-assert(overlap > corner_min,
-       "overlap is under corner_r*(1-1/sqrt(2)) - the rounded corners fall inside the aperture");
-assert(plate_h >= gap_h + 2 * overlap - 0.01,
-       "plate is shorter than the opening it must cover");
-
-// Fasteners.
-// The 1e-9 is not slack, it is float noise. 3 * 0.45 evaluates to
-// 1.3500000000000001, so a design that lands EXACTLY on three perimeters fails
-// a bare >= comparison — which reads as a real violation and is not one.
-assert(edge_dist >= perim3 - 1e-9,
-       "material outboard of the screw holes is under 3 perimeters as cut");
-assert(web_side > perim2,
-       "web between the screw holes and the rear pocket is under 2 perimeters as cut");
-
-// Centre opening.
-assert(lip_t > 0 && lip_t < plate_t, "lip_t must be between 0 and plate_t");
-assert(pw < bw && ph < bh, "lip must be smaller than the pocket, or there is no lip");
-assert(lead_in < ((prot_face == "front") ? prot_t : 0) + lip_t,
-       "lead_in eats through the protrusion and the whole lip");
-assert(!bridge_slot || slot_n * fdm_layer_h < plate_t - lip_t,
-       "the bridge slot is deeper than the space between lip and back face");
-assert(pocket_d > 0, "no pocket left once the ledges are taken out");
-assert(pocket_chamfer < pocket_d, "pocket chamfer is deeper than the pocket");
-
-// Notches.
-assert(notch_r == 0 || notch_r < plate_h / 2,
-       "notch radius is at least half the plate height - it would cut the plate in two");
-assert(notch_r == 0 || notch_vs_gap > 0.4,
-       "Y-edge notch breaks through into the case opening - shrink notch_r or raise overlap");
-assert(!notch_over_pocket || notch_web > 0.8,
-       "Y-edge notch cuts into the rear pocket - shrink notch_r, offset notch_x, or raise overlap");
-assert(notch_r == 0 || notch_screw_gap > 0.8,
-       "Y-edge notch breaks into a screw hole - shrink notch_r or move notch_x");
-
-// Protrusion.
+// --- BLOCK: impossible geometry ---------------------------------------------
 assert(prot_face == "front" || prot_face == "back",
        "prot_face must be \"front\" or \"back\"");
+assert(lip_t > 0 && lip_t < plate_t,
+       "lip_t must be between 0 and plate_t");
+assert(pw < bw && ph < bh,
+       "the lip is not smaller than the pocket - there would be no lip at all");
+assert(pocket_d > 0,
+       "no pocket left once the staged layers are taken out");
+assert(pocket_chamfer < pocket_d,
+       "the pocket chamfer is deeper than the pocket");
+assert(!bridge_slot || slot_n * fdm_layer_h < plate_t - lip_t,
+       "the staged layers are deeper than the space between lip and back face");
+assert(lead_in < ((prot_face == "front") ? prot_t : 0) + lip_t,
+       "lead_in eats through the protrusion and the whole lip");
+assert(notch_r == 0 || notch_r < plate_h / 2,
+       "notch radius is at least half the plate height - it would cut the plate in two");
 assert(prot_t == 0 || (prot_w > pw && prot_h > ph),
-       "protrusion is not bigger than the port opening - it would vanish");
+       "the protrusion is not bigger than the port opening - it would vanish");
 assert(prot_t == 0 || (prot_w <= plate_w && prot_h <= plate_h),
-       "protrusion is bigger than the plate it stands on");
-assert(prot_t == 0 || prot_screw_gap > 0.4,
-       "protrusion runs into the screw holes - narrow prot_w or widen screw_span");
-
-// Layer alignment. Every internal transition should land on a layer boundary in
-// the print orientation, or the ledge scheme resolves on a slicer tie-break.
-assert(abs(plate_t / fdm_layer_h - round(plate_t / fdm_layer_h)) < 1e-6,
-       "plate_t is not a whole number of layers - internal steps will land mid-layer");
-assert(abs(lip_t / fdm_layer_h - round(lip_t / fdm_layer_h)) < 1e-6,
-       "lip_t is not a whole number of layers");
-
-
-// On the "back" branch the rear pocket and the protrusion occupy the same
-// space, and the pocket is the larger of the two in Y (8.8 vs 6.1) — it eats
-// the protrusion's middle and leaves two slivers. The part still renders as a
-// valid manifold solid, which is exactly why this needs to be a guard.
+       "the protrusion is bigger than the plate it stands on");
 assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
        "prot_face=\"back\": the rear pocket swallows the protrusion - it would print as two slivers");
 
-// Both spans must be bridgeable. ~10 mm is the practical ceiling on a
-// well-cooled machine (docs/fdm-design-rules.md §3).
-assert(!bridge_slot || bridge_1 <= 10,
-       "L1 strips span over 10 mm - they will sag");
-assert(!bridge_slot || bridge_2 <= 10,
-       "L2 sides span over 10 mm - they will sag onto the port");
+// --- WARN: it builds, but ----------------------------------------------------
+// Collected as a list so they can be counted and reported together rather than
+// scattered through the log where a single line is easy to scroll past.
+warns = [
+    // coverage
+    if (overlap <= corner_min)
+        str("overlap ", overlap, " is at or under the corner floor ", corner_min,
+            " - the ROUNDED CORNERS fall inside the aperture, leaving four open",
+            " gaps into the case even though every straight edge covers"),
+    if (plate_h < gap_h + 2 * overlap - 0.01)
+        str("plate is shorter than the opening it must cover"),
 
-// The staging only means anything while each layer is genuinely different from
-// the one under it. If the slot is no taller than the port, L1 and L2 are the
-// same shape; if the port is not rounded, L2 and L3 are. Either way the render
-// still succeeds and silently does less than it claims.
-assert(!bridge_slot || bh > ph,
-       "L1 slot is no taller than the port - L1 and L2 would be the same layer");
-assert(!bridge_slot || port_r > 0,
-       "port_r is 0 - L2 and L3 would be the same layer, so drop to one stage");
+    // fasteners and webs, against the derived perimeter floors
+    if (edge_dist < perim3 - 1e-9)
+        str("outboard of screw ", edge_dist, " mm is under 3 perimeters (",
+            perim3, ") as cut - a screw pulls directly on this and it will split"),
+    if (web_side <= perim2)
+        str("web beside pocket ", web_side, " mm is under 2 perimeters (",
+            perim2, ") as cut"),
+
+    // the notches eat the lap, which is the only retention this part has
+    if (notch_r > 0 && notch_vs_gap <= 0.4)
+        str("notch breaks through into the case opening by ", -notch_vs_gap,
+            " mm - it severs the lap across its whole chord, and the lap is the",
+            " ONLY thing retaining this plate"),
+    if (notch_over_pocket && notch_web <= 0.8)
+        str("notch cuts to within ", notch_web, " mm of the rear pocket"),
+    if (notch_r > 0 && notch_screw_gap <= 0.8)
+        str("notch cuts to within ", notch_screw_gap, " mm of a screw hole"),
+
+    // protrusion
+    if (prot_t > 0 && prot_screw_gap <= 0.4)
+        str("protrusion is within ", prot_screw_gap, " mm of the screw holes"),
+
+    // bridging
+    if (bridge_slot && bridge_1 > 10)
+        str("L1 strips span ", bridge_1, " mm, over the ~10 mm bridge ceiling"),
+    if (bridge_slot && bridge_2 > 10)
+        str("L2 sides span ", bridge_2, " mm, over the ~10 mm bridge ceiling"),
+
+    // the staging quietly doing less than it claims
+    if (bridge_slot && bh <= ph)
+        str("L1 slot is no taller than the port - L1 and L2 are the same layer"),
+    if (bridge_slot && port_r <= 0)
+        str("port_r is 0 - L2 and L3 are the same layer, so the staging is",
+            " buying nothing"),
+
+    // layer alignment
+    if (abs(plate_t / fdm_layer_h - round(plate_t / fdm_layer_h)) >= 1e-6)
+        str("plate_t ", plate_t, " is not a whole number of ", fdm_layer_h,
+            " layers - internal steps will land mid-layer"),
+    if (abs(lip_t / fdm_layer_h - round(lip_t / fdm_layer_h)) >= 1e-6)
+        str("lip_t ", lip_t, " is not a whole number of ", fdm_layer_h, " layers")
+];
+
+for (w = warns) echo(str("WARNING: ", w));
+echo(len(warns) == 0
+     ? "warnings           : none"
+     : str("warnings           : ", len(warns), " - the part will build, read them"));
