@@ -36,7 +36,11 @@ note() { printf '  %s\n' "$1"; }
 bad()  { printf '  !! %s\n' "$1"; fail=1; }
 
 # --- 1. render, and let the asserts speak ----------------------------------
+# Delete the STL FIRST. If the render fails, OpenSCAD leaves the previous one
+# untouched, and every step after this would happily validate stale geometry
+# and report PASS on a model that does not build.
 echo "==> render"
+rm -f "$STL"
 out=$("$OPENSCAD" -o "$STL" "$SCAD" 2>&1) || true
 printf '%s\n' "$out" | grep -E "^ECHO:" | sed 's/^ECHO: /  /' | tr -d '"'
 if printf '%s\n' "$out" | grep -qi "Assertion"; then

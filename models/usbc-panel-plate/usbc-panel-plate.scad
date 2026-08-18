@@ -24,7 +24,7 @@
 gap_w   = 23.4;     // MEASURED. Width of the opening.
 gap_h   = 15.0;     // MEASURED. Height of the opening.
 panel_t = 0.6;      // MEASURED. Sheet thickness of the case panel.
-overlap = 2.5;      // how far the plate laps onto the panel, all the way round.
+overlap = 0.5;      // how far the plate laps onto the panel, all the way round.
                     // The screws pass through open air, so this lap is the ONLY
                     // thing retaining the plate.
                     // Hard floor: corner_r * (1 - 1/sqrt(2)). Below that the
@@ -400,7 +400,10 @@ assert(plate_h >= gap_h + 2 * overlap - 0.01,
        "plate is shorter than the opening it must cover");
 
 // Fasteners.
-assert(edge_dist >= perim3,
+// The 1e-9 is not slack, it is float noise. 3 * 0.45 evaluates to
+// 1.3500000000000001, so a design that lands EXACTLY on three perimeters fails
+// a bare >= comparison — which reads as a real violation and is not one.
+assert(edge_dist >= perim3 - 1e-9,
        "material outboard of the screw holes is under 3 perimeters as cut");
 assert(web_side > perim2,
        "web between the screw holes and the rear pocket is under 2 perimeters as cut");
