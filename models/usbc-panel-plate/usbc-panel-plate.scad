@@ -270,11 +270,17 @@ module usbc_panel_plate() {
 // actually prints in, so the STL arrives already oriented. The part's top is
 // top_z, which includes prot_t again when the protrusion is on the back;
 // lifting by that puts its lowest point on z = 0.
-if (flip_for_print)
+
+// draw_model lets a companion file (parameter-map.scad) include this one for
+// its VALUES without also rendering the part. Assign it false AFTER the
+// include -- in OpenSCAD the last assignment in a scope wins.
+draw_model = true;
+
+if (draw_model && flip_for_print)
     translate([0, 0, top_z])
         rotate([180, 0, 0])
             usbc_panel_plate();
-else
+else if (draw_model)
     usbc_panel_plate();
 
 // --- sanity check -----------------------------------------------------------
