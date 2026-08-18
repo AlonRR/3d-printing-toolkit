@@ -29,10 +29,10 @@ plate              : 28.4 x 20 x 2.4 mm
 covers opening     : 23.4 x 15 mm, lap 2.5 mm (corner floor 0.43934)
 port opening       : 9.6 x 3.9 mm as cut
 port recess        : 2.3 mm a plug must reach in (lip 0.8 + protrusion 1.5)
-rear pocket        : 14.2 x 8.8 mm as cut, 1.2 mm deep, 0.25 mm/side clearance
-max boss height    : 1.8 mm from the connector flange (pocket 1.2 + panel 0.6)
-ceiling reach      : X 2.1 mm, Y 2.25 mm (from the ledge edge, not the lip)
-ledges             : 0.2 mm/side, 0.2 mm tall each, lines on x, 0.4 mm of depth
+rear pocket        : 14.2 x 8.8 mm as cut, 1.4 mm deep, 0.25 mm/side clearance
+max boss height    : 2.0 mm from the connector flange (pocket 1.4 + panel 0.6)
+stage 1 span       : 8.8 mm   stage 2 span : 9.6 mm
+two-bridge trick   : ON -- slot 9.6 x 8.8 for 0.2 mm (stage spans 8.8 / 9.6)
 web beside pocket  : 1.2 mm
 web above/below    : 5.6 mm
 outboard of screw  : 2.7 mm
@@ -103,9 +103,33 @@ Two consequences the guards now enforce:
 ## Layer alignment
 
 `plate_t = 2.4`, not 2.5. At 0.2 mm layers that puts the pocket floor, both
-ledges and the lip at print z **1.2 / 1.4 / 1.6 / 2.4** — all on-grid. At 2.5 mm
-every one of them lands mid-layer and the entire two-ledge scheme resolves on a
+the bridge slot and the lip at print z **1.0 / 1.4 / 1.6 / 2.4** — all on-grid. At 2.5 mm
+every one lands mid-layer and the bridge slot resolves on a
 slicer tie-break rather than on the geometry. Asserted.
+
+## The two-bridge trick
+
+Printed back-face-down, the layer closing over the pocket **is the lip, and the
+lip has the port hole in it**. That is not a plain bridge — the printer would be
+drawing the hole's outline in mid-air. The fix is two anchored stages:
+
+```
+  stage 1   opening is a full-height SLOT (9.6 x 8.8), so what remains is two
+            strips spanning wall-to-wall, each anchored at BOTH ends   8.8 mm
+  stage 2   opening closes to the real port; the bands above and below it
+            bridge across and land on stage 1's strips                 9.6 mm
+```
+
+Both spans are under the ~10 mm ceiling and both are asserted. The slot is
+square on purpose — a rounded one would put an arc back in mid-air, which is the
+thing being removed.
+
+**Nothing is sacrificial.** Both stages are load-bearing part geometry, nothing
+is snipped or drilled afterwards, and the sliced G-code carries
+`support_material = 0`. That is the house rule: prefer no support, prefer
+permanent over sacrificial, and treat "this needs a sacrificial feature" as a
+sign a better design exists. See
+[`docs/fdm-design-rules.md`](../../docs/fdm-design-rules.md) §3b–3c.
 
 ## Printing
 
@@ -120,13 +144,13 @@ only; it does not relieve elephant's foot, which is a first-layer effect. The
 
 ## Guards
 
-22 asserts. They **block the render** — a check that prints a warning and builds
+25 asserts. They **block the render** — a check that prints a warning and builds
 anyway is not a check, and this model previously had two of those (the notch
 breakthrough and the coverage test) reporting problems into the log while
 happily exporting the broken part.
 
 Coverage of the non-default branches is deliberate: `prot_face = "back"`,
-`line_axis = "y"`, `cbore_d > 0`, `prot_t = 0`, `step = 0` and
+`cbore_d > 0`, `prot_t = 0`, `bridge_slot = false` and
 `flip_for_print = false` all render clean and manifold, and `prot_face = "back"`
 now *fails loudly* rather than silently printing the protrusion as two slivers.
 

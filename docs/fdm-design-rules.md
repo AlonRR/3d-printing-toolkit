@@ -145,6 +145,98 @@ undersized per §2.
   everything around it an overhang. **Orientation is a design decision, not a
   slicer setting.**
 
+## 3b. Standing design rules
+
+Two, and they decide most of the choices below before the geometry is drawn:
+
+> **Prefer no support.**
+> **Prefer permanent over sacrificial.**
+
+If a design seems to need a sacrificial feature, that is usually a signal a
+better design exists — not a licence to add the sacrificial feature. Snipping,
+drilling and cleanup are recurring costs paid on every copy, and each one is a
+chance to damage the part.
+
+So of the techniques below, the **geometry** ones are first choice; the
+**sacrificial** ones are listed to be recognised, not reached for.
+
+## 3c. The named bridging techniques
+
+Vocabulary, so a design conversation can point at one by name.
+
+**Make nothing bridge** — permanent, no cleanup. Always try these first.
+
+| Name | What it is |
+|---|---|
+| **Teardrop** / **diamond hole** | Horizontal-axis hole gets a pointed top instead of an arc |
+| **Chamfer** / **45° taper** | A flat roof becomes a slope |
+| **Arch** | A straight ceiling becomes a curve |
+| **Staircase** / **stepped overhang** | The jump split into per-layer steps (§3) |
+
+**Shorten the span** — the bridge still happens, it is just easier.
+
+| Name | Permanent? |
+|---|---|
+| **Support rib** / **spar** / **intermediate wall** | ✅ permanent — first choice |
+| **Sacrificial pillar** | ❌ snipped out |
+
+**Change what the bridge lands on.**
+
+| Name | Permanent? |
+|---|---|
+| **Bridge anchor** — make sure *both* ends are supported | ✅ |
+| ⭐ **Two-bridge trick** | ✅ **permanent, and the one used here** |
+| **Sacrificial bridge layer** — one solid layer, drilled out after | ❌ |
+
+**Bridge vs overhang is not a distinction to blur.** A bridge has two anchored
+ends and the strand is held in tension between them. An overhang is a
+cantilever, held at one end only. They fail differently and the fixes differ.
+
+### ⭐ The two-bridge trick
+
+The problem it solves is **a bridge with a hole in it** — a roof over a cavity
+that also has an opening in it. The printer is asked to draw the hole's outline
+in mid-air and produces spaghetti.
+
+The fix, in two anchored stages:
+
+```
+  stage 1: first layer over the cavity
+           the opening is a full-width SLOT, so what remains is two strips
+           spanning wall-to-wall, EACH ANCHORED AT BOTH ENDS
+
+  stage 2: the layer above
+           the opening closes down to the real hole; the new bands bridge
+           across and land on stage 1's strips
+
+     stage 1            stage 2
+  +--+      +--+     +--+------+--+
+  |  |      |  |     |  |      |  |
+  |  |  gap |  |     |  | hole |  |
+  +--+      +--+     +--+------+--+
+```
+
+Nothing is ever drawn unsupported, and **nothing is removed afterwards** — both
+stages are load-bearing part geometry. That is why it beats a sacrificial
+bridge layer for the same problem.
+
+Two things to get right:
+
+- **Run stage 1 across the SHORT axis.** The slicer bridges the short span
+  anyway, and it keeps stage 1 under the ~10 mm ceiling.
+- **Keep the slot square.** A rounded slot puts an arc back in mid-air, which
+  is the thing being removed.
+
+Worked example, the USB-C plate's pocket → lip:
+
+```
+stage 1 span : 8.8 mm   two strips, wall to wall, anchored both ends
+stage 2 span : 9.6 mm   bands close onto those strips
+```
+
+Both under 10 mm, both asserted in the model, and the sliced G-code confirms
+`support_material = 0`.
+
 ## 4. Fasteners
 
 - **Edge distance is the thing people get wrong.** Material between a screw hole

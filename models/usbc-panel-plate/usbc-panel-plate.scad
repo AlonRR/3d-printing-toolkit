@@ -102,20 +102,34 @@ screw_span = 19.8;  // MEASURED. THE critical dimension.
 cbore_d    = 0;     // counterbore diameter, 0 = none. M2.5 socket head = 4.5
 cbore_h    = 1.2;   // counterbore depth, measured from the PLATE face
 
-/* [Pocket -> lip transition] */
-// Two ledges, one layer each, giving the pocket ceiling something to bridge
-// from instead of reaching the whole way off the lip.
-//   layer 1 : a rounded step, same profile as the lip
-//   layer 2 : two relief lines
-step      = 0.2;    // how far layer 1 steps out per side. 0 = no ledges
-layer_h   = 0.2;    // must match the slicer, or a ledge lands mid-layer
-line_w    = 0.45;   // width of each layer-2 line. One extrusion by default
-line_len  = 8.0;    // length of each line
-line_axis = "x";    // "x" -> lines at the X ends, running along Y  ( | | )
-                    // "y" -> lines at the Y ends, running along X
-                    // These relieve the axis they sit at the ends of. The echo
-                    // reports which axis actually governs the reach; "x" is the
-                    // shape asked for, not the one the numbers would pick.
+/* [Pocket -> lip transition — the two-bridge trick] */
+// Printed back-face-down, the layer that closes over the pocket is the lip, and
+// the lip HAS THE PORT HOLE IN IT. That is not a plain bridge: the printer
+// would be asked to draw the hole's outline in mid-air, which is the classic
+// "bridge with a hole in it" and comes out as spaghetti.
+//
+// The two-bridge trick (Hackaday calls it a sacrificial bridge; nophead called
+// it hanging holes) splits it into two anchored stages:
+//
+//   stage 1, first layer over the pocket
+//     the opening is a full-height SLOT, pw wide x bh tall. The material left
+//     is two strips running the short axis, EACH ANCHORED AT BOTH ENDS on the
+//     pocket walls. Nothing is drawn in air.
+//
+//   stage 2, the layer above
+//     the opening closes down to the real port. The new material -- the bands
+//     above and below the port -- bridges pw across, landing on stage 1's two
+//     strips. Again anchored at both ends.
+//
+//        stage 1              stage 2              (looking down the bore)
+//     +--+      +--+       +--+------+--+
+//     |  |      |  |       |  |      |  |          two strips, then the
+//     |  |  gap |  |       |  | port |  |          bands close onto them
+//     |  |      |  |       |  |      |  |
+//     +--+      +--+       +--+------+--+
+//
+bridge_slot = true; // false = lip closes in one go, and the hole is drawn in air
+layer_h     = 0.2;  // must match the slicer, or the slot lands mid-layer
 
 /* [Printing] */
 flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed
@@ -140,8 +154,8 @@ eps = 0.01;         // nudge for cut solids that would otherwise end exactly
                     // on another cut's plane -- a shared coplanar face is
                     // what breaks 2-manifoldness
 
-ledge_n     = (step > 0) ? 2 : 0;               // ledge layers consumed
-pocket_z    = lip_t + ledge_n * layer_h;        // where the pocket floor sits
+slot_n      = bridge_slot ? 1 : 0;              // layers the slot consumes
+pocket_z    = lip_t + slot_n * layer_h;         // where the pocket floor sits
 pocket_d    = plate_t - pocket_z;               // usable pocket depth
 port_recess = lip_t + ((prot_face == "front") ? prot_t : 0);
 top_z       = plate_t + ((prot_face == "back") ? prot_t : 0);
@@ -201,30 +215,17 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Two ledges, one layer each. Each is extruded to its OWN height and
-        // stops exactly where the pocket begins, rather than relying on being
-        // swallowed by a larger cut above — that containment silently breaks if
-        // step, line_len, line_w or boss_r is tweaked.
-        if (step > 0) {
-            // Layer 1 — same rounded profile as the lip, so the step is `step`
-            // on every side rather than only along the flat mid-sides.
+        // Stage 1 of the two-bridge trick: one layer where the opening is a
+        // full-height slot instead of the port. What is left either side are
+        // two strips spanning bh wall-to-wall, anchored at both ends. Square,
+        // not rounded — a rounded slot would put an arc back in mid-air, which
+        // is the exact thing this is removing.
+        if (bridge_slot)
             translate([0, 0, lip_t])
-                linear_extrude(2 * layer_h + eps)
-                    rrect2d(pw + 2 * step, ph + 2 * step, port_r + step);
-
-            // Layer 2 — two relief lines.
-            translate([0, 0, lip_t + layer_h])
                 linear_extrude(layer_h + eps)
-                    for (s = [-1, 1])
-                        translate(line_axis == "x"
-                                    ? [s * (pw / 2 + step + line_w / 2 - eps), 0]
-                                    : [0, s * (ph / 2 + step + line_w / 2 - eps)])
-                            square(line_axis == "x" ? [line_w, line_len]
-                                                    : [line_len, line_w],
-                                   center = true);
-        }
+                    square([pw, bh], center = true);
 
-        // Rear relief pocket for the connector's raised boss, above the ledges.
+        // Rear relief pocket for the connector's raised boss, above the slot.
         // Extruded with cut_len so it still reaches the rear face on the
         // prot_face = "back" branch.
         translate([0, 0, pocket_z])
@@ -289,8 +290,8 @@ web_side   = (screw_span - sd) / 2 - bw / 2;
 web_topbot = (plate_h - bh) / 2;
 edge_dist  = (plate_w - screw_span - sd) / 2;
 corner_min = corner_r * (1 - 1 / sqrt(2));
-reach_x    = (bw - (pw + 2 * step)) / 2;
-reach_y    = (bh - (ph + 2 * step)) / 2;
+bridge_1   = bh;                 // stage-1 strips span this, wall to wall
+bridge_2   = pw;                 // stage-2 bands bridge this, onto the strips
 prot_screw_gap = screw_span / 2 - sd / 2 - prot_w / 2;
 
 notch_over_pocket = notch_r > 0 && abs(notch_x) < bw / 2 + nr;
@@ -312,11 +313,13 @@ echo(str("rear pocket        : ", bw, " x ", bh, " mm as cut, ", pocket_d,
 echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
-echo(str("ceiling reach      : X ", reach_x, " mm, Y ", reach_y,
-         " mm (from the ledge edge, not the lip)"));
-echo(str("ledges             : ", step, " mm/side, ", layer_h,
-         " mm tall each, lines on ", line_axis, ", using ", ledge_n * layer_h,
-         " mm of pocket depth"));
+echo(str("two-bridge trick   : ", bridge_slot ? "ON" : "OFF",
+         bridge_slot ? str(" -- slot ", pw, " x ", bh, " for ", layer_h, " mm")
+                     : " -- the port outline is drawn in mid-air"));
+echo(str("  stage 1 span     : ", bridge_1,
+         " mm  (two strips, wall to wall, anchored both ends)"));
+echo(str("  stage 2 span     : ", bridge_2,
+         " mm  (bands close onto those strips)"));
 echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", edge_dist, " mm"));
@@ -366,8 +369,8 @@ assert(lip_t > 0 && lip_t < plate_t, "lip_t must be between 0 and plate_t");
 assert(pw < bw && ph < bh, "lip must be smaller than the pocket, or there is no lip");
 assert(lead_in < ((prot_face == "front") ? prot_t : 0) + lip_t,
        "lead_in eats through the protrusion and the whole lip");
-assert(step == 0 || ledge_n * layer_h < plate_t - lip_t,
-       "the ledges are deeper than the space between lip and back face");
+assert(!bridge_slot || slot_n * layer_h < plate_t - lip_t,
+       "the bridge slot is deeper than the space between lip and back face");
 assert(pocket_d > 0, "no pocket left once the ledges are taken out");
 assert(pocket_chamfer < pocket_d, "pocket chamfer is deeper than the pocket");
 
@@ -398,7 +401,6 @@ assert(abs(plate_t / layer_h - round(plate_t / layer_h)) < 1e-6,
 assert(abs(lip_t / layer_h - round(lip_t / layer_h)) < 1e-6,
        "lip_t is not a whole number of layers");
 
-assert(line_axis == "x" || line_axis == "y", "line_axis must be \"x\" or \"y\"");
 
 // On the "back" branch the rear pocket and the protrusion occupy the same
 // space, and the pocket is the larger of the two in Y (8.8 vs 6.1) — it eats
@@ -406,3 +408,14 @@ assert(line_axis == "x" || line_axis == "y", "line_axis must be \"x\" or \"y\"")
 // valid manifold solid, which is exactly why this needs to be a guard.
 assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
        "prot_face=\"back\": the rear pocket swallows the protrusion - it would print as two slivers");
+
+// The two-bridge trick only helps if both stages are actually bridgeable.
+// ~10 mm is the practical ceiling on a well-cooled machine (see
+// docs/fdm-design-rules.md §3), and the slicer spans the SHORT axis, which is
+// why stage 1 runs across bh and not bw.
+assert(!bridge_slot || bridge_1 <= 10,
+       "stage-1 bridge is over 10 mm - the strips will sag");
+assert(!bridge_slot || bridge_2 <= 10,
+       "stage-2 bridge is over 10 mm - the bands will sag onto the port");
+assert(!bridge_slot || bh > ph,
+       "bridge slot is not taller than the port - there is nothing to stage");

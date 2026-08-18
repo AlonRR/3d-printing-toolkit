@@ -80,6 +80,46 @@ module heading(t, at) {
         text(t, size = txt * 1.15, font = "DejaVu Sans:style=Bold");
 }
 
+// One labelled axis arrow. ang is measured CCW from +X.
+module axis(label, ang, len) {
+    color("black") rotate(ang) {
+        translate([0, -lead / 2]) square([len - 0.8, lead]);
+        translate([len - 0.8, 0]) polygon([[0, -0.34], [0, 0.34], [0.8, 0]]);
+    }
+    color("black")
+        translate([cos(ang) * (len + 0.9) - txt * 0.35,
+                   sin(ang) * (len + 0.9) - txt * 0.42])
+            text(label, size = txt * 1.05, font = "DejaVu Sans:style=Bold");
+}
+
+// Axis triads. Which way Z points is the thing people get wrong on this part,
+// because the model is AUTHORED front-at-z-0 and EXPORTED rotated — so the
+// plan and the section do not share a Z direction, and saying so is the whole
+// reason these are here.
+module axes_plan(at) {
+    translate(at) {
+        axis("X", 0, 3.2);
+        axis("Y", 90, 3.2);
+        color("black") {
+            circle(r = 0.42);
+            translate([0.30, 0.30]) circle(r = 0.13);   // Z dot: out of the page
+        }
+        color("black") translate([-txt * 2.9, -txt * 1.9])
+            text("Z out of page", size = txt * 0.8);
+    }
+}
+
+module axes_section(at) {
+    translate(at) {
+        axis("X", 0, 3.2);
+        axis("Z", 90, 3.2);
+        color("black") translate([-txt * 3.4, -txt * 1.9])
+            text("Y into page", size = txt * 0.8);
+        color("black") translate([-txt * 3.4, -txt * 3.1])
+            text(str("Z exaggerated x", zs), size = txt * 0.8);
+    }
+}
+
 // --- plan view, projected straight off the model ----------------------------
 // projection() of the real solid, so this outline is the part, not a sketch.
 color([0.62, 0.72, 0.85])
@@ -91,6 +131,7 @@ color([0.62, 0.72, 0.85])
 // keeps the two views consistent.
 
 heading("PLAN  (looking at the visible face)", [-plate_w / 2, plate_h / 2 + 1.4]);
+axes_plan([-plate_w / 2 - 10.5, -plate_h / 2 + 1.0]);
 
 // Callouts on the plan.
 callout( 1, [-plate_w / 2 - 2.6,  plate_h / 2 + 0.6], [-plate_w / 2, plate_h / 2]);
@@ -110,6 +151,7 @@ callout( 8, [-plate_w / 2 - 2.6, -3.4               ], [-bw / 2, -bh / 2]);
 translate([0, sec_y]) {
     heading("SECTION  (cut on the long axis, print orientation)",
             [-plate_w / 2, 4.0]);
+    axes_section([-plate_w / 2 - 10.5, -1.5]);
 
     // Z is exaggerated or the 0.2 mm layers are invisible next to a 28 mm
     // plate. The callouts must be scaled by the SAME factor or they point at
@@ -122,7 +164,7 @@ translate([0, sec_y]) {
     callout(10, [ pw / 2 + 4.4,      zs *  2.3], [ pw / 2,            zs *  2.0]);
     callout(11, [ plate_w / 2 + 3.2, zs * -0.4], [ bw / 2,            zs * -0.6]);
     callout(12, [-plate_w / 2 - 3.2, zs *  3.4], [-pw / 2,            zs *  3.15]);
-    callout(13, [-bw / 2 - 4.4,      zs *  1.2], [-(pw / 2 + step),   zs *  1.5]);
+    callout(13, [-plate_w / 2 - 3.2, zs *  1.2], [-pw / 2,            zs *  1.5]);
 }
 
 // --- legend -----------------------------------------------------------------
@@ -143,9 +185,10 @@ translate([0, -9 * (txt * 1.72)]) {
     heading("SECTION", [col_x, 0]);
     legend_row( 9, 1, "plate_t",  plate_t,  "plate thickness");
     legend_row(10, 2, "lip_t",    lip_t,    "lip alone (port_recess = plug reach)");
-    legend_row(11, 3, "pocket_d", pocket_d, "pocket depth left after the ledges");
+    legend_row(11, 3, "pocket_d", pocket_d, "pocket depth left after the bridge slot");
     legend_row(12, 4, "prot_t",   prot_t,   "how far the rectangle stands proud");
-    legend_row(13, 5, "step",     step,     "ledge step per side (layer_h tall)");
+    legend_row(13, 5, "bridge slot", str(pw, " x ", bh),
+                                       "stage 1 of the two-bridge trick, layer_h tall");
 }
 
 // --- the ones with no place on a drawing ------------------------------------
@@ -167,7 +210,7 @@ translate([0, -16.4 * (txt * 1.72)]) {
                  size = txt * 0.92);
         translate([0, -txt * 7.0])
             text(str("layer_h = ", layer_h,
-                     "   must match the slicer, or the ledges land mid-layer"),
+                     "   must match the slicer, or the slot lands mid-layer"),
                  size = txt * 0.92);
         translate([0, -txt * 8.6])
             text(str("flip_for_print = ", flip_for_print ? "true" : "false",
