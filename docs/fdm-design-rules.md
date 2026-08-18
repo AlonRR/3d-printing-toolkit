@@ -192,50 +192,75 @@ Vocabulary, so a design conversation can point at one by name.
 ends and the strand is held in tension between them. An overhang is a
 cantilever, held at one end only. They fail differently and the fixes differ.
 
-### ⭐ The two-bridge trick
+### ⭐ The two-bridge trick — in three layers
 
 The problem it solves is **a bridge with a hole in it** — a roof over a cavity
 that also has an opening in it. The printer is asked to draw the hole's outline
 in mid-air and produces spaghetti.
 
-The fix, in two anchored stages:
+The house version runs over three layers, and the rule is **each layer does
+exactly one thing**:
 
 ```
-  stage 1: first layer over the cavity
-           the opening is a full-width SLOT, so what remains is two strips
-           spanning wall-to-wall, EACH ANCHORED AT BOTH ENDS
+L1  THE TWO BRIDGE   slot the hole out to the cavity's FULL extent on the
+                     SHORT axis. What gets laid is two strips spanning
+                     wall-to-wall, each anchored at BOTH ends.
 
-  stage 2: the layer above
-           the opening closes down to the real hole; the new bands bridge
-           across and land on stage 1's strips
+L2  THE RECTANGLE    close to a plain rectangle, SQUARE corners, hole-sized.
+                     The two remaining sides bridge across onto those strips.
 
-     stage 1            stage 2
-  +--+      +--+     +--+------+--+
-  |  |      |  |     |  |      |  |
-  |  |  gap |  |     |  | hole |  |
-  +--+      +--+     +--+------+--+
+L3  THE CORNERS      the real rounded shape. The only new material is the
+                     fillets, and they sit on the solid rectangle below.
+
+   L1                 L2                 L3
++--+      +--+     +--+------+--+     +--+------+--+
+|  |      |  |     |  |      |  |     |  /      \  |
+|  |  gap |  |     |  | rect |  |     |  | hole |  |
+|  |      |  |     |  |      |  |     |  \      /  |
++--+      +--+     +--+------+--+     +--+------+--+
 ```
 
-Nothing is ever drawn unsupported, and **nothing is removed afterwards** — both
-stages are load-bearing part geometry. That is why it beats a sacrificial
-bridge layer for the same problem.
+**Why three and not two.** Closing straight from a rectangle to a rounded hole
+lays an arc whose supporting material is only half there. Giving the curve its
+own layer means no layer ever has to lay a straight run *and* a curve in the
+same pass — and nothing curved is ever unsupported.
 
-Two things to get right:
+Rules that make it work:
 
-- **Run stage 1 across the SHORT axis.** The slicer bridges the short span
-  anyway, and it keeps stage 1 under the ~10 mm ceiling.
-- **Keep the slot square.** A rounded slot puts an arc back in mid-air, which
-  is the thing being removed.
+- **Slot L1 across the short axis.** The slicer bridges the short span anyway,
+  and it keeps L1 under the ~10 mm ceiling.
+- **Every intermediate stage stays square.** A rounded slot puts an arc back in
+  mid-air, which is the thing being removed.
+- **One layer per stage**, and `layer_h` must match the slicer or the stages
+  land mid-layer and get rounded away.
+- **Each cut a superset of the one below**, so the larger opening wins at its
+  own height and nothing depends on the order the cuts are written in.
+- Costs one layer of cavity depth per stage. Check the depth is there.
+
+Three guards are worth asserting, because each fails while the render still
+succeeds and the part still looks right:
+
+| Guard | What it catches |
+|---|---|
+| both spans ≤ 10 mm | sagging |
+| slot taller than the hole | L1 and L2 collapse to the same shape |
+| corner radius > 0 | L2 and L3 collapse to the same shape |
+
+**Nothing is sacrificial.** All three layers are load-bearing geometry, nothing
+is removed afterwards, and the sliced G-code should carry
+`support_material = 0`. That is what makes this preferable to a sacrificial
+bridge layer for the same problem — see §3b.
 
 Worked example, the USB-C plate's pocket → lip:
 
 ```
-stage 1 span : 8.8 mm   two strips, wall to wall, anchored both ends
-stage 2 span : 9.6 mm   bands close onto those strips
+L1  slot 9.6 x 8.8    -> two strips spanning 8.8 mm, anchored both ends
+L2  9.6 x 3.9 square  -> the other two sides bridge 9.6 mm onto those strips
+L3  r2 fillets only   -> laid on the solid rectangle below
 ```
 
-Both under 10 mm, both asserted in the model, and the sliced G-code confirms
-`support_material = 0`.
+Both spans under 10 mm, all three guards asserted in the model, and the sliced
+G-code confirms `support_material = 0`.
 
 ## 4. Fasteners
 
