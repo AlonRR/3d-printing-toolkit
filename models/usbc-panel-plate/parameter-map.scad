@@ -1,220 +1,236 @@
 // ---------------------------------------------------------------------------
 // Parameter map for usbc-panel-plate.scad
 //
-// A numbered callout drawing: real outlines projected from the model, small
-// numbered markers on each feature, and a legend giving every number's
-// parameter NAME and its LIVE VALUE.
+// A DIMENSIONED drawing, not a callout drawing. Every measurement is shown as a
+// proper dimension line — extension lines out to the feature, arrowheads at both
+// ends, the parameter name and its live value on the line — so it is never
+// ambiguous WHAT is being measured or BETWEEN WHICH TWO EDGES.
 //
-// The point is that it cannot drift. It includes the model rather than
-// restating it, so every outline and every number here is whatever the model
+// The earlier version used numbered dots and a legend. A dot says "this
+// feature"; a dimension line says "this distance, from here to here", and that
+// difference is the whole reason for the rewrite.
+//
+// Colour groups the measurements by what they belong to. The key is bottom left.
+//
+// Prior art: Don Smiley's OpenSCAD dimensioned-drawings library has exactly
+// these modules (dimensions/leader_line/arrow/titleblock) but is unmaintained
+// and depends on a pre-native-text() font from Thingiverse; BOSL2 offers
+// stroke() with arrowheads, which is the primitive rather than the system.
+// Conventions taken from both, implemented natively so this file has no deps.
+//
+// The point is that it cannot drift: it INCLUDES the model rather than
+// restating it, so every outline and every number is whatever the model
 // currently says. Edit a parameter, re-render, and the map is correct again.
 //
-//   openscad -o parameter-map.png --imgsize=1600,1100 \
-//            --camera=0,0,0,0,0,0,64 --projection=ortho parameter-map.scad
+//   openscad -o parameter-map.png --imgsize=1900,1200 \
+//     --camera=14,-13,0,0,0,0,150 --projection=ortho parameter-map.scad
 //
-// The `draw_model = false` below MUST come after the include -- in OpenSCAD
-// the last assignment in a scope wins, so this suppresses the part while
-// keeping all of its variables.
+// `draw_model = false` MUST come after the include — in OpenSCAD the last
+// assignment in a scope wins, so this suppresses the part while keeping all of
+// its variables.
 // ---------------------------------------------------------------------------
 
 include <usbc-panel-plate.scad>
 draw_model = false;
 
 /* [Map layout] */
-txt      = 0.85;    // legend text size
-marker_r = 0.62;    // radius of a numbered callout marker
-lead     = 0.09;    // line weight for leaders and outlines
-col_x    = 20.5;    // where the legend column starts
-sec_y    = -17.5;   // where the section view sits
-zs       = 2.6;     // Z exaggeration on the section, and on its callouts
+txt   = 0.78;       // text size
+lw    = 0.07;       // line weight
+ah    = 0.55;       // arrowhead length
+sec_y = -38.0;      // where the section view sits
+zs    = 3.0;        // Z exaggeration on the section (and everything drawn on it)
 
-// A numbered marker with a leader back to the feature it points at.
-module callout(n, at, from) {
-    // Start the leader at the marker EDGE, not its centre. Drawn from
-    // the centre it fills the ring, because 2D shapes here are coplanar
-    // and cannot be masked by drawing over them.
-    d = from - at;
-    p = at + d * (marker_r / norm(d));
-    color("black") {
+// Colour groups. Each family of measurements gets one, and the key repeats it.
+C_OUT  = [0.13, 0.13, 0.13];   // plate outline
+C_PORT = [0.80, 0.28, 0.10];   // the port opening / lip
+C_FIX  = [0.10, 0.42, 0.75];   // fasteners
+C_POCK = [0.45, 0.20, 0.60];   // pocket and boss
+C_STAGE= [0.05, 0.50, 0.35];   // the staged bridge layers
+C_PART = [0.62, 0.72, 0.85];   // the part itself
+
+module arrow_at(p, ang, col) {
+    color(col) translate(p) rotate(ang)
+        polygon([[0, 0], [-ah, ah * 0.32], [-ah, -ah * 0.32]]);
+}
+
+// Horizontal dimension: measures x1..x2, drawn at height y_dim, with extension
+// lines reaching back to the feature at y_feat.
+module dim_h(x1, x2, y_dim, y_feat, label, col = C_OUT, above = true) {
+    over = (y_dim > y_feat) ? 0.5 : -0.5;
+    color(col) {
+        for (x = [x1, x2])                                   // extension lines
+            translate([x - lw / 2, min(y_feat, y_dim + over)])
+                square([lw, abs(y_dim + over - y_feat)]);
+        translate([x1, y_dim - lw / 2]) square([x2 - x1, lw]);   // dim line
+    }
+    arrow_at([x1, y_dim], 0, col);
+    arrow_at([x2, y_dim], 180, col);
+    color(col) translate([(x1 + x2) / 2,
+                          y_dim + (above ? txt * 0.55 : -txt * 1.5)])
+        text(label, size = txt, halign = "center",
+             font = "DejaVu Sans:style=Bold");
+}
+
+// Vertical dimension: measures y1..y2, drawn at x_dim, extensions to x_feat.
+// Text sits beside the line rather than rotated on it — easier to read, and
+// this is a reference drawing rather than a manufacturing print.
+module dim_v(y1, y2, x_dim, x_feat, label, col = C_OUT, right = true) {
+    over = (x_dim > x_feat) ? 0.5 : -0.5;
+    color(col) {
+        for (y = [y1, y2])                                   // extension lines
+            translate([min(x_feat, x_dim + over), y - lw / 2])
+                square([abs(x_dim + over - x_feat), lw]);
+        translate([x_dim - lw / 2, y1]) square([lw, y2 - y1]);   // dim line
+    }
+    arrow_at([x_dim, y1], 90, col);
+    arrow_at([x_dim, y2], 270, col);
+    color(col) translate([x_dim + (right ? 0.5 : -0.5), (y1 + y2) / 2 - txt * 0.36])
+        text(label, size = txt, halign = right ? "left" : "right",
+             font = "DejaVu Sans:style=Bold");
+}
+
+// Leader line — for things that are a feature, not a span (the notches).
+module leader(at, from, label, col = C_OUT) {
+    d = from - at; u = d / norm(d);
+    color(col) {
         hull() {
-            translate(p) circle(r = lead / 2);
-            translate(from) circle(r = lead / 2);
+            translate(at + u * 0.1) circle(r = lw / 2);
+            translate(from - u * ah) circle(r = lw / 2);
         }
-        translate(at) {
-            difference() {
-                circle(r = marker_r);
-                circle(r = marker_r - lead);
-            }
-            translate([0, -txt * 0.42])
-                text(str(n), size = txt * 0.95, halign = "center",
-                     font = "DejaVu Sans:style=Bold");
-        }
+        translate(at - [0, txt * 0.36] - u * 0.4)
+            text(label, size = txt, halign = (at.x < from.x) ? "right" : "left",
+                 font = "DejaVu Sans:style=Bold");
     }
+    arrow_at(from, atan2(-u.y, -u.x), col);
 }
 
-// One legend row: number, parameter name, value, and what it means.
-module legend_row(n, i, name, value, meaning) {
-    y = -i * (txt * 1.72);
-    translate([col_x, y]) {
-        color("black") {
-            translate([0, txt * 0.30]) {
-                difference() {
-                    circle(r = marker_r);
-                    circle(r = marker_r - lead);
-                }
-                translate([0, -txt * 0.42])
-                    text(str(n), size = txt * 0.95, halign = "center",
-                         font = "DejaVu Sans:style=Bold");
-            }
-            translate([marker_r + 0.7, 0])
-                text(str(name, " = ", value), size = txt,
-                     font = "DejaVu Sans:style=Bold");
-            translate([marker_r + 19.0, 0])
-                text(meaning, size = txt * 0.92);
-        }
+module heading(t, at, col = C_OUT) {
+    color(col) translate(at) text(t, size = txt * 1.25,
+                                  font = "DejaVu Sans:style=Bold");
+}
+
+module axis(label, ang, len, col = C_OUT) {
+    color(col) {
+        rotate(ang) translate([0, -lw / 2]) square([len - ah, lw]);
+        translate([cos(ang) * (len + 0.85) - txt * 0.32,
+                   sin(ang) * (len + 0.85) - txt * 0.4])
+            text(label, size = txt, font = "DejaVu Sans:style=Bold");
     }
+    arrow_at([cos(ang) * len, sin(ang) * len], ang + 180, col);
 }
 
-module heading(t, at) {
-    color("black") translate(at)
-        text(t, size = txt * 1.15, font = "DejaVu Sans:style=Bold");
-}
+// ===== PLAN ================================================================
+// Dimensions sit on a LADDER — each one gets its own offset from the part, so
+// none can land on another. Innermost measurements go closest; the overall
+// outline goes furthest out. That ordering is the drafting convention and it is
+// also what keeps this readable as parameters get added.
+color(C_PART) projection() usbc_panel_plate();
+heading("PLAN — the visible face", [-plate_w / 2, plate_h / 2 + 9.4]);
 
-// One labelled axis arrow. ang is measured CCW from +X.
-module axis(label, ang, len) {
-    color("black") rotate(ang) {
-        translate([0, -lead / 2]) square([len - 0.8, lead]);
-        translate([len - 0.8, 0]) polygon([[0, -0.34], [0, 0.34], [0.8, 0]]);
-    }
-    color("black")
-        translate([cos(ang) * (len + 0.9) - txt * 0.35,
-                   sin(ang) * (len + 0.9) - txt * 0.42])
-            text(label, size = txt * 1.05, font = "DejaVu Sans:style=Bold");
-}
+// --- above (rungs at +12.0, +15.4)
+dim_h(-prot_w / 2, prot_w / 2, plate_h / 2 + 2.0, prot_h / 2,
+      str("prot_w ", prot_w), C_PORT);
+dim_h(-screw_span / 2, screw_span / 2, plate_h / 2 + 5.6, sd / 2,
+      str("screw_span ", screw_span), C_FIX);
 
-// Axis triads. Which way Z points is the thing people get wrong on this part,
-// because the model is AUTHORED front-at-z-0 and EXPORTED rotated — so the
-// plan and the section do not share a Z direction, and saying so is the whole
-// reason these are here.
-module axes_plan(at) {
-    translate(at) {
-        axis("X", 0, 3.2);
-        axis("Y", 90, 3.2);
-        color("black") {
-            circle(r = 0.42);
-            translate([0.30, 0.30]) circle(r = 0.13);   // Z dot: out of the page
-        }
-        color("black") translate([-txt * 2.9, -txt * 1.9])
-            text("Z out of page", size = txt * 0.8);
-    }
-}
+// --- below (rungs at -13.0, -16.4, -19.8)
+dim_h(-pw / 2, pw / 2, -plate_h / 2 - 3.0, -ph / 2,
+      str("port_w ", port_w), C_PORT, false);
+dim_h(-bw / 2, bw / 2, -plate_h / 2 - 6.4, -bh / 2,
+      str("boss_w ", boss_w, " (", bw, " as cut)"), C_POCK, false);
+dim_h(-plate_w / 2, plate_w / 2, -plate_h / 2 - 9.8, -plate_h / 2,
+      str("plate_w ", plate_w), C_OUT, false);
 
-module axes_section(at) {
-    translate(at) {
-        axis("X", 0, 3.2);
-        axis("Z", 90, 3.2);
-        color("black") translate([-txt * 3.4, -txt * 1.9])
-            text("Y into page", size = txt * 0.8);
-        color("black") translate([-txt * 3.4, -txt * 3.1])
-            text(str("Z exaggerated x", zs), size = txt * 0.8);
-    }
-}
+// --- right (rungs at +16.2, +20.4, +25.2)
+dim_v(-prot_h / 2, prot_h / 2, plate_w / 2 + 2.0, prot_w / 2,
+      str("prot_h ", prot_h), C_PORT);
+dim_v(-plate_h / 2, plate_h / 2, plate_w / 2 + 9.0, plate_w / 2,
+      str("plate_h ", plate_h), C_OUT);
+dim_v(gap_h / 2, plate_h / 2, plate_w / 2 + 16.0, plate_w / 2 - 1.0,
+      str("overlap ", overlap), C_OUT);
 
-// --- plan view, projected straight off the model ----------------------------
-// projection() of the real solid, so this outline is the part, not a sketch.
-color([0.62, 0.72, 0.85])
-    projection() usbc_panel_plate();
+// --- left (rungs at -16.2, -21.0)
+dim_v(-ph / 2, ph / 2, -plate_w / 2 - 2.0, -pw / 2,
+      str("port_h ", port_h), C_PORT, false);
+dim_v(-bh / 2, bh / 2, -plate_w / 2 - 10.0, -bw / 2,
+      str("boss_h ", boss_h), C_POCK, false);
 
-// No separate outline pass. Drawing one as offset(+) minus offset(-) filled
-// the whole silhouette black, which hid every callout that sits ON the plate
-// (5, 6 and 8). A flat fill in the same colour as the section is clearer and
-// keeps the two views consistent.
+// features rather than spans
+leader([-plate_w / 2 - 3.0, 7.4], [-screw_span / 2 - sd / 2, 0],
+       str("screw_d ", screw_d), C_FIX);
+leader([plate_w / 2 + 3.0, -7.6], [notch_x, -plate_h / 2 + nr],
+       str("notch_r ", notch_r), C_OUT);
 
-heading("PLAN  (looking at the visible face)", [-plate_w / 2, plate_h / 2 + 1.4]);
-axes_plan([-plate_w / 2 - 10.5, -plate_h / 2 + 1.0]);
+translate([0, 0]) { axis("X", 0, 2.6, C_OUT); axis("Y", 90, 2.6, C_OUT); }
 
-// Callouts on the plan.
-callout( 1, [-plate_w / 2 - 2.6,  plate_h / 2 + 0.6], [-plate_w / 2, plate_h / 2]);
-callout( 2, [ plate_w / 2 + 2.6,  0                 ], [ plate_w / 2, 0]);
-callout( 3, [ 0,                  plate_h / 2 + 2.6 ], [ 0, plate_h / 2]);
-callout( 4, [ 0,                  0                 ], [ pw / 2, 0]);
-// Markers must sit OFF the part. A 2D marker drawn on top of the plate is
-// coplanar with it and renders as a solid disc instead of a numbered ring —
-// and pointing in from outside is the drafting convention anyway.
-callout( 5, [ plate_w / 2 + 2.6, -3.4               ], [ prot_w / 2, -prot_h / 2]);
-callout( 6, [ screw_span / 2,     plate_h / 2 + 2.6 ], [ screw_span / 2, sd / 2]);
-callout( 7, [ 0,                 -plate_h / 2 - 2.6 ], [ notch_x, -plate_h / 2 + nr]);
-callout( 8, [-plate_w / 2 - 2.6, -3.4               ], [-bw / 2, -bh / 2]);
-
-// --- section, cut through the middle ----------------------------------------
-// projection(cut = true) on the rotated solid gives the true Z stack.
+// ===== SECTION =============================================================
 translate([0, sec_y]) {
-    heading("SECTION  (cut on the long axis, print orientation)",
-            [-plate_w / 2, 4.0]);
-    axes_section([-plate_w / 2 - 10.5, -1.5]);
+    heading("SECTION — print orientation, bed at the bottom", [-plate_w / 2, zs * 4.4]);
+    // Section the PRINT-ORIENTED assembly, not the raw module. usbc_panel_plate()
+    // is authored front-at-z-0 with the protrusion at NEGATIVE z, so sectioning
+    // it directly draws the protrusion below the plate — design orientation,
+    // under a heading that says print orientation. Applying the same flip the
+    // export does puts the bed at y = 0 and everything above it, which is what
+    // the dimensions below already assume.
+    scale([1, zs]) color(C_PART)
+        projection(cut = true) rotate([-90, 0, 0])
+            translate([0, 0, top_z]) rotate([180, 0, 0]) usbc_panel_plate();
 
-    // Z is exaggerated or the 0.2 mm layers are invisible next to a 28 mm
-    // plate. The callouts must be scaled by the SAME factor or they point at
-    // nothing — the drawing is stretched, the annotations are not.
-    scale([1, zs])
-        color([0.62, 0.72, 0.85])
-            projection(cut = true) rotate([90, 0, 0]) usbc_panel_plate();
+    // right ladder
+    dim_v(zs * (plate_t - lip_t), zs * plate_t, plate_w / 2 + 2.0, pw / 2,
+          str("lip_t ", lip_t), C_PORT);
+    dim_v(zs * plate_t, zs * (plate_t + prot_t), plate_w / 2 + 9.0, prot_w / 2,
+          str("prot_t ", prot_t), C_PORT);
+    dim_v(0, zs * pocket_d, plate_w / 2 + 16.0, bw / 2,
+          str("pocket_d ", pocket_d), C_POCK);
 
-    callout( 9, [-plate_w / 2 - 3.2, zs * -1.0], [-plate_w / 2,       zs * -1.2]);
-    callout(10, [ pw / 2 + 4.4,      zs *  2.3], [ pw / 2,            zs *  2.0]);
-    callout(11, [ plate_w / 2 + 3.2, zs * -0.4], [ bw / 2,            zs * -0.6]);
-    callout(12, [-plate_w / 2 - 3.2, zs *  3.4], [-pw / 2,            zs *  3.15]);
-    callout(13, [-plate_w / 2 - 3.2, zs *  1.2], [-pw / 2,            zs *  1.5]);
-}
-
-// --- legend -----------------------------------------------------------------
-heading("PLAN", [col_x, plate_h / 2 + 1.4]);
-legend_row( 1,  1, "plate_w",  plate_w,  "overall width  (derived)");
-legend_row( 2,  2, "plate_h",  plate_h,  "overall height  (derived)");
-legend_row( 3,  3, "overlap",  overlap,  "lap onto the panel, all round");
-legend_row( 4,  4, "port_w x port_h", str(port_w, " x ", port_h),
-                                       "the hole you see  (as cut: pw x ph)");
-legend_row( 5,  5, "prot_w x prot_h", str(prot_w, " x ", prot_h),
-                                       "raised rectangle on the visible face");
-legend_row( 6,  6, "screw_span", screw_span, "screw centres  (screw_d = hole)");
-legend_row( 7,  7, "notch_r",  notch_r,  "half-circle bite in each Y edge");
-legend_row( 8,  8, "boss_w x boss_h", str(boss_w, " x ", boss_h),
-                                       "rear pocket, clears the connector boss");
-
-translate([0, -9 * (txt * 1.72)]) {
-    heading("SECTION", [col_x, 0]);
-    legend_row( 9, 1, "plate_t",  plate_t,  "plate thickness");
-    legend_row(10, 2, "lip_t",    lip_t,    "lip alone (port_recess = plug reach)");
-    legend_row(11, 3, "pocket_d", pocket_d, "pocket depth left after the bridge slot");
-    legend_row(12, 4, "prot_t",   prot_t,   "how far the rectangle stands proud");
-    legend_row(13, 5, "bridge slot", str(pw, " x ", bh),
-                                       "stage 1 of the two-bridge trick, fdm_layer_h tall");
-}
-
-// --- the ones with no place on a drawing ------------------------------------
-translate([0, -16.4 * (txt * 1.72)]) {
-    heading("NOT ON THE DRAWING — but they change the geometry", [col_x, 0]);
-    translate([col_x, 0]) color("black") {
-        translate([0, -txt * 1.9])
-            text(str("fdm_hole_comp = ", fdm_hole_comp,
-                     "   grows every CUT per side. Nominal vs as-cut:"),
-                 size = txt * 0.92);
-        translate([1.2, -txt * 3.5])
-            text(str("port ", port_w, " x ", port_h, " -> ", pw, " x ", ph,
-                     "     pocket ", boss_w, " x ", boss_h, " -> ", bw, " x ", bh,
-                     "     screw ", screw_d, " -> ", sd),
-                 size = txt * 0.92);
-        translate([0, -txt * 5.4])
-            text(str("boss_clear = ", boss_clear,
-                     "   REAL fit clearance on the pocket, on top of fdm_hole_comp"),
-                 size = txt * 0.92);
-        translate([0, -txt * 7.0])
-            text(str("fdm_layer_h = ", fdm_layer_h,
-                     "   must match the slicer, or the stages land mid-layer"),
-                 size = txt * 0.92);
-        translate([0, -txt * 8.6])
-            text(str("flip_for_print = ", flip_for_print ? "true" : "false",
-                     "   exports BACK FACE DOWN -- do not flip again"),
-                 size = txt * 0.92);
+    // left ladder — plate_t furthest out, the three staged layers stepping in.
+    // They are the reason the section is exaggerated at all: at true scale
+    // three 0.2 mm layers are one pixel.
+    dim_v(0, zs * plate_t, -plate_w / 2 - 16.0, -plate_w / 2,
+          str("plate_t ", plate_t), C_OUT, false);
+    for (i = [0 : 2]) {
+        zlo = zs * (pocket_d + i * fdm_layer_h);
+        nm  = ["L1", "L2", "L3"][i];   // spelled out in the key
+        dim_v(zlo, zlo + zs * fdm_layer_h, -plate_w / 2 - 2.0 - i * 4.0,
+              -bw / 2, str(nm, " ", fdm_layer_h), C_STAGE, false);
     }
+
+    axis("X", 0, 3.0, C_OUT);
+    axis("Z", 90, 3.0, C_OUT);
+    color(C_OUT) translate([-3.4, -2.6])
+        text(str("Z exaggerated x", zs), size = txt * 0.9);
+}
+
+// ===== KEY =================================================================
+translate([-plate_w / 2 - 15.0, sec_y - 8.0]) {
+    heading("COLOUR KEY", [0, 2.2]);
+    keys = [[C_OUT, "plate outline"], [C_PORT, "port opening / raised rect"],
+            [C_FIX, "fasteners"], [C_POCK, "rear pocket (behind the face)"],
+            [C_STAGE, "staged bridge layers"]];
+    for (i = [0 : len(keys) - 1])
+        translate([0, -i * txt * 1.7]) {
+            color(keys[i][0]) square([2.2, lw * 3]);
+            color(keys[i][0]) translate([2.8, -txt * 0.34])
+                text(keys[i][1], size = txt);
+        }
+}
+
+// Facts with no place on a drawing.
+translate([9.0, sec_y - 8.0]) {
+    heading("NOT DIMENSIONABLE — but they change the geometry", [0, 2.2]);
+    notes = [
+        str("fdm_layer_h = ", fdm_layer_h, "   fdm_extrusion_w = ",
+            fdm_extrusion_w, "   fdm_hole_comp = ", fdm_hole_comp,
+            "   — mirror these from the slicer profile"),
+        str("as cut:  port ", pw, " x ", ph, "   pocket ", bw, " x ", bh,
+            "   screw ", sd, "   notch r", nr),
+        str("boss_clear = ", boss_clear,
+            "   real fit clearance, on top of fdm_hole_comp"),
+        str("flip_for_print = ", flip_for_print ? "true" : "false",
+            "   exports BACK FACE DOWN — do not flip again in the slicer")
+    ];
+    for (i = [0 : len(notes) - 1])
+        color(C_OUT) translate([0, -i * txt * 1.7 - txt * 0.34])
+            text(notes[i], size = txt * 0.95);
 }
