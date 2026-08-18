@@ -230,7 +230,10 @@ if (notch_r > 0) {
 
 screws_over_air = screw_envelope < gap_w;
 echo(str("screws land on     : ",
-         screws_over_air ? "OPEN AIR - plate clamps to the connector, panel trapped by the lap"
+         screws_over_air ? str("OPEN AIR - plate clamps to the connector, not to the panel",
+                               overlap > 0
+                                 ? " - the panel is trapped between this plate's lap and the connector flange"
+                                 : " - and with overlap 0 there is no lap, so the panel is not trapped at all")
                          : "panel material - plate bolts through the panel"));
 
 /*
@@ -271,8 +274,13 @@ assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
 
 /* WARN — it builds, but. Collected as a list so they can be counted and reported together rather than scattered through the log where a single line is easy to scroll past. */
 warns = [
-    /* coverage */
-    if (overlap <= corner_min)
+    /* Coverage. Two DIFFERENT failures, so two guards. Testing overlap <= corner_min alone conflates them and degenerates at corner_r = 0, where corner_min is 0, the condition is 0 <= 0, and it reports rounded corners falling inside on a plate that has no rounded corners. */
+    if (overlap <= 0)
+        str("overlap ", overlap, " - the plate is no larger than the aperture, so",
+            " NOTHING in front of the panel is wider than the hole. The connector",
+            " flange behind can still stop it pulling OUT, but nothing stops the",
+            " assembly being pushed IN - which is the direction a plug loads it"),
+    if (corner_r > 0 && overlap > 0 && overlap <= corner_min)
         str("overlap ", overlap, " is at or under the corner floor ", corner_min,
             " - the ROUNDED CORNERS fall inside the aperture, leaving four open",
             " gaps into the case even though every straight edge covers"),
@@ -287,11 +295,12 @@ warns = [
         str("web beside pocket ", web_side, " mm is under 2 perimeters (",
             perim2, ") as cut"),
 
-    /* the notches eat the lap, which is the only retention this part has */
+    /* The notches cut past the aperture edge. Where overlap > 0 that severs the lap; where overlap is already 0 there is no lap left to sever and the cut is simply an open gap into the case. Both are the same measurement, so the wording must not assert a lap that may not exist. */
     if (notch_r > 0 && notch_vs_gap <= 0.4)
-        str("notch breaks through into the case opening by ", -notch_vs_gap,
-            " mm - it severs the lap across its whole chord, and the lap is the",
-            " ONLY thing retaining this plate"),
+        str("notch reaches ", -notch_vs_gap,
+            " mm past the aperture edge - it opens a gap straight into the case",
+            " across its whole chord, and removes any lap there was to retain",
+            " the plate at that edge"),
     if (notch_over_pocket && notch_web <= 0.8)
         str("notch cuts to within ", notch_web, " mm of the rear pocket"),
     if (notch_r > 0 && notch_screw_gap <= 0.8)

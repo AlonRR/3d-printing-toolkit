@@ -53,7 +53,7 @@ boss_clear = 0.25;  /* REAL clearance per side, on top of fdm_hole_comp. fdm_hol
 pocket_chamfer = 0.4;   /* Chamfer at the pocket mouth. That mouth is the bed face, so this costs nothing and eases the boss in. 0 = none. */
 
 /* [Raised rectangle protrusion] */
-prot_w = 14.7;      /* MEASURED */
+prot_w = 14.4;      /* MEASURED */
 prot_h = 6.1;       /* MEASURED */
 prot_t = 1.5;       /* <<CONFIRM>> how far it stands proud. NOT measured. */
 prot_r = 1.5;       /* Corner rounding. */

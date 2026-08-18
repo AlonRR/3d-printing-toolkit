@@ -14,10 +14,10 @@ Source is split like C:
 Every parameter is a named variable, tagged MEASURED or <<CONFIRM>>.
 
 ```
-        raised rectangle (14.7 x 6.1)
+        raised rectangle (14.4 x 6.1)
    +---------------------------------------+
    |          .-------------.              |
-   |   O      |   [=====]   |      O       |   28.4 x 20.0 x 2.4 mm
+   |   O      |   [=====]   |      O       |   23.9 x 15.0 x 2.4 mm
    | screw    '-------------'    screw     |
    |            notch top/bottom           |
    +---------------------------------------+
@@ -31,8 +31,8 @@ Every parameter is a named variable, tagged MEASURED or <<CONFIRM>>.
 ## Current geometry
 
 ```
-plate              : 23.4 x 15 x 2.4 mm
-  width set by     : COVERAGE (23.4) - the hard floor   [screw_style hole]
+plate              : 23.9 x 15 x 2.4 mm
+  width set by     : FASTENERS (23.9) - coverage alone would allow 23.4   [screw_style hole]
 covers opening     : 23.4 x 15 mm, lap 0 mm (corner floor 0.43934)
 port opening       : 9.6 x 3.9 mm as cut
 port recess        : 2.3 mm a plug must reach in (lip 0.8 + protrusion 1.5)
@@ -44,19 +44,19 @@ two-bridge trick   : ON -- 3 staged layers of 0.2 mm
   L3 rounded       : r2 fillets only, laid on the solid rectangle below
 web beside pocket  : 1.2 mm
 web above/below    : 3.1 mm
-outboard of screw  : 0.2 mm
-protrusion         : 14.7 x 6.1 x 1.5 mm on the front
-  frame beside port: 2.55 mm
+outboard of screw  : 0.45 mm
+protrusion         : 14.4 x 6.1 x 1.5 mm on the front
+  frame beside port: 2.4 mm
   frame over/under : 1.1 mm
-  prot -> screw    : 0.95 mm
+  prot -> screw    : 1.1 mm
 notch              : r 1.8 mm (1.95 as cut) at x = 0
   notch -> pocket  : 1.15 mm
   notch -> screw   : 8.87014 mm
   lap left at notch: -1.95 mm
-screws land on     : OPEN AIR - plate clamps to the connector, panel trapped by the lap
-WARNING: overlap 0 is at or under the corner floor 0.43934 - the ROUNDED CORNERS fall inside the aperture, leaving four open gaps into the case even though every straight edge covers
-WARNING: outboard of screw 0.2 mm is under 3 perimeters (1.35) as cut - a screw pulls directly on this and it will split
-WARNING: notch breaks through into the case opening by 1.95 mm - it severs the lap across its whole chord, and the lap is the ONLY thing retaining this plate
+screws land on     : OPEN AIR - plate clamps to the connector, not to the panel - and with overlap 0 there is no lap, so the panel is not trapped at all
+WARNING: overlap 0 - the plate is no larger than the aperture, so NOTHING in front of the panel is wider than the hole. The connector flange behind can still stop it pulling OUT, but nothing stops the assembly being pushed IN - which is the direction a plug loads it
+WARNING: outboard of screw 0.45 mm is under 3 perimeters (1.35) as cut - a screw pulls directly on this and it will split
+WARNING: notch reaches 1.95 mm past the aperture edge - it opens a gap straight into the case across its whole chord, and removes any lap there was to retain the plate at that edge
 warnings           : 3 - the part will build, read them
 ```
 
@@ -69,10 +69,10 @@ warnings           : 3 - the part will build, read them
 | `screw_span` | **19.8** | **MEASURED** — see derivation below |
 | `screw_d` | **2.9** (M2.5) | **MEASURED** — see derivation below |
 | `boss_h` | **8.0** | **MEASURED** |
-| `prot_w` × `prot_h` | **14.7 × 6.1** | **MEASURED** |
+| `prot_w` × `prot_h` | **14.4 × 6.1** | **MEASURED** |
 | `boss_w` | 13.4 | ⚠️ **NOT measured** — photo-scaled, and it feeds the fit |
 | `prot_t` | 1.5 | ⚠️ **NOT measured** |
-| `overlap` | 2.5 | chosen — see "the lap is the only retention" |
+| `overlap` | **0** | chosen deliberately — the fitting is space-limited. See "Retention" |
 | `plate_t` | 2.4 | chosen — whole layers, see "layer alignment" |
 | `port_w` × `port_h` | 9.3 × 3.6 | chosen to hug the 8.94 × 3.16 receptacle shell |
 
@@ -103,21 +103,46 @@ file scope and used by the geometry, the echoes and the guards alike.
 for a pocket means printing *line-to-line* on the boss. Fit needs its own
 allowance, so the pocket gets 0.25 mm/side on top.
 
-## The lap is the only retention
+## Retention
 
 The aperture is 23.4 mm wide; the screws span 22.70 mm outer-to-outer. Both
-screws therefore pass through **open air**, not sheet metal. The plate is
-clamped to the *connector*, and the panel is trapped between the plate's lap and
-the connector's flange — so the lap is doing all the work.
+screws therefore pass through **open air**, not sheet metal. The plate bolts to
+the *connector*, not to the panel.
 
-Two consequences the guards now enforce:
+That leaves the panel held only by what is larger than the hole on each side of
+it, and the two directions are **not** symmetric:
 
-- **`overlap` has a hard floor of `corner_r * (1 - 1/sqrt(2))` = 0.44 mm.** Below
-  that the *rounded corners* fall inside the aperture and leave four open gaps
-  into the case even though every straight edge nominally covers. This is not
-  obvious from the edge arithmetic and is asserted, not commented.
-- **The notches must not eat the lap.** `notch_r` is sized so the cut *including*
-  `fdm_hole_comp` still leaves lap on the panel — currently 0.55 mm at the notch.
+| Direction | What stops it | Status at `overlap = 0` |
+|---|---|---|
+| assembly pulled **OUT**, forward | the connector's flange, behind the panel | works — *if* that flange exceeds 23.4 × 15 (**unmeasured**) |
+| assembly pushed **IN**, backward | the plate's lap, in front of the panel | **nothing** — the plate is no larger than the hole |
+
+`overlap = 0` is deliberate: the fitting is space-limited and the plate cannot
+grow. The cost is the second row, and push-in is the direction a plug loads it.
+The guard states exactly that rather than calling it a failure.
+
+A **rear flange on the plate does not fix this.** Trapping a sheet needs material
+on both faces of it; a rear flange sits on the same side as the connector flange,
+so the assembly can still travel inward. Only something in *front* wider than the
+aperture — or friction/adhesive — resists push-in.
+
+Two guards cover the geometry, and they are deliberately separate because they
+describe different failures:
+
+- **No lap at all** (`overlap <= 0`) — nothing in front of the panel is wider
+  than the hole. Independent of `corner_r`.
+- **Corners only** (`corner_r > 0 && 0 < overlap <= corner_r * (1 - 1/sqrt(2))`)
+  — the straight edges cover but the *rounded corners* fall inside, leaving four
+  open gaps. Not obvious from the edge arithmetic.
+
+Testing `overlap <= corner_min` alone conflates them, and degenerates at
+`corner_r = 0`: `corner_min` is 0, the condition reads `0 <= 0`, and it reports
+rounded corners falling inside on a plate that has no rounded corners.
+
+**The notches cut past the aperture edge** by 1.95 mm. At `overlap = 0` there is
+no lap left for them to remove, so the warning states what is actually true — an
+open gap into the case across the notch chord — rather than asserting a lap that
+does not exist.
 
 ## Layer alignment
 
@@ -205,7 +230,7 @@ Two kinds, and the distinction is deliberate.
 | | Count | Meaning | Behaviour |
 |---|---:|---|---|
 | **BLOCK** — `assert` | 12 | the geometry is impossible or self-contradictory: a feature vanishes, inverts, or cuts the part in two | render stops |
-| **WARN** — `echo "WARNING: …"` | 14 | it builds and prints, but is compromised: a wall under the perimeter floor, a notch into the case, a stage landing mid-layer | STL still produced |
+| **WARN** — `echo "WARNING: …"` | 15 | it builds and prints, but is compromised: a wall under the perimeter floor, a notch into the case, a stage landing mid-layer | STL still produced |
 
 Accepting a thin wall is the operator's call, so it warns. Producing a part with
 no lip at all is not a call, so it blocks. `scad-check.sh` mirrors the split —
