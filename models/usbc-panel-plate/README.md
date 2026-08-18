@@ -4,8 +4,14 @@ A printed plate covering an oversized rectangular aperture in a PC case front
 panel, around a commodity IP67-style **panel-mount USB-C feedthrough** (moulded
 black flange, raised rounded-rect boss around the port, one screw hole per side).
 
-Source: [`usbc-panel-plate.scad`](usbc-panel-plate.scad). Parametric — every
-dimension is a named variable at the top of the file.
+Source is split like C:
+
+| File | |
+|---|---|
+| [`usbc-panel-plate.params.scad`](usbc-panel-plate.params.scad) | **the header** — every value you SET, and nothing else. No geometry, no derived values |
+| [`usbc-panel-plate.scad`](usbc-panel-plate.scad) | **the body** — derived values, modules, geometry, echoes, guards. Render this one |
+
+Every parameter is a named variable, tagged MEASURED or <<CONFIRM>>.
 
 ```
         raised rectangle (14.7 x 6.1)
@@ -25,8 +31,9 @@ dimension is a named variable at the top of the file.
 ## Current geometry
 
 ```
-plate              : 28.4 x 20 x 2.4 mm
-covers opening     : 23.4 x 15 mm, lap 2.5 mm (corner floor 0.43934)
+plate              : 23.4 x 15 x 2.4 mm
+  width set by     : COVERAGE (23.4) - the hard floor   [screw_style hole]
+covers opening     : 23.4 x 15 mm, lap 0 mm (corner floor 0.43934)
 port opening       : 9.6 x 3.9 mm as cut
 port recess        : 2.3 mm a plug must reach in (lip 0.8 + protrusion 1.5)
 rear pocket        : 14.2 x 8.8 mm as cut, 1.2 mm deep, 0.25 mm/side clearance on the boss
@@ -36,18 +43,23 @@ two-bridge trick   : ON -- 3 staged layers of 0.2 mm
   L2 rectangle     : 9.6 x 3.9 square  -> the other two sides bridge 9.6 mm
   L3 rounded       : r2 fillets only, laid on the solid rectangle below
 web beside pocket  : 1.2 mm
-web above/below    : 5.6 mm
-outboard of screw  : 2.7 mm
+web above/below    : 3.1 mm
+outboard of screw  : 0.2 mm
 protrusion         : 14.7 x 6.1 x 1.5 mm on the front
   frame beside port: 2.55 mm
   frame over/under : 1.1 mm
   prot -> screw    : 0.95 mm
 notch              : r 1.8 mm (1.95 as cut) at x = 0
-  notch -> pocket  : 3.65 mm
-  notch -> screw   : 10.5216 mm
-  lap left at notch: 0.55 mm
+  notch -> pocket  : 1.15 mm
+  notch -> screw   : 8.87014 mm
+  lap left at notch: -1.95 mm
 screws land on     : OPEN AIR - plate clamps to the connector, panel trapped by the lap
+WARNING: overlap 0 is at or under the corner floor 0.43934 - the ROUNDED CORNERS fall inside the aperture, leaving four open gaps into the case even though every straight edge covers
+WARNING: outboard of screw 0.2 mm is under 3 perimeters (1.35) as cut - a screw pulls directly on this and it will split
+WARNING: notch breaks through into the case opening by 1.95 mm - it severs the lap across its whole chord, and the lap is the ONLY thing retaining this plate
+warnings           : 3 - the part will build, read them
 ```
+
 ## Dimension provenance
 
 | Parameter | Value | Basis |

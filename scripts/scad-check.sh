@@ -114,12 +114,27 @@ echo "==> model vs profile"
 # Strip the COMMENT FIRST. These declarations carry a trailing "// = layer_height"
 # explaining what they mirror, and a greedy .*= happily matches that one instead
 # of the assignment -- which reads as a profile mismatch on a file that is fine.
+# Search the model AND anything it includes. Parameters commonly live in a
+# separate header file, and grepping only the main file made this check report
+# "not declared" and pass — a silent degradation that sounds benign while the
+# most valuable check in the script has quietly stopped running.
+srcs() {
+    echo "$SCAD"
+    d=$(dirname "$SCAD")
+    grep -oE '^[[:space:]]*include[[:space:]]*<[^>]+>' "$SCAD" 2>/dev/null \
+        | sed 's/.*<//; s/>.*//' \
+        | while read -r f; do [ -f "$d/$f" ] && echo "$d/$f"; done
+}
 m() {
-    grep -E "^$1[[:space:]]*=" "$SCAD" | head -1 \
+    # shellcheck disable=SC2046
+    grep -hE "^$1[[:space:]]*=" $(srcs) 2>/dev/null | head -1 \
         | sed 's|//.*||' | sed 's/.*=[[:space:]]*//; s/;.*//' | tr -d ' '
 }
 cmp_fact() {  # name, model value, gcode value
-    if [ -z "$2" ]; then note "$1: not declared in the model"; return; fi
+    if [ -z "$2" ]; then
+        bad "$1 is not declared anywhere in the model or its includes -- the profile cross-check cannot run"
+        return
+    fi
     if [ "$2" = "$3" ]; then note "$1 $2 == profile $3"
     else bad "$1 $2 != profile $3 -- the model was designed for a different profile"; fi
 }

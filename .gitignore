@@ -16,3 +16,10 @@ __pycache__/
 
 # scad-preview.sh scratch output
 preview/
+
+# OpenSCAD Customizer parameter sets. The GUI writes these automatically, which
+# makes them a SECOND source of truth that only the GUI reads — the CLI ignores
+# them unless given -p/-P. One went stale here holding a superseded design plus
+# a parameter that had since been renamed, so the preset silently set a variable
+# nothing read. The .scad is the source of truth.
+*.json
