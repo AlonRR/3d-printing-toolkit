@@ -11,9 +11,7 @@
 #   sec-yz.png    cross-section on the Y-Z plane
 #   slice-Z.png   thin wafer at each SLICE_Z given, looking straight down
 #
-# Sections and slices import the EXPORTED STL, not the .scad. That is the
-# point: it checks the file you would actually slice, so a bug in the export
-# path cannot hide behind a correct-looking render of the source.
+# Sections and slices import the EXPORTED STL, not the .scad. That is the point: it checks the file you would actually slice, so a bug in the export path cannot hide behind a correct-looking render of the source.
 #
 # --camera is the gimbal form:  tx,ty,tz, rx,ry,rz, dist
 set -eu
@@ -27,9 +25,7 @@ CS=Tomorrow
 STL="$OUT/_model.stl"
 TMP="$OUT/_tmp.scad"
 
-# Resolve the binaries. openscad is on PATH, but only for processes started
-# AFTER it was added -- an older shell will not see it, so fall back to the
-# install path rather than dying with a bare 127.
+# Resolve the binaries. openscad is on PATH, but only for processes started AFTER it was added -- an older shell will not see it, so fall back to the install path rather than dying with a bare 127.
 OPENSCAD=${OPENSCAD:-}
 if [ -z "$OPENSCAD" ]; then
     if command -v openscad >/dev/null 2>&1; then OPENSCAD=openscad
@@ -38,17 +34,12 @@ fi
 [ -x "$OPENSCAD" ] || command -v "$OPENSCAD" >/dev/null 2>&1 || {
     echo "openscad not found; set OPENSCAD=/path/to/openscad" >&2; exit 1; }
 
-# Optional: PrusaSlicer reports the bounding box, which is only used to pick a
-# camera distance. Absent, fall back to a sane default.
+# Optional: PrusaSlicer reports the bounding box, which is only used to pick a camera distance. Absent, fall back to a sane default.
 PSLICER=${PSLICER:-/c/Program Files/Prusa3D/PrusaSlicer/prusa-slicer-console.exe}
 
-# Absolute path for import(), which is resolved relative to the generated
-# .scad rather than the working directory.
+# Absolute path for import(), which is resolved relative to the generated .scad rather than the working directory.
 #
-# MUST be a Windows path. OpenSCAD is a native binary and cannot open a Git
-# Bash path like /c/Users/... -- it fails the import, renders an empty scene,
-# and still exits 0, so you get a plausible blank PNG instead of an error.
-# `pwd -W` gives C:/Users/...; plain `pwd` does not.
+# MUST be a Windows path. OpenSCAD is a native binary and cannot open a Git Bash path like /c/Users/... -- it fails the import, renders an empty scene, and still exits 0, so you get a plausible blank PNG instead of an error. `pwd -W` gives C:/Users/...; plain `pwd` does not.
 abspath() (
     cd "$(dirname "$1")" || exit 1
     d=$(pwd -W 2>/dev/null) || d=$(pwd)
@@ -60,22 +51,18 @@ echo "==> exporting STL"
 [ -s "$STL" ] || { echo "STL export produced nothing -- check the asserts above" >&2; exit 1; }
 STL_ABS=$(abspath "$STL")
 
-# Bounding box, only used to pick a camera distance. PrusaSlicer reports it;
-# without it, fall back to a default rather than failing.
+# Bounding box, only used to pick a camera distance. PrusaSlicer reports it; without it, fall back to a default rather than failing.
 INFO=$("$PSLICER" --info "$STL" 2>/dev/null || true)
 SIZE=$(printf '%s\n' "$INFO" | awk -F= '/size_[xyz]/ {gsub(/ /,"",$2); print $2+0}' | sort -g | tail -1)
 MIDZ=$(printf '%s\n' "$INFO" | awk -F= '/size_z/ {gsub(/ /,"",$2); printf "%.2f", ($2+0)/2}')
 [ -n "${SIZE:-}" ] && [ "$SIZE" != "0" ] || SIZE=30
 [ -n "${MIDZ:-}" ] || MIDZ=0
 DIST=$(awk -v s="$SIZE" 'BEGIN { printf "%.1f", s * 2.2 }')
-# A cross-section is a thin profile, not the whole silhouette, so the distance
-# that frames the model leaves it a speck. Sections get their own, tighter one.
+# A cross-section is a thin profile, not the whole silhouette, so the distance that frames the model leaves it a speck. Sections get their own, tighter one.
 SECDIST=$(awk -v s="$SIZE" 'BEGIN { printf "%.1f", s * 0.9 }')
 echo "    largest dimension $SIZE mm -> camera $DIST (model) / $SECDIST (sections)"
 
-# Never swallow OpenSCAD's stderr here. A failed import is only a WARNING and
-# still exits 0, so silence turns a broken render into a blank PNG that looks
-# like a legitimate result.
+# Never swallow OpenSCAD's stderr here. A failed import is only a WARNING and still exits 0, so silence turns a broken render into a blank PNG that looks like a legitimate result.
 render() {
     _out=$("$OPENSCAD" -o "$1" --imgsize="$2" --camera="$3" ${4:-} \
            --colorscheme=$CS "$5" 2>&1) || true

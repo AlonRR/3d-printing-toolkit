@@ -32,7 +32,7 @@ To make the plate narrower, lower the fastener floor — either by trimming scre
 */
 screw_envelope = 22.70;     /* MEASURED, outer edge to outer edge. */
 screw_style = "hole";       /* "hole" = closed clearance hole, needs material all the way round, and the edge distance is structural. "slot" = U-shaped and open to the plate edge, so the plate slides onto the screws — nothing is left to split, the fastener floor disappears, and the plate can shrink to the coverage floor. */
-screw_edge_margin = 0;      /* Material outboard of each hole, per side. Ignored when screw_style = "slot". Three perimeters is the rule (docs/fdm-design-rules.md §4); under that you get a warning rather than a block, because it is your call. */
+screw_edge_margin = 0.2;      /* Material outboard of each hole, per side. Ignored when screw_style = "slot". Three perimeters is the rule (docs/fdm-design-rules.md §4); under that you get a warning rather than a block, because it is your call. */
 
 plate_t  = 2.4;     /* Chosen so every internal transition lands ON a layer boundary in the print orientation. At 0.2 mm layers, 2.4 puts the pocket floor and all three staged layers at print z 1.2 / 1.4 / 1.6 / 2.4. At 2.5 they all land mid-layer and the staging resolves on a slicer tie-break rather than on the geometry. */
 corner_r = 1.5;     /* Rounding on the outline corners. Feeds the overlap floor above — the bigger this is, the more lap the corners need. */

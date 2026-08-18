@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
-# Verify an OpenSCAD part end to end: render -> STL -> manifold -> slice, and
-# cross-check the model's fdm_* values against the profile it was actually
-# sliced with.
+# Verify an OpenSCAD part end to end: render -> STL -> manifold -> slice, and cross-check the model's fdm_* values against the profile it was actually sliced with.
 #
 #   scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]
 #
@@ -17,12 +15,7 @@
 #
 # Exit codes:  0 clean   1 will not build / must not print   2 builds, with warnings
 #
-# WHY THE CROSS-CHECK. The model carries fdm_layer_h / fdm_extrusion_w because
-# its geometry depends on them -- staged layers land mid-layer if the layer
-# height is wrong, and every wall threshold is a multiple of the bead width.
-# Nothing otherwise stops the two drifting apart, and when they do the part
-# still slices, still prints, and is quietly weaker than the numbers claim.
-# That is the failure this script exists to catch.
+# WHY THE CROSS-CHECK. The model carries fdm_layer_h / fdm_extrusion_w because its geometry depends on them -- staged layers land mid-layer if the layer height is wrong, and every wall threshold is a multiple of the bead width. Nothing otherwise stops the two drifting apart, and when they do the part still slices, still prints, and is quietly weaker than the numbers claim. That is the failure this script exists to catch.
 set -eu
 
 SCAD=${1:?usage: scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]}
@@ -45,16 +38,13 @@ note() { printf '  %s\n' "$1"; }
 bad()  { printf '  !! %s\n' "$1"; fail=1; }
 
 # --- 1. render, and let the asserts speak ----------------------------------
-# Delete the STL FIRST. If the render fails, OpenSCAD leaves the previous one
-# untouched, and every step after this would happily validate stale geometry
-# and report PASS on a model that does not build.
+# Delete the STL FIRST. If the render fails, OpenSCAD leaves the previous one untouched, and every step after this would happily validate stale geometry and report PASS on a model that does not build.
 echo "==> render"
 rm -f "$STL"
 out=$("$OPENSCAD" -o "$STL" "$SCAD" 2>&1) || true
 printf '%s\n' "$out" | grep -E "^ECHO:" | grep -v '"WARNING' | sed 's/^ECHO: /  /' | tr -d '"'
 
-# An assert means the geometry is IMPOSSIBLE — a feature would vanish, invert,
-# or cut the part in two. There is no STL worth producing, so stop.
+# An assert means the geometry is IMPOSSIBLE — a feature would vanish, invert, or cut the part in two. There is no STL worth producing, so stop.
 if printf '%s\n' "$out" | grep -qi "ERROR: Assertion"; then
     printf '%s\n' "$out" | grep -i "ERROR: Assertion" | sed 's/^/  !! /'
     echo
@@ -62,8 +52,7 @@ if printf '%s\n' "$out" | grep -qi "ERROR: Assertion"; then
     exit 1
 fi
 
-# A WARNING means it builds but something is compromised. That is a judgement
-# call for the operator, so it is surfaced loudly and the STL is still made.
+# A WARNING means it builds but something is compromised. That is a judgement call for the operator, so it is surfaced loudly and the STL is still made.
 nwarn=$(printf '%s\n' "$out" | grep -c '^ECHO: "WARNING' || true)
 if [ "${nwarn:-0}" -gt 0 ]; then
     printf '%s\n' "$out" | grep '^ECHO: "WARNING' \
@@ -72,10 +61,7 @@ if [ "${nwarn:-0}" -gt 0 ]; then
 else
     warned=0
 fi
-# OpenSCAD's OWN warnings — a failed import is only a WARNING and still exits 0,
-# so it has to be caught. Anchored to line start: the model's design warnings
-# arrive as ECHO: "WARNING: ..." and must not be swept up here, or every
-# judgement call becomes a hard failure.
+# OpenSCAD's OWN warnings — a failed import is only a WARNING and still exits 0, so it has to be caught. Anchored to line start: the model's design warnings arrive as ECHO: "WARNING: ..." and must not be swept up here, or every judgement call becomes a hard failure.
 if printf '%s\n' "$out" | grep -q "^WARNING:"; then
     printf '%s\n' "$out" | grep "^WARNING:" | sed 's/^/  !! /'
     fail=1
@@ -111,13 +97,7 @@ note "$(grep -E '^; total filament used \[g' "$GCODE" | sed 's/^; //')"
 
 # --- 4. does the model agree with the profile it was sliced with? -----------
 echo "==> model vs profile"
-# Strip the COMMENT FIRST. These declarations carry a trailing "// = layer_height"
-# explaining what they mirror, and a greedy .*= happily matches that one instead
-# of the assignment -- which reads as a profile mismatch on a file that is fine.
-# Search the model AND anything it includes. Parameters commonly live in a
-# separate header file, and grepping only the main file made this check report
-# "not declared" and pass — a silent degradation that sounds benign while the
-# most valuable check in the script has quietly stopped running.
+# Search the model AND anything it includes. Parameters commonly live in a separate header file, and grepping only the main file made this check report "not declared" and pass — a silent degradation that sounds benign while the most valuable check in the script has quietly stopped running.
 srcs() {
     echo "$SCAD"
     d=$(dirname "$SCAD")
@@ -125,11 +105,7 @@ srcs() {
         | sed 's/.*<//; s/>.*//' \
         | while read -r f; do [ -f "$d/$f" ] && echo "$d/$f"; done
 }
-# Take what sits BETWEEN the first = and the first ; — which is the value, and
-# nothing else. Earlier versions stripped comment markers before parsing and
-# broke twice: once on a trailing // that contained its own =, and again when
-# the file moved to /* */ comments. Parsing the assignment is immune to comment
-# style entirely, which is the point.
+# Take what sits BETWEEN the first = and the first ; — which is the value, and nothing else. Earlier versions stripped comment markers before parsing and broke twice: once on a trailing // that contained its own =, and again when the file moved to /* */ comments. Parsing the assignment is immune to comment style entirely, which is the point.
 m() {
     # shellcheck disable=SC2046
     grep -hE "^$1[[:space:]]*=" $(srcs) 2>/dev/null | head -1 \
