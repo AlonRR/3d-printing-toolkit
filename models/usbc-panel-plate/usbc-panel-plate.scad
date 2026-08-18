@@ -32,12 +32,34 @@ overlap = 0.5;      // how far the plate laps onto the panel, all the way round.
                     // open gaps into the case even though every edge "covers".
 
 /* [Plate outline — derived, don't set these directly] */
-// The plate must cover the opening AND keep both screw holes inside its own
-// edge with enough material to survive a screw being tightened. The screws span
-// 22.70 mm outer-to-outer; that plus 1.5 mm a side is the floor.
-screw_envelope = 22.70;                 // measured, outer edge to outer edge
-min_w = screw_envelope + 2 * 1.5;
-plate_w = max(gap_w + 2 * overlap, min_w);
+// plate_w is whichever of two floors is higher:
+//
+//   COVERAGE   gap_w + 2*overlap. Below this the plate does not span the
+//              aperture. This one is physics — there is no way around it.
+//
+//   FASTENERS  the screw envelope plus material outboard of each hole. This one
+//              is a CHOICE, and it is usually the binding constraint: at
+//              overlap 0.5 coverage wants 24.4 and the fasteners want 25.7.
+//
+// To make the plate narrower, lower the fastener floor — either by trimming
+// screw_edge_margin, or by switching to edge-open slots, which removes the
+// floor altogether because there is no bridge of material left to split.
+screw_envelope = 22.70;   // measured, outer edge to outer edge
+
+screw_style = "hole";     // "hole" = closed clearance hole, needs material all
+                          //          the way round; edge distance is structural
+                          // "slot" = U-shaped, open to the plate edge. The plate
+                          //          slides onto the screws. Nothing left to
+                          //          split, so the fastener floor disappears and
+                          //          the plate can shrink to the coverage floor.
+screw_edge_margin = 1.5;  // material outboard of each hole, per side. Ignored
+                          // when screw_style = "slot". 3 perimeters is the rule
+                          // (docs/fdm-design-rules.md §4); under that you get a
+                          // warning rather than a block, because it is your call.
+
+min_w = (screw_style == "slot") ? 0 : screw_envelope + 2 * screw_edge_margin;
+cover_w = gap_w + 2 * overlap;
+plate_w = max(cover_w, min_w);
 plate_h = gap_h + 2 * overlap;
 
 // plate_t is chosen so every internal transition lands ON a layer boundary in
@@ -285,10 +307,18 @@ module usbc_panel_plate() {
                            cut_lo])
                     cylinder(h = cut_len, r = nr);
 
-        // Screw holes.
+        // Screw holes — closed, or open to the edge as a U-slot.
         for (s = [-1, 1]) {
             translate([s * screw_span / 2, 0, cut_lo])
                 cylinder(h = cut_len, d = sd);
+
+            // The slot's channel runs from the hole centre outward past the
+            // plate edge. Same width as the hole, so the screw shank is a
+            // sliding fit the whole way and the plate cannot rattle sideways.
+            if (screw_style == "slot")
+                translate([s > 0 ? screw_span / 2 : -screw_span / 2 - plate_w,
+                           -sd / 2, cut_lo])
+                    cube([plate_w, sd, cut_len]);
 
             // Counterbore is anchored to the PLATE face, not the protrusion's
             // outer face — otherwise the protrusion swallows it and it becomes
@@ -341,6 +371,14 @@ notch_screw_gap   = sqrt(notch_dx * notch_dx + (plate_h / 2) * (plate_h / 2))
 notch_vs_gap      = plate_h / 2 - nr - gap_h / 2;
 
 echo(str("plate              : ", plate_w, " x ", plate_h, " x ", plate_t, " mm"));
+// Which floor is actually setting the width, and what the other one would allow.
+// Without this it is invisible that shrinking the plate means touching the
+// fasteners rather than the coverage.
+echo(str("  width set by     : ",
+         (plate_w > cover_w + 1e-9) ? str("FASTENERS (", min_w,
+             ") - coverage alone would allow ", cover_w)
+           : str("COVERAGE (", cover_w, ") - the hard floor"),
+         "   [screw_style ", screw_style, "]"));
 echo(str("covers opening     : ", gap_w, " x ", gap_h, " mm, lap ", overlap,
          " mm (corner floor ", corner_min, ")"));
 echo(str("port opening       : ", pw, " x ", ph, " mm as cut"));
@@ -443,7 +481,7 @@ warns = [
         str("plate is shorter than the opening it must cover"),
 
     // fasteners and webs, against the derived perimeter floors
-    if (edge_dist < perim3 - 1e-9)
+    if (screw_style != "slot" && edge_dist < perim3 - 1e-9)
         str("outboard of screw ", edge_dist, " mm is under 3 perimeters (",
             perim3, ") as cut - a screw pulls directly on this and it will split"),
     if (web_side <= perim2)
@@ -489,3 +527,6 @@ for (w = warns) echo(str("WARNING: ", w));
 echo(len(warns) == 0
      ? "warnings           : none"
      : str("warnings           : ", len(warns), " - the part will build, read them"));
+
+assert(screw_style == "hole" || screw_style == "slot",
+       "screw_style must be \"hole\" or \"slot\"");
