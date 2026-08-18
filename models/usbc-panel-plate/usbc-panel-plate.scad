@@ -64,8 +64,8 @@ lead_in = 0.5;      // 45 deg chamfer on the outermost face, guides a plug in.
 boss_w = 13.4;      // <<CONFIRM>> width NOT yet measured, still photo-scaled
 boss_h = 8.0;       // MEASURED. Height of the connector's raised boss.
 boss_r = 2.0;
-boss_clear = 0.25;  // REAL clearance per side, on top of hole_comp.
-                    // hole_comp only cancels print shrink — it lands the
+boss_clear = 0.25;  // REAL clearance per side, on top of fdm_hole_comp.
+                    // fdm_hole_comp only cancels print shrink — it lands the
                     // feature ON nominal, which for a pocket means line-to-line
                     // on the boss. Fit needs its own allowance.
 pocket_chamfer = 0.4;   // chamfer at the pocket mouth. That mouth is the bed
@@ -81,7 +81,7 @@ prot_face = "front";  // "front" = the visible side (-Z), "back" = toward the
 
 /* [Half-circle notches in the Y edges] */
 // Semicircular cutouts bitten out of the top and bottom edges.
-// Sized so the cut — INCLUDING hole_comp — still leaves lap on the panel.
+// Sized so the cut — INCLUDING fdm_hole_comp — still leaves lap on the panel.
 // At overlap 2.5 the ceiling is about 1.9; beyond that the notch opens a hole
 // straight into the case and severs the lap across its whole chord.
 notch_r = 1.8;      // radius. Set to 0 to remove them.
@@ -135,33 +135,47 @@ cbore_h    = 1.2;   // counterbore depth, measured from the PLATE face
 //     two strips        sides close        corners added
 //
 bridge_slot = true; // false = lip closes in one go, and the hole is drawn in air
-layer_h     = 0.2;  // must match the slicer, or the stages land mid-layer
+
+/* [Slicer facts — MIRROR these from the profile, do not invent them] */
+// Everything with an fdm_ prefix is a fact about how the part gets MADE, not a
+// decision about what it should BE. Each one has a counterpart in the print
+// profile, and the model is wrong the moment they disagree. Grouped and
+// prefixed so that is obvious at a glance rather than discovered by a bad print.
+fdm_layer_h     = 0.2;  // = layer_height. Stages land mid-layer if this is wrong
+fdm_extrusion_w = 0.45; // = extrusion_width. NOT the nozzle diameter — the 0.4
+                        // nozzle lays a 0.45 bead, and every wall thickness in
+                        // this file is a multiple of the bead, not the nozzle
+fdm_hole_comp   = 0.15; // printed holes come out undersize (bead width + the arc
+                        // effect); every hole is grown by this per side
+
+// Wall thicknesses that mean something, derived rather than written down.
+// 1.35 used to appear as a literal with "3 perimeters" explained in a comment —
+// which is a magic number whose meaning lives somewhere it cannot be checked.
+perim2 = 2 * fdm_extrusion_w;   // absolute minimum for a non-load feature
+perim3 = 3 * fdm_extrusion_w;   // minimum for anything that takes force
 
 /* [Printing] */
 flip_for_print = true;  // rotate 180 about X so the BACK face sits on the bed
-hole_comp = 0.15;   // Printed holes come out undersize (extrusion width + the
-                    // arc effect). Every hole is grown by this on each side.
-                    // MK3S+ / 0.4 nozzle: 0.15 is a good starting point.
 $fn = 64;
 
 // ---------------------------------------------------------------------------
 // AS-CUT dimensions. Every cut, echo and assert below uses these, so what gets
 // audited is the geometry actually produced. Computing a web from nominal while
-// cutting with hole_comp reports it 0.15-0.30 mm better than it really is.
+// cutting with fdm_hole_comp reports it 0.15-0.30 mm better than it really is.
 // ---------------------------------------------------------------------------
-pw  = port_w  + 2 * hole_comp;                  // lip opening, as cut
-ph  = port_h  + 2 * hole_comp;
-bw  = boss_w  + 2 * (hole_comp + boss_clear);   // pocket, as cut
-bh  = boss_h  + 2 * (hole_comp + boss_clear);
-sd  = screw_d + 2 * hole_comp;                  // screw hole, as cut
-nr  = notch_r + hole_comp;                      // notch radius, as cut
-cbd = cbore_d + 2 * hole_comp;                  // counterbore, as cut
+pw  = port_w  + 2 * fdm_hole_comp;                  // lip opening, as cut
+ph  = port_h  + 2 * fdm_hole_comp;
+bw  = boss_w  + 2 * (fdm_hole_comp + boss_clear);   // pocket, as cut
+bh  = boss_h  + 2 * (fdm_hole_comp + boss_clear);
+sd  = screw_d + 2 * fdm_hole_comp;                  // screw hole, as cut
+nr  = notch_r + fdm_hole_comp;                      // notch radius, as cut
+cbd = cbore_d + 2 * fdm_hole_comp;                  // counterbore, as cut
 eps = 0.01;         // nudge for cut solids that would otherwise end exactly
                     // on another cut's plane -- a shared coplanar face is
                     // what breaks 2-manifoldness
 
 slot_n      = bridge_slot ? 2 : 0;              // staged layers before the lip
-pocket_z    = lip_t + slot_n * layer_h;         // where the pocket floor sits
+pocket_z    = lip_t + slot_n * fdm_layer_h;         // where the pocket floor sits
 pocket_d    = plate_t - pocket_z;               // usable pocket depth
 port_recess = lip_t + ((prot_face == "front") ? prot_t : 0);
 top_z       = plate_t + ((prot_face == "back") ? prot_t : 0);
@@ -234,13 +248,13 @@ module usbc_panel_plate() {
             // between the slot and the rounded lip, and is what lets layer 3
             // add nothing but curves.
             translate([0, 0, lip_t])
-                linear_extrude(layer_h + eps)
+                linear_extrude(fdm_layer_h + eps)
                     square([pw, ph], center = true);
 
             // layer 1 — THE TWO BRIDGE. Full-height slot, so what gets laid is
             // two strips spanning bh wall-to-wall, anchored at both ends.
-            translate([0, 0, lip_t + layer_h])
-                linear_extrude(layer_h + eps)
+            translate([0, 0, lip_t + fdm_layer_h])
+                linear_extrude(fdm_layer_h + eps)
                     square([pw, bh], center = true);
         }
 
@@ -339,7 +353,7 @@ echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
 echo(str("two-bridge trick   : ", bridge_slot ? "ON" : "OFF",
-         bridge_slot ? str(" -- ", slot_n + 1, " staged layers of ", layer_h, " mm")
+         bridge_slot ? str(" -- ", slot_n + 1, " staged layers of ", fdm_layer_h, " mm")
                      : " -- the port outline is drawn in mid-air"));
 echo(str("  L1 two bridge    : slot ", pw, " x ", bh,
          "  -> two strips spanning ", bridge_1, " mm, anchored both ends"));
@@ -386,17 +400,17 @@ assert(plate_h >= gap_h + 2 * overlap - 0.01,
        "plate is shorter than the opening it must cover");
 
 // Fasteners.
-assert(edge_dist >= 1.35,
-       "material outboard of the screw holes is under 3 perimeters (1.35 mm) as cut");
-assert(web_side > 1.0,
-       "web between the screw holes and the rear pocket is under 1.0 mm as cut");
+assert(edge_dist >= perim3,
+       "material outboard of the screw holes is under 3 perimeters as cut");
+assert(web_side > perim2,
+       "web between the screw holes and the rear pocket is under 2 perimeters as cut");
 
 // Centre opening.
 assert(lip_t > 0 && lip_t < plate_t, "lip_t must be between 0 and plate_t");
 assert(pw < bw && ph < bh, "lip must be smaller than the pocket, or there is no lip");
 assert(lead_in < ((prot_face == "front") ? prot_t : 0) + lip_t,
        "lead_in eats through the protrusion and the whole lip");
-assert(!bridge_slot || slot_n * layer_h < plate_t - lip_t,
+assert(!bridge_slot || slot_n * fdm_layer_h < plate_t - lip_t,
        "the bridge slot is deeper than the space between lip and back face");
 assert(pocket_d > 0, "no pocket left once the ledges are taken out");
 assert(pocket_chamfer < pocket_d, "pocket chamfer is deeper than the pocket");
@@ -423,9 +437,9 @@ assert(prot_t == 0 || prot_screw_gap > 0.4,
 
 // Layer alignment. Every internal transition should land on a layer boundary in
 // the print orientation, or the ledge scheme resolves on a slicer tie-break.
-assert(abs(plate_t / layer_h - round(plate_t / layer_h)) < 1e-6,
+assert(abs(plate_t / fdm_layer_h - round(plate_t / fdm_layer_h)) < 1e-6,
        "plate_t is not a whole number of layers - internal steps will land mid-layer");
-assert(abs(lip_t / layer_h - round(lip_t / layer_h)) < 1e-6,
+assert(abs(lip_t / fdm_layer_h - round(lip_t / fdm_layer_h)) < 1e-6,
        "lip_t is not a whole number of layers");
 
 

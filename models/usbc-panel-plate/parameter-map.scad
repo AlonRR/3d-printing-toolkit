@@ -188,7 +188,7 @@ translate([0, -9 * (txt * 1.72)]) {
     legend_row(11, 3, "pocket_d", pocket_d, "pocket depth left after the bridge slot");
     legend_row(12, 4, "prot_t",   prot_t,   "how far the rectangle stands proud");
     legend_row(13, 5, "bridge slot", str(pw, " x ", bh),
-                                       "stage 1 of the two-bridge trick, layer_h tall");
+                                       "stage 1 of the two-bridge trick, fdm_layer_h tall");
 }
 
 // --- the ones with no place on a drawing ------------------------------------
@@ -196,7 +196,7 @@ translate([0, -16.4 * (txt * 1.72)]) {
     heading("NOT ON THE DRAWING — but they change the geometry", [col_x, 0]);
     translate([col_x, 0]) color("black") {
         translate([0, -txt * 1.9])
-            text(str("hole_comp = ", hole_comp,
+            text(str("fdm_hole_comp = ", fdm_hole_comp,
                      "   grows every CUT per side. Nominal vs as-cut:"),
                  size = txt * 0.92);
         translate([1.2, -txt * 3.5])
@@ -206,11 +206,11 @@ translate([0, -16.4 * (txt * 1.72)]) {
                  size = txt * 0.92);
         translate([0, -txt * 5.4])
             text(str("boss_clear = ", boss_clear,
-                     "   REAL fit clearance on the pocket, on top of hole_comp"),
+                     "   REAL fit clearance on the pocket, on top of fdm_hole_comp"),
                  size = txt * 0.92);
         translate([0, -txt * 7.0])
-            text(str("layer_h = ", layer_h,
-                     "   must match the slicer, or the slot lands mid-layer"),
+            text(str("fdm_layer_h = ", fdm_layer_h,
+                     "   must match the slicer, or the stages land mid-layer"),
                  size = txt * 0.92);
         translate([0, -txt * 8.6])
             text(str("flip_for_print = ", flip_for_print ? "true" : "false",
