@@ -1,0 +1,98 @@
+#!/usr/bin/env sh
+# Verify an OpenSCAD part end to end: render -> STL -> manifold -> slice, and
+# cross-check the model's fdm_* values against the profile it was actually
+# sliced with.
+#
+#   scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]
+#
+# Exits non-zero on: a failed assert, an empty STL, a non-manifold result, a
+# multi-part result, a vase-mode profile, or a model/profile disagreement.
+#
+# WHY THE CROSS-CHECK. The model carries fdm_layer_h / fdm_extrusion_w because
+# its geometry depends on them -- staged layers land mid-layer if the layer
+# height is wrong, and every wall threshold is a multiple of the bead width.
+# Nothing otherwise stops the two drifting apart, and when they do the part
+# still slices, still prints, and is quietly weaker than the numbers claim.
+# That is the failure this script exists to catch.
+set -eu
+
+SCAD=${1:?usage: scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]}
+PRINT_PROFILE=${2:-0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter}
+FILAMENT=${3:-Inslogic ASA}
+PRINTER=${PRINTER:-Original Prusa i3 MK3S & MK3S+}
+DATADIR=${DATADIR:-$APPDATA/PrusaSlicer}
+
+OPENSCAD=${OPENSCAD:-}
+if [ -z "$OPENSCAD" ]; then
+    if command -v openscad >/dev/null 2>&1; then OPENSCAD=openscad
+    else OPENSCAD="/c/Program Files/OpenSCAD/openscad.exe"; fi
+fi
+PSLICER=${PSLICER:-/c/Program Files/Prusa3D/PrusaSlicer/prusa-slicer-console.exe}
+
+STL="${SCAD%.scad}.stl"
+GCODE="${SCAD%.scad}.gcode"
+fail=0
+note() { printf '  %s\n' "$1"; }
+bad()  { printf '  !! %s\n' "$1"; fail=1; }
+
+# --- 1. render, and let the asserts speak ----------------------------------
+echo "==> render"
+out=$("$OPENSCAD" -o "$STL" "$SCAD" 2>&1) || true
+printf '%s\n' "$out" | grep -E "^ECHO:" | sed 's/^ECHO: /  /' | tr -d '"'
+if printf '%s\n' "$out" | grep -qi "Assertion"; then
+    printf '%s\n' "$out" | grep -i "Assertion" | sed 's/^/  !! /'
+    echo "FAILED: an assert fired -- the model says this configuration is wrong"
+    exit 1
+fi
+# A failed import is only a WARNING and still exits 0, so it has to be caught.
+printf '%s\n' "$out" | grep -qi "WARNING" && \
+    printf '%s\n' "$out" | grep -i "WARNING" | sed 's/^/  !! /' && fail=1
+
+[ -s "$STL" ] || { echo "FAILED: STL is empty"; exit 1; }
+
+# --- 2. the STL itself, not the preview ------------------------------------
+echo "==> STL"
+info=$("$PSLICER" --info "$STL" 2>/dev/null || true)
+printf '%s\n' "$info" | grep -E "size_|number_of_facets|number_of_parts|manifold" \
+    | sed 's/^/  /'
+printf '%s\n' "$info" | grep -q "manifold = yes" || bad "not manifold"
+parts=$(printf '%s\n' "$info" | awk -F= '/number_of_parts/ {gsub(/ /,"",$2); print $2}')
+[ "${parts:-1}" = "1" ] || bad "STL is $parts parts, expected 1"
+
+# --- 3. slice ---------------------------------------------------------------
+echo "==> slice  [$PRINT_PROFILE / $FILAMENT]"
+"$PSLICER" --export-gcode --datadir "$DATADIR" \
+    --printer-profile "$PRINTER" --print-profile "$PRINT_PROFILE" \
+    --material-profile "$FILAMENT" -o "$GCODE" "$STL" >/dev/null 2>&1 \
+    || { echo "  !! slicing failed"; exit 1; }
+
+g() { grep -E "^; $1 = " "$GCODE" | head -1 | sed 's/.*= //'; }
+lh=$(g layer_height); ew=$(g extrusion_width); sv=$(g spiral_vase)
+pm=$(g perimeters);  sm=$(g support_material)
+note "layer_height $lh   extrusion_width $ew   perimeters $pm"
+note "$(grep -E '^; estimated printing time \(normal' "$GCODE" | sed 's/^; //')"
+note "$(grep -E '^; total filament used \[g' "$GCODE" | sed 's/^; //')"
+
+[ "$sv" = "0" ] || bad "spiral_vase = $sv -- this profile prints a single-wall shell"
+[ "$sm" = "0" ] || note "support_material = $sm (house rule prefers 0)"
+
+# --- 4. does the model agree with the profile it was sliced with? -----------
+echo "==> model vs profile"
+# Strip the COMMENT FIRST. These declarations carry a trailing "// = layer_height"
+# explaining what they mirror, and a greedy .*= happily matches that one instead
+# of the assignment -- which reads as a profile mismatch on a file that is fine.
+m() {
+    grep -E "^$1[[:space:]]*=" "$SCAD" | head -1 \
+        | sed 's|//.*||' | sed 's/.*=[[:space:]]*//; s/;.*//' | tr -d ' '
+}
+cmp_fact() {  # name, model value, gcode value
+    if [ -z "$2" ]; then note "$1: not declared in the model"; return; fi
+    if [ "$2" = "$3" ]; then note "$1 $2 == profile $3"
+    else bad "$1 $2 != profile $3 -- the model was designed for a different profile"; fi
+}
+cmp_fact fdm_layer_h     "$(m fdm_layer_h)"     "$lh"
+cmp_fact fdm_extrusion_w "$(m fdm_extrusion_w)" "$ew"
+
+echo
+[ "$fail" = "0" ] && echo "PASS  $STL / $GCODE" || echo "PROBLEMS FOUND (see !! above)"
+exit "$fail"

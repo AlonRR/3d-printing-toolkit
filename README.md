@@ -16,6 +16,11 @@ every number, and the hard-won gotchas that took a wasted print or a wasted roun
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
 | [`docs/fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to **this** printer — the governing number is the 0.45 mm extrusion width, not the 0.4 mm nozzle, so walls quantise to multiples of 0.45 |
 | [`models/`](models/) | Parametric OpenSCAD sources for one-off parts. STLs stay in OneDrive; the `.scad` is the artefact |
+| [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and **cross-check the model's `fdm_*` values against the profile it was actually sliced with**. Non-zero exit on any problem |
+| [`scripts/scad-preview.sh`](scripts/scad-preview.sh) | Previews, cross-sections and thin slices. Sections import the **exported STL**, so an export bug cannot hide behind a correct-looking render of the source |
+
+The workflow around these — sequencing, file conventions, the verification loop —
+is the user-level **`openscad-printed-part`** skill.
 
 ## What's deliberately *not* here
 
