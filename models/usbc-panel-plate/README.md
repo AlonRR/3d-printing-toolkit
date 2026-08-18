@@ -25,8 +25,8 @@ Every parameter is a named variable, tagged MEASURED or <<CONFIRM>>.
 ```
 
 > **Every number below is regenerated from the model's own echo block.**
-> Do not hand-edit them — re-render and paste. An earlier version of this file
-> drifted a whole parameter set out of date while reading as authoritative.
+> Do not hand-edit them — re-render and paste. Hand-edited numbers drift, and a
+> drifted table reads exactly as authoritative as a correct one.
 
 ## Current geometry
 
@@ -90,11 +90,11 @@ hole diameter    = (22.70 - 16.90) / 2 =  2.90 mm   -> M2.5, not M2
 
 Every cut is grown by `fdm_hole_comp` (0.15 mm/side) to compensate for printed holes
 coming out undersize. **Every echo and assert is therefore computed from the
-grown values, not the nominal ones.** This matters more than it sounds: an
-earlier version audited nominal dimensions while cutting compensated ones, and
-so reported every clearance 0.15–0.30 mm better than the part actually had. The
-screw edge distance read 0.55 mm when it was really 0.40 mm — under one
-extrusion, on the feature most likely to break.
+grown values, not the nominal ones.** This matters more than it sounds. Auditing
+nominal dimensions while cutting compensated ones reports every clearance
+0.15–0.30 mm better than the part actually has: a screw edge distance of 0.40 mm
+reads as 0.55 — under one extrusion, on the feature most likely to break, and on
+the wrong side of the perimeter floor.
 
 The as-cut names (`pw`, `ph`, `bw`, `bh`, `sd`, `nr`, `cbd`) are defined once at
 file scope and used by the geometry, the echoes and the guards alike.
@@ -141,9 +141,10 @@ perim2 = 2 * fdm_extrusion_w;   // 0.90 — minimum for a non-load feature
 perim3 = 3 * fdm_extrusion_w;   // 1.35 — minimum for anything that takes force
 ```
 
-`1.35` used to appear as a literal, with "3 perimeters" explained in the assert
-message — a magic number whose meaning lived somewhere it could not be checked.
-Now the guards move with the profile. Verified by overriding them:
+Spelled as the literal `1.35`, with "3 perimeters" explained in the assert
+message, it would be a magic number whose meaning lives somewhere nothing can
+check it. Derived, the guards move with the profile. Verified by overriding
+them:
 
 ```
 -D fdm_extrusion_w=0.8   -> "web ... is under 2 perimeters as cut"   (fires)
@@ -199,15 +200,21 @@ only; it does not relieve elephant's foot, which is a first-layer effect. The
 
 ## Guards
 
-25 asserts. They **block the render** — a check that prints a warning and builds
-anyway is not a check, and this model previously had two of those (the notch
-breakthrough and the coverage test) reporting problems into the log while
-happily exporting the broken part.
+Two kinds, and the distinction is deliberate.
+
+| | Count | Meaning | Behaviour |
+|---|---:|---|---|
+| **BLOCK** — `assert` | 12 | the geometry is impossible or self-contradictory: a feature vanishes, inverts, or cuts the part in two | render stops |
+| **WARN** — `echo "WARNING: …"` | 14 | it builds and prints, but is compromised: a wall under the perimeter floor, a notch into the case, a stage landing mid-layer | STL still produced |
+
+Accepting a thin wall is the operator's call, so it warns. Producing a part with
+no lip at all is not a call, so it blocks. `scad-check.sh` mirrors the split —
+exit 1 for blocked, exit 2 for builds-with-warnings.
 
 Coverage of the non-default branches is deliberate: `prot_face = "back"`,
-`cbore_d > 0`, `prot_t = 0`, `bridge_slot = false` and
-`flip_for_print = false` all render clean and manifold, and `prot_face = "back"`
-now *fails loudly* rather than silently printing the protrusion as two slivers.
+`cbore_d > 0`, `prot_t = 0`, `bridge_slot = false`, `screw_style = "slot"` and
+`flip_for_print = false` all render clean and manifold. `prot_face = "back"`
+fails loudly rather than silently printing the protrusion as two slivers.
 
 ## Regenerating
 

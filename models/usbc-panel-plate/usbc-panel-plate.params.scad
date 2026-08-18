@@ -11,7 +11,7 @@ Tags to keep honest as you edit:
 
 Comment style: prose is written as one long line per paragraph inside a block comment, so it reflows to whatever width the editor is at. Hard-wrapped double-slash blocks go ragged the moment the window changes size. The bracketed section markers below are OpenSCAD Customizer syntax and must stay on their own single line.
 
-One trap worth knowing, since this file is now mostly block comments: OpenSCAD does not nest them. Writing a close-comment token inside prose ends the comment there and the rest of the paragraph is parsed as code. That is exactly how the first version of this file failed to parse.
+One trap worth knowing, since this file is mostly block comments: OpenSCAD does not nest them. Writing a close-comment token inside prose ends the comment there, and the rest of the paragraph is parsed as code.
 */
 
 /* [The opening in the case panel — what the plate has to cover] */
@@ -32,7 +32,7 @@ To make the plate narrower, lower the fastener floor — either by trimming scre
 */
 screw_envelope = 22.70;     /* MEASURED, outer edge to outer edge. */
 screw_style = "hole";       /* "hole" = closed clearance hole, needs material all the way round, and the edge distance is structural. "slot" = U-shaped and open to the plate edge, so the plate slides onto the screws — nothing is left to split, the fastener floor disappears, and the plate can shrink to the coverage floor. */
-screw_edge_margin = 0.2;      /* Material outboard of each hole, per side. Ignored when screw_style = "slot". Three perimeters is the rule (docs/fdm-design-rules.md §4); under that you get a warning rather than a block, because it is your call. */
+screw_edge_margin = 0.6;      /* Material outboard of each hole, per side. Ignored when screw_style = "slot". Three perimeters is the rule (docs/fdm-design-rules.md §4); under that you get a warning rather than a block, because it is your call. */
 
 plate_t  = 2.4;     /* Chosen so every internal transition lands ON a layer boundary in the print orientation. At 0.2 mm layers, 2.4 puts the pocket floor and all three staged layers at print z 1.2 / 1.4 / 1.6 / 2.4. At 2.5 they all land mid-layer and the staging resolves on a slicer tie-break rather than on the geometry. */
 corner_r = 1.5;     /* Rounding on the outline corners. Feeds the overlap floor above — the bigger this is, the more lap the corners need. */
@@ -108,7 +108,7 @@ fdm_layer_h     = 0.2;      /* = layer_height. The staged layers land mid-layer 
 fdm_extrusion_w = 0.45;     /* = extrusion_width. NOT the nozzle diameter — the 0.4 nozzle lays a 0.45 bead, and every wall thickness in this design is a multiple of the bead, not of the nozzle. */
 fdm_hole_comp   = 0.15;     /* Printed holes come out undersize (bead width plus the arc effect); every hole is grown by this per side. */
 
-/* Wall thicknesses that mean something, derived rather than written down. 1.35 used to appear as a literal with "3 perimeters" explained in a comment — a magic number whose meaning lived somewhere it could not be checked, and which would have gone silently wrong the first time anything was sliced on the 0.8 nozzle. */
+/* Wall thicknesses that mean something, derived rather than written down. Spelled as the literal 1.35 these would be magic numbers whose meaning lives in a comment where nothing can check it, and they would go silently wrong the first time anything is sliced on the 0.8 nozzle. */
 perim2 = 2 * fdm_extrusion_w;   /* Absolute minimum for a non-load feature. */
 perim3 = 3 * fdm_extrusion_w;   /* Minimum for anything that takes force. */
 

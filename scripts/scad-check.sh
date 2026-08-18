@@ -105,7 +105,7 @@ srcs() {
         | sed 's/.*<//; s/>.*//' \
         | while read -r f; do [ -f "$d/$f" ] && echo "$d/$f"; done
 }
-# Take what sits BETWEEN the first = and the first ; — which is the value, and nothing else. Earlier versions stripped comment markers before parsing and broke twice: once on a trailing // that contained its own =, and again when the file moved to /* */ comments. Parsing the assignment is immune to comment style entirely, which is the point.
+# Take what sits BETWEEN the first = and the first ; — which is the value, and nothing else. Stripping comment markers before parsing is the fragile alternative: it breaks on a trailing comment that contains its own =, and again whenever the file's comment style changes. Parsing the assignment is immune to comment style entirely, which is the point.
 m() {
     # shellcheck disable=SC2046
     grep -hE "^$1[[:space:]]*=" $(srcs) 2>/dev/null | head -1 \

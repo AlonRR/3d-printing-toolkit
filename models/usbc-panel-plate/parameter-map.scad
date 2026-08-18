@@ -3,7 +3,7 @@ Parameter map for usbc-panel-plate.scad
 
 A DIMENSIONED drawing, not a callout drawing. Every measurement is shown as a proper dimension line — extension lines out to the feature, arrowheads at both ends, the parameter name and its live value on the line — so it is never ambiguous WHAT is being measured, or BETWEEN WHICH TWO EDGES.
 
-An earlier version used numbered dots and a legend. A dot says "this feature"; a dimension line says "this distance, from here to here", and that difference is the whole reason for the rewrite.
+A numbered dot can only say "this feature"; a dimension line says "this distance, from here to here". That is why every measurable span here gets a dimension line, and a leader is used only for the two things that are genuinely features rather than spans.
 
 Colour groups the measurements by what they belong to, and the key is bottom left.
 

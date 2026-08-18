@@ -22,7 +22,7 @@ plate_w = max(cover_w, min_w);
 plate_h = gap_h + 2 * overlap;
 
 /*
-AS-CUT dimensions. Every cut, echo and assert below uses these, so what gets audited is the geometry actually produced. Computing a web from nominal while cutting with fdm_hole_comp reports it 0.15 to 0.30 mm better than it really is — which is how a 0.40 mm web once got reported as 0.55 and quoted repeatedly as merely marginal.
+AS-CUT dimensions. Every cut, echo and assert below uses these, so what gets audited is the geometry actually produced. Computing a web from nominal while cutting with fdm_hole_comp reports it 0.15 to 0.30 mm better than it really is: a 0.40 mm web reads as 0.55, which is the wrong side of the perimeter floor on the feature most likely to break.
 */
 pw  = port_w  + 2 * fdm_hole_comp;                  /* lip opening, as cut */
 ph  = port_h  + 2 * fdm_hole_comp;
@@ -240,7 +240,7 @@ BLOCK, via assert: the geometry is impossible or self-contradictory. A feature w
 
 WARN, via echo: the part builds and can be printed, but something about it is compromised — a wall under the perimeter floor, a notch that opens into the case, a stage that lands mid-layer. You get the STL AND you get told.
 
-An earlier version asserted both, which meant exploring a design was blocked by problems that were judgement calls rather than impossibilities. Deciding to accept a thin wall is the operator's call; producing a part with no lip is not a call at all.
+Asserting both would block design exploration on problems that are judgement calls rather than impossibilities. Deciding to accept a thin wall is the operator's call; producing a part with no lip is not a call at all.
 */
 
 /* BLOCK — impossible geometry. */
