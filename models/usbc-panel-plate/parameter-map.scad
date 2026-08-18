@@ -22,8 +22,8 @@
 // restating it, so every outline and every number is whatever the model
 // currently says. Edit a parameter, re-render, and the map is correct again.
 //
-//   openscad -o parameter-map.png --imgsize=1900,1200 \
-//     --camera=14,-13,0,0,0,0,150 --projection=ortho parameter-map.scad
+//   openscad -o parameter-map.png --imgsize=2200,1560 \
+//     --camera=6,-17,0,0,0,0,205 --projection=ortho parameter-map.scad
 //
 // `draw_model = false` MUST come after the include — in OpenSCAD the last
 // assignment in a scope wins, so this suppresses the part while keeping all of
