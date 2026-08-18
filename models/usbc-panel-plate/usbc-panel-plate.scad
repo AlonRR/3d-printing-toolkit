@@ -215,15 +215,20 @@ module usbc_panel_plate() {
         translate([0, 0, cut_lo])
             rrect(pw, ph, cut_len, port_r);
 
-        // Stage 1 of the two-bridge trick: one layer where the opening is a
-        // full-height slot instead of the port. What is left either side are
-        // two strips spanning bh wall-to-wall, anchored at both ends. Square,
+        // Stage 1: one layer where the opening is a CROSS — the port slotted
+        // out to full height AND full width. What survives is four small
+        // corner pieces, each bounded by the pocket's own rounded corner, so
+        // each is a little rounded triangle hanging off the pocket wall.
+        //
+        // Those four corners are the anchors stage 2 bridges between. Squares,
         // not rounded — a rounded slot would put an arc back in mid-air, which
-        // is the exact thing this is removing.
+        // is the exact thing this removes.
         if (bridge_slot)
             translate([0, 0, lip_t])
-                linear_extrude(layer_h + eps)
-                    square([pw, bh], center = true);
+                linear_extrude(layer_h + eps) {
+                    square([pw, bh], center = true);   // slot up the Y axis
+                    square([bw, ph], center = true);   // slot across the X axis
+                }
 
         // Rear relief pocket for the connector's raised boss, above the slot.
         // Extruded with cut_len so it still reaches the rear face on the
@@ -290,8 +295,15 @@ web_side   = (screw_span - sd) / 2 - bw / 2;
 web_topbot = (plate_h - bh) / 2;
 edge_dist  = (plate_w - screw_span - sd) / 2;
 corner_min = corner_r * (1 - 1 / sqrt(2));
-bridge_1   = bh;                 // stage-1 strips span this, wall to wall
-bridge_2   = pw;                 // stage-2 bands bridge this, onto the strips
+// Stage 1 leaves four corner pieces. They are not bridges — each hangs off the
+// pocket's own rounded corner — so what matters is how far each reaches in.
+corner_x   = (bw - pw) / 2;      // corner piece width
+corner_y   = (bh - ph) / 2;      // corner piece height
+// Stage 2 then bridges BETWEEN those corners: the top and bottom arms span pw
+// in X, the left and right arms span ph in Y. Cutting the cross both ways is
+// what turns the old single 8.8 mm span into a 9.6 and a 3.9.
+bridge_x   = pw;                 // top/bottom arms, corner to corner
+bridge_y   = ph;                 // left/right arms, corner to corner
 prot_screw_gap = screw_span / 2 - sd / 2 - prot_w / 2;
 
 notch_over_pocket = notch_r > 0 && abs(notch_x) < bw / 2 + nr;
@@ -314,12 +326,14 @@ echo(str("max boss height    : ", pocket_d + panel_t,
          " mm from the connector flange (pocket ", pocket_d,
          " + panel ", panel_t, ")"));
 echo(str("two-bridge trick   : ", bridge_slot ? "ON" : "OFF",
-         bridge_slot ? str(" -- slot ", pw, " x ", bh, " for ", layer_h, " mm")
+         bridge_slot ? str(" -- cross ", pw, " x ", bh, " + ", bw, " x ", ph,
+                           " for ", layer_h, " mm")
                      : " -- the port outline is drawn in mid-air"));
-echo(str("  stage 1 span     : ", bridge_1,
-         " mm  (two strips, wall to wall, anchored both ends)"));
-echo(str("  stage 2 span     : ", bridge_2,
-         " mm  (bands close onto those strips)"));
+echo(str("  stage 1 corners  : ", corner_x, " x ", corner_y,
+         " mm, rounded r", boss_r,
+         "  (4 pieces, each hanging off the pocket corner)"));
+echo(str("  stage 2 spans    : X ", bridge_x, " mm, Y ", bridge_y,
+         " mm  (arms bridge corner to corner)"));
 echo(str("web beside pocket  : ", web_side, " mm"));
 echo(str("web above/below    : ", web_topbot, " mm"));
 echo(str("outboard of screw  : ", edge_dist, " mm"));
@@ -409,13 +423,19 @@ assert(abs(lip_t / layer_h - round(lip_t / layer_h)) < 1e-6,
 assert(prot_t == 0 || prot_face != "back" || (prot_w > bw && prot_h > bh),
        "prot_face=\"back\": the rear pocket swallows the protrusion - it would print as two slivers");
 
-// The two-bridge trick only helps if both stages are actually bridgeable.
-// ~10 mm is the practical ceiling on a well-cooled machine (see
-// docs/fdm-design-rules.md §3), and the slicer spans the SHORT axis, which is
-// why stage 1 runs across bh and not bw.
-assert(!bridge_slot || bridge_1 <= 10,
-       "stage-1 bridge is over 10 mm - the strips will sag");
-assert(!bridge_slot || bridge_2 <= 10,
-       "stage-2 bridge is over 10 mm - the bands will sag onto the port");
+// The trick only helps if stage 2's arms are actually bridgeable. ~10 mm is the
+// practical ceiling on a well-cooled machine (docs/fdm-design-rules.md §3).
+assert(!bridge_slot || bridge_x <= 10,
+       "stage-2 X arms are over 10 mm - they will sag onto the port");
+assert(!bridge_slot || bridge_y <= 10,
+       "stage-2 Y arms are over 10 mm - they will sag onto the port");
+
+// The four corner pieces are the anchors everything else lands on. Cutting the
+// cross too generously eats them, and they vanish without any span changing —
+// the render would still succeed and stage 2 would have nothing to bridge to.
+assert(!bridge_slot || corner_x >= 0.9,
+       "stage-1 corner pieces are under 2 perimeters wide - nothing to anchor to");
+assert(!bridge_slot || corner_y >= 0.9,
+       "stage-1 corner pieces are under 2 perimeters tall - nothing to anchor to");
 assert(!bridge_slot || bh > ph,
        "bridge slot is not taller than the port - there is nothing to stage");
