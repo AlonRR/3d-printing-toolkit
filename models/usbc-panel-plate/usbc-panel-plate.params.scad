@@ -60,8 +60,12 @@ prot_r = 1.5;       /* Corner rounding. */
 prot_face = "front";    /* "front" = the visible side (-Z). "back" = toward the connector (+Z). */
 
 /* [Half-circle notches in the Y edges] */
-/* Semicircular cutouts bitten out of the top and bottom edges. Size them so the cut — INCLUDING fdm_hole_comp — still leaves lap on the panel. At overlap 2.5 the ceiling is about 1.9; beyond that the notch opens a hole straight into the case and severs the lap across its whole chord. */
-notch_r = 1.8;      /* Radius. Set to 0 to remove them. */
+/* Semicircular cutouts bitten out of the top and bottom edges. These are CLEARANCE features: the fitting goes into a tight space and the notches are what lets it sit there, so they are not optional and not decorative. Removing them is not a fix for anything.
+
+The consequence is accepted rather than avoidable. At overlap 0 the plate is already only as large as the aperture, so any notch necessarily reaches past the aperture edge and opens a gap into the case across its chord — currently 1.95 mm. The guard reports the size of that gap so it stays a known quantity; it is not asking for the notches to be removed. Size them by what has to clear, then read the number.
+
+Where overlap > 0 there is a second, avoidable failure: a notch bigger than the lap severs it. At overlap 2.5 the ceiling is about 1.9. */
+notch_r = 1.8;      /* Radius, set by the obstruction being cleared. */
 notch_x = 0;        /* X offset from centre. Both notches share it; use notch_mirror to put one each side instead. */
 notch_mirror = false;   /* true -> top notch at +notch_x, bottom at -notch_x. */
 
