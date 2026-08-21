@@ -34,7 +34,7 @@ screw_envelope = 22.70;     /* MEASURED, outer edge to outer edge. */
 screw_style = "hole";       /* "hole" = closed clearance hole, needs material all the way round, and the edge distance is structural. "slot" = U-shaped and open to the plate edge, so the plate slides onto the screws — nothing is left to split, the fastener floor disappears, and the plate can shrink to the coverage floor. */
 screw_edge_margin = 0.6;      /* Material outboard of each hole, per side. Ignored when screw_style = "slot". Three perimeters is the rule (docs/fdm-design-rules.md §4); under that you get a warning rather than a block, because it is your call. */
 
-plate_t  = 2.4;     /* Chosen so every internal transition lands ON a layer boundary in the print orientation. At 0.2 mm layers, 2.4 puts the pocket floor and all three staged layers at print z 1.2 / 1.4 / 1.6 / 2.4. At 2.5 they all land mid-layer and the staging resolves on a slicer tie-break rather than on the geometry. */
+plate_t  = 8;     /* Chosen so every internal transition lands ON a layer boundary in the print orientation. At 0.2 mm layers, 2.4 puts the pocket floor and all three staged layers at print z 1.2 / 1.4 / 1.6 / 2.4. At 2.5 they all land mid-layer and the staging resolves on a slicer tie-break rather than on the geometry. */
 corner_r = 1.5;     /* Rounding on the outline corners. Feeds the overlap floor above — the bigger this is, the more lap the corners need. */
 
 /* [Centre opening — lip, sized to the PORT] */
@@ -53,9 +53,9 @@ boss_clear = 0.25;  /* REAL clearance per side, on top of fdm_hole_comp. fdm_hol
 pocket_chamfer = 0.4;   /* Chamfer at the pocket mouth. That mouth is the bed face, so this costs nothing and eases the boss in. 0 = none. */
 
 /* [Raised rectangle protrusion] */
-prot_w = 14.4;      /* MEASURED */
+prot_w = 13.5;      /* MEASURED */
 prot_h = 6.1;       /* MEASURED */
-prot_t = 1.5;       /* <<CONFIRM>> how far it stands proud. NOT measured. */
+prot_t = 4.9;       /* <<CONFIRM>> how far it stands proud. NOT measured. */
 prot_r = 1.5;       /* Corner rounding. */
 prot_face = "front";    /* "front" = the visible side (-Z). "back" = toward the connector (+Z). */
 
@@ -65,7 +65,7 @@ prot_face = "front";    /* "front" = the visible side (-Z). "back" = toward the 
 The consequence is accepted rather than avoidable. At overlap 0 the plate is already only as large as the aperture, so any notch necessarily reaches past the aperture edge and opens a gap into the case across its chord — currently 1.95 mm. The guard reports the size of that gap so it stays a known quantity; it is not asking for the notches to be removed. Size them by what has to clear, then read the number.
 
 Where overlap > 0 there is a second, avoidable failure: a notch bigger than the lap severs it. At overlap 2.5 the ceiling is about 1.9. */
-notch_r = 1.8;      /* Radius, set by the obstruction being cleared. */
+notch_r = 2.85;      /* Radius, set by the obstruction being cleared. */
 notch_x = 0;        /* X offset from centre. Both notches share it; use notch_mirror to put one each side instead. */
 notch_mirror = false;   /* true -> top notch at +notch_x, bottom at -notch_x. */
 

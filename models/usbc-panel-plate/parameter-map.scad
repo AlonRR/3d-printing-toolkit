@@ -23,7 +23,7 @@ draw_model = false;
 include <draw2d.scad>
 
 /* Where the two views sit, and the Z exaggeration on the section. */
-sec_y = -38.0;
+sec_y = -60.0;
 zs    = 3.0;
 
 /* ===== PLAN ================================================================ */

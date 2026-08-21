@@ -305,6 +305,34 @@ grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 For a **fit test**, print in PLA regardless of the final material. You are
 checking geometry, and PLA lies to you least.
 
+### 6a. Joining two printed parts — weld it, do not glue it
+
+The house rule mirrors §3b: prefer the permanent, structural option.
+
+**ASA and ABS solvent-weld in acetone, and that beats any adhesive.** Wet both
+mating faces, clamp, and the surfaces chemically fuse into a single piece —
+roughly as strong as the surrounding print. Cyanoacrylate ("instant glue")
+bonds only to the outer skin, so a CA joint on an FDM part fails by peeling the
+outer perimeter off the layer beneath it. Different failure mode, much lower
+strength, and CA fills no gaps — which matters because FDM mating faces are
+never truly flat.
+
+Free gap filler, from waste: dissolve failed ASA prints in acetone to a syrup.
+That slurry is adhesive, filler and colour-match at once.
+
+**Acetone only touches ABS/ASA.** It does not dissolve PLA and does not weld
+TPU, both of which are on the shelf. So CA still has real uses here — TPU, PLA,
+dissimilar-material joints, tacking before a fastener. For a structural joint
+with a gap, two-part epoxy beats both.
+
+**Do not mail-order cyanoacrylate.** It has a short shelf life and polymerises
+in the bottle with age and heat, so slow shipping through a hot summer is the
+worst case for it. Buy it locally and fresh; buy acetone locally too, since
+shipping flammable solvent is a non-starter.
+
+- [Prusa — The great guide to gluing and assembling 3D prints](https://blog.prusa3d.com/the-great-guide-to-gluing-and-assembling-3d-prints_44908/)
+- [Formfutura — The ultimate 3D prints bonding guide](https://www.formfutura.com/blog/blogs-1/the-ultimate-3d-prints-bonding-guide-50)
+
 ---
 
 ## Applied: the USB-C panel plate
