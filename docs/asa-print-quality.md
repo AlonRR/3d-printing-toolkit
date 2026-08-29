@@ -1,7 +1,10 @@
 # Getting better ASA prints — Prusa MK3S+ in a Lack enclosure
 
-Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by topic. Nothing
-here has been applied — no profile was changed and no setting was touched.
+Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by topic.
+
+**Item 1 has been applied** to the repo's ASA profiles (not yet copied into PrusaSlicer — see
+its status box). Items 2–6 have not: no other profile was changed and no other setting was
+touched.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
 with one side deliberately left open for venting, no temperature sensing inside it, printing
