@@ -42,19 +42,42 @@ mentions: `min_print_speed` 15 → 5. Without it the 10 s layer time is unreacha
 `slowdown_below_layer_time` was actually *lowered* (15 → 10), which reads like a reduction in
 cooling time and is the opposite of what happened.
 
-### The proposed change, untested
+### The change
 
-| Key | Now | Proposed | Why |
+| Key | Was | Now | Status |
 |---|---|---|---|
-| `min_print_speed` | 15 | **5** | Lets the 15 s minimum layer time actually happen. Costs nothing on large parts, where layers already exceed 15 s |
-| `max_fan_speed` | 20 | **45** | With `fan_below_layer_time = 20` already set, this ramps cooling **only on layers under 20 s** — small cross-sections — and leaves bulk ASA at 20 % |
-| `min_fan_speed` | 20 | 20 | Unchanged. Bulk ASA must not get more cooling |
+| `min_print_speed` | 15 | **5** | ✅ **Applied 29 Aug 2026** to `Inslogic ASA` and `Inslogic ASA @0.8 nozzle` |
+| `max_fan_speed` | 20 | 45 | ❌ **Not applied.** See below |
+| `min_fan_speed` | 20 | 20 | Unchanged either way — bulk ASA must not get more cooling |
 
-That turns the fix hand-built into `- thin wall` into something that happens automatically
-whenever a layer is small, without a separate profile and without touching bulk ASA. **45 % is
-an interpolation, not a result** — 70 % is proven on a single wall with no cross-section to
-delaminate, 20 % is proven on bulk. A temperature tower or a repeat of the vase stem would
-settle it.
+Measured by slicing a 21.8 mm single-wall tube — the vase-stem geometry — with everything held
+constant except the floor, using the CLI's `--min-print-speed` override so exactly one variable
+moved:
+
+| | Floor | Layer-time target | Fan | Slowest move | Actual layer time | Print time |
+|---|---|---|---|---|---|---|
+| `Inslogic ASA`, before | 15 | 15 s | 20 % | 15.00 mm/s | **4.47 s** | 9 m 28 s |
+| `Inslogic ASA`, after | **5** | 15 s | 20 % | 5.00 mm/s | **13.41 s** | 23 m 43 s |
+| `- thin wall`, for reference | 5 | 10 s | 70 % | 6.70 mm/s | 10.01 s | 18 m 14 s |
+
+**It costs nothing on ordinary parts.** A 40 mm solid cube and a mid-size probe holder slice to
+*identical* times either way — 1 h 37 m 03 s and 41 m 30 s respectively, before and after. The
+floor only engages once a layer is small enough to hit it, which is exactly where it should.
+
+The 2.5× on the tube is not a cost of the fix; it is the cooling time the profile has been
+asking for since July and silently not getting.
+
+### The fan half was deliberately left out
+
+The original proposal paired the floor with `max_fan_speed = 45`, so that
+`fan_below_layer_time = 20` would ramp cooling on short layers only. **That was not applied**,
+because 45 % is an interpolation between two proven points — 70 % validated on a single wall
+with no cross-section to delaminate, 20 % validated on bulk ASA — and not a result.
+
+Leaving it out is safe on its own terms: more layer time at the same fan speed is strictly more
+solidification, since the nozzle deposits the same energy per layer either way and the part is
+cooling throughout. The fan ramp would make short layers better still. It needs a test print
+first.
 
 ---
 
@@ -171,7 +194,11 @@ Drying fixes a wet spool. Storage stops you needing to.
 
 1. **Raise the bed to 105/110 with a glue-stick release layer.** Free, one profile edit, and
    the failure mode it prevents is the most common ASA failure there is.
-2. **Fix `min_print_speed`** (item 1). Free, and it makes the profile do what it already claims.
+2. ~~**Fix `min_print_speed`** (item 1).~~ ✅ **Done 29 Aug 2026** — applied to both Inslogic ASA
+   profiles in this repo and verified by slice. ⚠️ **Not yet installed into
+   `%APPDATA%\PrusaSlicer\filament\`** — PrusaSlicer was open at the time, and it rewrites its
+   config folder on exit, so copying would have been silently undone. Copy it in with the
+   slicer closed (command in the [Inslogic README](../slicer/filament/inslogic/README.md)).
 3. **Brim and draft shield** on the next tall ASA part. Free.
 4. **Dry a spool** and reprint something that came out badly. Rules out the variable that
    masquerades as everything else.

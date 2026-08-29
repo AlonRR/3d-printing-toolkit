@@ -19,4 +19,5 @@ min_fan_speed = 20
 max_fan_speed = 20
 bridge_fan_speed = 30
 disable_fan_first_layers = 4
+min_print_speed = 5
 filament_notes = "Inslogic ASA — TDS rev. 12.02.2024.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.02 mm, 1 kg spool. Density 1.05 g/cm3.\nDrying: 80 C for 4 h.\nNozzle sizes: 0.2 / 0.4 / 0.6 mm.\nNozzle temp: 250-260 C at 50-100 mm/s; 260-280 C at 100-200 mm/s.\nBed: 80-100 C. Bed type: smooth PEI / high-temp plate.\nShrinkage at 23 C: 0.4-0.9 %. Tg 108 C, HDT(0.45 MPa) 98 C.\n\nDELIBERATE DEVIATION FROM TDS:\nThe TDS says 100 % cooling fan. That is not applied here. 100 % part\ncooling on ASA causes warping and layer splitting on an open-frame MK3S+.\nFan is kept at the Prusament ASA values (20 %, off for the first 4 layers),\nwhich is what the working YASIN ASA profile on this machine already uses.\n\nBed is set to 100 C - the top of the Inslogic range. Prusa's own ASA profile\nuses 105/110 C; if parts still lift at 100 C, raising the bed is the first\nthing to try (it goes outside vendor spec but matches Prusa's tested value).\n\nUNTESTED - no calibration print has been run with this profile yet."

@@ -170,9 +170,14 @@ override was.
 **A fourth change, found 29 Aug 2026 and missing from the list above: `min_print_speed` went
 15 → 5.** It is the change that made the 10 s layer time possible at all — with a 15 mm/s floor,
 this part's 67 mm loop cannot take longer than **4.5 s** however long you ask for. Which also
-means the general-purpose `Inslogic ASA` profile has been requesting a 15 s minimum layer time
-and getting 5, on exactly the small parts that need it most. Worked through, with the proposed
-fix, in [`docs/asa-print-quality.md`](../../../docs/asa-print-quality.md).
+means the general-purpose `Inslogic ASA` profile had been requesting a 15 s minimum layer time
+and getting 5, on exactly the small parts that need it most.
+
+**Fixed the same day:** `min_print_speed = 5` is now an explicit override in `Inslogic ASA` and
+`Inslogic ASA @0.8 nozzle`. On the tube geometry above that takes the layer from 4.47 s to
+13.41 s; on a 40 mm cube and a mid-size part it changes the print time by nothing at all, since
+their layers never reach the floor. Worked through in
+[`docs/asa-print-quality.md`](../../../docs/asa-print-quality.md).
 
 ## `Inslogic PLA Pro` and `Inslogic PETG Pro` — one rule, two deviations
 
