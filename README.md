@@ -15,6 +15,7 @@ every number, and the hard-won gotchas that took a wasted print or a wasted roun
 | [`slicer/print/`](slicer/print/) | The 8 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
 | [`slicer/reference/`](slicer/reference/) | The 4 Inslogic technical data sheets — ASA, TPU 95A, PLA Pro, PETG Pro (the source for every temperature in those profiles) |
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
+| [`docs/asa-print-quality.md`](docs/asa-print-quality.md) | How to get better ASA prints on this machine, ordered by payoff. Leads with a real defect: the ASA profile asks for a 15 s minimum layer time and `min_print_speed` silently caps it at 5 |
 | [`docs/fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to **this** printer — the governing number is the 0.45 mm extrusion width, not the 0.4 mm nozzle, so walls quantise to multiples of 0.45 |
 | [`models/`](models/) | Parametric OpenSCAD sources for one-off parts. STLs stay in OneDrive; the `.scad` is the artefact |
 | [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and **cross-check the model's `fdm_*` values against the profile it was actually sliced with**. Non-zero exit on any problem |
