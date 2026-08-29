@@ -92,10 +92,48 @@ Tested on `VaseRose_5cm`, 30 Jul 2026:
 **Standard Inslogic TPU 95A sustains 4.0 mm³/s on this MK3S+** — clean, no under-extrusion, no
 grinding. So a dedicated high-flow grade is **not** needed on speed grounds.
 
-Context for what that speed means: at `0.45 × 0.2 mm` (0.090 mm²), 4.0 mm³/s = **44 mm/s**,
-which is essentially this machine's PLA perimeter speed (`perimeter_speed = 45`). PLA infill
-runs 80 mm/s, so infill is where the cap still binds — hence 1.73× rather than the 2.16× a
-thin swatch predicted. Expect larger gains on infill-heavy parts.
+### What a flow cap is worth in mm/s — and the cross-section that converts it
+
+**An extrusion is not a rectangle.** PrusaSlicer models the bead as a rectangle with
+semicircular ends, so at `0.45 × 0.2 mm` the cross-section is
+
+    0.2 × (0.45 − 0.2) + π × 0.1² = **0.0814 mm²**
+
+not the 0.090 mm² that width × height suggests — a 10 % error, always in the direction of
+*understating* the speed a given flow cap buys. (This paragraph said 0.090 mm² and 44 mm/s until
+29 Aug 2026.)
+
+So 4.0 mm³/s buys **49 mm/s**, which sits just *above* this machine's `perimeter_speed = 45`
+and well below its 80 mm/s infill.
+
+**Measured, not derived.** Slicing a solid 40 mm cube with this profile emits perimeters at the
+full 45 mm/s and infill throttled to exactly **49.1 mm/s**; the stock 1.2 mm³/s profile throttles
+everything to **14.7 mm/s**. Both match the formula to three figures, which is what makes the
+0.0814 the right number and the 0.090 the wrong one.
+
+The cap therefore binds on infill only — hence 1.73× rather than the 2.16× a thin swatch
+predicted. Expect larger gains on infill-heavy parts.
+
+### The same arithmetic for everything else on the shelf
+
+At 0.4 nozzle, 0.2 mm layers, 0.45 mm width:
+
+| Filament | Cap | Top speed it permits | Binds anything in these print profiles? |
+|---|---|---|---|
+| `Inslogic PLA Pro` | 15 mm³/s | 184 mm/s | No |
+| `Inslogic ASA` | 11 mm³/s | 135 mm/s | No |
+| `Inslogic PETG Pro` | 8 mm³/s | 98 mm/s | No |
+| `Inslogic TPU 95A - fast` | 4.0 mm³/s | 49 mm/s | Infill only |
+| `Inslogic TPU 95A` | 1.2 mm³/s | 15 mm/s | Everything, first layer included |
+
+The fastest move any print profile in this repo asks for is **80 mm/s infill, which needs only
+6.5 mm³/s**. That is why a solid 40 mm cube takes **1 h 37 m in PLA, ASA *and* PETG — the three
+finish within six seconds of each other** (measured 29 Aug 2026). Their flow ceilings are real
+but dormant, and the ranking PLA > ASA > PETG only wakes up past ~98 mm/s, where PETG throttles
+first.
+
+TPU is the only filament here whose ceiling is doing anything: the same cube is 1 h 39 m on
+`- fast` (+3 %) and **3 h 54 m on the stock profile — 2.4×**.
 
 **Not established:** whether 4.0 is the real limit. It was borrowed from Cheetah's rating, not
 found by testing this filament to its edge.
