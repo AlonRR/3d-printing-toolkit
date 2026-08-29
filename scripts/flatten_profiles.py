@@ -8,28 +8,52 @@ Advance start gcode, ramming params, cooling logic, retraction...).
 This resolves the real inheritance chain out of PrusaResearch.ini and writes
 complete presets, with precedence:
 
-    reference template (same material, PrusaSlicer-written -> full key set)
+    reference template (PrusaSlicer-written -> full key set)
       < resolved parent chain from the vendor bundle
         < the author's explicit overrides from the sparse file
+
+The reference template only supplies keys the vendor bundle does not carry at
+all - the PrusaSlicer 2.9 additions (overhang_fan_speed_*, filament_travel_*,
+shrinkage compensation, stamping...). Those are identical across the ASA and
+PLA templates, so the template is material-neutral in practice; every
+material-bearing key comes from the chain or from the overrides.
+
+Run with no arguments to flatten every job. Pass profile names to flatten a
+subset:
+
+    python scripts/flatten_profiles.py "Inslogic PLA Pro" "Yasin3D PETG"
+
+That matters because the vendor bundle updates: re-running every job after a
+PrusaSlicer update rewrites already-flattened profiles with upstream changes,
+which turns an unrelated commit into a bundle-drift commit.
 """
 import re
 import shutil
+import sys
 from pathlib import Path
 
 APPDATA = Path.home() / "AppData/Roaming/PrusaSlicer"
 VENDOR = APPDATA / "vendor/PrusaResearch.ini"
 FILAMENT = APPDATA / "filament"
-MASTERS = Path(__file__).resolve().parent.parent / "slicer/filament/inslogic"
+MASTERS = Path(__file__).resolve().parent.parent / "slicer/filament"
 
-# profile -> (parent in vendor bundle, reference template for the full key set)
+# profile -> (vendor folder, parent in vendor bundle, reference template)
 JOBS = {
-    "Inslogic ASA":                   ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
-    "Inslogic ASA @0.8 nozzle":       ("Prusament ASA @0.8 nozzle","Yasin3D ASA @0.8 nozzle"),
-    "Inslogic ASA - thin wall":            ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
-    "Inslogic ASA - thin wall, flat base":          ("Prusament ASA",            "Yasin3D ASA @0.8 nozzle"),
-    "Inslogic TPU 95A":               ("Generic FLEX",             "Ultrafuse TPU-95A - Copy"),
-    "Inslogic TPU 95A @0.8 nozzle":   ("Generic FLEX @0.8 nozzle", "Ultrafuse TPU-95A - Copy"),
-    "Inslogic TPU 95A - fast":        ("NinjaTek Cheetah TPU",     "Ultrafuse TPU-95A - Copy"),
+    "Inslogic ASA":                        ("inslogic", "Prusament ASA",             "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA @0.8 nozzle":            ("inslogic", "Prusament ASA @0.8 nozzle", "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA - thin wall":            ("inslogic", "Prusament ASA",             "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic ASA - thin wall, flat base": ("inslogic", "Prusament ASA",             "Yasin3D ASA @0.8 nozzle"),
+    "Inslogic TPU 95A":                    ("inslogic", "Generic FLEX",              "Ultrafuse TPU-95A - Copy"),
+    "Inslogic TPU 95A @0.8 nozzle":        ("inslogic", "Generic FLEX @0.8 nozzle",  "Ultrafuse TPU-95A - Copy"),
+    "Inslogic TPU 95A - fast":             ("inslogic", "NinjaTek Cheetah TPU",      "Ultrafuse TPU-95A - Copy"),
+    "Inslogic PLA Pro":                    ("inslogic", "Generic PLA",               "Yasin3D PLA @0.8 nozzle"),
+    "Inslogic PLA Pro @0.8 nozzle":        ("inslogic", "Generic PLA @0.8 nozzle",   "Yasin3D PLA @0.8 nozzle"),
+    "Inslogic PETG Pro":                   ("inslogic", "Generic PETG",              "Yasin3D PLA @0.8 nozzle"),
+    "Inslogic PETG Pro @0.8 nozzle":       ("inslogic", "Generic PETG @0.8 nozzle",  "Yasin3D PLA @0.8 nozzle"),
+    "Yasin3D PLA":                         ("yasin3d",  "Generic PLA",               "Yasin3D PLA @0.8 nozzle"),
+    "Yasin3D PETG":                        ("yasin3d",  "Generic PETG",              "Yasin3D PLA @0.8 nozzle"),
+    "Yasin3D PETG @0.8 nozzle":            ("yasin3d",  "Generic PETG @0.8 nozzle",  "Yasin3D PLA @0.8 nozzle"),
+    "Yasin3D ASA":                         ("yasin3d",  "Prusament ASA",             "Yasin3D ASA @0.8 nozzle"),
 }
 
 KV = re.compile(r"^([a-z_0-9]+) = (.*)$")
@@ -77,9 +101,16 @@ def resolve_chain(name, blocks, seen=None):
 
 
 def main():
+    wanted = sys.argv[1:]
+    unknown = [n for n in wanted if n not in JOBS]
+    if unknown:
+        raise SystemExit(f"unknown profile(s): {', '.join(unknown)}")
+
     blocks = vendor_blocks()
-    for name, (parent, template) in JOBS.items():
-        sparse_path = MASTERS / f"{name}.ini"
+    for name, (folder, parent, template) in JOBS.items():
+        if wanted and name not in wanted:
+            continue
+        sparse_path = MASTERS / folder / f"{name}.ini"
         if not sparse_path.exists():
             print(f"SKIP  {name}  (no master file)")
             continue
@@ -99,6 +130,11 @@ def main():
         final = {**base, **resolved, **overrides}
         final["inherits"] = parent
         final["filament_settings_id"] = ""
+        # `renamed_from` is a vendor-bundle migration key ("Generic PET" became
+        # "Generic PETG"). Resolving the chain drags it along, and a user preset
+        # carrying it claims to BE the renamed preset - four PETG profiles here
+        # would all claim to be the old "Generic PET" at once. Never inherit it.
+        final.pop("renamed_from", None)
 
         # back up the sparse original once, then write the flattened version
         bak = sparse_path.with_suffix(".ini.sparse-bak")

@@ -1,11 +1,19 @@
 # Inslogic filament profiles — Prusa MK3S+
 
-PrusaSlicer filament profiles for **Inslogic ASA** and **Inslogic TPU 95A**, built from
-Inslogic's own Technical Data Sheets (both rev. 12.02.2024, archived here as PDFs).
+PrusaSlicer filament profiles for **Inslogic ASA**, **TPU 95A**, **PLA Pro** and **PETG Pro**,
+built from Inslogic's own Technical Data Sheets (all rev. 12.02.2024, archived in
+[`../../reference/`](../../reference/)).
 
 Inslogic's [download center](https://www.inslogic3d.com/pages/download-center) publishes
 **TDS/SDS data sheets only — no slicer profiles**, for any slicer. These were derived from
 the data sheets by hand.
+
+**Name the grade, not the material.** Inslogic sells eight different PLA products — PLA Pro,
+Matte, Silk PLA+, Silk Dual/Tri/Four Colour, High-Speed Marble, Nebulux, LW-PLA and WoodFill
+— and two PETGs, PETG Pro and the carbon-filled PETG-CF10. Each has its own data sheet.
+These profiles cover the plain **Pro** grades only, which is why they are named
+`Inslogic PLA Pro` and not `Inslogic PLA`: if the spool on the shelf turns out to be Matte or
+Silk, the profile name is what surfaces the mismatch before the print does.
 
 > **Print-validated: `Inslogic ASA - thin wall` (29 Jul) and `Inslogic TPU 95A - fast` (30 Jul).**
 > The rest are installed and slice correctly, but their *temperatures* are still derived from
@@ -44,6 +52,25 @@ Get-ChildItem "$env:APPDATA\PrusaSlicer\filament\*.ini" | ForEach-Object {
 }
 # anything well under ~85 is sparse and silently running on defaults
 ```
+
+Two things leak *into* a flattened preset that should not, both found on 29 Aug 2026 while
+building the PETG profiles:
+
+- **`renamed_from`.** `Generic PETG` carries `renamed_from = "Generic PET"`, a vendor-bundle
+  migration key. Resolving the chain drags it into the child, so every PETG profile built this
+  way claimed to *be* the renamed `Generic PET` — four of them at once. `flatten_profiles.py`
+  now strips it, the same way it strips `inherits`.
+- **A parent compatibility condition you didn't read.** `Prusament PETG` sets
+  `nozzle_diameter[0]!=0.6` on top of the usual `!=0.8`, so anything inheriting it silently
+  vanishes from the filament list on a 0.6 nozzle — which Inslogic's sheet explicitly
+  supports. `Generic PETG` has no such clause. That is the *only* reason the PETG profiles here
+  inherit Generic rather than Prusament; the two are otherwise identical apart from temperature
+  and price, both of which get overridden anyway.
+
+And one thing the key-count check will show that is *not* a fault: a preset PrusaSlicer has
+itself rewritten can come back with **more** than 85 keys. The installed `Inslogic ASA` reads
+87 — 2.9.4 added `filament_flush_speed` and `filament_flush_volume` when it saved the file.
+That is upstream drift, not sparseness. The number to be alarmed by is a low one.
 
 ## `Inslogic TPU 95A - fast` — the flow ceiling was the profile, not the filament
 
@@ -99,20 +126,86 @@ general-purpose profile deliberately overrides that to 20 % to stop warping on b
 single wall with no cross-section to delaminate, the data sheet was closer to right than the
 override was.
 
+## `Inslogic PLA Pro` and `Inslogic PETG Pro` — one rule, two deviations
+
+Added 29 Aug 2026 from the PLA Pro and PETG Pro data sheets. Both are the plain grades sold by
+[filamentcenter.co.il](https://filamentcenter.co.il/), Inslogic's Israeli distributor:
+**PLA Pro ₪59/kg** and **PETG Pro ₪49/kg**, incl. VAT, checked 29 Aug 2026. Those are the
+numbers in `filament_cost`.
+
+### The rule the temperatures follow
+
+Inslogic states nozzle temperature as **speed-dependent bands**, not a single number, so the
+only real decisions are which band this printer sits in and where in it to land:
+
+> **Print temperature = the top of the TDS band for the throughput this printer actually runs.
+> First layer = whatever the Prusa parent does relative to that, as long as the result is still
+> a temperature the sheet sanctions somewhere.**
+
+The reason to trust that rule is not that it sounds tidy — it is that applying it reproduces
+the ASA and TPU choices already made in this folder, months earlier and by hand.
+
+| Profile | Band used | Print | First layer | Why that first layer |
+|---|---|---|---|---|
+| `Inslogic PLA Pro` | 195–205 °C @ 50–100 mm/s | **205** | **210** | Parent does +5, and 210 is inside the sheet's faster band |
+| `Inslogic PLA Pro @0.8 nozzle` | 205–220 °C @ 100–300 mm/s | **220** | **220** | Parent's 230 is above anything the sheet sanctions → **clamped** |
+| `Inslogic PETG Pro` | 230–240 °C @ 50–100 mm/s | 240 | 240 | Parent already sits exactly there — no override in the file |
+| `Inslogic PETG Pro @0.8 nozzle` | 240–255 °C @ 100–300 mm/s | 250 | 240 | Parent runs the first layer *cooler* at 0.8; that is Prusa's own choice for PETG and 240 is the top of the slow band, so it stands |
+
+A 0.8 nozzle moves roughly four times the material per second at the same head speed, which is
+why it reads against the faster band even though the head is not moving faster. Same reasoning
+as `Inslogic ASA @0.8 nozzle`.
+
+Note what the rule produces for PETG: **nothing**. Both PETG profiles override no temperature
+at all, because Prusa's Generic PETG chain already lands on the vendor's numbers. A profile
+that changes less than expected is the good outcome, not a sign the work was skipped.
+
+### Deviation 1 — PETG fan stays at 30/50 %, not the sheet's 100 %
+
+The ASA judgment call below calls the sheet's 100 % "what reads like a template default." With
+four sheets in hand it is no longer a suspicion: **ASA, TPU 95A, PLA Pro and PETG Pro all say
+100 %** — four materials whose cooling needs are nothing alike, one number. It is boilerplate.
+
+PETG therefore keeps Prusa's 30 % min / 50 % max, because heavy part cooling is the standard
+way to destroy PETG layer adhesion. **PLA is the one material where the 100 % is right**, and
+there the parent already runs 100 %, so no fan override appears in that file either.
+
+### Deviation 2 — PETG bed at 70 °C, against Prusa's 85/90
+
+Inslogic says 60–70 °C; Prusa's PETG profiles run 85 °C first layer / 90 °C. These profiles
+take the vendor's ceiling, **70/70** — the same "hottest the vendor sanctions" logic as the ASA
+bed below, but with a second argument the ASA case does not have: **PETG bonds to smooth PEI
+above roughly 85 °C hard enough to tear PEI off the sheet on removal.** Here the
+vendor-faithful number is also the one that protects the sheet.
+
+If the first layer will not stick at 70 °C, raise toward 85/90 — and lay down a thin glue-stick
+release layer first. The glue is what makes the hotter bed *safe*; it is not what makes it
+work.
+
 ---
 
-## Status — installed 28 Jul 2026
+## Status
 
-Copied into `%APPDATA%\PrusaSlicer\filament\` and verified end-to-end: PrusaSlicer lists all
-four under `user_filament_profiles`, and each one slices a real part with exit 0 and emits
-the intended values.
+ASA and TPU installed 28 Jul 2026; PLA Pro and PETG Pro **29 Aug 2026**. All copied into
+`%APPDATA%\PrusaSlicer\filament\` and verified end-to-end: each slices a real part with exit 0
+and the G-code carries the intended temperatures and the `M900` Linear Advance line.
 
-| Profile | Nozzle °C | Bed °C | Fan min/max | Max vol. | Density |
-|---|---|---|---|---|---|
-| `Inslogic ASA` | 255 | 100 | 20 / 20 | 0 (unlimited, from parent) | 1.05 |
-| `Inslogic ASA @0.8 nozzle` | 265 | 100 | 20 / 20 | 15 | 1.05 |
-| `Inslogic TPU 95A` | 210 | 50 | 100 / 100 | 1.2 | 1.23 |
-| `Inslogic TPU 95A @0.8 nozzle` | 215 | 50 | 100 / 100 | 4.3 | 1.23 |
+| Profile | Nozzle °C | Bed °C | Fan min/max | Max vol. | Density | ₪/kg |
+|---|---|---|---|---|---|---|
+| `Inslogic ASA` | 255 | 100 | 20 / 20 | 0 (unlimited, from parent) | 1.05 | ⚠️ 35.28 |
+| `Inslogic ASA @0.8 nozzle` | 265 | 100 | 20 / 20 | 15 | 1.05 | ⚠️ 35.28 |
+| `Inslogic TPU 95A` | 210 | 50 | 100 / 100 | 1.2 | 1.23 | ⚠️ 27.82 |
+| `Inslogic TPU 95A @0.8 nozzle` | 215 | 50 | 100 / 100 | 4.3 | 1.23 | ⚠️ 27.82 |
+| `Inslogic PLA Pro` | 205 (first 210) | 60 | 100 / 100 | 15 | 1.20 | 59 |
+| `Inslogic PLA Pro @0.8 nozzle` | 220 | 60 | 100 / 100 | 15 | 1.20 | 59 |
+| `Inslogic PETG Pro` | 240 | 70 | 30 / 50 | 8 | 1.26 | 49 |
+| `Inslogic PETG Pro @0.8 nozzle` | 250 (first 240) | 70 | 30 / 50 | 20 | 1.26 | 49 |
+
+⚠️ **The ASA and TPU rows still carry the *parent's* price**, inherited from Prusament ASA and
+Generic PETG, not Inslogic's. The real Israeli prices are **ASA ₪69/kg** and **TPU 95A ₪79/kg**
+([filamentcenter.co.il](https://filamentcenter.co.il/), checked 29 Aug 2026). Not corrected
+here, because both of those profiles are print-validated and the change was out of scope — but
+every cost estimate PrusaSlicer prints for them is roughly half what the spool actually cost.
 
 Verified with, e.g.:
 
@@ -137,41 +230,46 @@ Copy-Item "$env:USERPROFILE\Tools\3d-printing\slicer\filament\inslogic\*.ini" `
 
 The 0.4 profiles show up for any nozzle except 0.8; the `@0.8 nozzle` ones only when the
 printer profile is set to 0.8. That's inherited from the parent profiles' compatibility
-conditions — it's why there are four files and not two.
+conditions — it's why each material needs two files rather than one.
 
 ---
 
 ## What the data sheets actually say
 
-| | **ASA** | **TPU 95A** |
-|---|---|---|
-| Diameter | 1.75 ± 0.02 mm | 1.75 ± 0.03 mm |
-| Density | 1.05 g/cm³ | 1.23 g/cm³ |
-| **Drying** | **80 °C, 4 h** | **50 °C, 4 h** |
-| Nozzle sizes | 0.2 / 0.4 / 0.6 mm | 0.4 / 0.6 mm |
-| Nozzle temp | 250–260 °C @ 50–100 mm/s<br>260–280 °C @ 100–200 mm/s | 190–210 °C @ 50–80 mm/s<br>210–230 °C @ 80–120 mm/s |
-| Bed temp | 80–100 °C | 50–60 °C |
-| Bed type | Smooth PEI / high-temp plate | **Textured PEI** / cool plate |
-| Cooling fan | 100 % | 100 % |
-| Other | Tg 108 °C · HDT 98 °C · shrinkage 0.4–0.9 % | Shore 95A · HDT 53 °C · elongation 1050 % |
+| | **ASA** | **TPU 95A** | **PLA Pro** | **PETG Pro** |
+|---|---|---|---|---|
+| Diameter | 1.75 ± 0.02 mm | 1.75 ± 0.03 mm | 1.75 ± 0.02 mm | 1.75 ± 0.02 mm |
+| Density | 1.05 g/cm³ | 1.23 g/cm³ | 1.20 g/cm³ | 1.26 g/cm³ |
+| **Drying** | **80 °C, 4 h** | **50 °C, 4 h** | **50 °C, 4 h** | **50 °C, 4 h** |
+| Nozzle sizes | 0.2 / 0.4 / 0.6 mm | 0.4 / 0.6 mm | 0.2 / 0.4 / 0.6 mm | 0.2 / 0.4 / 0.6 mm |
+| Nozzle temp | 250–260 °C @ 50–100 mm/s<br>260–280 °C @ 100–200 mm/s | 190–210 °C @ 50–80 mm/s<br>210–230 °C @ 80–120 mm/s | 195–205 °C @ 50–100 mm/s<br>205–220 °C @ 100–300 mm/s | 230–240 °C @ 50–100 mm/s<br>240–255 °C @ 100–300 mm/s<br>255–270 °C @ 300–600 mm/s |
+| Bed temp | 80–100 °C | 50–60 °C | 50–60 °C | 60–70 °C |
+| Bed type | Smooth PEI / high-temp plate | **Textured PEI** / cool plate | **Textured PEI** / cool plate | Smooth PEI / high-temp plate |
+| **Cooling fan** | **100 %** | **100 %** | **100 %** | **100 %** |
+| Other | Tg 108 °C · HDT 98 °C · shrinkage 0.4–0.9 % | Shore 95A · HDT 53 °C · elongation 1050 % | Tg 65.3 °C · HDT 55 °C · tensile 56 MPa · Izod 20.1 kJ/m² | Tg 65.5 °C · HDT 72 °C · tensile 50 MPa · Izod 4.8 kJ/m² |
 
-Neither sheet lists a **0.8 mm** nozzle. The `@0.8 nozzle` profiles exist because that's how
-this printer is often run here, not because Inslogic supports it.
+**Read the cooling-fan row across.** Four materials — a warp-prone styrenic, a soft elastomer,
+a PLA and a PETG — and one number. That row is a template default, and it is the single figure
+on these sheets that gets overridden most.
+
+**No sheet lists a 0.8 mm nozzle.** The `@0.8 nozzle` profiles exist because that's how this
+printer is often run here, not because Inslogic supports it.
 
 ---
 
-## The three judgment calls
+## The judgment calls
 
-Everything else is a straight transcription of the TDS. These three are not, and are the
-places to look first if a print goes wrong.
+Everything else is a straight transcription of the TDS. These are not, and are the places to
+look first if a print goes wrong. The PLA/PETG pair — the PETG fan and the PETG bed — has its
+own section above; the three below are the ASA and TPU ones.
 
 ### 1. ASA fan is 20 %, not the TDS's 100 %
 
 The single biggest deviation, and deliberate. **100 % part cooling on ASA warps and
 delaminates parts on an open-frame MK3S+.** ASA wants heat retention; that's the whole
-reason the Lack enclosure exists. The 100 % figure appears identically on both the ASA and
-the TPU sheet, which reads like a template default rather than an ASA-specific
-recommendation.
+reason the Lack enclosure exists. The 100 % figure appears identically on **all four**
+Inslogic sheets — ASA, TPU 95A, PLA Pro and PETG Pro — which settles it as a template default
+rather than an ASA-specific recommendation.
 
 Both ASA profiles instead use the Prusament ASA values — **20 % fan, off for the first
 4 layers** — which is what the working `Yasin3D ASA @0.8 nozzle` profile on this machine
@@ -223,18 +321,27 @@ so in practice it means "no flow limit at all."
 | `Inslogic ASA @0.8 nozzle` | 265 / 265 | 100 / 100 | 0.8 pushes far more material/sec → the 260–280 °C band. Matches the Prusament ASA @0.8 parent |
 | `Inslogic TPU 95A` | 210 / first layer 215 | 50 / 50 | MK3S+ prints TPU well under 80 mm/s → the 190–210 °C band; 210 is its top, for best layer adhesion |
 | `Inslogic TPU 95A @0.8 nozzle` | 215 / 220 | 50 / 50 | Higher flow puts it at the boundary between the two bands |
+| `Inslogic PLA Pro` | 205 / first layer 210 | 60 / 60 | 0.4 runs 45–80 mm/s → the 195–205 °C band; 205 is its top. The parent's 210 is above what the sheet sanctions at that speed |
+| `Inslogic PLA Pro @0.8 nozzle` | 220 / 220 | 60 / 60 | ~4× the throughput → the 205–220 °C band. First layer **clamped** from the parent's 230, which the sheet never sanctions |
+| `Inslogic PETG Pro` | 240 / 240 | 70 / 70 | 0.4 sits in the 230–240 °C band; the Generic PETG parent is already exactly there |
+| `Inslogic PETG Pro @0.8 nozzle` | 250 / first layer 240 | 70 / 70 | ~4× throughput → the 240–255 °C band. Prusa runs the 0.8 first layer *cooler*; 240 is the slow band's top, so it stands |
 
 Note the TPU numbers are **below** the 225 °C the Ultrafuse profile uses. Inslogic's ceiling
 is 230 °C, and only at speeds this printer won't reach.
+
+Note also how little PETG needed: **neither PETG profile overrides a temperature.** The Prusa
+chain already lands on the vendor's numbers, and the only real change is the bed.
 
 ---
 
 ## Before the first print
 
-1. **Dry the filament** — ASA 80 °C/4 h, TPU 50 °C/4 h. Both are hygroscopic; TPU especially
-   so, and wet TPU prints badly in ways easily mistaken for a bad profile.
+1. **Dry the filament** — ASA 80 °C/4 h; TPU, PLA Pro and PETG Pro all 50 °C/4 h. All are
+   hygroscopic; TPU especially so, and wet TPU prints badly in ways easily mistaken for a bad
+   profile.
 2. **TPU: fit the textured PEI sheet.** On smooth PEI, TPU can bond hard enough to damage
-   the sheet on removal.
+   the sheet on removal. PLA Pro's sheet asks for the textured sheet too, and **PETG on smooth
+   PEI is the other case that damages sheets** — see Deviation 2 above.
 3. **ASA: use the enclosure**, and mind the fumes — this is exactly the case the
    [fume-fan](../../../Tools/homelab/docs/manual/fume-fan-esp32.md) project is for.
 4. **Print a temperature tower or one of the filament sample swatches** in

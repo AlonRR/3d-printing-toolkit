@@ -1,0 +1,16 @@
+# Inslogic PETG Pro — Prusa MK3S+, 0.4 / 0.6 nozzle
+# Built from the Inslogic PETG Pro Technical Data Sheet (rev. 12.02.2024),
+# archived at ../../reference/inslogic_petg_pro_tds.pdf.
+# Parent is Generic PETG, not Prusament PETG: Prusament PETG carries
+# `nozzle_diameter[0]!=0.6` and would hide this profile on a 0.6 nozzle, which
+# the TDS explicitly supports. See README.md.
+inherits = Generic PETG
+filament_vendor = Inslogic
+filament_type = PETG
+filament_diameter = 1.75
+filament_density = 1.26
+filament_cost = 49
+filament_spool_weight = 1000
+bed_temperature = 70
+first_layer_bed_temperature = 70
+filament_notes = "Inslogic PETG Pro - TDS rev. 12.02.2024.\n\nGRADE: product 'PETG Pro Inslogic 1KG', 49 ILS at filamentcenter.co.il (checked 29 Aug 2026). Inslogic also sells PETG-CF10, a carbon-filled grade that is a different material and needs a hardened nozzle.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.02 mm, 1 kg spool. Density 1.26 g/cm3.\nDrying: 50 C for 4 h.\nNozzle sizes: 0.2 / 0.4 / 0.6 mm.\nNozzle temp: 230-240 C at 50-100 mm/s; 240-255 C at 100-300 mm/s; 255-270 C at 300-600 mm/s.\nBed: 60-70 C. Bed type: smooth PEI sheet / high-temperature plate.\nCooling fan: 100 %.\nTg 65.5 C, Tm 128 C, HDT(0.45 MPa) 72 C.\nTensile 50.0 MPa, elongation at break 34.5 %, flexural 81.9 MPa / 2750 MPa, Izod notched 4.8 kJ/m2.\n\nTHE BED IS THE ONE REAL CHANGE: 70/70 C, the top of the Inslogic range. Prusa's PETG parent runs 85 C first layer / 90 C, which is both outside vendor spec and hot enough that PETG bonds to a smooth PEI sheet strongly enough to tear PEI off it on removal.\nIf the first layer will not stick at 70 C, raise toward Prusa's 85/90 - and put down a thin glue-stick release layer first, which is what makes the higher bed safe rather than what makes it work.\n\nDELIBERATE DEVIATION FROM TDS:\nThe TDS says 100 % cooling fan. That is not applied. The parent's 30 % min / 50 % max is kept, because heavy part cooling is the standard way to ruin PETG layer adhesion.\nThe 100 % figure is identical on all four Inslogic sheets read so far - ASA, TPU 95A, PLA Pro and PETG Pro - which makes it a template default rather than a per-material recommendation.\n\nNOT OVERRIDDEN: temperature. The parent's 240 C sits exactly at the top of the TDS band for the speeds this printer runs at 0.4 mm, and its 240 C first layer is the same number, so there is nothing to change.\n\nUNTESTED - no calibration print has been run with this profile yet."

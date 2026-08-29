@@ -10,9 +10,10 @@ every number, and the hard-won gotchas that took a wasted print or a wasted roun
 
 | Path | |
 |---|---|
-| [`slicer/filament/inslogic/`](slicer/filament/inslogic/) | The 7 Inslogic profiles + [their README](slicer/filament/inslogic/README.md) — build reasoning, what's print-validated, and the flattening trap |
+| [`slicer/filament/inslogic/`](slicer/filament/inslogic/) | The 11 Inslogic profiles (ASA, TPU 95A, PLA Pro, PETG Pro) + [their README](slicer/filament/inslogic/README.md) — build reasoning, what's print-validated, and the flattening trap |
+| [`slicer/filament/yasin3d/`](slicer/filament/yasin3d/) | The 6 Yasin3D profiles (PLA, PETG, ASA) + [their README](slicer/filament/yasin3d/README.md). **Yasin3D publishes no data sheet at all**, so these are Prusa's generic values with a vendor and a price attached — a starting point, not a calibration |
 | [`slicer/print/`](slicer/print/) | The 8 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
-| [`slicer/reference/`](slicer/reference/) | Inslogic ASA + TPU 95A technical data sheets (the source for every temperature here) |
+| [`slicer/reference/`](slicer/reference/) | The 4 Inslogic technical data sheets — ASA, TPU 95A, PLA Pro, PETG Pro (the source for every temperature in those profiles) |
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
 | [`docs/fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to **this** printer — the governing number is the 0.45 mm extrusion width, not the 0.4 mm nozzle, so walls quantise to multiples of 0.45 |
 | [`models/`](models/) | Parametric OpenSCAD sources for one-off parts. STLs stay in OneDrive; the `.scad` is the artefact |
@@ -37,6 +38,12 @@ is the user-level **`openscad-printed-part`** skill.
 system *default*, not the parent's value — silently, while slicing still succeeds. A correct
 preset has ~85 keys. Full explanation and the fix:
 [`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md).
+
+Two more that cost a round-trip each on 29 Aug 2026, documented in the same file: **a resolved
+chain drags `renamed_from` into the child** (four PETG profiles each claiming to be the renamed
+`Generic PET`), and **`Prusament PETG` excludes 0.6 nozzles** in its compatibility condition, so
+anything inheriting it vanishes from the filament list on a 0.6 — which is why every PETG
+profile here inherits `Generic PETG` instead.
 
 ---
 
@@ -84,7 +91,7 @@ PrusaSlicer **2.9.4**. Default output path is already set to `OneDrive\3D printi
 
 The through-line: you strip skirt/brim and avoid crossing perimeters on nearly everything.
 
-### Custom filament profiles (7)
+### Custom filament profiles (18)
 
 | Profile | Type | Nozzle / Bed | Inherits | Notes |
 |---|---|---|---|---|
@@ -98,8 +105,19 @@ The through-line: you strip skirt/brim and avoid crossing perimeters on nearly e
 | **`Inslogic ASA - thin wall`** | ASA | 250 / 100 °C | `Prusament ASA` | **✅ Print-validated 29 Jul 2026.** Fan **70 %**, layer time forced to 10 s. Spiral-vase / single-wall only; 70 % fan would split layers on bulk ASA. Renamed from `- vase` (2 Aug) — it is not vase-mode-specific |
 | `Inslogic ASA - thin wall, flat base` | ASA | 250 / 100 °C | `Prusament ASA` | As above but `disable_fan_first_layers = 10`, so a wide flat base prints in still air. Renamed from `- leaves` (2 Aug) |
 | **`Inslogic TPU 95A - fast`** | FLEX | 225 / 50 °C | `NinjaTek Cheetah TPU` | **✅ Print-validated 30 Jul 2026** — 4.0 mm³/s and 1.5 mm retraction; 2h53m → 1h40m on the same model |
+| `Inslogic PLA Pro` | PLA | 205 (first 210) / 60 °C | `Generic PLA` | Added 29 Aug 2026 from TDS. ₪59/kg. 205 is the top of the vendor band for MK3S+ speeds — the parent's 210 is above it |
+| `Inslogic PLA Pro @0.8 nozzle` | PLA | 220 / 60 °C | `Generic PLA @0.8 nozzle` | Added 29 Aug 2026 from TDS. First layer clamped from the parent's 230, which the sheet never sanctions |
+| `Inslogic PETG Pro` | PETG | 240 / **70** °C | `Generic PETG` | Added 29 Aug 2026 from TDS. ₪49/kg. Bed is the only real change — vendor says 60–70, Prusa runs 85/90 |
+| `Inslogic PETG Pro @0.8 nozzle` | PETG | 250 (first 240) / **70** °C | `Generic PETG @0.8 nozzle` | Added 29 Aug 2026 from TDS. No temperature override at all — the parent already sits in the vendor's band |
+| `Yasin3D PLA` | PLA | 210 / 60 °C | `Generic PLA` | Added 29 Aug 2026. No vendor data exists; mirrors the @0.8 profile's first-layer edit |
+| `Yasin3D PETG` | PETG | 240 / 85–90 °C | `Generic PETG` | Added 29 Aug 2026. ₪39/kg — the one Yasin3D price that is a current listing |
+| `Yasin3D PETG @0.8 nozzle` | PETG | 250 (first 240) / 85–90 °C | `Generic PETG @0.8 nozzle` | Added 29 Aug 2026 |
+| `Yasin3D ASA` | ASA | 260 / 110 °C | `Prusament ASA` | Added 29 Aug 2026. Mirrors the @0.8 profile's first-layer bed edit |
 
-Full reasoning for the Inslogic profiles: [`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md).
+Full reasoning: [`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md) and
+[`slicer/filament/yasin3d/README.md`](slicer/filament/yasin3d/README.md). The split matters —
+the Inslogic numbers come from published data sheets, the Yasin3D ones come from Prusa's
+generic profiles because **Yasin3D publishes nothing at all**.
 
 ### Physical printers (3) — all one machine, three entries
 
@@ -157,8 +175,24 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    - Related: the existing **`Ultrafuse TPU-95A - Copy`** profile inherits `filament_max_volumetric_speed = 15` and a 40 °C bed from `Ultrafuse TPC-45D`, a near-rigid copolyester four levels up its inheritance chain. Prusa's soft-TPU chain (`Generic FLEX`) uses 1.2 mm³/s and a 50 °C bed. Worth revisiting.
 4. ~~**Nested stale repo copy**~~ — **done 2 Aug 2026**, see §5.
 5. ~~**`OneDrive\3D printing\` is not version controlled.**~~ **Done 2 Aug 2026** — this repo, `alon/3d-printing`, synced back to `OneDrive\Tools\3d-printing` via `ods`. Documentation and slicer config are versioned; models and G-code deliberately stay in OneDrive as binaries. Still unversioned and remaining candidates: `PrusaSlicer_config_bundle.ini` and the `.scad` sources.
-6. **Yasin PLA profile is a bare clone** of `Generic PLA @0.8 nozzle` at stock 220/60 with `filament_vendor = Generic` and empty notes — no calibration of its own. The ASA profile, by contrast, is properly tuned.
-7. **The stored PrusaLink API key is stale — remote upload is broken** (found 17 Aug 2026). Both
+6. **Every Yasin3D profile is still vendor-data-free.** Widened 29 Aug 2026 rather than closed.
+   The original complaint — `Yasin3D PLA @0.8 nozzle` is a bare clone of `Generic PLA @0.8 nozzle`
+   with no calibration of its own — turns out to be the general case, not an oversight: **Yasin3D
+   publishes no TDS, no SDS and no printing parameters anywhere**, and the retailer's product pages
+   carry none either (searched 29 Aug 2026). The four new profiles added that day are explicit about
+   it, and the ASA one is no better off than the PLA one — its "proper tuning" is Prusament ASA's,
+   inherited, not measured.
+   - What would actually close this: a temperature tower or a sample swatch per material. With no
+     data sheet behind the numbers, that test *is* the data sheet.
+   - Also unclosable by research: **Yasin3D PLA and ASA are no longer sold** by
+     [filamentcenter.co.il](https://filamentcenter.co.il/) — their whole Yasin3D range is now PETG
+     (₪39) and ABS (₪49). The ₪39 and ₪54 in those profiles are carried-over historical figures
+     that cannot be re-verified.
+7. **The Inslogic ASA profiles cost ₪35.28/kg according to PrusaSlicer**, which is Prusament ASA's
+   inherited price. The real one is **₪69/kg** (filamentcenter.co.il, 29 Aug 2026), so every ASA
+   cost estimate is roughly half. Left alone on 29 Aug because those four profiles are
+   print-validated and the price was out of scope; the TPU ones are already correct at 82–85.
+8. **The stored PrusaLink API key is stale — remote upload is broken** (found 17 Aug 2026). Both
    `physical_printer` entries (`Prusa mk3S+` → `192.0.2.128`, `Mk` → `prusalink.local`) hold the
    *same* 14-character key, and both endpoints reject it with `403 Bad X-Api-Key`. The printer
    itself is fine: it answers ping and serves a proper `401` challenge.
