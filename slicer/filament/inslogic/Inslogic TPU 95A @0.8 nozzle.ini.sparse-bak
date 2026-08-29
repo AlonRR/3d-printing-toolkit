@@ -12,6 +12,7 @@ filament_vendor = Inslogic
 filament_type = FLEX
 filament_diameter = 1.75
 filament_density = 1.23
+filament_cost = 79
 filament_spool_weight = 1000
 temperature = 215
 first_layer_temperature = 220

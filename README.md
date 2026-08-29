@@ -188,10 +188,15 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      [filamentcenter.co.il](https://filamentcenter.co.il/) — their whole Yasin3D range is now PETG
      (₪39) and ABS (₪49). The ₪39 and ₪54 in those profiles are carried-over historical figures
      that cannot be re-verified.
-7. **The Inslogic ASA profiles cost ₪35.28/kg according to PrusaSlicer**, which is Prusament ASA's
-   inherited price. The real one is **₪69/kg** (filamentcenter.co.il, 29 Aug 2026), so every ASA
-   cost estimate is roughly half. Left alone on 29 Aug because those four profiles are
-   print-validated and the price was out of scope; the TPU ones are already correct at 82–85.
+7. ~~**The Inslogic ASA and TPU profiles carry their parent's price.**~~ **Fixed 29 Aug 2026** —
+   kept for the reasoning. Not one of the seven set `filament_cost` at all: the four ASA files
+   inherited Prusament ASA's ₪35.28 (about **half** the real price) and the three TPU files
+   inherited ₪82 from `Generic FLEX` and ₪85 from `NinjaTek Cheetah TPU`. The TPU ones were the
+   more dangerous pair — 82 and 85 against a real 79 look like deliberate figures, and the only
+   tell was that all three disagreed with each other. Now set explicitly from
+   [filamentcenter.co.il](https://filamentcenter.co.il/): **ASA ₪69, TPU 95A ₪79**, verified in
+   the sliced G-code. The lesson worth keeping: **a key you never set is not a key with no
+   value** — the flattener will hand it a parent's.
 8. **The stored PrusaLink API key is stale — remote upload is broken** (found 17 Aug 2026). Both
    `physical_printer` entries (`Prusa mk3S+` → `192.0.2.128`, `Mk` → `prusalink.local`) hold the
    *same* 14-character key, and both endpoints reject it with `403 Bad X-Api-Key`. The printer

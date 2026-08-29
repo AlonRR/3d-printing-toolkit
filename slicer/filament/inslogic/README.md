@@ -68,9 +68,12 @@ building the PETG profiles:
   and price, both of which get overridden anyway.
 
 And one thing the key-count check will show that is *not* a fault: a preset PrusaSlicer has
-itself rewritten can come back with **more** than 85 keys. The installed `Inslogic ASA` reads
-87 — 2.9.4 added `filament_flush_speed` and `filament_flush_volume` when it saved the file.
-That is upstream drift, not sparseness. The number to be alarmed by is a low one.
+itself rewritten can come back with **more** than 85 keys. The installed `Inslogic ASA` read 87
+on 29 Aug 2026 — 2.9.4 had added `filament_flush_speed` and `filament_flush_volume` when it last
+saved the file. That is upstream drift, not sparseness; **the number to be alarmed by is a low
+one.** (Reinstalling from this folder later that day put it back to 85. Both keys are
+multi-material flushing settings, irrelevant on a single-extruder MK3S+, and PrusaSlicer re-adds
+them on its next save.)
 
 ## `Inslogic TPU 95A - fast` — the flow ceiling was the profile, not the filament
 
@@ -192,20 +195,42 @@ and the G-code carries the intended temperatures and the `M900` Linear Advance l
 
 | Profile | Nozzle °C | Bed °C | Fan min/max | Max vol. | Density | ₪/kg |
 |---|---|---|---|---|---|---|
-| `Inslogic ASA` | 255 | 100 | 20 / 20 | 0 (unlimited, from parent) | 1.05 | ⚠️ 35.28 |
-| `Inslogic ASA @0.8 nozzle` | 265 | 100 | 20 / 20 | 15 | 1.05 | ⚠️ 35.28 |
-| `Inslogic TPU 95A` | 210 | 50 | 100 / 100 | 1.2 | 1.23 | ⚠️ 27.82 |
-| `Inslogic TPU 95A @0.8 nozzle` | 215 | 50 | 100 / 100 | 4.3 | 1.23 | ⚠️ 27.82 |
+| `Inslogic ASA` | 255 | 100 | 20 / 20 | 11 | 1.05 | 69 |
+| `Inslogic ASA @0.8 nozzle` | 265 | 100 | 20 / 20 | 15 | 1.05 | 69 |
+| `Inslogic ASA - thin wall` | 250 | 100 | 70 / 70 | 11 | 1.05 | 69 |
+| `Inslogic ASA - thin wall, flat base` | 250 | 100 | 70 / 70 | 11 | 1.05 | 69 |
+| `Inslogic TPU 95A` | 210 | 50 | 100 / 100 | 1.2 | 1.23 | 79 |
+| `Inslogic TPU 95A @0.8 nozzle` | 215 | 50 | 100 / 100 | 4.3 | 1.23 | 79 |
+| `Inslogic TPU 95A - fast` | 225 | 50 | 100 / 100 | 4.0 | 1.23 | 79 |
 | `Inslogic PLA Pro` | 205 (first 210) | 60 | 100 / 100 | 15 | 1.20 | 59 |
 | `Inslogic PLA Pro @0.8 nozzle` | 220 | 60 | 100 / 100 | 15 | 1.20 | 59 |
 | `Inslogic PETG Pro` | 240 | 70 | 30 / 50 | 8 | 1.26 | 49 |
 | `Inslogic PETG Pro @0.8 nozzle` | 250 (first 240) | 70 | 30 / 50 | 20 | 1.26 | 49 |
 
-⚠️ **The ASA and TPU rows still carry the *parent's* price**, inherited from Prusament ASA and
-Generic PETG, not Inslogic's. The real Israeli prices are **ASA ₪69/kg** and **TPU 95A ₪79/kg**
-([filamentcenter.co.il](https://filamentcenter.co.il/), checked 29 Aug 2026). Not corrected
-here, because both of those profiles are print-validated and the change was out of scope — but
-every cost estimate PrusaSlicer prints for them is roughly half what the spool actually cost.
+### Prices — fixed 29 Aug 2026, and the reason they were wrong
+
+The four PLA/PETG profiles were built with a real price in them. The seven older ASA and TPU
+ones **never set `filament_cost` at all**, and so silently carried whatever their Prusa parent
+charged:
+
+| Profile | Was | Where that number came from | Now |
+|---|---|---|---|
+| all four ASA | ₪35.28 | `Prusament ASA` | **₪69** |
+| `Inslogic TPU 95A` (+ @0.8) | ₪82 | `Generic FLEX` | **₪79** |
+| `Inslogic TPU 95A - fast` | ₪85 | `NinjaTek Cheetah TPU` | **₪79** |
+
+ASA was costing out at roughly **half** what the spool actually costs. The TPU numbers looked
+plausible — 82 and 85 against a real 79 — which is worse than being obviously wrong: a
+believable inherited number reads as a deliberate one. The tell was that **all three TPU files
+disagreed with each other** while none of the three matched a price anyone had ever paid.
+
+Real prices are Inslogic's Israeli distributor,
+[filamentcenter.co.il](https://filamentcenter.co.il/), checked 29 Aug 2026, per 1 kg spool
+incl. VAT: **ASA ₪69 · TPU 95A ₪79 · PLA Pro ₪59 · PETG Pro ₪49**.
+
+`filament_cost` is now an explicit override in every sparse master here, so it can no longer be
+supplied by a parent without anyone noticing. The general rule: **a key you never set is not a
+key with no value.**
 
 Verified with, e.g.:
 
