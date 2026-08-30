@@ -245,8 +245,8 @@ and the G-code carries the intended temperatures and the `M900` Linear Advance l
 
 | Profile | Nozzle °C | Bed °C | Fan min/max | Max vol. | Density | ₪/kg |
 |---|---|---|---|---|---|---|
-| `Inslogic ASA` | 255 | 100 | 20 / 20 | 11 | 1.05 | 69 |
-| `Inslogic ASA @0.8 nozzle` | 265 | 100 | 20 / 20 | 15 | 1.05 | 69 |
+| `Inslogic ASA` | 255 | **105 / 110** | 20 / 20 | 11 | 1.05 | 69 |
+| `Inslogic ASA @0.8 nozzle` | 265 | **105 / 110** | 20 / 20 | 15 | 1.05 | 69 |
 | `Inslogic ASA - thin wall` | 250 | 100 | 70 / 70 | 11 | 1.05 | 69 |
 | `Inslogic ASA - thin wall, flat base` | 250 | 100 | 70 / 70 | 11 | 1.05 | 69 |
 | `Inslogic TPU 95A` | 210 | 50 | 100 / 100 | 1.2 | 1.23 | 79 |
@@ -352,11 +352,24 @@ already runs.
 
 TPU **does** get the full 100 %: TPU doesn't warp, so the TDS is right there.
 
-### 2. ASA bed at 100 °C is the top of vendor range, below Prusa's
+### 2. ASA bed is 105/110 °C — outside vendor spec, on purpose
 
-Inslogic says 80–100 °C. Prusa's own ASA profile uses **105 first layer / 110 °C**. These
-profiles use 100/100 — the hottest the vendor sanctions. If parts still lift, raising the
-bed toward Prusa's 110 is the first fix, accepting that it leaves vendor spec.
+Inslogic sanctions 80–100 °C. Prusa's own ASA profile uses **105 first layer / 110 °C**.
+Until 30 Aug 2026 these profiles used 100/100, the hottest the vendor allows, with a note
+saying to raise it toward Prusa's numbers if parts lifted. **They now use Prusa's numbers
+outright**, on the two general-purpose profiles — a hotter bed keeps the lower layers soft for
+longer, so the part relieves stress instead of curling its corners up, and there is no reason
+to wait for a failed print to find that out.
+
+⚠️ **This is only safe because a glue stick goes down on this machine for every print.** ASA on
+a **bare** smooth PEI sheet at 110 °C bonds hard enough to
+[tear PEI off the sheet](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/)
+on removal — the same over-adhesion the PETG profiles here dodge by running a 70 °C bed. No
+glue, no 110: drop back to 100/100.
+
+**The two `- thin wall` profiles stay at 100/100.** They are the only print-validated ASA
+profiles in this folder, the vase-mode parts they exist for have almost no cross-section to
+warp, and there is nothing to gain by disturbing a known-good result.
 
 ### 3. TPU inherits `Generic FLEX`, not `Ultrafuse TPU-95A`
 
@@ -392,8 +405,8 @@ so in practice it means "no flow limit at all."
 
 | Profile | Nozzle | Bed | Reasoning |
 |---|---|---|---|
-| `Inslogic ASA` | 255 / first layer 260 | 100 / 100 | MK3S+ at 0.4 sits in the TDS's 50–100 mm/s band → 250–260 °C |
-| `Inslogic ASA @0.8 nozzle` | 265 / 265 | 100 / 100 | 0.8 pushes far more material/sec → the 260–280 °C band. Matches the Prusament ASA @0.8 parent |
+| `Inslogic ASA` | 255 / first layer 260 | **105 / 110** | MK3S+ at 0.4 sits in the TDS's 50–100 mm/s band → 250–260 °C. Bed is Prusa's, not Inslogic's — see judgment call 2 |
+| `Inslogic ASA @0.8 nozzle` | 265 / 265 | **105 / 110** | 0.8 pushes far more material/sec → the 260–280 °C band. Matches the Prusament ASA @0.8 parent, bed included |
 | `Inslogic TPU 95A` | 210 / first layer 215 | 50 / 50 | MK3S+ prints TPU well under 80 mm/s → the 190–210 °C band; 210 is its top, for best layer adhesion |
 | `Inslogic TPU 95A @0.8 nozzle` | 215 / 220 | 50 / 50 | Higher flow puts it at the boundary between the two bands |
 | `Inslogic PLA Pro` | 205 / first layer 210 | 60 / 60 | 0.4 runs 45–80 mm/s → the 195–205 °C band; 205 is its top. The parent's 210 is above what the sheet sanctions at that speed |

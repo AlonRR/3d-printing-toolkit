@@ -99,8 +99,8 @@ The through-line: you strip skirt/brim and avoid crossing perimeters on nearly e
 | `Yasin3D PLA @0.8 nozzle` | PLA | 220 / 60 °C | `Generic PLA @0.8 nozzle` | Cost 39, density 1.24. Renamed from `Yasi3D…` and vendor corrected from "Generic" (2 Aug) |
 | `Yasin3D ASA @0.8 nozzle` | ASA | 265 / 110 °C | `Prusament ASA @0.8 nozzle` | Cost 54, density 1.07. Fan pinned 20 %, off for first 4 layers. Renamed from `YASIN…` and vendor corrected from "Prusa Polymers" (2 Aug) |
 | `Ultrafuse TPU-95A - Copy` | FLEX | 225 (first layer 230) / 40 °C | `Ultrafuse TPU-95A` | Stock BASF notes retained. ⚠️ Inherits a 15 mm³/s flow ceiling from a rigid-copolyester ancestor — see §6 |
-| `Inslogic ASA` | ASA | 255 / 100 °C | `Prusament ASA` | Added 28 Jul 2026 from TDS |
-| `Inslogic ASA @0.8 nozzle` | ASA | 265 / 100 °C | `Prusament ASA @0.8 nozzle` | Added 28 Jul 2026 from TDS |
+| `Inslogic ASA` | ASA | 255 / **105–110** °C | `Prusament ASA` | Added 28 Jul 2026 from TDS. Bed raised to Prusa's 105/110 on 30 Aug — outside Inslogic's 80–100 spec, safe only because glue goes down every print. `min_print_speed` 15 → 5 the same week |
+| `Inslogic ASA @0.8 nozzle` | ASA | 265 / **105–110** °C | `Prusament ASA @0.8 nozzle` | Added 28 Jul 2026 from TDS. Same bed and `min_print_speed` changes |
 | `Inslogic TPU 95A` | FLEX | 210 / 50 °C | `Generic FLEX` | Added 28 Jul 2026 from TDS. Fan 100 % |
 | `Inslogic TPU 95A @0.8 nozzle` | FLEX | 215 / 50 °C | `Generic FLEX @0.8 nozzle` | Added 28 Jul 2026 from TDS. Fan 100 % |
 | **`Inslogic ASA - thin wall`** | ASA | 250 / 100 °C | `Prusament ASA` | **✅ Print-validated 29 Jul 2026.** Fan **70 %**, layer time forced to 10 s. Spiral-vase / single-wall only; 70 % fan would split layers on bulk ASA. Renamed from `- vase` (2 Aug) — it is not vase-mode-specific |

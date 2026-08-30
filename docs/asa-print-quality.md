@@ -2,8 +2,8 @@
 
 Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by topic.
 
-**Item 1 is done** — applied to the repo's ASA profiles and installed into PrusaSlicer.
-Items 2–6 have not been: no other profile was changed and no other setting was touched.
+**Items 1 and 2 are done** — applied to the ASA profiles and installed into PrusaSlicer.
+Items 3–6 have not been: nothing else was changed.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
 with one side deliberately left open for venting, no temperature sensing inside it, printing
@@ -85,15 +85,20 @@ first.
 
 ---
 
-## 2. The bed is 5–10 °C below what Prusa uses — free
+## 2. The bed was 5–10 °C below what Prusa uses — ✅ fixed 30 Aug 2026
 
-Currently 100/100 °C, the top of Inslogic's 80–100 range. [Prusa's own ASA
+**Now 105 °C first layer / 110 °C**, on `Inslogic ASA` and `Inslogic ASA @0.8 nozzle`, verified
+in the sliced G-code (`M190 S105` then `M140 S110`). The two `- thin wall` profiles were left at
+100/100 — they are the only print-validated ASA profiles here and vase-mode parts have almost no
+cross-section to warp.
+
+It was 100/100 °C, the top of Inslogic's 80–100 range. [Prusa's own ASA
 guidance](https://help.prusa3d.com/article/asa_1809) is **105 °C first layer / 110 °C after**,
 and the general consensus for ASA is 105–110. A hotter bed keeps the lower layers soft longer,
 so the part relieves stress instead of curling the corners up.
 
-The Inslogic README already names this as the first thing to try if parts lift. It is worth
-trying *before* parts lift.
+The Inslogic README already named this as the first thing to try if parts lift. There is no
+reason to wait for a failed print to find that out, which is why it was simply applied.
 
 **The one risk that comes with it is already covered here.** ASA on a **smooth PEI** sheet at
 110 °C can bond hard enough to tear PEI off the sheet on removal — [a documented Prusa-forum
@@ -205,8 +210,9 @@ Drying fixes a wet spool. Storage stops you needing to.
 
 ## Order to actually do this in
 
-1. **Raise the bed to 105/110 °C.** Free, one profile edit, no prerequisite — the glue stick
-   that makes it safe is already standing practice here.
+1. ~~**Raise the bed to 105/110 °C.**~~ ✅ **Done 30 Aug 2026**, installed and verified in the
+   G-code. No prerequisite was needed — the glue stick that makes it safe is already standing
+   practice here. `- thin wall` and `- thin wall, flat base` deliberately left at 100/100.
 2. ~~**Fix `min_print_speed`** (item 1).~~ ✅ **Done.** Applied to both Inslogic ASA profiles
    29 Aug 2026, installed on 30 Aug once PrusaSlicer was closed, and confirmed against the live
    config: the same tube now slices with a slowest move of 5.00 mm/s and a 13.41 s layer,
