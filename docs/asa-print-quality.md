@@ -131,9 +131,39 @@ pulled off.
   enclosure with an open side this is the cheapest partial substitute for closing the side, and
   it costs only filament.
 
-Every print profile in `slicer/print/` strips skirt and brim by default — that is the right
-call for most parts and the wrong one for ASA. Worth an ASA-specific print profile rather than
-remembering to tick the box.
+Every print profile in `slicer/print/` strips skirt and brim by default — the right call for
+most parts and the wrong one for ASA. So there is now an ASA-specific one:
+**`0.2mm QUALITY @MK3 - ASA brim + draft shield`**, built 30 Aug 2026 from the plain 0.2 profile.
+
+### ⛔ The draft shield is drawn from the skirt — with `skirts = 0` it prints nothing
+
+This is the reason the profile exists rather than a note telling you to tick two boxes. Every
+0.4-nozzle profile in this repo sets `skirts = 0`, and turning the draft shield on without
+fixing that produces **silence, not an error**.
+
+Measured on a 40 mm cube, one variable at a time:
+
+| Settings | Skirt/brim sections | On how many layers |
+|---|---|---|
+| Profile as-is | 0 | 0 |
+| `draft_shield = enabled`, `brim_width = 5`, **`skirts = 0`** | **1** | **1** — that is the brim. **No shield at all** |
+| the same plus **`skirts = 1`** | **200** | **200** — every layer of the 40 mm part |
+
+200 layers is 40 mm / 0.2 mm, so the shield runs the full height of the object, which is what
+it is for.
+
+The profile therefore changes **five** keys, not two:
+
+| Key | Base | ASA profile | Why |
+|---|---|---|---|
+| `brim_width` | 0 | **5** | Prusa's baseline is ≥ 3 mm; ASA earns more |
+| `brim_type` | `no_brim` | `outer_only` | Warp lifts the outside edges; a brim inside holes buys nothing |
+| `draft_shield` | `disabled` | `enabled` | Full object height, not `limited` |
+| `skirts` | 0 | **1** | Without this the shield is silently absent |
+| `skirt_distance` | 2 | **8** | The brim now sticks out 5 mm; at 2 mm the shield would print into it |
+
+The last one is the quiet one: change the brim without changing the skirt distance and the
+shield lands on top of the brim.
 
 ---
 
@@ -220,7 +250,10 @@ Drying fixes a wet spool. Storage stops you needing to.
    The install waited a day because PrusaSlicer was open, and it rewrites its config folder on
    exit — a copy made while it is running is silently undone when you quit. Check first with
    `Get-Process prusa-slicer*`.
-3. **Brim and draft shield** on the next tall ASA part. Free.
+3. **Brim and draft shield** on the next tall ASA part — select
+   `0.2mm QUALITY @MK3 - ASA brim + draft shield`. Free. ⚠️ **Not yet installed into
+   `%APPDATA%\PrusaSlicer\print\`** — PrusaSlicer was open when it was built. Copy it in with
+   the slicer closed.
 4. **Dry a spool** and reprint something that came out badly. Rules out the variable that
    masquerades as everything else.
 5. **Then** the chamber sensor and closing the enclosure side — the biggest effect, the most

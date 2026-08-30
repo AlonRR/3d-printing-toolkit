@@ -12,7 +12,7 @@ every number, and the hard-won gotchas that took a wasted print or a wasted roun
 |---|---|
 | [`slicer/filament/inslogic/`](slicer/filament/inslogic/) | The 11 Inslogic profiles (ASA, TPU 95A, PLA Pro, PETG Pro) + [their README](slicer/filament/inslogic/README.md) — build reasoning, what's print-validated, and the flattening trap |
 | [`slicer/filament/yasin3d/`](slicer/filament/yasin3d/) | The 6 Yasin3D profiles (PLA, PETG, ASA) + [their README](slicer/filament/yasin3d/README.md). **Yasin3D publishes no data sheet at all**, so these are Prusa's generic values with a vendor and a price attached — a starting point, not a calibration |
-| [`slicer/print/`](slicer/print/) | The 8 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
+| [`slicer/print/`](slicer/print/) | The 9 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
 | [`slicer/reference/`](slicer/reference/) | The 4 Inslogic technical data sheets — ASA, TPU 95A, PLA Pro, PETG Pro (the source for every temperature in those profiles) |
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
 | [`docs/chamber-sensor.md`](docs/chamber-sensor.md) | Design for the enclosure temperature sensor — three measurement points not one, the C3 pin map, and why the safety interlock has to run on the ESP32 rather than in Home Assistant |
@@ -81,7 +81,7 @@ PrusaSlicer **2.9.4**. Default output path is already set to `OneDrive\3D printi
 
 **Currently selected:** printer `Original Prusa i3 MK3S & MK3S+` · print `0.2mm QUALITY @MK3 — no skirt, no brim, no crossing perimeter, lightning` · filament `Ultrafuse TPU-95A - Copy`.
 
-### Custom print profiles (8) — you run both a 0.4 and a 0.8 nozzle
+### Custom print profiles (9) — you run both a 0.4 and a 0.8 nozzle
 
 | 0.4 nozzle | 0.8 nozzle |
 |---|---|
@@ -90,8 +90,14 @@ PrusaSlicer **2.9.4**. Default output path is already set to `OneDrive\3D printi
 | `0.20mm QUALITY @MK3 no skirt` | `0.40mm Uber strong @0.8 nozzle` |
 | `0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` | |
 | `0.2mm QUALITY @MK3 - …, lightning` | |
+| **`0.2mm QUALITY @MK3 - ASA brim + draft shield`** | |
 
-The through-line: you strip skirt/brim and avoid crossing perimeters on nearly everything.
+The through-line: you strip skirt/brim and avoid crossing perimeters on nearly everything —
+with one deliberate exception, the ASA profile added 30 Aug 2026, where a brim and a full-height
+draft shield are exactly what a warp-prone material in a half-open enclosure wants.
+⚠️ **A draft shield needs `skirts ≥ 1`**; with the `skirts = 0` these profiles all use, turning
+it on prints nothing and reports no error. Measured, see
+[asa-print-quality.md](docs/asa-print-quality.md).
 
 ### Custom filament profiles (18)
 
