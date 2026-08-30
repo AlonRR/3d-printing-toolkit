@@ -12,10 +12,26 @@
 # question, and it should be deleted once the real node exists.
 #
 # WIRING — ESP32-C3 Super Mini
-#   DHT11 3-pin module:  + → 3V3    out → GPIO4    − → GND
-#   DHT11 4-pin bare:    1 → 3V3    2 → GPIO4      4 → GND   (3 = not connected)
-#                        plus a 4.7k–10k pull-up from GPIO4 to 3V3.
-#                        The 5K1 in the ELEGOO kit is fine for this.
+#
+# The modules in the drawer are KY-015 style: DHT11 on a small black PCB with a
+# 3-pin header and R1 POPULATED. R1 is the DATA–VCC pull-up, so this needs
+# THREE WIRES AND NO EXTERNAL RESISTOR. Confirmed from a photo of the actual
+# part, 30 Aug 2026.
+#
+#   silkscreen  −  →  GND        (left)
+#   silkscreen  +  →  3V3        (middle - label sits under the sensor body)
+#   silkscreen  S  →  GPIO4      (right)
+#
+# 3V3, not 5V. The DHT11 runs from 3 V and the C3 is 3.3 V logic.
+#
+# ⚠️ Check the silkscreen before powering it. Clones of this module have shipped
+#    with the order reversed (S + − rather than − + S), and swapping + and − can
+#    destroy the sensor. VCC is always the CENTRE pin on this family, which is
+#    why a 180° flip puts power on power rather than on the data line.
+#
+# A BARE 4-pin DHT11 (blue body, four legs, no PCB) is a different job:
+#   1 → 3V3   2 → GPIO4   3 = not connected   4 → GND
+#   plus a 4.7k–10k pull-up from GPIO4 to 3V3 - the ELEGOO 5K1 works.
 #
 # GPIO4 is chosen so this rig does not collide with the final pin map in
 # docs/chamber-sensor.md §4 — I2C stays on 5/6, 1-Wire on 7, fan on 10 and 3.
