@@ -61,12 +61,18 @@ Adafruit order histories rather than anyone's memory:
 | Part | Verdict |
 |---|---|
 | **DS18B20 ×2** | ❌ **Not owned — the only genuine gap.** Absent from HomeBox and from every order history. Needs buying |
-| Point-A sensor | ✅ **A BME688 is already owned** (Adafruit PID 5046) — −40–85 °C ±1.0, RH ±3 %, plus gas. ⚠️ Its HomeBox record reads **"THIS IS THE DRYBOX SENSOR"** and qty is 1, so using it here is an *allocation decision*, not a free part |
-| Point-A sensor, alternative | ⏳ An **AHT20 + BMP280 is inbound** (a ~₪5 part). Probably the cleaner answer, because it leaves the drybox alone |
+| Point A, chamber | ✅ **BME688, owned and free** (Adafruit PID 5046) — −40–85 °C ±1.0, RH ±3 %, plus pressure and gas. Its HomeBox record reads "THIS IS THE DRYBOX SENSOR", but **the drybox was never built** (Alon, 30 Aug 2026), so it is unallocated. Use it |
+| Point A, alternative | ⏳ An **AHT20 + BMP280 is inbound** (a ~₪5 part). No longer needed for this — keep it for the drybox if that project ever starts |
 | Pull-up resistor | ✅ **Not a purchase.** The ELEGOO assortment on hand has no 4.7 k but does have **5K1 ×10**, and 5.1 kΩ is a fine 1-Wire pull-up. Count the compartment rather than trusting the label — an M3×12 box labelled 20 once held 2 |
 
-So the design costs **two DS18B20s**, and one decision about whether the drybox gives up its
-BME688 or the project waits ~a week for the inbound AHT20.
+**So the whole design costs two DS18B20s.** Everything else — the board, the chamber sensor, the
+pull-up, the fan, the power converter — is on the shelf.
+
+The BME688's gas sensor is a bonus nobody asked for and it is genuinely useful here: it responds
+to VOCs, which is a crude but real proxy for *"is the enclosure full of ASA fumes"*. That makes
+it a second, independent input to the same fume-extraction decision the fan is already making.
+Do not read it as a calibrated air-quality number — it is an index, and it needs a burn-in
+period before it means anything.
 
 A **BME280** would also serve point A and is the example device in
 `mcu-workflow/examples/board-c3.yml` (`0x76`, `i2c0`); the pressure reading is of no use here.
