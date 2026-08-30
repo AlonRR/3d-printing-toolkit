@@ -23,3 +23,7 @@ preview/
 # a parameter that had since been renamed, so the preset silently set a variable
 # nothing read. The .scad is the source of truth.
 *.json
+firmware/.esphome/
+firmware/.pioenvs/
+firmware/.piolibdeps/
+firmware/secrets.yaml

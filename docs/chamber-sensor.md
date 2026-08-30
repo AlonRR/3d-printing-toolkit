@@ -420,9 +420,10 @@ interval:
             - logger.log: "bay sensor unavailable - venting as a precaution"
 ```
 
-⚠️ **ESPHome renamed the 1-Wire components.** Before 2024.6 it is `dallas:` with
-`platform: dallas`; after, `one_wire:` with `platform: dallas_temp`. Check which your version
-wants — the old spelling fails with a confusing schema error rather than a clear one.
+✅ **Settled: ESPHome 2026.8.1 is installed** (via `uv tool install esphome`, 30 Aug 2026), so
+the modern spelling above is the right one — `one_wire:` with `platform: dallas_temp`. The old
+`dallas:` / `platform: dallas` form was renamed in 2024.6 and now fails with a confusing schema
+error rather than a clear one, so do not copy it from an older tutorial.
 
 ---
 
@@ -431,6 +432,9 @@ wants — the old spelling fails with a confusing schema error rather than a cle
 1. **DHT11 on a breadboard, node on USB, no enclosure changes.** Get a number for the chamber as
    it is today, with the side open. This is the baseline everything else is measured against and
    it costs nothing.
+   ✅ **Ready to run:** [`firmware/chamber-baseline.yaml`](../firmware/chamber-baseline.yaml),
+   config-validated. Wiring is in its header; DHT11 on GPIO4, chosen so it does not collide with
+   the final pin map in §4.
 2. **Partially close the open side. Measure again.** If the delta is small, the whole chamber
    theory is weaker than assumed and that is worth knowing before buying anything.
 3. **Buy the AHT20 + 2× DS18B20**, build points A/B/C properly, node outside, probes inside.
