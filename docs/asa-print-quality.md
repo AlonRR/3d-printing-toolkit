@@ -2,13 +2,14 @@
 
 Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by topic.
 
-**Item 1 has been applied** to the repo's ASA profiles (not yet copied into PrusaSlicer — see
-its status box). Items 2–6 have not: no other profile was changed and no other setting was
-touched.
+**Item 1 is done** — applied to the repo's ASA profiles and installed into PrusaSlicer.
+Items 2–6 have not been: no other profile was changed and no other setting was touched.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
 with one side deliberately left open for venting, no temperature sensing inside it, printing
-Inslogic ASA at 255 °C / 100 °C bed with 20 % fan.** Some of the advice below is generic ASA
+Inslogic ASA at 255 °C / 100 °C bed with 20 % fan — and a glue stick on the sheet for every
+print, on every material.** That last one is not incidental: it removes the prerequisite from
+item 2 and changes how the sheet gets cleaned in item 3. Some of the advice below is generic ASA
 practice; the first item is specific to these profiles and is the one worth reading first.
 
 ---
@@ -49,7 +50,7 @@ cooling time and is the opposite of what happened.
 
 | Key | Was | Now | Status |
 |---|---|---|---|
-| `min_print_speed` | 15 | **5** | ✅ **Applied 29 Aug 2026** to `Inslogic ASA` and `Inslogic ASA @0.8 nozzle` |
+| `min_print_speed` | 15 | **5** | ✅ **Applied 29 Aug 2026**, installed 30 Aug — `Inslogic ASA` and `Inslogic ASA @0.8 nozzle` |
 | `max_fan_speed` | 20 | 45 | ❌ **Not applied.** See below |
 | `min_fan_speed` | 20 | 20 | Unchanged either way — bulk ASA must not get more cooling |
 
@@ -94,21 +95,30 @@ so the part relieves stress instead of curling the corners up.
 The Inslogic README already names this as the first thing to try if parts lift. It is worth
 trying *before* parts lift.
 
-**One real risk that comes with it:** ASA on a **smooth PEI** sheet at 110 °C can bond hard
-enough to tear PEI off the sheet on removal — [a documented Prusa-forum
+**The one risk that comes with it is already covered here.** ASA on a **smooth PEI** sheet at
+110 °C can bond hard enough to tear PEI off the sheet on removal — [a documented Prusa-forum
 failure](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/),
 and the same over-adhesion mechanism the PETG profiles in this repo avoid by running a 70 °C
-bed. Prusa's answer is a **thin glue-stick layer as a release agent**, not a lower bed. Apply
-it before raising the bed, not after the first sheet is damaged.
+bed. Prusa's answer is a thin **glue-stick layer as a release agent**, not a lower bed — and on
+this machine glue goes down for every print anyway.
+
+So there is no prerequisite: **raise the bed and print.** The caveat is recorded because it is
+the reason the glue matters rather than being cosmetic, and because it is what would bite if
+that habit ever lapsed — a bare smooth sheet plus a 110 °C ASA first layer is how PEI gets
+pulled off.
 
 ---
 
 ## 3. Bed preparation and brim — free, and the most common actual cause
 
-- **Clean the sheet with IPA before every ASA print.** ASA is far less forgiving of finger oil
-  than PLA. When IPA stops working, wash with warm water and a few drops of dish soap —
-  [Prusa's own escalation](https://help.prusa3d.com/article/first-layer-issues_1804), because
-  IPA redistributes oils rather than removing them once they build up.
+- **Sheet cleaning, for a glue user:** the usual "IPA before every print" advice does not apply
+  here, and following it would make things worse — **IPA does not dissolve PVA glue**, it smears
+  it into a patchy film, which is uneven first-layer adhesion by another name. The right routine
+  with a glue stick is **warm water**: PVA is water-soluble, so wash the sheet off periodically
+  and re-glue rather than topping up indefinitely over old layers. Keep dish soap and IPA for
+  when the sheet is bare and actually oily, which is
+  [Prusa's escalation](https://help.prusa3d.com/article/first-layer-issues_1804) for the
+  no-glue case.
 - **Brim, at least 5 mm**, on anything tall or with a small footprint. Prusa recommends ≥ 3 mm
   as a baseline; ASA earns more.
 - **Use PrusaSlicer's draft shield** (*Print Settings → Skirt and Brim → Draft shield*). It
@@ -195,13 +205,15 @@ Drying fixes a wet spool. Storage stops you needing to.
 
 ## Order to actually do this in
 
-1. **Raise the bed to 105/110 with a glue-stick release layer.** Free, one profile edit, and
-   the failure mode it prevents is the most common ASA failure there is.
-2. ~~**Fix `min_print_speed`** (item 1).~~ ✅ **Done 29 Aug 2026** — applied to both Inslogic ASA
-   profiles in this repo and verified by slice. ⚠️ **Not yet installed into
-   `%APPDATA%\PrusaSlicer\filament\`** — PrusaSlicer was open at the time, and it rewrites its
-   config folder on exit, so copying would have been silently undone. Copy it in with the
-   slicer closed (command in the [Inslogic README](../slicer/filament/inslogic/README.md)).
+1. **Raise the bed to 105/110 °C.** Free, one profile edit, no prerequisite — the glue stick
+   that makes it safe is already standing practice here.
+2. ~~**Fix `min_print_speed`** (item 1).~~ ✅ **Done.** Applied to both Inslogic ASA profiles
+   29 Aug 2026, installed on 30 Aug once PrusaSlicer was closed, and confirmed against the live
+   config: the same tube now slices with a slowest move of 5.00 mm/s and a 13.41 s layer,
+   against 15.00 mm/s and 4.47 s before.
+   The install waited a day because PrusaSlicer was open, and it rewrites its config folder on
+   exit — a copy made while it is running is silently undone when you quit. Check first with
+   `Get-Process prusa-slicer*`.
 3. **Brim and draft shield** on the next tall ASA part. Free.
 4. **Dry a spool** and reprint something that came out badly. Rules out the variable that
    masquerades as everything else.
