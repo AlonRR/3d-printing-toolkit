@@ -53,13 +53,23 @@ is a signal no amount of ±2 °C can hide.
 | **B** bay | **DS18B20** | 1-Wire | 125 °C range, and — the real reason — **1-Wire tolerates metres of cable.** The bay is a ~1 m run from wherever the node lives. I2C is not a long-cable bus and will fail intermittently, which is the worst way for a safety sensor to fail |
 | **C** room | **DS18B20** | same 1-Wire bus | 1-Wire is multi-drop: point C costs **one extra part and zero extra GPIOs** |
 
-Both are cheap AliExpress parts. **Check the order history before buying** — this lab has twice
-found it already owned the thing it was about to re-buy. The `inventory-verify` skill exists for
-exactly this.
+### What is actually owned — checked, 30 Aug 2026
 
-A **BME280** also works for point A and is already the example device in
-`mcu-workflow/examples/board-c3.yml` (`0x76`, `i2c0`). It adds barometric pressure, which is of
-no use here, but if one turns up in a drawer it is a fine substitute.
+The homelab session ran this against HomeBox (209 entities) and the AliExpress, a second marketplace and
+Adafruit order histories rather than anyone's memory:
+
+| Part | Verdict |
+|---|---|
+| **DS18B20 ×2** | ❌ **Not owned — the only genuine gap.** Absent from HomeBox and from every order history. Needs buying |
+| Point-A sensor | ✅ **A BME688 is already owned** (Adafruit PID 5046) — −40–85 °C ±1.0, RH ±3 %, plus gas. ⚠️ Its HomeBox record reads **"THIS IS THE DRYBOX SENSOR"** and qty is 1, so using it here is an *allocation decision*, not a free part |
+| Point-A sensor, alternative | ⏳ An **AHT20 + BMP280 is inbound** (a ~₪5 part). Probably the cleaner answer, because it leaves the drybox alone |
+| Pull-up resistor | ✅ **Not a purchase.** The ELEGOO assortment on hand has no 4.7 k but does have **5K1 ×10**, and 5.1 kΩ is a fine 1-Wire pull-up. Count the compartment rather than trusting the label — an M3×12 box labelled 20 once held 2 |
+
+So the design costs **two DS18B20s**, and one decision about whether the drybox gives up its
+BME688 or the project waits ~a week for the inbound AHT20.
+
+A **BME280** would also serve point A and is the example device in
+`mcu-workflow/examples/board-c3.yml` (`0x76`, `i2c0`); the pressure reading is of no use here.
 
 ---
 
@@ -83,11 +93,26 @@ Constraints taken from `mcu-workflow/examples/board-c3.yml` and the fume-fan pag
 **GPIO8 = onboard LED (active-LOW), GPIO9 = BOOT strap, GPIO20/21 = UART0, ADC is limited to
 GPIO0–GPIO4, and GPIO2/8/9 are strapping pins.**
 
+⛔ **And one that is documented nowhere in the repo: on the ESP32-C3, GPIO18 and GPIO19 are the
+native USB D−/D+ lines.** These boards flash and log over native USB-Serial/JTAG, so wiring
+anything to 18 or 19 takes out flashing and the console. It fails *silently, at the bench, after
+the hardware is wired* — unlike a wrong `board:`, which fails loudly at build time.
+
+This is not hypothetical. `alon/homelab` → `docs/manual/fume-fan-esp32.md` still specifies
+`GPIO18` for fan PWM and `GPIO19` for tach: its `board:` was corrected from `esp32dev` to
+`esp32-c3-devkitm-1` on 21 Aug 2026 and **the pin numbers underneath were never revisited**.
+Reported by the homelab session, 30 Aug 2026. The GPIO10/GPIO3 below is the correction, not a
+rival convention.
+
+`board-c3.yml` names LED, BOOT, UART0 and JTAG and stops — it does not mention 18/19 either, so
+anyone deriving a pin map from this lab's own repos would not learn this. That is a gap in
+`mcu-workflow`, not only in the fume-fan page.
+
 | GPIO | Use | Note |
 |---|---|---|
 | **5** | I2C SDA | The house convention from `board-c3.yml` |
 | **6** | I2C SCL | " |
-| **7** | 1-Wire (both DS18B20s) | Needs a **4.7 kΩ pull-up to 3.3 V** — the one passive part this design requires |
+| **7** | 1-Wire (both DS18B20s) | Needs a pull-up to 3.3 V. 4.7 kΩ is the usual value; **5.1 kΩ works fine** and homelab reports the ELEGOO assortment on hand has `5K1` but no 4.7 k — so this is probably not a purchase |
 | **10** | Fan PWM out | 25 kHz LEDC, to fan pin 4 |
 | **3** | Fan tach in | `INPUT_PULLUP`, fan pin 3. Chosen over GPIO2 because **GPIO2 is a strapping pin** and must be high at boot |
 | 8 | Status LED | Onboard, active-low |
@@ -180,16 +205,47 @@ blows *through a filter into the chamber* or *out of a duct* — a mechanical de
 expensive to reverse.
 
 ⚠️ **A recirculate-only build closes a door you may want open.** Acetone is ruled out here
-until the filtration system runs
-([fdm-design-rules §6a](fdm-design-rules.md#6a-joining-two-printed-parts)), and the milestone
-that opens that gate is **extraction to outside**, not filtration in general — solvent
-concentrations saturate a carbon filter fast and acetone is flammable. So a design that can
-*only* recirculate keeps ASA solvent welding and vapour smoothing permanently unavailable,
-which is a bigger consequence than it looks while drawing ducts.
+until the filtration system runs in its extract-to-outside mode
+([fdm-design-rules §6a](fdm-design-rules.md#6a-joining-two-printed-parts)). A design that can
+*only* recirculate keeps ASA solvent welding and vapour smoothing permanently unavailable — a
+bigger consequence than it looks while drawing ducts.
 
-The design that serves both: **recirculate during a print** (fumes handled, chamber stays hot),
-with a **switchable path to outside** for cooldown and for any solvent work. One extra duct and
-a damper or a movable outlet, decided now rather than reprinted later.
+**Proposed design, and it is a change of plan, not a reading of the existing one:** recirculate
+during the print, vent afterwards. One fan, one filter, a switchable outlet — a damper or a
+movable duct — decided now rather than reprinted later.
+
+⚠️ **Every existing document says extraction, and none of them treats recirculation as an
+option.** The homelab page is titled *Fume extractor*; `CLAUDE.md` says *"Filter project (fume
+extractor)"*. Flagged by the homelab session on 30 Aug 2026, and they are right that it has to be
+settled before parts are printed. **This section argues for a change; it does not record a
+decision.** Until Alon rules on it, the documented plan is extraction, and the reason to consider
+recirculating at all is that an extractor removes the very chamber heat
+[asa-print-quality.md](asa-print-quality.md) is trying to build up.
+
+### Why you do not need a second filter in the exhaust duct
+
+The instinct is to put filtration *in front of* the extraction, so nothing dirty leaves the
+house. It is the right instinct and it is already satisfied, in series over time rather than in
+series along the duct: **the recirculating loop cleans the same air repeatedly for the whole
+print, so what the vent later releases has already been through HEPA and carbon many times.**
+Adding a second filter in the duct filters air that is already filtered.
+
+There is also a hard engineering reason not to put a filter in the duct. **A 120 mm axial PC
+fan produces very little static pressure** — tens of pascals — and a HEPA element needs far
+more than that. Push one through the other and airflow collapses to almost nothing, quietly:
+the fan still spins, so it looks like it is working. Filter-in-duct wants a **centrifugal
+blower**, not the axial fan already owned. The Bento box gets away with an axial fan precisely
+because its filter area is large, which keeps face velocity and therefore pressure drop low.
+
+And for the solvent case specifically, a carbon tray buys little: **activated carbon adsorbs
+acetone poorly and saturates fast**, then desorbs it later. Acetone is also, as solvents go, an
+unusually mild environmental release — the US EPA
+[removed it from the VOC definition in 1995](https://www.epa.gov/sites/default/files/2015-07/documents/orgchem.pdf)
+(60 FR 31633) on the grounds of negligible photochemical reactivity, meaning it contributes
+essentially nothing to ground-level ozone, and it biodegrades readily.
+
+So: **filter hard where the real hazard is — the ultrafine particles and styrene from printing
+ASA and ABS — and keep the vent path simple.**
 
 ---
 

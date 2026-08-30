@@ -305,6 +305,71 @@ grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 For a **fit test**, print in PLA regardless of the final material. You are
 checking geometry, and PLA lies to you least.
 
+### 6b. Choosing a material by what the part has to survive
+
+The §6 table above ranks materials by how hard they are to *print*. This one
+ranks them by how the finished part fails, using the numbers from Inslogic's own
+data sheets in [`../slicer/reference/`](../slicer/reference/) rather than folklore.
+
+| | **PLA Pro** | **PETG Pro** | **ASA** |
+|---|---|---|---|
+| Tensile strength | **56.0 MPa** | 50.0 MPa | 52.4 MPa |
+| Elongation at break | 20.3 % | **34.5 %** | 21.4 % |
+| Flexural strength | **85.8 MPa** | 81.9 MPa | 75.2 MPa |
+| Flexural modulus | **2795 MPa** | 2750 MPa | 2162 MPa |
+| **Izod impact, notched** | **20.1 kJ/m²** | **4.8 kJ/m²** | 18.3 kJ/m² |
+| **HDT @ 0.45 MPa** | 55.0 °C | 72 °C | **98 °C** |
+| Glass transition | 65.3 °C | 65.5 °C | **108 °C** |
+
+Two results here contradict the usual rules of thumb, and both matter:
+
+**PLA Pro is the toughest of the three on impact — 4.2× this PETG.** "PETG is
+tougher than PLA" is true of *commodity* PLA, which runs 2–5 kJ/m². PLA Pro is a
+toughened grade; its own sheet claims "impact strength similar to ABS" and the
+18.3 vs 20.1 against ASA bears that out. For a part whose failure mode is being
+dropped, PLA Pro is the strongest thing on this shelf.
+
+**ASA wins on heat by a mile, and that is often the real constraint.** HDT 98 °C
+against PLA's 55 °C. A part left in a car in an Israeli summer sees 60–70 °C in
+the cabin and more on a dashboard — PLA Pro sags there, PETG is marginal, ASA
+does not care. Add UV stability and ASA is the only one of the three that
+survives outdoors long-term.
+
+⚠️ **These are ISO test bars, not printed parts.** Injection-moulded specimens
+are isotropic; a printed part is much weaker across layers, typically by half or
+worse. Use the table to rank materials against each other, never as an absolute
+strength for a printed part. Orientation still decides more than material — see
+§2.
+
+**So, by what the part must survive:**
+
+| The part is… | Use | Why |
+|---|---|---|
+| Dropped, thrown, played with, indoors | **PLA Pro** | Highest notched impact here, cheapest, easiest to print and to paint, no enclosure needed |
+| Left in a car, outdoors, or in the sun | **ASA** | HDT 98 °C and UV-stable, so both the part and its paint survive. Costs an enclosure and fume handling |
+| Needing to bend without snapping | **PETG** | 34.5 % elongation — it yields where the others crack. Poor on notched impact though |
+| Held to a tight dimension | **PLA** | Least warp, most predictable. §6 |
+
+⛔ **Avoid Matte PLA for anything structural.** The matting additive is a filler,
+and it costs strength: measured layer adhesion on matte grades runs around **a
+third** of the same maker's standard PLA, with bending strength roughly 53 MPa
+against 76. It is a lovely finish for a display piece and the wrong choice for a
+toy. If the appeal was that matte hides layer lines and takes primer well, five
+minutes with 200-grit on PLA Pro buys the same surface and costs no strength.
+
+**Printed parts for children — three things that are not about the plastic:**
+
+- **Paint and primer, not just the filament.** Look for craft acrylics marked
+  **EN 71-3** (European toy safety, migration of certain elements) or
+  **ASTM D-4236**, and seal with a water-based varnish. Solvent enamels and
+  rattle-can primers are the wrong end of this for something that gets handled
+  and mouthed.
+- **Layer lines hold dirt.** A sealed, painted surface is easier to clean than
+  bare FDM, which is a hygiene argument for finishing rather than a cosmetic one.
+- **Small parts come off.** Design for it — fillets over chamfered edges, no
+  snap-off tabs, and nothing small enough to swallow on a toy for a young child.
+
+
 ### 6a. Joining two printed parts
 
 The house rule mirrors §3b: prefer the permanent, structural option. For ASA and
@@ -317,21 +382,20 @@ gate before the technique.
 > route around it, and do not propose acetone, acetone slurry or ABS juice while
 > the gate is closed. Until then, use the *Meanwhile* section below.
 >
-> ⚠️ **The print-time fume filter is not automatically the thing that opens this
-> gate.** They are different requirements, and clearing one does not clear the
-> other:
-> - The [fume extractor](../slicer/filament/inslogic/README.md) and a Bento-style
->   recirculating HEPA + carbon box handle **particulates and VOCs at
->   printing-time concentrations**, and by design return the air to the chamber.
-> - Vapour smoothing or solvent welding releases **far higher solvent
->   concentrations**, which saturate a carbon filter quickly and are **flammable**
->   — acetone's lower explosive limit is about 2.5 % by volume in air. That wants
->   real extraction to outside, or a sealed container used away from the printer,
->   and no ignition sources in the vapour path (motors and heaters included).
+> **What the gate needs is the system running in its extract-to-outside mode.**
+> Extraction is part of the planned filtration system, so this is one milestone,
+> not two — but the *mode* matters, because the same hardware can run two ways:
+> - **Recirculating** (Bento-style HEPA + carbon, air returned to the chamber)
+>   is what handles particulates and VOCs during a print, and is what keeps the
+>   chamber hot for ASA.
+> - **Extracting to outside** is what solvent work needs. Vapour smoothing and
+>   solvent welding release far more than a carbon tray can hold, and acetone is
+>   **flammable** — lower explosive limit about 2.5 % by volume in air. Keep
+>   ignition sources out of the vapour path; motors and heaters count.
 >
-> So the milestone that opens this gate is *extraction*, not *filtration in
-> general*. See [chamber-sensor.md §8](chamber-sensor.md), which covers the same
-> recirculate-vs-extract split for a different reason.
+> A recirculate-only build therefore never opens this gate.
+> [chamber-sensor.md §8](chamber-sensor.md) works through the airflow design that
+> serves both.
 
 **When the gate opens: ASA and ABS solvent-weld in acetone, and that beats any
 adhesive.** Wet both mating faces, clamp, and the surfaces chemically fuse into a
