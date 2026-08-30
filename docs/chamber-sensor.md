@@ -77,6 +77,65 @@ period before it means anything.
 A **BME280** would also serve point A and is the example device in
 `mcu-workflow/examples/board-c3.yml` (`0x76`, `i2c0`); the pressure reading is of no use here.
 
+### What the printer already has — and why it does not remove the DS18B20
+
+Worth knowing before buying anything, because two of the obvious ideas are already half-built.
+
+**✅ The Einsy has an ambient thermistor, and it is physically point B.** An NTC sits on the
+board itself, just above the main power connector, and Prusa firmware has read it since 3.9.1 —
+it raises `AMBIENT_MINTEMP` / `AMBIENT_MAXTEMP` at −30 °C and 100 °C. Because it is *on the
+board*, it heats when the board heats, which is [a known complaint about calling it
+"ambient"](https://github.com/prusa3d/Prusa-Firmware/issues/2441) — and is exactly the property
+point B wants. It is not a room sensor; it is a board sensor with a misleading name.
+
+Two reasons it does not delete the bay DS18B20:
+
+1. **Its guard is useless for this.** `AMBIENT_MAXTEMP` fires at **100 °C**. The drivers are in
+   trouble around 60. The firmware protection that actually matters is `TMC DRIVER OVERTEMP`,
+   and by then the print is already aborting — which is the outcome the interlock exists to
+   prevent, not a substitute for it.
+2. **Reading it means routing safety through the network.** Printer → PrusaLink → HA → MQTT →
+   ESP32 is precisely the chain §7 says a safety interlock must not depend on. An independent
+   probe wired to the node keeps the interlock working when all of that is down.
+
+So treat it as a **free second opinion**: two independent measurements of the same bay, from
+different sensors on different paths, which is how you find out that one of them is lying.
+
+⚠️ **Unverified: whether PrusaLink exposes the value at all.** The firmware reads it and the
+LCD shows it; whether it appears in PrusaLink's JSON is untested here, and cannot be tested
+right now because [the stored API key is dead](../README.md) (open item 8). Check that before
+building anything on it.
+
+**✅ T1 is a free thermistor input.** On the MK3S the three jacks are T0 = hotend, T2 = heatbed,
+**T1 unused**. So the board could physically read a chamber probe — but **stock Prusa firmware
+has no chamber-temperature feature**, so using it means a custom firmware build. That trades
+PrusaLink support and painless updates for a number an ESP32 gives you for free. Not worth it.
+
+### On a chamber heater — not yet, and the reasons are not just cost
+
+Asked and answered here so it does not get re-opened from scratch:
+
+- **The bed is already the heater.** At 105–110 °C it is a ~200 W source *inside* the box. A
+  properly closed enclosure usually reaches 40–50 °C on bed heat alone — which is the target.
+  Close it and measure before assuming a heater is needed; that measurement is step 2 of the
+  build order and costs nothing.
+- **A heater makes the Einsy problem worse, not better.** The board is inside the enclosure, and
+  its stepper drivers and bed MOSFET have thermal pads bonded to the case — case temperature
+  couples straight into the parts that throttle. Every watt added to the chamber lands partly on
+  the thing point B is watching.
+- **There is no spare heater output on the Einsy.** E0 and BED are both used, so a chamber heater
+  is externally controlled hardware regardless.
+- **A heater needs hardware over-temperature protection, not software.** A stuck MOSFET or a
+  crashed ESP32 with a heating element latched on is a fire, and no amount of ESPHome prevents
+  it. That means a thermal cutout or thermal fuse physically in series with the element. It is a
+  different class of build from a sensor node, and it is why this is a separate project rather
+  than a bolt-on.
+- The owned **12 V 50 W PTC** also needs **> 4 A at 12 V**, which the PD trigger board cannot
+  supply, and 50 W is modest for a Lack-sized volume.
+
+**Order of operations: close the side, measure, and only then ask whether heat is missing.**
+
+
 ---
 
 ## 3. Put the node *outside* the enclosure
