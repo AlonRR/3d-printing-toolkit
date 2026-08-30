@@ -20,6 +20,20 @@
 # GPIO4 is chosen so this rig does not collide with the final pin map in
 # docs/chamber-sensor.md §4 — I2C stays on 5/6, 1-Wire on 7, fan on 10 and 3.
 
+# BUILD AND FLASH FROM POWERSHELL, NOT GIT-BASH.
+#   PlatformIO refuses to install the ESP-IDF framework under an MSYS environment:
+#     ERROR: MSys/Mingw is not supported...
+#     ERROR ESP-IDF 5.5.5 framework installation - failed (returncode=1)
+#   Unsetting MSYSTEM is NOT enough - that was tried and failed identically.
+#   `esphome config` validates from EITHER shell, so this only bites at compile,
+#   after the setup looks like it worked.
+#     cd $env:USERPROFILE\Toolsd-printingirmware
+#     esphome compile chamber-baseline.yaml
+#
+# Verified 30 Aug 2026, ESPHome 2026.8.1, built from PowerShell:
+#   Successfully created esp32c3 image.
+#   RAM 16.6% (53436 / 321296)   Flash 11.4% (209930 / 1835008)
+
 esphome:
   name: chamber-baseline
   friendly_name: Chamber Baseline

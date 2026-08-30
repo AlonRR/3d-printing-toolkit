@@ -433,8 +433,12 @@ error rather than a clear one, so do not copy it from an older tutorial.
    it is today, with the side open. This is the baseline everything else is measured against and
    it costs nothing.
    ✅ **Ready to run:** [`firmware/chamber-baseline.yaml`](../firmware/chamber-baseline.yaml),
-   config-validated. Wiring is in its header; DHT11 on GPIO4, chosen so it does not collide with
-   the final pin map in §4.
+   **built and flashable**. Wiring is in its header; DHT11 on GPIO4, chosen so it does not collide with
+   the final pin map in §4. ESPHome 2026.8.1 via `uv tool install esphome`; compiles to 11.4 %
+   flash / 16.6 % RAM on a C3, which also settles that `dht` builds under ESP-IDF there.
+   ⛔ **Build and flash from PowerShell, not git-bash** — PlatformIO will not install ESP-IDF under
+   MSYS (*"MSys/Mingw is not supported"*). **Unsetting `MSYSTEM` is not enough; tried, same
+   failure.** `esphome config` passes from either shell, so it surfaces only at compile time.
 2. **Partially close the open side. Measure again.** If the delta is small, the whole chamber
    theory is weaker than assumed and that is worth knowing before buying anything.
 3. **Buy the AHT20 + 2× DS18B20**, build points A/B/C properly, node outside, probes inside.
