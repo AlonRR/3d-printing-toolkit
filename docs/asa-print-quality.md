@@ -224,7 +224,9 @@ Drying fixes a wet spool. Storage stops you needing to.
 4. **Dry a spool** and reprint something that came out badly. Rules out the variable that
    masquerades as everything else.
 5. **Then** the chamber sensor and closing the enclosure side — the biggest effect, the most
-   work, and the only one that can damage hardware if done in the wrong order.
+   work, and the only one that can damage hardware if done in the wrong order. Designed in
+   [chamber-sensor.md](chamber-sensor.md): three measurement points rather than one, and the
+   electronics-bay probe is the one that makes the rest safe to attempt.
 
 Steps 1–4 need no purchase and no hardware. Step 5 needs a sensor wired to an ESP32 that is
 already at the printer.
