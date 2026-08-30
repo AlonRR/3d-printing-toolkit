@@ -27,7 +27,7 @@
 #   Unsetting MSYSTEM is NOT enough - that was tried and failed identically.
 #   `esphome config` validates from EITHER shell, so this only bites at compile,
 #   after the setup looks like it worked.
-#     cd $env:USERPROFILE\Toolsd-printingirmware
+#     cd $env:USERPROFILE\Tools\3d-printing\firmware
 #     esphome compile chamber-baseline.yaml
 #
 # Verified 30 Aug 2026, ESPHome 2026.8.1, built from PowerShell:
