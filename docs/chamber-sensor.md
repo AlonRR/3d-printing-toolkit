@@ -179,6 +179,18 @@ This is worth settling before either build starts, because it decides whether th
 blows *through a filter into the chamber* or *out of a duct* — a mechanical decision that is
 expensive to reverse.
 
+⚠️ **A recirculate-only build closes a door you may want open.** Acetone is ruled out here
+until the filtration system runs
+([fdm-design-rules §6a](fdm-design-rules.md#6a-joining-two-printed-parts)), and the milestone
+that opens that gate is **extraction to outside**, not filtration in general — solvent
+concentrations saturate a carbon filter fast and acetone is flammable. So a design that can
+*only* recirculate keeps ASA solvent welding and vapour smoothing permanently unavailable,
+which is a bigger consequence than it looks while drawing ducts.
+
+The design that serves both: **recirculate during a print** (fumes handled, chamber stays hot),
+with a **switchable path to outside** for cooldown and for any solvent work. One extra duct and
+a damper or a movable outlet, decided now rather than reprinted later.
+
 ---
 
 ## 9. ESPHome skeleton

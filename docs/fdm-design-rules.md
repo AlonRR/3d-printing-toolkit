@@ -305,30 +305,61 @@ grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 For a **fit test**, print in PLA regardless of the final material. You are
 checking geometry, and PLA lies to you least.
 
-### 6a. Joining two printed parts — weld it, do not glue it
+### 6a. Joining two printed parts
 
-The house rule mirrors §3b: prefer the permanent, structural option.
+The house rule mirrors §3b: prefer the permanent, structural option. For ASA and
+ABS that option is a solvent weld — but it is **currently gated**, so read the
+gate before the technique.
 
-**ASA and ABS solvent-weld in acetone, and that beats any adhesive.** Wet both
-mating faces, clamp, and the surfaces chemically fuse into a single piece —
-roughly as strong as the surrounding print. Cyanoacrylate ("instant glue")
-bonds only to the outer skin, so a CA joint on an FDM part fails by peeling the
-outer perimeter off the layer beneath it. Different failure mode, much lower
-strength, and CA fills no gaps — which matters because FDM mating faces are
-never truly flat.
+> ⛔ **ACETONE IS RULED OUT UNTIL THE FILTRATION SYSTEM IS RUNNING.**
+> Alon's decision, 21 Aug 2026, restated as a condition rather than a permanent
+> ban on 30 Aug. It is a decision, not a gap in anyone's information — do not
+> route around it, and do not propose acetone, acetone slurry or ABS juice while
+> the gate is closed. Until then, use the *Meanwhile* section below.
+>
+> ⚠️ **The print-time fume filter is not automatically the thing that opens this
+> gate.** They are different requirements, and clearing one does not clear the
+> other:
+> - The [fume extractor](../slicer/filament/inslogic/README.md) and a Bento-style
+>   recirculating HEPA + carbon box handle **particulates and VOCs at
+>   printing-time concentrations**, and by design return the air to the chamber.
+> - Vapour smoothing or solvent welding releases **far higher solvent
+>   concentrations**, which saturate a carbon filter quickly and are **flammable**
+>   — acetone's lower explosive limit is about 2.5 % by volume in air. That wants
+>   real extraction to outside, or a sealed container used away from the printer,
+>   and no ignition sources in the vapour path (motors and heaters included).
+>
+> So the milestone that opens this gate is *extraction*, not *filtration in
+> general*. See [chamber-sensor.md §8](chamber-sensor.md), which covers the same
+> recirculate-vs-extract split for a different reason.
 
-Free gap filler, from waste: dissolve failed ASA prints in acetone to a syrup.
-That slurry is adhesive, filler and colour-match at once.
+**When the gate opens: ASA and ABS solvent-weld in acetone, and that beats any
+adhesive.** Wet both mating faces, clamp, and the surfaces chemically fuse into a
+single piece — roughly as strong as the surrounding print. Free gap filler, from
+waste: dissolve failed ASA prints in acetone to a syrup, which is adhesive,
+filler and colour-match at once.
 
-**Acetone only touches ABS/ASA.** It does not dissolve PLA and does not weld
-TPU, both of which are on the shelf. So CA still has real uses here — TPU, PLA,
-dissimilar-material joints, tacking before a fastener. For a structural joint
-with a gap, two-part epoxy beats both.
+**Meanwhile — what to actually use.** In rough order of joint strength:
+
+1. **Design the joint out.** Print it as one part, or add a fastener. §3b already
+   prefers permanent geometry over sacrificial; a screw into a printed boss or a
+   captive nut beats every adhesive on this list and is reversible.
+2. **Two-part epoxy** for anything structural. It is the closest non-solvent
+   substitute for a weld: it fills gaps — which matters, because FDM mating faces
+   are never truly flat — and it bonds ASA, ABS, PLA and PETG alike. Slower and
+   messier than CA, and that is the trade.
+3. **Cyanoacrylate for what CA is actually good at**: TPU, PLA, dissimilar
+   materials, and tacking parts in place before a fastener or epoxy goes in.
+
+**Why CA is third and not first.** It bonds only to the outer skin, so a CA joint
+on an FDM part fails by **peeling the outer perimeter off the layer beneath it** —
+a different failure mode from the material's own strength, at a much lower load.
+It also fills no gaps. It is a positioning adhesive here, not a structural one.
 
 **Do not mail-order cyanoacrylate.** It has a short shelf life and polymerises
 in the bottle with age and heat, so slow shipping through a hot summer is the
-worst case for it. Buy it locally and fresh; buy acetone locally too, since
-shipping flammable solvent is a non-starter.
+worst case for it. Buy it locally and fresh — and buy acetone locally too, when
+the gate opens, since shipping flammable solvent is a non-starter.
 
 - [Prusa — The great guide to gluing and assembling 3D prints](https://blog.prusa3d.com/the-great-guide-to-gluing-and-assembling-3d-prints_44908/)
 - [Formfutura — The ultimate 3D prints bonding guide](https://www.formfutura.com/blog/blogs-1/the-ultimate-3d-prints-bonding-guide-50)
