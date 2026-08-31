@@ -91,16 +91,20 @@ interval:
                      id(chamber_t).state, id(chamber_rh).state);
           }
 
-# ---------------------------------------------------------------------------
-# OPTIONAL: read it from a phone instead of trailing a USB cable out of the
-# enclosure. Needs a secrets.yaml next to this file with wifi_ssid and
-# wifi_password. Add these two blocks, reflash once over USB, then browse to
-# the address it prints.
-#
-# wifi:
-#   ssid: !secret wifi_ssid
-#   password: !secret wifi_password
-#
-# web_server:
-#   port: 80
-# ---------------------------------------------------------------------------
+# Untethered: read it from a phone instead of trailing a USB cable out of a hot
+# enclosure. Credentials live in secrets.yaml next to this file (gitignored).
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# A plain web page at the device's address: current temperature and humidity.
+# No Home Assistant, no broker, no app.
+web_server:
+  port: 80
+
+# DELIBERATELY NOT ENABLED YET, both one-liners when wanted:
+#   ota:            reflash without USB, once the node is inside the enclosure.
+#                   Needs ota_password set in secrets.yaml.
+#   wifi: ap: +     a fallback access point, so a wrong password does not mean
+#   captive_portal: opening the box and reflashing over USB. Cheap insurance
+#                   only once the node is somewhere awkward to reach.
