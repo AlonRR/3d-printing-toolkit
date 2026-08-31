@@ -12,6 +12,14 @@ per-entity REST paths. Two reasons:
   * /events pushes both sensors down one connection every few seconds, so there
     is no polling interval to tune and no missed samples between polls.
 
+An SSE connection to an ESP is NOT long-lived, and that is normal rather than a
+fault: the stream itself carries `retry: 30000`, the server telling clients how
+long to wait before reconnecting. Observed here, the socket was cut every ~5.5
+minutes like clockwork. So a dropped stream is reconnected immediately and
+silently; only a gap that persists past GRACE_S is treated - and recorded - as
+the node actually being unreachable. Treating every reconnect as an outage cost
+one sample each time and buried real failures in noise.
+
 Writes every sample to CSV - that is the record - and prints sparingly, because
 a run lasts hours and a line every few seconds is noise. It prints on start, on
 losing or regaining the node, on a >= 2 C move since the last printed line, and
@@ -31,13 +39,14 @@ TEMP_ID = "sensor/Chamber temperature"
 RH_ID = "sensor/Chamber humidity"
 HEARTBEAT_S = 600
 MOVED_C = 2.0
+GRACE_S = 90.0  # tolerate routine SSE reconnects before calling it an outage
 
 
 def stream(host):
     """Yield (id, value) pairs from the SSE endpoint until the socket drops."""
     req = urllib.request.Request(f"http://{host}/events",
                                  headers={"Accept": "text/event-stream"})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with urllib.request.urlopen(req, timeout=20) as r:
         event = None
         for raw in r:
             line = raw.decode("utf-8", "replace").rstrip("\n")
@@ -81,13 +90,16 @@ def main():
     last_print = 0.0
     last_temp = None
     was_down = False
+    down_since = None
 
     while True:
         try:
             for ident, value in stream(a.host):
                 if was_down:
                     print(f"{datetime.now().isoformat(timespec='seconds')}  node back", flush=True)
-                    was_down, last_print = False, 0.0
+                    last_print = 0.0
+                was_down = False
+                down_since = None
                 if ident == TEMP_ID:
                     temp = value
                 elif ident == RH_ID:
@@ -115,13 +127,19 @@ def main():
                           + (f"   ({a.note})" if a.note else ""), flush=True)
                     last_print, last_temp = now, temp
         except (urllib.error.URLError, OSError, ValueError) as e:
-            if not was_down:
+            # A cut stream is routine - reconnect at once and say nothing. Only
+            # complain once the node has been unreachable for longer than the
+            # server's own advertised retry window plus slack.
+            if down_since is None:
+                down_since = time.time()
+            elif not was_down and time.time() - down_since > GRACE_S:
                 stamp = datetime.now().isoformat(timespec="seconds")
                 w.writerow([stamp, "", "", f"unreachable: {type(e).__name__}"])
                 fh.flush()
-                print(f"{stamp}  node unreachable ({type(e).__name__}) - retrying", flush=True)
+                print(f"{stamp}  node unreachable for >{GRACE_S:g}s "
+                      f"({type(e).__name__}) - still retrying", flush=True)
                 was_down = True
-            time.sleep(5)
+            time.sleep(1)
 
 
 if __name__ == "__main__":

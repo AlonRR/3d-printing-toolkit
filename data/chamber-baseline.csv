@@ -17,3 +17,19 @@ iso_time,temp_c,rh_pct,note
 2026-08-31T19:40:13,25.2,46,"bench, before enclosure"
 2026-08-31T19:40:43,25.3,45.5,"bench, before enclosure"
 2026-08-31T19:41:15,,,unreachable: TimeoutError
+2026-08-31T19:41:46,25.3,45.5,"bench, before enclosure"
+2026-08-31T19:42:43,25.3,45.2,"bench, before enclosure"
+2026-08-31T19:43:45,,,unreachable: TimeoutError
+2026-08-31T19:43:57,25.3,45.3,"bench, before enclosure"
+2026-08-31T19:44:50,25.3,45,"bench, before enclosure"
+2026-08-31T19:45:20,25.3,44.9,"bench, before enclosure"
+2026-08-31T19:45:50,25.3,44.8,"bench, before enclosure"
+2026-08-31T19:46:20,25.3,44.8,"bench, before enclosure"
+2026-08-31T19:46:50,25.3,44.8,"bench, before enclosure"
+2026-08-31T19:47:50,25.3,44.8,"bench, before enclosure"
+2026-08-31T19:48:20,25.3,44.8,"bench, before enclosure"
+2026-08-31T19:48:50,25.2,44.8,"bench, before enclosure"
+2026-08-31T19:49:28,,,unreachable: TimeoutError
+2026-08-31T19:50:25,25.2,44.8,reconnect test
+2026-08-31T19:50:50,25.2,44.8,reconnect test
+2026-08-31T19:51:20,25.2,44.7,reconnect test
