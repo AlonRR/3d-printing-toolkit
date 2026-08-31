@@ -152,6 +152,56 @@ Only the probes go inside. Reasons, in order:
 
 ---
 
+## 3a. Which WiFi network — this cost an evening, so it is written down
+
+Two facts about this house's networks decide where the node can live, and neither
+is discoverable from the ESP32's error messages.
+
+### `HomeNet` (the main SSID) is permanently impossible for this hardware
+
+It runs **WPA3-Personal with GCMP-256**. ESP32 radios implement **CCMP only** —
+GCMP is not a setting being refused, it is a cipher the silicon does not have. The
+node reports `Authentication Failed` and `Handshake Failed`, which look exactly
+like a wrong password and are not.
+
+Ruled the password out properly rather than by assertion: Windows had a stored
+profile for that SSID, and its key matched `secrets.yaml` byte for byte, case
+sensitive. Same length, identical string, still refused. **Do not spend time
+retyping the password for this network** — no ESP32 will ever join it.
+
+### `HomeNet_IoT` works, but only since it was set to WPA2-only
+
+It was **WPA/WPA2 mixed**, offering TKIP alongside AES. That was the root cause of
+an evening of the node working for ~17 minutes, then being refused by every radio
+for ~17 minutes, then recovering on its own with nothing changed at either end.
+Mixed mode lets a client end up on deprecated TKIP, and the resulting failures are
+intermittent, per-AP, self-clearing and completely unaffected by signal strength —
+which is what made them look like a temporary client ban.
+
+**Alon set that SSID to WPA2-only on 31 Aug 2026 and the node then associated
+first time, with no scan-and-fail across the three mesh radios.**
+
+Diagnoses tried and discarded before that, all wrong, listed so nobody repeats
+them: dead power supply, a wedged TCP stack, a mesh rate-limiting the client, and
+WPA2/WPA3 transition mode. The right *class* of answer — cipher negotiation on a
+mixed-mode SSID — arrived last, and the fix was one router setting rather than
+anything in this repo. `fast_connect: true` was also tried and **made it strictly
+worse**: it skips the scan, so the node only ever retries the remembered AP and
+never falls back when that one is the one refusing.
+
+### Two habits that follow from this
+
+- **Address the node by `chamber-baseline.local`, not by IP.** It came back from
+  the WPA2 change on a new DHCP lease — `.100` instead of `.103` — and every port
+  check against the old address failed while the node was perfectly healthy. The
+  logger takes a hostname for this reason.
+- **Never trust ping here.** During these failures ICMP answered while all three
+  TCP ports refused, and later ICMP failed while all three were open. The serial
+  log and a TCP port check are the only signals worth acting on.
+
+
+---
+
 ## 4. Pin map — ESP32-C3 Super Mini
 
 Constraints taken from `mcu-workflow/examples/board-c3.yml` and the fume-fan page, not invented:
