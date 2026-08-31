@@ -39,7 +39,7 @@ TEMP_ID = "sensor/Chamber temperature"
 RH_ID = "sensor/Chamber humidity"
 HEARTBEAT_DEFAULT_S = 600
 MOVED_C = 2.0
-GRACE_S = 90.0  # tolerate routine SSE reconnects before calling it an outage
+GRACE_DEFAULT_S = 90.0  # tolerate routine SSE reconnects before calling it an outage
 
 
 def stream(host):
@@ -71,6 +71,11 @@ def main():
                     help="minimum seconds between CSV rows")
     ap.add_argument("--note", default="",
                     help="recorded on every row, e.g. 'side open'")
+    ap.add_argument("--grace", type=float, default=GRACE_DEFAULT_S,
+                    help="seconds offline before it is reported as an outage. This "
+                         "network drops the node for ~5 min on a known, self-healing "
+                         "cycle; set --grace above that and only real problems speak. "
+                         "The gap is still visible in the CSV as a time discontinuity")
     ap.add_argument("--heartbeat", type=float, default=HEARTBEAT_DEFAULT_S,
                     help="seconds between routine prints; the CSV is unaffected. "
                          "Raise it for an unattended overnight run - every print "
@@ -136,11 +141,11 @@ def main():
             # server's own advertised retry window plus slack.
             if down_since is None:
                 down_since = time.time()
-            elif not was_down and time.time() - down_since > GRACE_S:
+            elif not was_down and time.time() - down_since > a.grace:
                 stamp = datetime.now().isoformat(timespec="seconds")
                 w.writerow([stamp, "", "", f"unreachable: {type(e).__name__}"])
                 fh.flush()
-                print(f"{stamp}  node unreachable for >{GRACE_S:g}s "
+                print(f"{stamp}  node unreachable for >{a.grace:g}s "
                       f"({type(e).__name__}) - still retrying", flush=True)
                 was_down = True
             time.sleep(1)
