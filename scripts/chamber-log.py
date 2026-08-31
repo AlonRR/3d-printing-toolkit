@@ -37,7 +37,7 @@ from pathlib import Path
 
 TEMP_ID = "sensor/Chamber temperature"
 RH_ID = "sensor/Chamber humidity"
-HEARTBEAT_S = 600
+HEARTBEAT_DEFAULT_S = 600
 MOVED_C = 2.0
 GRACE_S = 90.0  # tolerate routine SSE reconnects before calling it an outage
 
@@ -71,6 +71,10 @@ def main():
                     help="minimum seconds between CSV rows")
     ap.add_argument("--note", default="",
                     help="recorded on every row, e.g. 'side open'")
+    ap.add_argument("--heartbeat", type=float, default=HEARTBEAT_DEFAULT_S,
+                    help="seconds between routine prints; the CSV is unaffected. "
+                         "Raise it for an unattended overnight run - every print "
+                         "costs a notification, and 'still fine' 48 times is noise")
     a = ap.parse_args()
 
     out = Path(a.csv)
@@ -121,7 +125,7 @@ def main():
                 last_row = now
 
                 moved = last_temp is not None and abs(temp - last_temp) >= MOVED_C
-                if moved or now - last_print >= HEARTBEAT_S or last_print == 0.0:
+                if moved or now - last_print >= a.heartbeat or last_print == 0.0:
                     rh_txt = f"{rh:.0f}" if rh is not None else "--"
                     print(f"{stamp}  {temp:.1f} C  {rh_txt} %RH"
                           + (f"   ({a.note})" if a.note else ""), flush=True)
