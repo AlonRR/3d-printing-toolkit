@@ -102,6 +102,15 @@ wifi:
   # data. Radio on continuously instead; the node is mains-powered, so the
   # only cost is a few tens of mA.
   power_save_mode: none
+  # This mesh publishes three BSSIDs for one SSID. On any drop the node rescans
+  # and hammers all three in turn, two attempts each, cycling every few seconds
+  # until something accepts - and the observed result is that eventually NOTHING
+  # does: every radio starts answering 'Auth Expired' at full signal, including
+  # the one that had been working. It clears itself after about 17 minutes,
+  # which is what a temporary client block looks like.
+  # fast_connect skips the scan and goes straight to the remembered AP, so a
+  # brief drop costs one quiet attempt instead of a burst of six.
+  fast_connect: true
 
 # A plain web page at the device's address: current temperature and humidity.
 # No Home Assistant, no broker, no app.
