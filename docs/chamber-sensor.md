@@ -429,7 +429,15 @@ error rather than a clear one, so do not copy it from an older tutorial.
 
 ## 10. Build order
 
-1. **DHT11 on a breadboard, node on USB, no enclosure changes.** Get a number for the chamber as
+1. ✅ **RIG WORKING, 30 Aug 2026.** DHT11 on a C3 Super Mini, flashed over COM4, reading
+   `chamber 27.1 C  RH 39 %` on the bench — which matches room temperature, so the sensor is
+   sane. Board, firmware, sensor and wiring are all proven; what remains is the measurement.
+   Two observations worth keeping: it reports in **0.5 °C steps**, better than the DHT11's
+   nominal 1 °C resolution, but **the ±2 °C accuracy is unchanged** — do not read meaning into
+   small movements. And the `no reading` warning fired correctly while the sensor was miswired,
+   which is the fail-safe doing its job: a dead sensor announces itself instead of going quiet.
+
+   **DHT11 on a breadboard, node on USB, no enclosure changes.** Get a number for the chamber as
    it is today, with the side open. This is the baseline everything else is measured against and
    it costs nothing.
    ✅ **Ready to run:** [`firmware/chamber-baseline.yaml`](../firmware/chamber-baseline.yaml),
