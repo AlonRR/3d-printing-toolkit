@@ -101,6 +101,13 @@ wifi:
 # No Home Assistant, no broker, no app.
 web_server:
   port: 80
+  # v2, deliberately. v3 serves a single-page app that fetches its JavaScript
+  # from a CDN - useless on a network without internet, and on a phone it just
+  # shows a blank page. v2 embeds everything in the firmware AND keeps the
+  # per-entity REST endpoints (/sensor/chamber_temperature) that
+  # scripts/chamber-log.py polls. v3 replaced those with an SSE stream at
+  # /events and returns 404 for the old paths.
+  version: 2
 
 # DELIBERATELY NOT ENABLED YET, both one-liners when wanted:
 #   ota:            reflash without USB, once the node is inside the enclosure.
