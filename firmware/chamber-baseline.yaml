@@ -115,6 +115,15 @@ web_server:
   # /events and returns 404 for the old paths.
   version: 2
 
+# Home Assistant. Without this the node is an island: its data lives only in
+# whatever happens to be polling it, which during the bench work was a script
+# running in one interactive session - and a three-hour print outliving a
+# terminal window is not a plan. With it, HA discovers the device on its own and
+# recorders it to InfluxDB, so the record survives this machine being turned off.
+api:
+  encryption:
+    key: !secret api_encryption_key
+
 # Reflash over WiFi. Enabled 31 Aug 2026 once the password existed - this is
 # what lets the node be updated while it sits inside a hot enclosure, instead of
 # opening the box and finding a USB cable. After the USB flash that installs
