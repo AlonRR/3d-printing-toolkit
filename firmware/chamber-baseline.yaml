@@ -109,9 +109,14 @@ web_server:
   # /events and returns 404 for the old paths.
   version: 2
 
-# DELIBERATELY NOT ENABLED YET, both one-liners when wanted:
-#   ota:            reflash without USB, once the node is inside the enclosure.
-#                   Needs ota_password set in secrets.yaml.
-#   wifi: ap: +     a fallback access point, so a wrong password does not mean
-#   captive_portal: opening the box and reflashing over USB. Cheap insurance
-#                   only once the node is somewhere awkward to reach.
+# Reflash over WiFi. Enabled 31 Aug 2026 once the password existed - this is
+# what lets the node be updated while it sits inside a hot enclosure, instead of
+# opening the box and finding a USB cable. After the USB flash that installs
+# THIS, every later one is `esphome run chamber-baseline.yaml` over the network.
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# STILL NOT ENABLED: a fallback access point (wifi: ap: + captive_portal:).
+# It earns its keep when a wrong password would otherwise mean opening the box,
+# but OTA now covers the likely case and the node is still on the desk.
