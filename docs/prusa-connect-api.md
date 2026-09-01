@@ -145,8 +145,41 @@ board then looks dead.
 ### The firmware — official, and this board is on the list
 
 **[prusa3d/Prusa-Firmware-ESP32-Cam](https://github.com/prusa3d/Prusa-Firmware-ESP32-Cam)** —
-Prusa's own firmware, actively maintained, with pre-compiled releases. Supported boards include
+Prusa's own firmware, GPL-3.0, with pre-compiled releases per board. Supported boards include
 **Freenove ESP32-S3-Wroom** and **ESP32-S3-CAM**.
+
+**Is it really Prusa? Yes — with one caveat stated precisely.** The `prusa3d` GitHub org is **not
+domain-verified** (`is_verified: false` from the API). That badge is optional and its absence is
+not evidence of anything; what settles it is what the org contains — **PrusaSlicer** (9.3k stars),
+**Prusa-Firmware** (2.1k), **Prusa-Firmware-Buddy** (1.6k), **Original-Prusa-i3** (1.7k). Those are
+the canonical Prusa codebases. Org created 2015, `info@prusa3d.com`, `prusa3d.com`. The repo is not
+a fork.
+
+⚠️ **It is NOT actively maintained, and an earlier version of this page wrongly said it was.**
+Last push **2 Jan 2025**, with **63 open issues**. That claim came from a search summary reporting
+"168 commits, recent activity"; the API says otherwise. It works, but treat it as parked — nobody
+is fixing a board-support bug for you.
+
+### Building it yourself — yes, and it is an Arduino sketch
+
+GPL-3.0 with full source; `ESP32_PrusaConnectCam.ino` builds in the **Arduino IDE** (no PlatformIO,
+no ESP-IDF). Pinned dependency versions from the README:
+
+| | |
+|---|---|
+| Arduino IDE | 2.3.4 |
+| arduino-ESP32 | 3.1.0 |
+| AsyncTCP | **3.3.1 (mathieucarbou)** |
+| ESPAsyncWebServer | **3.4.5 (mathieucarbou)** |
+| ArduinoJson | 7.3.0 |
+| UniqueID | 1.3.0 |
+| DHTnew | 0.5.2 |
+
+⚠️ The README **struck through** the older `dvarrel` `ESPAsyncWebSrv` / `AsyncTCP` libraries in
+favour of **mathieucarbou**'s. Same library names, different authors — install the wrong pair and
+it will not build. The async ones must be added as **ZIP archives**, not from the Library Manager.
+
+Building is optional: precompiled firmware is published per board with every release.
 
 It authenticates with the **camera token** from Connect — i.e. it uses §4's Camera API, the one
 officially supported Connect interface. Setup needs no toolchain beyond flashing:
@@ -159,6 +192,59 @@ officially supported Connect interface. Setup needs no toolchain beyond flashing
 **This is the whole reason the camera route was worth flagging.** It turns the one supported API
 into a flash-and-configure job, with no JWT, no `0.0.1-dev` gateway, and nothing to reverse
 engineer.
+
+### The DHT11 support is real — and it is local-only
+
+The firmware carries `ExternalTemperatureSensor.*`, wiring diagrams per board, and a
+`page_temperature.html`. It uses the **DHTnew** library, which auto-detects the part, and the code
+branches explicitly on `"DHT11"` and `"DHT22"`. It reads **temperature *and* humidity**, with a
+selectable °C/°F unit.
+
+On the **Freenove ESP32-S3-Wroom** board:
+
+```c
+/* -------------- DHT SENSOR CFG ----------------*/
+#define DHT_SENSOR_ENABLE           false   ///< enable/disable DHT sensor
+#define DHT_SENSOR_PIN              47      ///< GPIO pin for DHT sensor
+```
+
+**GPIO47**, and **disabled by default** — both at compile time and in the factory config
+(`FACTORY_CFG_ENABLE_EXT_SENSOR 0`). It is switched on at runtime from the web UI, so a stock
+precompiled build can use it without recompiling.
+
+⛔ **The reading is NOT sent to Prusa Connect.** Checked: no temperature or humidity reference in
+`connect.cpp` or `exif.cpp`. It is not in the telemetry and it is not embedded in the image EXIF.
+Anyone assuming "Prusa firmware, therefore it shows up in Connect" would be wrong.
+
+**It surfaces on the device's own web server instead**, which is arguably more useful here:
+
+```
+GET /get_temp               -> text/plain, temperature
+GET /get_hum                -> text/plain, humidity
+GET /page_temperature.html  -> the human page
+```
+
+Both are behind HTTP Basic auth (`Server_CheckBasicAuth`). **Two plain-text endpoints are the
+easiest possible scrape target** — no JSON, no parsing — and feed straight into the MQTT bridge
+already written in `scripts/chamber-serial-log.py`.
+
+### ⭐ Why this matters more than the camera
+
+This collapses the [chamber sensor](chamber-sensor.md) problem. That project currently needs a
+transmitter, a USB-tethered receiver, ESP-NOW between them, and a serial bridge on the server — an
+architecture forced entirely by the C3 SuperMinis being unable to transmit (§3z).
+
+One S3 CAM board replaces all of it:
+
+- A **real module antenna**, so WiFi simply works — the defect that caused everything is absent.
+- **Camera → Prusa Connect** over the one officially supported API.
+- **DHT11 on GPIO47 → two plain-text HTTP endpoints** → HA/MQTT.
+- It mounts **on the printer**, which is where the chamber measurement belongs anyway.
+- **10 DHT11s are already owned**, and so is the board.
+
+No ESP-NOW, no hub, no USB tether, no antenna surgery. The DHT11 accuracy caveat from
+[chamber-sensor](chamber-sensor.md) §2 still stands (±2 °C, 1 °C resolution) — fine for "is the
+chamber warm", poor for characterising a 40–60 °C ASA chamber precisely.
 
 ### The case — exists, fits this exact board, and mounts to an MK3
 
