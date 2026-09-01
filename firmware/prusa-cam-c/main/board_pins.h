@@ -40,10 +40,25 @@
 
 /* ------------------------------------------------------------------- DHT */
 
-/* Prusa's firmware puts the external temperature sensor here on this board, and
- * it does not collide with any camera pin above. GPIO47 is broken out on the
- * header, so the KY-015 module reaches it directly. */
-#define DHT_PIN          47
+/* ⚠️ CONTESTED, and worth understanding before wiring anything.
+ *
+ * Prusa ships two headers whose CAMERA pins are byte-for-byte identical to each
+ * other and to the block above - so the camera map cannot tell these two boards
+ * apart. Their auxiliary pins do differ, and they disagree exactly here:
+ *
+ *   module_ESP32-S3_Wroom_Freenove.h :  DHT 47,  FLASH 14
+ *   module_ESP32-S3-CAM.h            :  DHT 20,  FLASH 47
+ *
+ * So GPIO47 is the DHT pin on one board and drives the FLASH LED on the other.
+ * If this board is the second kind, putting a DHT on 47 means the sensor shares
+ * a pin with an LED driver - which would read as an intermittent, wiring-like
+ * fault rather than an obvious conflict.
+ *
+ * GPIO20 is chosen as the safer default: it is unused in BOTH headers. The
+ * Freenove board simply has nothing on it, so nothing is lost by using it
+ * either way, and the ambiguity costs nothing.
+ */
+#define DHT_PIN          20
 
 /* ------------------------------------------------------------------ misc */
 
