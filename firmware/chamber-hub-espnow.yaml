@@ -30,8 +30,14 @@ logger:
 
 espnow:
   channel: 1
+  auto_add_peer: true     # accept the sensor without hardcoding its MAC here
   peers:
-    - FF:FF:FF:FF:FF:FF   # broadcast; the sender transmits to it by default
+    - FF:FF:FF:FF:FF:FF
+  # Diagnostics: distinguishes "nothing is arriving" from "arriving and rejected".
+  on_broadcast:
+    - lambda: 'ESP_LOGI("hub", "RX broadcast %u bytes", size);'
+  on_unknown_peer:
+    - lambda: 'ESP_LOGW("hub", "RX from unregistered peer");'
 
 packet_transport:
   - platform: espnow
