@@ -160,26 +160,49 @@ The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straig
 
 ### The printer's name, and why it is LAN-only on purpose
 
-Answered by the homelab session, 1 Sep 2026. **None of this is built yet** — no DNS, Caddy or
-firewall change has been made.
+Answered and then built by the homelab session, 1 Sep 2026 (`f89f4a2`).
 
-**Today:** `prusalink.local` only. It is mDNS, so it is link-local and invisible to pure DNS — fine
-from workstation, useless from a container, another VLAN, or off-site. Do not build anything on it.
+```
+prusalink.internal.example  ->  Caddy (192.0.2.26)  ->  192.0.2.128
+                     tls internal, access-logged
+```
 
-**Planned:** `prusalink.internal.example` as a **Caddy-fronted vhost** reverse-proxying `192.0.2.128` —
-not a redirect to the `.local` name, and not a bare A record. The lab already splits host-name from
-service-name everywhere (`git.` is the box, `gitea.` the web UI; `homeassistant.` the CT, `ha.` the
-web UI), so the printer follows the same shape: `prusalink.internal.example` for the UI, and
-`prusalink-host.internal.example` as a plain `address=` line only if something ever needs SSH or a direct API
-path. A specific record beats the wildcard, the way `mqtt.internal.example` already does.
+**Prefer `prusalink.internal.example`.** `prusalink.local` still works but is mDNS — link-local, invisible to pure
+DNS, useless from a container, another VLAN, or off-site. Do not build anything on it.
 
-The vhost is preferred over a plain record for a concrete reason: PrusaLink's Digest credentials
-and its `X-Api-Key` cross the LAN **in cleartext** today, and a vhost puts TLS in front of them.
+The lab splits host-name from service-name everywhere (`git.` is the box, `gitea.` the web UI;
+`homeassistant.` the CT, `ha.` the UI), so the printer follows suit: `prusalink.internal.example` is the web
+UI. If SSH or a direct API path is ever needed, that becomes a separate `prusalink-host.internal.example`.
 
-⚠️ **Acceptance test, agreed in advance:** a *complete authenticated login* through the vhost,
-plus one `/api/*` call with `X-Api-Key`. A `200` on `/` is not a test — `/` returns `401` by
-design, and Digest hashes the request URI, so a proxy that rewrites Host or path breaks it. If
-Digest cannot survive the HTTP/1.0 upstream, the fallback is the plain record and only TLS is lost.
+A vhost rather than a plain DNS record, for a concrete reason: PrusaLink's Digest credentials and
+its `X-Api-Key` crossed the LAN **in cleartext** before this. Now they are inside TLS, and the
+printer appears in the Caddy access log with the true client IP.
+
+⚠️ **No DNS record was added, and that corrects an assumption both sessions made.** The
+`address=/internal.example/192.0.2.26` wildcard already routes every unclaimed name to Caddy, so
+adding the vhost was sufficient on its own. The explicit `address=` lines exist only for the
+**direct** names that must bypass the proxy — `git.`, `nas.`, `mqtt.`. `ha.`, `gitea.` and
+`grafana.` have no record either. The earlier note here that "a specific record beats the wildcard"
+is true in general and was the wrong tool for this job.
+
+**⛔ Never add `rewrite`, `handle_path`, or a stripped prefix to that vhost.** Digest hashes the
+request URI, so any of those breaks authentication *while leaving the site apparently up*. Caddy
+preserving Host and path by default is the only reason this works.
+
+### Verification status — transport proven, one real sign-in still outstanding
+
+Confirmed from workstation: the vhost answers `HTTP/1.1 401` with `Server: PrusaLink`, and the Digest
+challenge arrives **byte-identical** to the direct one — same `realm`, `qop`, `algorithm`, `nonce`
+and `opaque`. The Caddyfile carries a bare `reverse_proxy` with no path manipulation.
+
+⚠️ **That is not yet proof the login works.** Every test so far used absent or wrong
+credentials, and **a URI-rewrite failure and a bad password both return `401`** — they are
+indistinguishable. Only a *successful* sign-in proves the URI hashing matches end to end. Opening
+`https://prusalink.internal.example` and logging in settles it in ten seconds; until then this is **working,
+pending one real sign-in**, not verified.
+
+*(Chrome trusts the Caddy internal CA via the Windows store; `curl` in git-bash does not, and needs
+`-k`. That is a CA-bundle difference, not a problem with the vhost.)*
 
 ### ⛔ The printer is permanently LAN/VPN-only — a decision, not a caution
 
