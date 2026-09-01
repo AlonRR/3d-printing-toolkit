@@ -222,6 +222,121 @@ already crippled at the transmitter.
 
 ---
 
+## ✅ 3y. The pairing that works
+
+Proven 1 Sep 2026, and it is just §3z's finding applied: **give the transmitting
+job to the board that radiates, and the receiving job to the boards that only
+listen well.**
+
+| Role | Board | Port | Firmware |
+|---|---|---|---|
+| Sender + DHT11 | ESP32-C3-**MINI-1** | `COM8` on workstation | `firmware/chamber-sensor-mini1.yaml` |
+| Receiver / hub | C3 **SuperMini** | `/dev/ttyACM0` on the server | `firmware/chamber-hub-espnow.yaml` |
+
+The server's console, continuously:
+
+```
+[I][hub:055]: RX broadcast 52 bytes     <- packet_transport: chamber_t + chamber_rh
+[I][hub:055]: RX broadcast  4 bytes     <- the diagnostic ping
+```
+
+**Nothing in the software changed to achieve this.** The same ESPHome `espnow`
+component that "did not work" works fine the moment a board with a functioning
+antenna does the transmitting.
+
+### The serial-port trap, which cost most of a day
+
+The two board families are **opposites**, and getting this backwards makes a
+perfectly healthy board look dead:
+
+| Board | The port you plug in | `logger:` needs |
+|---|---|---|
+| C3 SuperMini | native USB = the `USB_SERIAL_JTAG` peripheral | `hardware_uart: USB_SERIAL_JTAG` |
+| C3-MINI-1 board | **two** USB-C ports; `COM8` is the **UART bridge** | **no override** — the default UART is right |
+
+This is the whole reason the plain-C test printed nothing on COM8 while
+transmitting perfectly: that build routed its console to `USB_SERIAL_JTAG`,
+which is the *other* connector. Silence on a console is not silence on the air.
+
+### Still expected, not a fault
+
+The hub logs `no data from sensor yet` and the sender logs
+`no reading - check wiring`, because **the DHT11 is still wired to a
+SuperMini.** The transport is proven; move the sensor to `GPIO4` on the MINI-1
+(KY-015: minus to GND, plus to 3V3, S to GPIO4) and real readings flow.
+
+---
+
+## 3x. Rescuing the SuperMinis — the 31 mm wire mod
+
+There are 10 C3s here, so it is worth knowing they are repairable. **Optional:
+the link above already works without it.**
+
+### Why the board is bad
+
+Espressif's own [C3 PCB layout
+guidelines](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32c3/pcb-layout-design.html)
+require **at least 15 mm clearance in all directions** around the antenna, a CLC
+matching network, and USB/UART lines kept far away. The SuperMini is about
+22 by 18 mm with a USB-C connector millimetres from the antenna. It cannot
+satisfy any of them. Reported on top of that: two of the three matching-network
+capacitor pads left unpopulated, and some batches with the ceramic antenna
+mounted backwards.
+
+**The corroborating symptom is heat.** Two independent observers measured these
+boards running hotter than other C3s, one confirming the chip temperature
+*dropped* after the mod. That points at reflected power being dissipated in the
+die — a **mismatch**, not merely a weak antenna.
+
+### The mod
+
+One piece of **31 mm** of **1.0 mm** wire (about 18 AWG):
+
+- **16 mm** wound into a roughly **8 mm** loop (around a 5 mm drill shank), ends
+  spread to reach both chip-antenna pads — the chip antenna itself completes the
+  last quarter of the circle.
+- **15 mm** continuing straight up from the second pad.
+- **Leave the stock ceramic antenna in place.** Tested better that way than
+  removed.
+- If the board has a visible ~4 mm feed trace before the antenna, use **27 mm**
+  instead — the 4 mm difference matters.
+
+**⚠️ The one step that breaks boards: the loop must start on the FEED pad.**
+Do **not** trust the white stripe on the ceramic — documented photos show the
+same part mounted in opposite orientations on different boards. **Ohm it out:**
+the feed pad has continuity to an ESP32 pin, the other pad reads open to
+everything. Thirty seconds, and it removes the single most common failure.
+
+### Measure it honestly
+
+**Do not measure at 5 cm.** At 2.4 GHz that is about 0.4 wavelengths — inside
+the reactive near-field, where two mismatched antennas couple in ways that
+ignore path loss. Read RSSI **from the far end** (the AP, or the MINI-1) at
+several metres through a wall, and keep **one unmodified board as a permanent
+control**. Every trustworthy number in the literature came from that method.
+
+Expect **+10 to +17 dB**. Then accept the ceiling: the best-documented A/B put a
+*modded* SuperMini at -45 dBm where a properly laid-out C3 read -33 dBm on the
+same desk. The mod recovers most of the defect; **it does not make the board
+good.**
+
+### Known ways it goes wrong
+
+Several people report WiFi going *dead* after the mod, or the board raising RSSI
+yet refusing to associate. The fallback is a different topology — remove the
+ceramic antenna and fit about **62 mm** end-fed on the feed pad — and the
+reported lengths for it genuinely conflict (32 mm also worked for one person),
+because nobody has resolved it with a VNA. Do the reversible 31 mm version
+first; removing the ceramic antenna is **not** reversible without a spare.
+
+The other real risk is mechanical: the vertical wire snagging has torn the
+ceramic antenna off a board along with its traces. Strain-relieve it where it
+leaves any enclosure, and keep §3z's keep-out in mind — do not bury a modded C3
+next to the fan, the PD board, or metal.
+
+
+---
+
 ## 3a. Which WiFi network — this cost an evening, so it is written down
 
 Two facts about this house's networks decide where the node can live, and neither
