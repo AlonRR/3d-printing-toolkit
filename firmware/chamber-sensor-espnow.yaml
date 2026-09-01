@@ -1,0 +1,70 @@
+# chamber-sensor-espnow — the DHT11 node, talking ESP-NOW instead of WiFi.
+#
+# WHY THIS EXISTS. The WiFi version of this node (chamber-baseline.yaml) works
+# perfectly and cannot stay on the network: the access point refuses it every
+# 20-50 minutes with 'Auth Expired' / 'Authentication Failed' at full signal.
+# WPA2-only helped and did not cure it, and everything left is router-side.
+#
+# ESP-NOW sidesteps the entire layer that keeps failing. There is no
+# association, no WPA handshake, no DHCP lease, no mDNS name to resolve, and no
+# access point in the path at all - two radios talk to each other directly. Every
+# failure this project has hit lives above that line.
+#
+# WHAT IT COSTS, so it is a decision and not a surprise:
+#   * No WiFi means NO OTA and NO web page. Updating this node means USB again.
+#     Get it right before it goes in the enclosure.
+#   * The receiver must be on the SAME CHANNEL. Both are pinned to 1 below.
+#   * Range is direct radio rather than via an AP. Fine across a room; verify
+#     before trusting it through an enclosure wall.
+#
+# Pair: firmware/chamber-hub-espnow.yaml, which runs on the C3 plugged into the
+# server's USB and prints what it receives to /dev/ttyACM0.
+
+esphome:
+  name: chamber-sensor
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+logger:
+  level: INFO
+  hardware_uart: USB_SERIAL_JTAG
+
+# Deliberately NO wifi: block. Its absence is the whole point, and it is why
+# espnow needs an explicit channel - normally it inherits the one WiFi picked.
+espnow:
+  channel: 1
+
+packet_transport:
+  - platform: espnow
+    sensors:
+      - chamber_t
+      - chamber_rh
+
+sensor:
+  - platform: dht
+    pin: GPIO4          # same wiring as the WiFi build; KY-015 module, - + S
+    model: DHT11
+    temperature:
+      name: "Chamber temperature"
+      id: chamber_t
+    humidity:
+      name: "Chamber humidity"
+      id: chamber_rh
+    update_interval: 30s
+
+# Local echo, so the sender can be checked on its own over USB without the
+# receiver being involved at all.
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          if (isnan(id(chamber_t).state)) {
+            ESP_LOGW("sender", "no reading - check wiring");
+          } else {
+            ESP_LOGI("sender", "sent %.1f C  %.0f %%",
+                     id(chamber_t).state, id(chamber_rh).state);
+          }

@@ -366,3 +366,28 @@ iso_time,temp_c,rh_pct,note
 2026-09-01T02:59:14,23.1,36.4,overnight room baseline
 2026-09-01T03:00:08,23.1,36.4,overnight room baseline
 2026-09-01T03:09:32,,,unreachable: URLError
+2026-09-01T03:33:44,,,unreachable: URLError
+2026-09-01T04:42:51,23,36.2,overnight room baseline
+2026-09-01T04:42:55,23,36.2,overnight room baseline
+2026-09-01T04:43:42,22.9,36.2,overnight room baseline
+2026-09-01T04:44:12,22.9,36.2,overnight room baseline
+2026-09-01T04:45:12,22.9,36.2,overnight room baseline
+2026-09-01T04:45:42,22.9,36.2,overnight room baseline
+2026-09-01T04:46:12,22.9,36.2,overnight room baseline
+2026-09-01T04:46:42,22.9,36.2,overnight room baseline
+2026-09-01T04:47:42,22.9,36.2,overnight room baseline
+2026-09-01T04:48:40,22.9,36.2,overnight room baseline
+2026-09-01T04:49:12,22.9,36.3,overnight room baseline
+2026-09-01T04:49:42,22.9,36.3,overnight room baseline
+2026-09-01T04:50:12,22.9,36.3,overnight room baseline
+2026-09-01T04:50:43,23,36.3,overnight room baseline
+2026-09-01T04:51:42,23,36.3,overnight room baseline
+2026-09-01T04:52:12,22.9,36.3,overnight room baseline
+2026-09-01T04:52:42,22.8,37.3,overnight room baseline
+2026-09-01T04:53:12,22.8,38.9,overnight room baseline
+2026-09-01T04:54:19,23,38.9,overnight room baseline
+2026-09-01T04:55:12,23.2,40.1,overnight room baseline
+2026-09-01T04:55:42,23.4,40,overnight room baseline
+2026-09-01T04:56:12,23.4,39.1,overnight room baseline
+2026-09-01T04:56:42,23.4,38.8,overnight room baseline
+2026-09-01T05:12:53,,,unreachable: URLError

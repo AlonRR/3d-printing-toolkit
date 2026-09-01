@@ -1,0 +1,67 @@
+# chamber-hub-espnow — the receiver, on the C3 plugged into the NAS's USB.
+#
+# Pairs with firmware/chamber-sensor-espnow.yaml. The sensor node broadcasts
+# readings over ESP-NOW; this one receives them and prints them to its USB
+# serial port, where the server reads /dev/ttyACM0 and appends to the CSV.
+#
+# WHY THE LOGGER LIVES ON THE SERVER NOW. The WiFi version was polled by a script
+# running in an interactive session on a desktop - it stopped when the session
+# stopped, which is not a plan for a three-hour print. Here the server owns the
+# capture: it is already always-on, and a USB cable is not something an access
+# point can refuse.
+#
+# NO WIFI HERE EITHER. Same trade as the sensor: no OTA, no web page, updates
+# mean USB. The receiver lives in the server's USB port, so that is cheap.
+#
+# CHANNEL MUST MATCH THE SENDER. Both are pinned to 1.
+
+esphome:
+  name: chamber-hub
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+logger:
+  level: INFO
+  hardware_uart: USB_SERIAL_JTAG
+
+espnow:
+  channel: 1
+  peers:
+    - FF:FF:FF:FF:FF:FF   # broadcast; the sender transmits to it by default
+
+packet_transport:
+  - platform: espnow
+    providers:
+      - name: chamber-sensor     # must equal the sender's esphome: name:
+
+sensor:
+  - platform: packet_transport
+    provider: chamber-sensor
+    remote_id: chamber_t
+    name: "Chamber temperature"
+    id: hub_t
+    internal: true      # no api/mqtt on this node, so nothing may be "published"
+  - platform: packet_transport
+    provider: chamber-sensor
+    remote_id: chamber_rh
+    name: "Chamber humidity"
+    id: hub_rh
+    internal: true
+
+# One machine-readable line per update. The server greps for this prefix, so
+# keep the format stable - CHAMBER <temp> <rh> - and put anything else behind a
+# different tag.
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          if (isnan(id(hub_t).state)) {
+            ESP_LOGW("hub", "no data from sensor yet");
+          } else {
+            ESP_LOGI("hub", "CHAMBER %.1f %.1f",
+                     id(hub_t).state, id(hub_rh).state);
+          }
