@@ -43,37 +43,51 @@ typedef struct {
     const char *label;
 } cam_attempt_t;
 
-/* SECOND SWEEP, after the first one ruled out clock speed.
+/* WHAT THE HARDWARE HAS ALREADY TOLD US, and what this table asks next.
  *
- * Halving XCLK took PCLK from 10 MHz to 5 MHz and changed nothing, which is
- * strong evidence the problem is not the DMA failing to keep up. And the pin
- * map is now corroborated twice over: Prusa's module_ESP32-S3-CAM.h carries
- * pins IDENTICAL to the Freenove header, and SCCB works on them here.
+ * Two sweeps established the following, each by a result that could have gone
+ * the other way:
  *
- * So the question is no longer "how fast" but "what shape". The discriminating
- * test is a NON-JPEG format:
+ *   - Halving XCLK moved PCLK from 10 MHz to 5 MHz and changed NOTHING. So the
+ *     failure is not the DMA struggling to keep up, which is the usual reading
+ *     of "NO-SOI - JPEG start marker missing".
+ *   - RGB565 QQVGA into DRAM captured perfectly: 38400 bytes, exactly
+ *     160x120x2, with varied content. So D0-D7, VSYNC, HREF and PCLK are all
+ *     correct, and every pin in board_pins.h is now proven rather than assumed.
  *
- *   RGB565 frames arrive  -> the parallel bus, VSYNC, HREF and PCLK are all
- *                            fine, and the fault is in JPEG mode specifically.
- *   RGB565 also fails     -> the pixel path itself is wrong, and no amount of
- *                            JPEG tuning will help.
+ * The pin map is separately corroborated: Prusa's module_ESP32-S3-CAM.h carries
+ * camera pins byte-for-byte identical to the Freenove header this was taken
+ * from, and SCCB works on them here.
  *
- * Raw formats are put early and small: QQVGA RGB565 is 160x120x2 = 38 KB, which
- * fits in internal DRAM, so it also removes PSRAM from the question at the same
- * time. One JPEG attempt is kept first purely as a fast baseline. */
+ * So the fault is narrow: JPEG mode specifically. But the working case and the
+ * failing case differ in THREE variables at once - format, size and location -
+ * and that cannot say which one matters.
+ *
+ * These attempts therefore vary ONE axis at a time around the known-good
+ * corner:
+ *
+ *   1 vs 2 : format   (RGB565 -> JPEG, everything else held)
+ *   1 vs 3 : location (DRAM   -> PSRAM)
+ *   2 vs 4 : format change, now in PSRAM
+ *   5, 6   : does size matter once the working format is known
+ *
+ * Unlike the previous sweeps this one runs EVERY attempt and prints a table.
+ * Stopping at the first success is what a search does; an experiment has to
+ * collect the failures too, because "JPEG never works" and "nothing works in
+ * PSRAM" are different diagnoses that the first success would hide. */
 static const cam_attempt_t ATTEMPTS[] = {
-    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_SVGA,  2, CAMERA_GRAB_WHEN_EMPTY,
-      CAMERA_FB_IN_PSRAM, "JPEG   SVGA  20MHz fb2 psram" },
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "RGB565 QQVGA 20MHz fb1 DRAM " },
-    { 10000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "RGB565 QQVGA 10MHz fb1 DRAM " },
-    { 20000000, PIXFORMAT_GRAYSCALE, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "GRAY   QQVGA 20MHz fb1 DRAM " },
+      CAMERA_FB_IN_DRAM,  "1 RGB565 QQVGA DRAM  fb1  (control)" },
+    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
+      CAMERA_FB_IN_DRAM,  "2 JPEG   QQVGA DRAM  fb1  (format)" },
+    { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
+      CAMERA_FB_IN_PSRAM, "3 RGB565 QQVGA PSRAM fb1  (location)" },
+    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
+      CAMERA_FB_IN_PSRAM, "4 JPEG   QQVGA PSRAM fb1  (both)" },
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QVGA,  1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_PSRAM, "RGB565 QVGA  20MHz fb1 psram" },
-    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_QVGA,  1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_PSRAM, "JPEG   QVGA  20MHz fb1 psram" },
+      CAMERA_FB_IN_PSRAM, "5 RGB565 QVGA  PSRAM fb1  (size)" },
+    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_VGA,   2, CAMERA_GRAB_WHEN_EMPTY,
+      CAMERA_FB_IN_PSRAM, "6 JPEG   VGA   PSRAM fb2  (realistic)" },
 };
 
 #define N_ATTEMPTS (sizeof(ATTEMPTS) / sizeof(ATTEMPTS[0]))
@@ -177,6 +191,11 @@ esp_err_t camera_start(void)
         return ESP_ERR_NOT_SUPPORTED;
     }
 
+    bool passed[N_ATTEMPTS];
+    int first_ok = -1;
+
+    /* Every attempt runs, including ones after a success. A search stops at the
+     * first win; this is an experiment, and the failures carry the diagnosis. */
     for (size_t i = 0; i < N_ATTEMPTS; i++) {
         const cam_attempt_t *a = &ATTEMPTS[i];
         ESP_LOGI(TAG, "attempt %u/%u: %s",
@@ -186,16 +205,15 @@ esp_err_t camera_start(void)
         esp_err_t err = esp_camera_init(&cfg);
         if (err != ESP_OK) {
             ESP_LOGW(TAG, "  init failed: %s", esp_err_to_name(err));
+            passed[i] = false;
             continue;
         }
 
         sensor_t *s = esp_camera_sensor_get();
         if (s != NULL && i == 0) {
-            /* Logged once. Note carefully what this does and does not prove:
-             * SCCB is I2C, so a correct PID confirms SIOD, SIOC and XCLK only.
-             * The parallel data bus is proven by a frame, not by this. */
-            ESP_LOGI(TAG, "sensor PID 0x%04x (SCCB ok: SIOD/SIOC/XCLK correct; "
-                          "data bus NOT yet proven)", s->id.PID);
+            /* SCCB is I2C: a correct PID confirms SIOD, SIOC and XCLK only. The
+             * parallel bus is proven by a frame, never by this. */
+            ESP_LOGI(TAG, "sensor PID 0x%04x", s->id.PID);
             if (s->id.PID != OV3660_PID) {
                 ESP_LOGW(TAG, "expected OV3660 0x3660");
             }
@@ -204,23 +222,43 @@ esp_err_t camera_start(void)
             s->set_vflip(s, 1);
         }
 
-        if (capture_works(a->format, 3)) {
-            ESP_LOGI(TAG, "WORKING CONFIG: %s", a->label);
-            ESP_LOGI(TAG, "  put these values in the single config once settled");
-            s_started = true;
-            return ESP_OK;
+        passed[i] = capture_works(a->format, 3);
+        if (passed[i] && first_ok < 0) {
+            first_ok = (int) i;
         }
-
-        ESP_LOGW(TAG, "  no usable frame with %s", a->label);
         esp_camera_deinit();
         vTaskDelay(pdMS_TO_TICKS(300));
     }
 
-    ESP_LOGE(TAG, "no configuration produced a usable frame");
-    ESP_LOGE(TAG, "SCCB works (PID read), so the ribbon IS seated and XCLK/SIOD/"
-                  "SIOC are right. RGB565 failing too means the fault is the "
-                  "PIXEL PATH, not JPEG: D0-D7, VSYNC, HREF or PCLK.");
-    return ESP_FAIL;
+    ESP_LOGI(TAG, "================ ISOLATION MATRIX ================");
+    for (size_t i = 0; i < N_ATTEMPTS; i++) {
+        ESP_LOGI(TAG, "  %-38s %s", ATTEMPTS[i].label,
+                 passed[i] ? "PASS" : "fail");
+    }
+    ESP_LOGI(TAG, "==================================================");
+
+    if (first_ok < 0) {
+        ESP_LOGE(TAG, "nothing captured - the pixel path itself is wrong");
+        return ESP_FAIL;
+    }
+
+    /* Re-init the first configuration that worked, so the main loop has a live
+     * camera rather than a deinitialised one. */
+    const cam_attempt_t *win = &ATTEMPTS[first_ok];
+    ESP_LOGI(TAG, "adopting: %s", win->label);
+    camera_config_t cfg = build_config(win);
+    esp_err_t err = esp_camera_init(&cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "re-init of the winning config failed: %s",
+                 esp_err_to_name(err));
+        return err;
+    }
+    sensor_t *s = esp_camera_sensor_get();
+    if (s != NULL) {
+        s->set_vflip(s, 1);
+    }
+    s_started = true;
+    return ESP_OK;
 }
 
 esp_err_t camera_capture_and_report(void)

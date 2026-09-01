@@ -24,21 +24,57 @@ actually fail.
 
 This build brings up the camera, reads back the sensor ID, reads the DHT, and logs both.
 
-### The acceptance test
+### Result: the pin map is PROVEN, on this hardware
+
+`board_pins.h` was transcribed from Prusa's `module_ESP32-S3_Wroom_Freenove.h`, and this board is
+an AliExpress board of that *layout* rather than a genuine Freenove — well-sourced, but an
+assumption. It is now verified in two independent halves:
 
 ```
-I (nnn) cam: sensor PID 0x3660  VER 0x.. MIDL 0x.. MIDH 0x..
-I (nnn) cam: OV3660 confirmed - the pin map in board_pins.h is CORRECT
+cam: sensor PID 0x3660                     <- SCCB: proves SIOD, SIOC, XCLK
+cam:  -> GOOD frame 160x120 38400 bytes    <- pixels: proves D0-D7, VSYNC, HREF, PCLK
 ```
 
-**That one line is the point of the milestone.** `board_pins.h` was transcribed from Prusa's
-`module_ESP32-S3_Wroom_Freenove.h`, and the board here is an AliExpress board of that *layout*
-rather than a genuine Freenove — well-sourced, but never verified on this hardware. The PID read
-back over SCCB is what verifies it.
+**Both halves are needed and neither substitutes for the other.** Reading the PID happens over
+SCCB, which is I²C — it says nothing at all about the parallel data bus. An early version of this
+file logged "pin map is CORRECT" on the PID alone, which was an overstatement: the data bus was
+still entirely unproven at that point. 38400 bytes is exactly 160×120×2, and the check also
+requires the buffer to contain more than one distinct byte value, because a dead bus returns a
+correctly-sized block of uniform `0x00` or `0xFF` that a length check would happily accept.
+
+Corroboration: Prusa's `module_ESP32-S3-CAM.h` carries camera pins **byte-for-byte identical** to
+the Freenove header, so both of Prusa's S3 boards share this map.
 
 If `esp_camera_init` fails, **reseat the FPC ribbon before doubting the pin numbers.** The latch
 flips up and the cable only seats one way round; a freshly-plugged ribbon is the likeliest cause by
-a wide margin.
+a wide margin. Note that SCCB working already proves the ribbon is seated.
+
+### The sensor's hardware JPEG is broken on this board — isolated, not guessed
+
+Raw formats capture fine; **every JPEG attempt fails** with `NO-SOI - JPEG start marker missing`
+and a frame timeout. An isolation matrix varying one axis at a time settles the attribution:
+
+| Attempt | Result |
+|---|---|
+| RGB565 QQVGA **DRAM** | **PASS** |
+| JPEG QQVGA DRAM | fail |
+| RGB565 QQVGA **PSRAM** | **PASS** |
+| JPEG QQVGA PSRAM | fail |
+| RGB565 **QVGA** PSRAM | **PASS** |
+| JPEG VGA PSRAM fb2 | fail |
+
+**Location does not matter. Size does not matter. Format is the only variable.** Halving XCLK
+(PCLK 10 MHz → 5 MHz) also changed nothing, which had already ruled out the usual "DMA cannot keep
+up" reading of `NO-SOI`.
+
+The matrix runs *every* attempt rather than stopping at the first success. That distinction is the
+point: a search stops when it wins, but an experiment needs the failures, because "JPEG never
+works" and "nothing works in PSRAM" are different diagnoses with different fixes, and the first
+PASS would have hidden which one this is.
+
+**The fix is to not use it.** Capture **RGB565** and encode JPEG in **software** with esp32-camera's
+`frame2jpg()`. The sensor's JPEG path is bypassed entirely. For a print-monitoring snapshot every
+few seconds the CPU cost is irrelevant — this is not a video stream.
 
 ### The DHT
 
