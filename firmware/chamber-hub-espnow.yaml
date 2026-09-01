@@ -30,6 +30,24 @@ logger:
   level: DEBUG
   hardware_uart: USB_SERIAL_JTAG
 
+# Starts the WiFi PHY WITHOUT touching the access point.
+#
+# Evidence this is needed: with no wifi block at all, both nodes report
+# "espnow init, version v2, channel 1", espnow.broadcast executes and returns in
+# ~6 ms with no error, and a receiver 5 cm away on the same machine hears
+# absolutely nothing - no directed packet, no broadcast, no unknown peer, at
+# DEBUG. A radio that was never switched on is the only thing that explains
+# silence in both directions with no error anywhere.
+#
+# softAP rather than joining HomeNet_IoT deliberately: the point of moving to
+# ESP-NOW was to stop depending on that access point, and a mesh with three
+# radios could put the two nodes on different channels, which would break the
+# link in a way that looks exactly like this.
+wifi:
+  ap:
+    ssid: "esphome-hub-ap"
+    password: "redacted-psk"
+
 espnow:
   channel: 1
   auto_add_peer: true     # accept the sensor without hardcoding its MAC here
