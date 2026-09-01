@@ -158,6 +158,42 @@ at `192.0.2.26` and nearly put a wrong claim in this file. Use `getaddrinfo` (or
 The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straight to the Pi
 (`192.0.2.128`, plus a link-local v6). Pure DNS cannot resolve it; the system resolver can.
 
+### The printer's name, and why it is LAN-only on purpose
+
+Answered by the homelab session, 1 Sep 2026. **None of this is built yet** — no DNS, Caddy or
+firewall change has been made.
+
+**Today:** `prusalink.local` only. It is mDNS, so it is link-local and invisible to pure DNS — fine
+from workstation, useless from a container, another VLAN, or off-site. Do not build anything on it.
+
+**Planned:** `prusalink.internal.example` as a **Caddy-fronted vhost** reverse-proxying `192.0.2.128` —
+not a redirect to the `.local` name, and not a bare A record. The lab already splits host-name from
+service-name everywhere (`git.` is the box, `gitea.` the web UI; `homeassistant.` the CT, `ha.` the
+web UI), so the printer follows the same shape: `prusalink.internal.example` for the UI, and
+`prusalink-host.internal.example` as a plain `address=` line only if something ever needs SSH or a direct API
+path. A specific record beats the wildcard, the way `mqtt.internal.example` already does.
+
+The vhost is preferred over a plain record for a concrete reason: PrusaLink's Digest credentials
+and its `X-Api-Key` cross the LAN **in cleartext** today, and a vhost puts TLS in front of them.
+
+⚠️ **Acceptance test, agreed in advance:** a *complete authenticated login* through the vhost,
+plus one `/api/*` call with `X-Api-Key`. A `200` on `/` is not a test — `/` returns `401` by
+design, and Digest hashes the request URI, so a proxy that rewrites Host or path breaks it. If
+Digest cannot survive the HTTP/1.0 upstream, the fallback is the plain record and only TLS is lost.
+
+### ⛔ The printer is permanently LAN/VPN-only — a decision, not a caution
+
+PrusaLink is beta software whose entire purpose is to **move the axes and drive the heaters**. A
+compromise is not data loss; it is a physical event next to an ASA enclosure in a flat. TLS at the
+proxy protects the transport, but the exposed thing would be the *application*, and that does not
+improve. It sits with **pve** and **rc-panel** on the permanent exclusion list and stays off the
+remote proxy's upstream allow-list. Reaching the printer from outside means **VPN in first**.
+
+For context on the wider plan: external access is going to a **real domain with split-horizon
+DNS** — same names inside and out, because apps like Jellyfin's store a single server URL.
+`.internal.example` stays for LAN-only services. There is deliberately **no external wildcard**; the
+remote proxy gets an explicit allow-list so it fails closed.
+
 ---
 
 ## 3. Parametric CAD library — `Code\print_scripts_tree_d\`
