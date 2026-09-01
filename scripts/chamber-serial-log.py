@@ -16,9 +16,21 @@ unit on a small Linux host without dragging in a toolchain.
 
 Prints sparingly for the same reason the WiFi logger did: a run lasts hours and
 a line every 30 s is noise. On start, on a >= 2 C move, and hourly.
+
+Optionally also publishes to MQTT, which is how the readings reach Home
+Assistant. HA cannot talk to the hub directly - the hub is a SuperMini on the
+end of a USB cable with no usable radio for transmitting (see the chamber-sensor
+doc), so this process is the bridge. Pass --mqtt-host to enable it; without that
+flag nothing about the original behaviour changes.
+
+MQTT is added HERE, to the existing logger, rather than as a second script, for
+one hard reason: only one process can own a serial port. Two readers on the same
+tty each receive a fraction of the lines, with no error from either - a failure
+mode this project has already paid for once.
 """
 import argparse
 import csv
+import json
 import re
 import sys
 import time
@@ -32,10 +44,82 @@ import serial
 LINE = re.compile(r"CHAMBER\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)")
 MOVED_C = 2.0
 
+# The hub always enumerates under this name because the path embeds its MAC, so
+# it stays correct no matter what else is plugged in or in what order. Plain
+# /dev/ttyACM0 is positional, and a second board appearing silently renames it -
+# which would point this logger at the wrong device with no error at all.
+DEFAULT_PORT = ("/dev/serial/by-id/"
+                "usb-Espressif_USB_JTAG_serial_debug_unit_aa:bb:cc:dd:ee:03-if00")
+
+# Home Assistant creates the entities from these by itself, so there is no UI
+# work to do on the HA side. Retained, so they survive an HA restart.
+DISCOVERY = {
+    "temp": {
+        "name": "Chamber temperature",
+        "device_class": "temperature",
+        "unit_of_measurement": "\u00b0C",
+        "value_template": "{{ value_json.temp_c }}",
+        "unique_id": "chamber_temp",
+    },
+    "rh": {
+        "name": "Chamber humidity",
+        "device_class": "humidity",
+        "unit_of_measurement": "%",
+        "value_template": "{{ value_json.rh_pct }}",
+        "unique_id": "chamber_rh",
+    },
+}
+
+
+def mqtt_connect(a):
+    """Return a connected client, or None if MQTT was not requested.
+
+    Imported lazily so the logger keeps working on a machine without paho
+    installed - the CSV half has no business failing because of an optional
+    dependency.
+    """
+    if not a.mqtt_host:
+        return None
+
+    import paho.mqtt.client as mqtt
+
+    password = Path(a.mqtt_pass_file).read_text(encoding="utf-8").strip()
+
+    state_topic = f"{a.mqtt_prefix}/state"
+    avail_topic = f"{a.mqtt_prefix}/availability"
+
+    c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="chamber-bridge")
+    c.username_pw_set(a.mqtt_user, password)
+
+    # The will is what makes this honest. If the bridge dies, or the server
+    # reboots, or the USB cable is pulled, HA must show the sensor as
+    # unavailable rather than holding the last temperature on screen forever.
+    # A stale 45 C reading that looks live is worse than a gap.
+    c.will_set(avail_topic, "offline", qos=1, retain=True)
+    c.connect(a.mqtt_host, a.mqtt_port, keepalive=60)
+    c.loop_start()
+
+    device = {
+        "identifiers": ["chamber_sensor"],
+        "name": "Print chamber",
+        "manufacturer": "Espressif",
+        "model": "ESP32-C3-MINI-1 sender + SuperMini USB hub",
+    }
+    for key, cfg in DISCOVERY.items():
+        payload = dict(cfg, state_topic=state_topic,
+                       availability_topic=avail_topic, device=device)
+        c.publish(f"homeassistant/sensor/chamber_{key}/config",
+                  json.dumps(payload), qos=1, retain=True)
+
+    c.publish(avail_topic, "online", qos=1, retain=True)
+    print(f"mqtt -> {a.mqtt_host}:{a.mqtt_port} as {a.mqtt_user}, "
+          f"topic {state_topic}", flush=True)
+    return c
+
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", default="/dev/ttyACM0")
+    ap.add_argument("--port", default=DEFAULT_PORT)
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--csv", default="/opt/chamber-logger/chamber.csv")
     ap.add_argument("--note", default="")
@@ -43,7 +127,19 @@ def main():
                     help="minimum seconds between CSV rows")
     ap.add_argument("--heartbeat", type=float, default=3600.0,
                     help="seconds between routine prints; the CSV is unaffected")
+    ap.add_argument("--mqtt-host", default="",
+                    help="enable MQTT publishing to this broker; off if unset")
+    ap.add_argument("--mqtt-port", type=int, default=1883)
+    ap.add_argument("--mqtt-user", default="esp")
+    # A path, never the password itself. An argument is visible in `ps` output
+    # to every user on the box, and ends up in shell history and systemd unit
+    # files. The file should be root-owned and mode 600.
+    ap.add_argument("--mqtt-pass-file", default="/etc/chamber-logger/mqtt.pass")
+    ap.add_argument("--mqtt-prefix", default="chamber")
     a = ap.parse_args()
+
+    client = mqtt_connect(a)
+    state_topic = f"{a.mqtt_prefix}/state"
 
     out = Path(a.csv)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -81,6 +177,15 @@ def main():
                     w.writerow([stamp, temp, rh, a.note])
                     fh.flush()
                     last_row = now
+
+                    if client is not None:
+                        # Not retained: a retained reading would be replayed to
+                        # HA on every reconnect and shown as current, which is
+                        # exactly the stale-value problem the will exists to
+                        # avoid.
+                        client.publish(state_topic,
+                                       json.dumps({"temp_c": temp,
+                                                   "rh_pct": rh}), qos=0)
 
                     moved = last_temp is not None and abs(temp - last_temp) >= MOVED_C
                     if moved or now - last_print >= a.heartbeat or last_print == 0.0:
