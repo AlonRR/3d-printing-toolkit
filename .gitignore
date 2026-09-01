@@ -27,3 +27,6 @@ firmware/.esphome/
 firmware/.pioenvs/
 firmware/.piolibdeps/
 firmware/secrets.yaml
+firmware/espnow-c/build/
+firmware/espnow-c/sdkconfig
+firmware/espnow-c/sdkconfig.old
