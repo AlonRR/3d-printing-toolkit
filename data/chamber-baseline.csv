@@ -364,3 +364,5 @@ iso_time,temp_c,rh_pct,note
 2026-09-01T02:53:06,23.1,36.4,overnight room baseline
 2026-09-01T02:55:53,,,unreachable: URLError
 2026-09-01T02:59:14,23.1,36.4,overnight room baseline
+2026-09-01T03:00:08,23.1,36.4,overnight room baseline
+2026-09-01T03:09:32,,,unreachable: URLError

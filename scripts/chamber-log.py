@@ -42,6 +42,17 @@ MOVED_C = 2.0
 GRACE_DEFAULT_S = 90.0  # tolerate routine SSE reconnects before calling it an outage
 
 
+# NO IP FALLBACK, DELIBERATELY. An earlier version cached the resolved address
+# and fell back to it when mDNS failed. On a DHCP network that is dangerous: the
+# node's lease moved, 192.0.2.100 was reassigned to a Shelly Dimmer 2, and
+# every "is it up" check then passed against a light dimmer that happily answers
+# on port 80. A wrong host that responds is far worse than no host - it turns a
+# visible gap into silent, plausible, wrong data.
+#
+# Resolving the name fresh each time fails cleanly instead: no rows, and the gap
+# is obvious. If a fallback is ever wanted, it must VERIFY identity - the SSE
+# stream announces "title":"Chamber Baseline" and its entity ids - not merely
+# that something accepted the connection.
 def stream(host):
     """Yield (id, value) pairs from the SSE endpoint until the socket drops."""
     req = urllib.request.Request(f"http://{host}/events",
