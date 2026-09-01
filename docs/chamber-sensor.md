@@ -152,6 +152,76 @@ Only the probes go inside. Reasons, in order:
 
 ---
 
+## ⛔ 3z. THE ROOT CAUSE: the C3 SuperMini boards barely transmit
+
+**Read this before anything else on this page.** It invalidates several
+conclusions below and explains an entire night of WiFi debugging.
+
+The two ESP32-C3 **SuperMini** boards this project was built on have the known
+defective PCB antenna. They **receive perfectly and transmit almost nothing.**
+
+Measured 1 Sep 2026. Three boards, same plain-C ESP-NOW binary, all on one desk:
+two SuperMinis and one board built around an **ESP32-C3-MINI-1** module, which
+has a proper shielded antenna.
+
+```
+SuperMini-A   RX 30 bytes from aa:bb:cc:dd:ee:01 : PING 22 ...
+SuperMini-B   RX 30 bytes from aa:bb:cc:dd:ee:01 : PING 22 ...
+MINI-1        (nothing, ever)
+```
+
+`aa:bb:cc:dd:ee:01` is the MINI-1. **Both SuperMinis hear it flawlessly, every
+ping. It hears neither of them. And they never hear each other** — every
+received frame in the capture came from the MINI-1.
+
+### Why this was so hard to see
+
+**`TX SUCCESS` is not evidence of radio.** ESP-NOW's send callback reports that
+the MAC layer accepted the frame. A detuned antenna radiates almost nothing
+while the MAC stays perfectly happy, and on an *unacknowledged broadcast* there
+is no feedback path at all. Both SuperMinis reported `TX SUCCESS` every two
+seconds for hours while being effectively mute.
+
+Everything that looked like healthy configuration — matching channels, matching
+protocol versions, registered peers, components initialising — was true and
+irrelevant. **Initialising is not transmitting**, and nothing in the stack
+measures radiated power.
+
+### It probably explains the WiFi failures too
+
+A board that hears well but shouts weakly, talking to an access point, produces
+exactly the pattern that consumed the night of 31 Aug:
+
+| Symptom | Explanation |
+|---|---|
+| Full signal bars | It hears the AP's beacons fine. Receive works |
+| `Auth Expired` / `Handshake Failed` | The AP cannot reliably hear *its* replies, so the handshake times out |
+| Intermittent, per-radio, self-clearing | A marginal link budget that only sometimes closes |
+| Unaffected by moving the boards | Both ends were already close; the deficit is radiated power, not distance |
+
+So **the "hostile mesh" theory in §3a was wrong.** Setting the IoT SSID to
+WPA2-only did genuinely help — but it removed one obstacle from a link that was
+already crippled at the transmitter.
+
+### What to build on
+
+- ✅ **The ESP32-C3-MINI-1 board**, or the **Arduino Nano ESP32** (u-blox
+  NORA-W106). Both have real module antennas.
+- ❌ **Not the SuperMinis.** Keep them for anything that does not need to be
+  heard — USB-attached sensors, bench toys, HIL rig duty where a cable carries
+  the data.
+
+### Conclusions this overturns
+
+- Blaming ESPHome's `espnow` component (commit `a925e7d`) — already retracted in
+  `7ec50a9`; this identifies the actual cause.
+- Calling both radios "provably healthy" (commit `d839179`) because both ends
+  initialised and agreed on channel and version. They agreed about everything
+  except whether any RF was leaving the board, which nothing measured.
+
+
+---
+
 ## 3a. Which WiFi network — this cost an evening, so it is written down
 
 Two facts about this house's networks decide where the node can live, and neither
