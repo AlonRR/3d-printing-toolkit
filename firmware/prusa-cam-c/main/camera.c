@@ -24,6 +24,7 @@
 
 #include "board_pins.h"
 #include "esp_camera.h"
+#include "img_converters.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -43,52 +44,36 @@ typedef struct {
     const char *label;
 } cam_attempt_t;
 
-/* WHAT THE HARDWARE HAS ALREADY TOLD US, and what this table asks next.
+/* RGB565 ONLY, and that is a conclusion rather than a preference.
  *
- * Two sweeps established the following, each by a result that could have gone
- * the other way:
+ * An isolation matrix varying one axis at a time produced a completely clean
+ * split on this board:
  *
- *   - Halving XCLK moved PCLK from 10 MHz to 5 MHz and changed NOTHING. So the
- *     failure is not the DMA struggling to keep up, which is the usual reading
- *     of "NO-SOI - JPEG start marker missing".
- *   - RGB565 QQVGA into DRAM captured perfectly: 38400 bytes, exactly
- *     160x120x2, with varied content. So D0-D7, VSYNC, HREF and PCLK are all
- *     correct, and every pin in board_pins.h is now proven rather than assumed.
+ *     RGB565 QQVGA DRAM   PASS      JPEG QQVGA DRAM   fail
+ *     RGB565 QQVGA PSRAM  PASS      JPEG QQVGA PSRAM  fail
+ *     RGB565 QVGA  PSRAM  PASS      JPEG VGA   PSRAM  fail
  *
- * The pin map is separately corroborated: Prusa's module_ESP32-S3-CAM.h carries
- * camera pins byte-for-byte identical to the Freenove header this was taken
- * from, and SCCB works on them here.
+ * Buffer location does not matter. Frame size does not matter. Halving XCLK
+ * (PCLK 10 MHz -> 5 MHz) did not matter either, which had already ruled out the
+ * usual "DMA cannot keep up" reading of NO-SOI. FORMAT is the only variable, so
+ * the sensor's hardware JPEG path is simply broken here and no amount of clock,
+ * buffer or resolution tuning will recover it.
  *
- * So the fault is narrow: JPEG mode specifically. But the working case and the
- * failing case differ in THREE variables at once - format, size and location -
- * and that cannot say which one matters.
+ * The answer is to bypass it: capture RGB565 and encode JPEG in software with
+ * frame2jpg(). For a snapshot every few seconds the CPU cost is irrelevant -
+ * this is a print monitor, not a video stream.
  *
- * These attempts therefore vary ONE axis at a time around the known-good
- * corner:
- *
- *   1 vs 2 : format   (RGB565 -> JPEG, everything else held)
- *   1 vs 3 : location (DRAM   -> PSRAM)
- *   2 vs 4 : format change, now in PSRAM
- *   5, 6   : does size matter once the working format is known
- *
- * Unlike the previous sweeps this one runs EVERY attempt and prints a table.
- * Stopping at the first success is what a search does; an experiment has to
- * collect the failures too, because "JPEG never works" and "nothing works in
- * PSRAM" are different diagnoses that the first success would hide. */
+ * The list below is therefore a fallback ladder by size, largest first, not a
+ * search across formats. */
 static const cam_attempt_t ATTEMPTS[] = {
+    { 20000000, PIXFORMAT_RGB565, FRAMESIZE_VGA,   2, CAMERA_GRAB_WHEN_EMPTY,
+      CAMERA_FB_IN_PSRAM, "RGB565 VGA   PSRAM fb2" },
+    { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QVGA,  2, CAMERA_GRAB_WHEN_EMPTY,
+      CAMERA_FB_IN_PSRAM, "RGB565 QVGA  PSRAM fb2" },
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "1 RGB565 QQVGA DRAM  fb1  (control)" },
-    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "2 JPEG   QQVGA DRAM  fb1  (format)" },
-    { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_PSRAM, "3 RGB565 QQVGA PSRAM fb1  (location)" },
-    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_PSRAM, "4 JPEG   QQVGA PSRAM fb1  (both)" },
-    { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QVGA,  1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_PSRAM, "5 RGB565 QVGA  PSRAM fb1  (size)" },
-    { 20000000, PIXFORMAT_JPEG,   FRAMESIZE_VGA,   2, CAMERA_GRAB_WHEN_EMPTY,
-      CAMERA_FB_IN_PSRAM, "6 JPEG   VGA   PSRAM fb2  (realistic)" },
+      CAMERA_FB_IN_DRAM,  "RGB565 QQVGA DRAM  fb1" },
 };
+
 
 #define N_ATTEMPTS (sizeof(ATTEMPTS) / sizeof(ATTEMPTS[0]))
 
@@ -290,5 +275,48 @@ esp_err_t camera_capture_and_report(void)
     /* Returned immediately: holding frame buffers is how a camera firmware runs
      * out of PSRAM minutes in, which then looks like a random hang. */
     esp_camera_fb_return(fb);
+    return ESP_OK;
+}
+
+esp_err_t camera_capture_jpeg(uint8_t quality, uint8_t **out, size_t *out_len)
+{
+    if (!s_started || out == NULL || out_len == NULL) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    camera_fb_t *fb = esp_camera_fb_get();
+    if (fb == NULL) {
+        ESP_LOGE(TAG, "capture failed");
+        return ESP_FAIL;
+    }
+
+    *out = NULL;
+    *out_len = 0;
+    bool ok = frame2jpg(fb, quality, out, out_len);
+
+    /* Returned before the result is examined, so that no early return can leak
+     * it. Frame buffers are a fixed pool; leaking one stalls capture
+     * permanently, and that presents as a hang rather than as an error. */
+    esp_camera_fb_return(fb);
+
+    if (!ok || *out == NULL || *out_len < 4) {
+        ESP_LOGE(TAG, "software JPEG encode failed");
+        if (*out) { free(*out); *out = NULL; }
+        *out_len = 0;
+        return ESP_FAIL;
+    }
+
+    /* The same check the hardware path failed. Encoding in software makes a
+     * malformed JPEG far less likely, but "far less likely" is not a reason to
+     * stop checking - especially having just spent three sweeps on exactly this
+     * marker. */
+    if ((*out)[0] != 0xFF || (*out)[1] != 0xD8) {
+        ESP_LOGE(TAG, "encoder returned data without a JPEG SOI");
+        free(*out);
+        *out = NULL;
+        *out_len = 0;
+        return ESP_FAIL;
+    }
+
     return ESP_OK;
 }

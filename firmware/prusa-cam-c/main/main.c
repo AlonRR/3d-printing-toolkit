@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "board_pins.h"
 #include "camera.h"
@@ -80,6 +81,17 @@ void app_main(void)
     while (1) {
         if (cam == ESP_OK) {
             camera_capture_and_report();
+
+            /* The deliverable: a real JPEG, produced without the sensor's
+             * broken hardware encoder. This is the buffer the Prusa Connect
+             * upload will POST once the network half exists. */
+            uint8_t *jpg = NULL;
+            size_t jpg_len = 0;
+            if (camera_capture_jpeg(80, &jpg, &jpg_len) == ESP_OK) {
+                ESP_LOGI(TAG, "JPEG %u bytes (software encoded, SOI ok)",
+                         (unsigned) jpg_len);
+                free(jpg);
+            }
         }
         log_dht();
 

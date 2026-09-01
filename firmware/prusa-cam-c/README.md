@@ -16,7 +16,23 @@ UART bridge**. The bridge is the one in use here — it enumerates as `USB-Enhan
 dead while running perfectly. That already cost a day on the C3-MINI-1; see
 [chamber-sensor](../../docs/chamber-sensor.md) §3y.
 
-## Milestone 1 — prove the hardware, no network
+## Milestone 1 — PASSED
+
+Measured on the bench, 1 Sep 2026:
+
+```
+adopting: RGB565 VGA PSRAM fb2
+frame 640x480  614400 bytes            <- exactly 640x480x2
+JPEG 20378 bytes (software encoded, SOI ok)
+free heap 7471943                      <- identical across every cycle
+```
+
+640x480 RGB565 captured, compressed to a valid ~20 KB JPEG on the CPU in roughly 570 ms. The free
+heap is byte-identical cycle after cycle, which is the check that matters for a camera loop: a
+leaked frame buffer exhausts a fixed pool and presents as a *hang* minutes later rather than as an
+error.
+
+## The approach — prove the hardware, no network
 
 Deliberately no WiFi. The chamber-sensor work lost days to a network stack built on a radio that
 was never transmitting, and the lesson was to prove the physical layer first with a check that can
