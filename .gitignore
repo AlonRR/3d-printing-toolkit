@@ -30,3 +30,13 @@ firmware/secrets.yaml
 firmware/espnow-c/build/
 firmware/espnow-c/sdkconfig
 firmware/espnow-c/sdkconfig.old
+
+# ESP-IDF generates these per project. sdkconfig in particular is DERIVED from
+# sdkconfig.defaults plus the chosen target, so committing it would create a
+# second source of truth that silently wins over the defaults file.
+# managed_components/ is fetched by the component manager from idf_component.yml.
+firmware/prusa-cam-c/build/
+firmware/prusa-cam-c/sdkconfig
+firmware/prusa-cam-c/sdkconfig.old
+firmware/prusa-cam-c/managed_components/
+firmware/prusa-cam-c/dependencies.lock

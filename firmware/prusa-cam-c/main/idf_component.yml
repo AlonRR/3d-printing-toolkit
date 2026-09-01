@@ -1,0 +1,6 @@
+## Espressif's own camera driver. Pulled by the component manager on the first
+## build, so that build needs network; later builds use the local cache.
+dependencies:
+  espressif/esp32-camera: "^2.0.0"
+  idf:
+    version: ">=5.0"

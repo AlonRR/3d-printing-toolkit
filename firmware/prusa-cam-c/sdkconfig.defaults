@@ -1,0 +1,41 @@
+# ESP32-S3-WROOM-1 N16R8 with an OV3660 on the camera FPC.
+#
+# Written from scratch rather than copied from ../espnow-c/sdkconfig.defaults,
+# which hardcodes CONFIG_ESPTOOLPY_FLASHSIZE_4MB - correct for the C3 and wrong
+# here. That exact trap is recorded in docs/chamber-sensor.md 3w: the flash size
+# silently overrides the board and you lose three quarters of it with no error.
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# N16R8 = 16 MB flash, 8 MB PSRAM.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# PSRAM is not optional for a camera: a single SVGA JPEG frame buffer does not
+# fit in internal RAM, and esp_camera_init fails outright without it.
+#
+# OCT, not QUAD. The R8 suffix on an S3 module means octal PSRAM, and choosing
+# quad here produces a boot loop with a PSRAM ID error rather than a clean
+# message - so a wrong guess reads as a dead board.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
+
+# The default single-app partition is 1 MB, and the camera component alone
+# pushes past it once JPEG support is linked in.
+CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+
+# CONSOLE: deliberately NOT set to USB_SERIAL_JTAG.
+#
+# This board has TWO USB-C ports. The one in use is the CH343 UART bridge
+# (COM9), which is fed by UART0 on GPIO43/44 - the IDF default. Selecting
+# USB_SERIAL_JTAG would send every log line out the OTHER connector, and the
+# board would look dead while running perfectly. That is precisely what
+# happened with the C3-MINI-1 on COM8; see docs/chamber-sensor.md 3y.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+CONFIG_FREERTOS_HZ=1000
