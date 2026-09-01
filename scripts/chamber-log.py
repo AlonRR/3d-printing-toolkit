@@ -16,7 +16,7 @@ An SSE connection to an ESP is NOT long-lived, and that is normal rather than a
 fault: the stream itself carries `retry: 30000`, the server telling clients how
 long to wait before reconnecting. Observed here, the socket was cut every ~5.5
 minutes like clockwork. So a dropped stream is reconnected immediately and
-silently; only a gap that persists past GRACE_S is treated - and recorded - as
+silently; only a gap that persists past --grace is treated - and recorded - as
 the node actually being unreachable. Treating every reconnect as an outage cost
 one sample each time and buried real failures in noise.
 
