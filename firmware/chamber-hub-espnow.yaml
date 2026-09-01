@@ -25,15 +25,30 @@ esp32:
     type: esp-idf
 
 logger:
-  level: INFO
+  # DEBUG so the espnow component's own internals show. At INFO a packet that
+  # arrives and is discarded looks exactly like no packet at all.
+  level: DEBUG
   hardware_uart: USB_SERIAL_JTAG
 
 espnow:
   channel: 1
   auto_add_peer: true     # accept the sensor without hardcoding its MAC here
   peers:
+    # The sensor node's OWN address, read from its boot log:
+    #   [C][espnow:145]: Own address: aa:bb:cc:dd:ee:02
+    # The documented hub pattern lists real sender MACs rather than broadcast,
+    # and packets are accepted from registered peers - so a hub that knows only
+    # the broadcast address may reject everything the sensor sends. Getting this
+    # MAC required catching the sender's boot output, which is the one thing I
+    # could not see for most of this exercise.
+    - aa:bb:cc:dd:ee:02
     - FF:FF:FF:FF:FF:FF
-  # Diagnostics: distinguishes "nothing is arriving" from "arriving and rejected".
+  # Diagnostics. All THREE triggers, deliberately: the docs separate a directed
+  # packet from a registered peer (on_receive) from a broadcast (on_broadcast),
+  # and with auto_add_peer the sender becomes registered on first contact - so
+  # handling only on_broadcast could miss every packet and look like silence.
+  on_receive:
+    - lambda: 'ESP_LOGI("hub", "RX directed %u bytes", size);'
   on_broadcast:
     - lambda: 'ESP_LOGI("hub", "RX broadcast %u bytes", size);'
   on_unknown_peer:

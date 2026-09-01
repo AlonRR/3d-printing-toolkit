@@ -30,7 +30,11 @@ esp32:
     type: esp-idf
 
 logger:
-  level: INFO
+  # DEBUG: the hub is comprehensively deaf with the boards side by side, so the
+  # question is whether this end transmits at all. Send attempts and failures
+  # are logged below INFO, and its boot lines scroll past before a log session
+  # can attach - so runtime verbosity is the only way to see them.
+  level: DEBUG
   hardware_uart: USB_SERIAL_JTAG
 
 # Deliberately NO wifi: block. Its absence is the whole point, and it is why
