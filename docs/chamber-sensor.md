@@ -337,6 +337,101 @@ next to the fan, the PD board, or metal.
 
 ---
 
+## 3w. The Arduino Nano ESP32 as the bench reference
+
+When a result is ambiguous, the question is always *is the board lying to me?*
+§3z is what happens when nothing on the bench can answer that. The **Arduino
+Nano ESP32** (u-blox NORA-W106 / ESP32-S3) is the board to answer it with: it
+has a real module antenna, it has worked on WiFi here before, and it is already
+proven in the `mcu-workflow` project. **Use it as a control, not as the build
+target.**
+
+### ESPHome
+
+```yaml
+esp32:
+  board: arduino_nano_esp32
+  flash_size: 16MB          # NOT optional - see below
+  framework:
+    type: esp-idf
+```
+
+Officially supported — it is in ESPHome's own board table, variant `esp32s3`, so
+`variant:` need not be stated. The `espnow` component gates only on
+"is an ESP32", so the S3 is in.
+
+**⚠️ `flash_size: 16MB` is mandatory.** ESPHome's `esp32:` block defaults to
+`4MB` and that default **overrides the board definition**. Leave it out and you
+silently build a 4 MB image with a 4 MB partition table on a 16 MB board. There
+is no error — you just lose three quarters of the flash.
+
+**The logger needs nothing.** ESPHome already defaults the S3 to
+`USB_SERIAL_JTAG`, and the Nano's USB-C *is* native USB, so the override the
+SuperMinis need is redundant here. (Contrast §3y — this is the third distinct
+console arrangement across three boards, which is exactly why it keeps biting.)
+
+**Raw GPIO numbers, never `D0`–`D13`.** ESPHome builds this board with
+`BOARD_USES_HW_GPIO_NUMBERS`, so the silkscreen labels do not apply:
+
+| Silk | GPIO | | Silk | GPIO |
+|---|---|---|---|---|
+| D0/RX | 44 | | D10 | 21 |
+| D1/TX | 43 | | D11 | 38 |
+| D2 | 5 | | D12 | 47 |
+| D3 | 6 | | **D13 / LED** | **48** |
+| D4 | 7 | | A0 | 1 |
+| D5 | 8 | | A1 | 2 |
+| D6 | 9 | | A2 | 3 |
+| D7 | 10 | | A3 | 4 |
+| D8 | 17 | | A4 / SDA | 11 |
+| D9 | 18 | | A5 / SCL | 12 |
+
+The RGB LED is internal-only and **active LOW**: red 46, green 0, blue 45.
+Note green sits on **GPIO0** and red on **GPIO46** — the two strapping pins,
+which is why shorting B1 to ground lights it green: same wire.
+
+### Flashing — two things that look like failure and are not
+
+**The first esptool call fails.** Espressif documents this for this board: the
+first call enters the hardware bootloader but exits with an
+`Input/output error`. **Run it again with the same arguments and it works.** On
+Windows, re-check the port first — the device re-enumerates between modes
+(`2341:0070` → `303a:1001`), so the COM number probably changed.
+
+**After flashing, power-cycle or tap RESET** to leave esptool's flashing mode.
+
+Flash params: `--chip esp32s3 --flash_mode dio --flash_freq 80m --flash_size 16MB`.
+
+### ⚠️ The one real cost: flashing ESPHome kills double-tap recovery
+
+Double-tap-RESET is **not** a bootloader feature. It is a static constructor
+compiled into every *Arduino sketch* by the board variant. Once ESPHome or
+plain IDF is running, no Arduino code exists to detect the tap, so **that
+recovery path is gone.**
+
+It is not a brick — ROM download mode lives in mask ROM and no firmware can
+remove it. The way back in is **short B1 to GND, press RST, release the jumper**
+(LED goes purple). Arduino documents restoring the bootloader from there:
+*Tools > Programmer > Esptool*, **Burn Bootloader**, then *Upload Using
+Programmer*. Budget a jumper wire, not a panic.
+
+⚠️ Some early boards have **green and blue swapped**, so recovery mode shows
+blue rather than green and bootloader mode yellow rather than purple. Check the
+colour against the board before concluding it failed to switch modes.
+
+### ESP-NOW interop with the C3s
+
+The API is identical — `espnow-c` needs no source changes for S3, only
+`idf.py set-target esp32s3` and a fix to `sdkconfig.defaults`, which hardcodes
+`CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y` (wrong here; use a separate build dir).
+
+Interop is decided by **ESP-NOW version, not chip**. Both are v2 on this IDF, and
+v1/v2 mixes still work for payloads under the 250-byte v1 limit. **Stay under
+250 bytes and the chip mix is a non-issue.**
+
+
+---
+
 ## 3a. Which WiFi network — this cost an evening, so it is written down
 
 Two facts about this house's networks decide where the node can live, and neither
