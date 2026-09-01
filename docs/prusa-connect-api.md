@@ -125,6 +125,64 @@ build a network device on, and §3z for why the C3 SuperMinis are not.
 
 ---
 
+## 4a. The camera build — both halves already exist
+
+Investigated 1 Sep 2026 after identifying the board on the bench. **Nothing here needs to be
+written or designed**, which was not the expected answer.
+
+### The board
+
+**ESP32-S3-WROOM-1, dual USB-C, camera FPC connector**, shipped with an **OV3660** — the
+`ESP32-S3 N16R8 CAM` from the parts inventory. Layout matches the **Freenove ESP32-S3-WROOM CAM**.
+
+⚠️ **Two USB-C ports, and they are not interchangeable** — the same trap as the C3-MINI-1 in
+[chamber-sensor](chamber-sensor.md) §3y. One is native USB, one is a **CH343 UART bridge**. Plugged
+into the UART side it enumerates as `USB-Enhanced-SERIAL CH343`, which is how to tell which port
+you are on without guessing. For ESPHome on the UART port, **do not** set
+`hardware_uart: USB_SERIAL_JTAG` — that sends the console out the *other* connector, and a healthy
+board then looks dead.
+
+### The firmware — official, and this board is on the list
+
+**[prusa3d/Prusa-Firmware-ESP32-Cam](https://github.com/prusa3d/Prusa-Firmware-ESP32-Cam)** —
+Prusa's own firmware, actively maintained, with pre-compiled releases. Supported boards include
+**Freenove ESP32-S3-Wroom** and **ESP32-S3-CAM**.
+
+It authenticates with the **camera token** from Connect — i.e. it uses §4's Camera API, the one
+officially supported Connect interface. Setup needs no toolchain beyond flashing:
+
+1. Create the camera in Prusa Connect and copy its **token**.
+2. Power the board — it comes up as an AP, `ESP32_camera_UID`, password `12345678`.
+3. Browse to `http://192.168.0.1`, set WiFi credentials, paste the token.
+4. Choose resolution and trigger interval.
+
+**This is the whole reason the camera route was worth flagging.** It turns the one supported API
+into a flash-and-configure job, with no JWT, no `0.0.1-dev` gateway, and nothing to reverse
+engineer.
+
+### The case — exists, fits this exact board, and mounts to an MK3
+
+**[Freemove ESP32-S3 wroom camera case and prusa mount](https://www.printables.com/model/1201384-freemove-esp32-s3-wroom-camera-case-and-prusa-moun)**
+by Nico3D (free, updated Mar 2025). Its own description: *a case that fits the new ESP32-S3 wroom
+cam **with 2 USB-C holes*** — the dual-port variant, which most ESP32-S3 cases are not.
+
+- Two versions: **V1** with a large air intake, **V2** with an added printing aid.
+- **No supports needed** — which matches the house rule on
+  [permanent geometry over sacrificial](fdm-design-rules.md).
+- Tagged `mk3` / `cameramount`, and remixed from two **Prusa MK3 & MK4** camera mounts, so the
+  mount arm targets the right printer. *(A sibling model by the same author is for the XL — do not
+  grab that one by mistake.)*
+- The model page itself links the Prusa firmware above, which is good corroboration that the
+  board, the case and the firmware are the same combination in practice.
+
+⚠️ **Check the fit before printing the whole thing.** "Freemove" is the author's typo for
+**Freenove**, and the board here is an AliExpress board of that layout rather than a genuine
+Freenove. Measure the board's length and width and compare against the case's internal cavity, or
+print the case body alone first — cheaper than discovering a 2 mm error after printing the mount
+arm too.
+
+---
+
 ## 5. Summary
 
 | Want | Possible? | How |
@@ -136,4 +194,5 @@ build a network device on, and §3z for why the C3 SuperMinis are not.
 | Read progress | ✅ | `GET /api/v1/jobs` |
 | Pause / resume / stop | ✅ | `PUT .../command/*` |
 | Publish a camera image | ✅ **supported** | Camera API `/c/snapshot` |
+| Get a camera into Connect with no code | ✅ | Official [Prusa ESP32-Cam firmware](https://github.com/prusa3d/Prusa-Firmware-ESP32-Cam) + the owned S3 CAM board |
 | Do any of it with a stable, documented, key-based auth | ❌ | JWT only, app-minted |
