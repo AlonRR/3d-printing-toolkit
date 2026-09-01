@@ -30,36 +30,20 @@ logger:
   level: DEBUG
   hardware_uart: USB_SERIAL_JTAG
 
-# Starts the WiFi PHY WITHOUT touching the access point.
-#
-# Evidence this is needed: with no wifi block at all, both nodes report
-# "espnow init, version v2, channel 1", espnow.broadcast executes and returns in
-# ~6 ms with no error, and a receiver 5 cm away on the same machine hears
-# absolutely nothing - no directed packet, no broadcast, no unknown peer, at
-# DEBUG. A radio that was never switched on is the only thing that explains
-# silence in both directions with no error anywhere.
-#
-# softAP rather than joining HomeNet_IoT deliberately: the point of moving to
-# ESP-NOW was to stop depending on that access point, and a mesh with three
-# radios could put the two nodes on different channels, which would break the
-# link in a way that looks exactly like this.
-wifi:
-  ap:
-    ssid: "esphome-hub-ap"
-    password: "redacted-psk"
-
 espnow:
   channel: 1
   auto_add_peer: true     # accept the sensor without hardcoding its MAC here
   peers:
-    # The sensor node's OWN address, read from its boot log:
-    #   [C][espnow:145]: Own address: aa:bb:cc:dd:ee:02
+    # The MINI-1 board is the transmitter now - it is the only board here that
+    # demonstrably radiates. MAC read from the plain-C test, where both
+    # SuperMinis received its pings perfectly:
+    #   RX 30 bytes from aa:bb:cc:dd:ee:01
     # The documented hub pattern lists real sender MACs rather than broadcast,
     # and packets are accepted from registered peers - so a hub that knows only
     # the broadcast address may reject everything the sensor sends. Getting this
     # MAC required catching the sender's boot output, which is the one thing I
     # could not see for most of this exercise.
-    - aa:bb:cc:dd:ee:02
+    - aa:bb:cc:dd:ee:01
     - FF:FF:FF:FF:FF:FF
   # Diagnostics. All THREE triggers, deliberately: the docs separate a directed
   # packet from a registered peer (on_receive) from a broadcast (on_broadcast),

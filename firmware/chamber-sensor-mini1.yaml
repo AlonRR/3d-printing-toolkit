@@ -1,0 +1,102 @@
+# chamber-sensor-espnow — the DHT11 node, talking ESP-NOW instead of WiFi.
+#
+# WHY THIS EXISTS. The WiFi version of this node (chamber-baseline.yaml) works
+# perfectly and cannot stay on the network: the access point refuses it every
+# 20-50 minutes with 'Auth Expired' / 'Authentication Failed' at full signal.
+# WPA2-only helped and did not cure it, and everything left is router-side.
+#
+# ESP-NOW sidesteps the entire layer that keeps failing. There is no
+# association, no WPA handshake, no DHCP lease, no mDNS name to resolve, and no
+# access point in the path at all - two radios talk to each other directly. Every
+# failure this project has hit lives above that line.
+#
+# WHAT IT COSTS, so it is a decision and not a surprise:
+#   * No WiFi means NO OTA and NO web page. Updating this node means USB again.
+#     Get it right before it goes in the enclosure.
+#   * The receiver must be on the SAME CHANNEL. Both are pinned to 1 below.
+#   * Range is direct radio rather than via an AP. Fine across a room; verify
+#     before trusting it through an enclosure wall.
+#
+# Pair: firmware/chamber-hub-espnow.yaml, which runs on the C3 plugged into the
+# server's USB and prints what it receives to /dev/ttyACM0.
+
+esphome:
+  name: chamber-sensor
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+  # NOTE: no hardware_uart override here, unlike the SuperMini configs.
+  # This board carries an ESP32-C3-MINI-1 module and exposes TWO USB-C ports -
+  # one native USB, one a UART bridge. COM8 is the bridge: the plain-C test ran
+  # on this board and was heard by both SuperMinis, yet printed nothing at all
+  # to COM8, because that firmware logged to USB_SERIAL_JTAG. Leaving the
+  # default sends the console to UART0, which is what the bridge carries.
+
+# Deliberately NO wifi: block. Its absence is the whole point, and it is why
+# espnow needs an explicit channel - normally it inherits the one WiFi picked.
+espnow:
+  channel: 1
+  peers:
+    # REQUIRED. packet_transport's broadcast mode sends "to all devices with the
+    # broadcast address registered as a peer" - so without this the sender has no
+    # destination at all and transmits nothing, while its own log still cheerfully
+    # says "sent". That is exactly what happened on the first attempt.
+    - FF:FF:FF:FF:FF:FF
+
+packet_transport:
+  - platform: espnow
+    # Every documented example sets this explicitly. Without it the send rate is
+    # whatever the default is, and a room whose temperature barely moves may
+    # transmit almost never - which looks identical to a broken link.
+    update_interval: 10s
+    sensors:
+      - chamber_t
+      - chamber_rh
+
+sensor:
+  - platform: dht
+    pin: GPIO4          # same wiring as the WiFi build; KY-015 module, - + S
+    model: DHT11
+    temperature:
+      name: "Chamber temperature"
+      id: chamber_t
+    humidity:
+      name: "Chamber humidity"
+      id: chamber_rh
+    update_interval: 30s
+
+# RAW LINK TEST, temporary. The hub logs every broadcast it hears, so this
+# separates three failures that all look like silence: nothing transmitted,
+# nothing received (range/channel), or received but not decoded by
+# packet_transport. If the hub logs "RX broadcast" but no CHAMBER line, the radio
+# is fine and the transport is misconfigured. If it logs neither, the radios are
+# not hearing each other at all. Remove once the link is proven.
+# Local echo (second entry) lets the sender be checked on its own over USB with
+# the receiver not involved at all.
+interval:
+  - interval: 10s
+    then:
+      # Logs either side of the send. If BOTH appear, ESPHome executed the
+      # broadcast and returned without error - so it believes it transmitted, and
+      # the failure is below it (the radio never actually being on). If only the
+      # first appears, the action itself is blocking or failing. Neither has been
+      # distinguishable so far, because nothing anywhere logs a send.
+      - logger.log: "PING-BEFORE"
+      - espnow.broadcast:
+          data: "PING"
+      - logger.log: "PING-AFTER"
+  - interval: 30s
+    then:
+      - lambda: |-
+          if (isnan(id(chamber_t).state)) {
+            ESP_LOGW("sender", "no reading - check wiring");
+          } else {
+            ESP_LOGI("sender", "sent %.1f C  %.0f %%",
+                     id(chamber_t).state, id(chamber_rh).state);
+          }
