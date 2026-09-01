@@ -127,8 +127,12 @@ def main():
                     help="minimum seconds between CSV rows")
     ap.add_argument("--heartbeat", type=float, default=3600.0,
                     help="seconds between routine prints; the CSV is unaffected")
+    # Off by default, but when it is switched on the name to use is
+    # mqtt.internal.example - the same one Home Assistant's own MQTT integration is
+    # configured against, so the two cannot drift apart.
     ap.add_argument("--mqtt-host", default="",
-                    help="enable MQTT publishing to this broker; off if unset")
+                    help="enable MQTT publishing to this broker "
+                         "(mqtt.internal.example); off if unset")
     ap.add_argument("--mqtt-port", type=int, default=1883)
     ap.add_argument("--mqtt-user", default="esp")
     # A path, never the password itself. An argument is visible in `ps` output

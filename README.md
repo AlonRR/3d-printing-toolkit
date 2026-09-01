@@ -131,11 +131,32 @@ generic profiles because **Yasin3D publishes nothing at all**.
 
 | Entry | Host | Type | Bound preset |
 |---|---|---|---|
-| `Prusa mk3S+` | `192.0.2.128` | PrusaLink | `Original Prusa i3 MK3` ⚠️ |
+| `Prusa mk3S+` | `192.0.2.128` ⚠️ *should be `prusalink.local`* | PrusaLink | `Original Prusa i3 MK3` ⚠️ |
 | `Mk` | `prusalink.local` | PrusaLink | `Original Prusa i3 MK3S & MK3S+ 0.8 nozzle` |
 | `Prusa mk3` | `connect.prusa3d.com` | PrusaConnect | `Original Prusa i3 MK3` ⚠️ |
 
-`192.0.2.128` and `prusalink.local` are the same Pi 4 — one entry per nozzle size, reached two different ways. API keys are stored in plaintext in these files (normal for PrusaSlicer; just don't commit them).
+`192.0.2.128` and `prusalink.local` are the same Pi 4 — one entry per nozzle size, reached two
+different ways. **Prefer `prusalink.local`**: it is mDNS straight to the Pi, so it survives the lease
+moving, and one of these two entries already proves it works. API keys are stored in plaintext in
+these files (normal for PrusaSlicer; just don't commit them).
+
+### ⚠️ Two DNS traps worth knowing before trusting any `.internal.example` name
+
+**1. `*.internal.example` is a wildcard pointing at the reverse proxy, so *every* name resolves.**
+Verified: `definitely-not-a-real-name.internal.example` answers `192.0.2.26`. So do `mk3.internal.example`,
+`prusa.internal.example` and `printer.internal.example` — none of which exists. **Resolving is not serving.**
+Confirm a real response before depending on a name; the 14 names Caddy actually serves are
+`files gitea grafana ha influxdb intake inventory jellyfin jikan mediapipeline minio msgbus pve
+rc-panel`. Specific A records do override the wildcard — `mqtt.internal.example` is a real record
+pointing at `192.0.2.22`, and answers a genuine MQTT `CONNACK`.
+
+**2. Do not read `nslookup` output with "first `Address:` wins".** The first one is the *DNS
+server's* address, not the answer. That single mistake made every name here look like it pointed
+at `192.0.2.26` and nearly put a wrong claim in this file. Use `getaddrinfo` (or read the whole
+`nslookup` block), which also picks up mDNS — the thing pure DNS cannot see.
+
+The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straight to the Pi
+(`192.0.2.128`, plus a link-local v6). Pure DNS cannot resolve it; the system resolver can.
 
 ---
 
@@ -215,7 +236,7 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      `WWW-Authenticate: Digest realm="Administrator"`, which is the **web UI** login and is easy to
      misread as "PrusaLink switched to Digest". It hasn't — a `403 Bad X-Api-Key` on `/api/*` proves
      the API-key path exists and was evaluated. The key is simply wrong.
-   - **Fix:** read the current key from the PrusaLink web UI at `http://192.0.2.128` → Settings,
+   - **Fix:** read the current key from the PrusaLink web UI at `http://prusalink.local` → Settings,
      and paste it into *both* physical-printer entries. Don't change
      `printhost_authorization_type`; `key` is correct.
    - Workaround meanwhile: drag the `.gcode` into the PrusaLink web UI, or use the SD card.
@@ -230,5 +251,7 @@ Slicer config   C:\Users\<user>\AppData\Roaming\PrusaSlicer\
 CAD library     C:\Users\<user>\Code\print_scripts_tree_d\
 Print station   C:\Users\<user>\Tools\homelab\docs\manual\print-station.md
 Fume fan        C:\Users\<user>\Tools\homelab\docs\manual\fume-fan-esp32.md
-PrusaLink       http://prusalink.local  /  http://192.0.2.128
+PrusaLink       http://prusalink.local          (= 192.0.2.128, same Pi)
+Home Assistant  https://ha.internal.example
+MQTT broker     mqtt.internal.example:1883
 ```
