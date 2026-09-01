@@ -131,14 +131,22 @@ generic profiles because **Yasin3D publishes nothing at all**.
 
 | Entry | Host | Type | Bound preset |
 |---|---|---|---|
-| `Prusa mk3S+` | `192.0.2.128` ⚠️ *should be `prusalink.local`* | PrusaLink | `Original Prusa i3 MK3` ⚠️ |
-| `Mk` | `prusalink.local` | PrusaLink | `Original Prusa i3 MK3S & MK3S+ 0.8 nozzle` |
+| `Prusa mk3S+` | `prusalink.internal.example` | PrusaLink | `Original Prusa i3 MK3` ⚠️ |
+| `Mk` | `prusalink.internal.example` | PrusaLink | `Original Prusa i3 MK3S & MK3S+ 0.8 nozzle` |
 | `Prusa mk3` | `connect.prusa3d.com` | PrusaConnect | `Original Prusa i3 MK3` ⚠️ |
 
-`192.0.2.128` and `prusalink.local` are the same Pi 4 — one entry per nozzle size, reached two
-different ways. **Prefer `prusalink.local`**: it is mDNS straight to the Pi, so it survives the lease
-moving, and one of these two entries already proves it works. API keys are stored in plaintext in
-these files (normal for PrusaSlicer; just don't commit them).
+Both PrusaLink entries now use **`prusalink.internal.example`** (updated 1 Sep 2026) — one entry per nozzle
+size, same Pi 4. API keys are stored in plaintext in these files (normal for PrusaSlicer; just
+don't commit them).
+
+⛔ **The third entry is PrusaConnect and holds a *different* token.** It is a 17-character key
+against `connect.prusa3d.com`, not the 14-character PrusaLink one. "Paste the key into all the
+printer entries" would overwrite a working uploader to fix a broken one — two of three, never
+three of three.
+
+⚠️ **PrusaSlicer rewrites these files when it exits.** Edit them in the GUI while it is open,
+or on disk while it is closed — never on disk underneath a running instance, or the change is
+silently discarded on quit.
 
 ### ⚠️ Two DNS traps worth knowing before trusting any `.internal.example` name
 
@@ -189,20 +197,24 @@ is true in general and was the wrong tool for this job.
 request URI, so any of those breaks authentication *while leaving the site apparently up*. Caddy
 preserving Host and path by default is the only reason this works.
 
-### Verification status — transport proven, one real sign-in still outstanding
+### ✅ Verification status — complete
 
-Confirmed from workstation: the vhost answers `HTTP/1.1 401` with `Server: PrusaLink`, and the Digest
-challenge arrives **byte-identical** to the direct one — same `realm`, `qop`, `algorithm`, `nonce`
-and `opaque`. The Caddyfile carries a bare `reverse_proxy` with no path manipulation.
+Both acceptance criteria agreed with the homelab session are met, 1 Sep 2026:
 
-⚠️ **That is not yet proof the login works.** Every test so far used absent or wrong
-credentials, and **a URI-rewrite failure and a bad password both return `401`** — they are
-indistinguishable. Only a *successful* sign-in proves the URI hashing matches end to end. Opening
-`https://prusalink.internal.example` and logging in settles it in ten seconds; until then this is **working,
-pending one real sign-in**, not verified.
+1. **A complete authenticated Digest login through the vhost** — the PrusaLink Settings page
+   renders fully at `https://prusalink.internal.example/#settings`. This is what proves the URI hashing
+   survives the proxy; the earlier challenge-only test could not, because **a URI-rewrite failure
+   and a bad password are indistinguishable — both return `401`.**
+2. **An `/api/*` call carrying `X-Api-Key`** — `GET /api/version` returns `200` through the vhost,
+   and a wrong key returns `403`, so the check discriminates.
 
-*(Chrome trusts the Caddy internal CA via the Windows store; `curl` in git-bash does not, and needs
+Supporting evidence: the challenge arrives byte-identical to the direct one (same `realm`, `qop`,
+`algorithm`, `nonce`, `opaque`), and the Caddyfile carries a bare `reverse_proxy` with no path
+manipulation.
+
+*(Chrome trusts the Caddy internal CA via the Windows store; `curl` in git-bash does not and needs
 `-k`. That is a CA-bundle difference, not a problem with the vhost.)*
+
 
 ### ⛔ The printer is permanently LAN/VPN-only — a decision, not a caution
 
@@ -285,20 +297,24 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    [filamentcenter.co.il](https://filamentcenter.co.il/): **ASA ₪69, TPU 95A ₪79**, verified in
    the sliced G-code. The lesson worth keeping: **a key you never set is not a key with no
    value** — the flattener will hand it a parent's.
-8. **The stored PrusaLink API key is stale — remote upload is broken** (found 17 Aug 2026). Both
-   `physical_printer` entries (`Prusa mk3S+` → `192.0.2.128`, `Mk` → `prusalink.local`) hold the
-   *same* 14-character key, and both endpoints reject it with `403 Bad X-Api-Key`. The printer
-   itself is fine: it answers ping and serves a proper `401` challenge.
-   - **Not** a CRLF/extraction artefact — the key was verified clean (no trailing `\r`), and the
-     403 persists on both hosts.
-   - **Not** an auth-*mode* problem. `GET /` returns
+8. ~~**The stored PrusaLink API key is stale — remote upload is broken**~~ (found 17 Aug 2026,
+   **FIXED 1 Sep 2026**). Both `physical_printer` entries held the *same* stale 14-character key
+   and both endpoints rejected it with `403 Bad X-Api-Key`.
+   - The diagnosis held up: not a CRLF artefact, and not an auth-*mode* problem. `GET /` returns
      `WWW-Authenticate: Digest realm="Administrator"`, which is the **web UI** login and is easy to
-     misread as "PrusaLink switched to Digest". It hasn't — a `403 Bad X-Api-Key` on `/api/*` proves
-     the API-key path exists and was evaluated. The key is simply wrong.
-   - **Fix:** read the current key from the PrusaLink web UI at `http://prusalink.local` → Settings,
-     and paste it into *both* physical-printer entries. Don't change
-     `printhost_authorization_type`; `key` is correct.
-   - Workaround meanwhile: drag the `.gcode` into the PrusaLink web UI, or use the SD card.
+     misread as "PrusaLink switched to Digest". It hadn't — a `403 Bad X-Api-Key` on `/api/*`
+     proves the API-key path existed and was evaluated. The key was simply wrong.
+   - **Fixed by** reading the current key from `https://prusalink.internal.example` → Settings → API Key and
+     writing it into both PrusaLink entries, which were also repointed at `prusalink.internal.example`.
+     `printhost_authorization_type = key` was correct and unchanged.
+   - **Verified end to end**, not assumed:
+     ```
+     GET https://prusalink.internal.example/api/version   X-Api-Key: <new>   -> 200  {"api":"2.0.0",...}
+     GET http://192.0.2.128/api/version     X-Api-Key: <new>   -> 200
+     GET https://prusalink.internal.example/api/version   X-Api-Key: <old>   -> 403
+     ```
+     The third line is the one that makes the first two mean anything: a check that cannot fail
+     proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
 
 ---
 
