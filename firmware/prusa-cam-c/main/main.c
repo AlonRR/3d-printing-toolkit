@@ -23,6 +23,7 @@
 #include "camera.h"
 #include "benchmark.h"
 #include "dht11.h"
+#include "mqtt.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -38,6 +39,12 @@ static const char *TAG = "main";
  * the sake of a measurement. */
 #define BENCH_PORT 8099
 
+/* The benchmark is one-shot and blocks waiting for connections, so it must not
+ * run in normal operation. Kept rather than deleted: it is the only way to
+ * re-measure after a network change, and it took several iterations to get the
+ * measurements honest. Set to 1 to run it. */
+#define RUN_BENCHMARK 0
+
 static void log_dht(void)
 {
     dht_reading_t r;
@@ -45,8 +52,13 @@ static void log_dht(void)
 
     switch (err) {
     case ESP_OK:
-        ESP_LOGI(TAG, "DHT %s: %.1f C  %.1f %%RH",
-                 r.is_dht22 ? "22" : "11", r.temperature_c, r.humidity_pct);
+        ESP_LOGI(TAG, "DHT %s: %.1f C  %.1f %%RH%s",
+                 r.is_dht22 ? "22" : "11", r.temperature_c, r.humidity_pct,
+                 mqtt_is_connected() ? "  -> mqtt" : "");
+        /* Only a good reading is published. A failed read must leave the last
+         * value alone rather than pushing a zero, which would show in HA as a
+         * real measurement of 0 C. */
+        mqtt_publish_reading(r.temperature_c, r.humidity_pct);
         break;
     case ESP_ERR_TIMEOUT:
         /* The expected result until the sensor is physically moved: it is
@@ -88,12 +100,15 @@ void app_main(void)
     /* THE BENCHMARK. Runs once, after the camera is up, then the node falls
      * back to the milestone-1 loop. Kept as a one-shot rather than a mode flag
      * because a benchmark that runs continuously would itself be the load. */
-    if (cam == ESP_OK) {
-        if (wifi_connect(30000) == ESP_OK) {
-            benchmark_run(BENCH_PORT);
-        } else {
-            ESP_LOGE(TAG, "no WiFi - skipping the network benchmark");
-        }
+    bool net = (wifi_connect(30000) == ESP_OK);
+    if (!net) {
+        ESP_LOGE(TAG, "no WiFi - readings will be logged locally only");
+    } else {
+        mqtt_start();
+    }
+
+    if (RUN_BENCHMARK && cam == ESP_OK && net) {
+        benchmark_run(BENCH_PORT);
     }
 
     unsigned n = 0;
