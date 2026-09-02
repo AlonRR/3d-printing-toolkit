@@ -40,3 +40,9 @@ firmware/prusa-cam-c/sdkconfig
 firmware/prusa-cam-c/sdkconfig.old
 firmware/prusa-cam-c/managed_components/
 firmware/prusa-cam-c/dependencies.lock
+
+# WiFi credentials for the camera benchmark, generated from firmware/secrets.yaml.
+# Ignored BEFORE the file is created: the commit habit here is `git add
+# firmware/prusa-cam-c`, which would otherwise sweep it in. Git history is the
+# one thing in this project that is not reversible.
+firmware/prusa-cam-c/main/wifi_secrets.h

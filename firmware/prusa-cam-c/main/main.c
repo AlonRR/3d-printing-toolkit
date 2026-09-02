@@ -21,14 +21,22 @@
 
 #include "board_pins.h"
 #include "camera.h"
+#include "benchmark.h"
 #include "dht11.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "wifi.h"
 
 static const char *TAG = "main";
+
+/* The board LISTENS here and the PC connects in. Chosen over a sink on the
+ * server because the host firewall blocks arbitrary inbound ports and every
+ * container firewalls are enabled - and opening one would be a change to a host for
+ * the sake of a measurement. */
+#define BENCH_PORT 8099
 
 static void log_dht(void)
 {
@@ -75,6 +83,17 @@ void app_main(void)
          * runs and the console is on the right USB port. */
         ESP_LOGE(TAG, "camera unavailable - continuing so the DHT half is "
                       "still testable");
+    }
+
+    /* THE BENCHMARK. Runs once, after the camera is up, then the node falls
+     * back to the milestone-1 loop. Kept as a one-shot rather than a mode flag
+     * because a benchmark that runs continuously would itself be the load. */
+    if (cam == ESP_OK) {
+        if (wifi_connect(30000) == ESP_OK) {
+            benchmark_run(BENCH_PORT);
+        } else {
+            ESP_LOGE(TAG, "no WiFi - skipping the network benchmark");
+        }
     }
 
     unsigned n = 0;

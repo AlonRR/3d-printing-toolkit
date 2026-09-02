@@ -39,3 +39,37 @@ CONFIG_ESP_CONSOLE_UART_DEFAULT=y
 
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 CONFIG_FREERTOS_HZ=1000
+
+# ---------------------------------------------------------------- throughput
+#
+# WHY THESE EXIST. The first benchmark measured 0.19 MB/s of TCP at -27 dBm,
+# which is roughly 1.5 Mbit/s on an excellent signal - far below what an S3 can
+# do. The giveaway was that the capture-and-send pipeline measured FASTER than
+# sending a buffer already in RAM, which is backwards and can only happen if the
+# send path is being throttled rather than the radio.
+#
+# The cause is ESP-IDF's defaults, which are sized for low memory rather than
+# speed: a 5760-byte TCP send buffer and receive window, and few WiFi buffers.
+# A 5760-byte window caps throughput at window/RTT regardless of link rate.
+#
+# These values follow Espressif's own iperf example.
+
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=16
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=64
+CONFIG_ESP_WIFI_STATIC_TX_BUFFER_NUM=16
+CONFIG_ESP_WIFI_DYNAMIC_TX_BUFFER_NUM=64
+CONFIG_ESP_WIFI_AMPDU_TX_ENABLED=y
+CONFIG_ESP_WIFI_TX_BA_WIN=32
+CONFIG_ESP_WIFI_AMPDU_RX_ENABLED=y
+CONFIG_ESP_WIFI_RX_BA_WIN=32
+
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=65534
+CONFIG_LWIP_TCP_WND_DEFAULT=65534
+CONFIG_LWIP_TCP_RECVMBOX_SIZE=64
+CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=64
+CONFIG_LWIP_TCP_MSS=1440
+CONFIG_LWIP_TCP_SACK_OUT=y
+
+# 240 MHz rather than the 160 MHz default. Helps the TCP stack, and should also
+# cut the 589 ms software JPEG encode.
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
