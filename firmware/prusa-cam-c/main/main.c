@@ -21,6 +21,7 @@
 
 #include "board_pins.h"
 #include "camera.h"
+#include "connect_cam.h"
 #include "benchmark.h"
 #include "dht11.h"
 #include "mqtt.h"
@@ -44,6 +45,9 @@ static const char *TAG = "main";
  * re-measure after a network change, and it took several iterations to get the
  * measurements honest. Set to 1 to run it. */
 #define RUN_BENCHMARK 0
+
+/* One snapshot per ~30 s at the 3 s loop interval. */
+#define SNAPSHOT_EVERY_CYCLES 10
 
 static void log_dht(void)
 {
@@ -105,6 +109,7 @@ void app_main(void)
         ESP_LOGE(TAG, "no WiFi - readings will be logged locally only");
     } else {
         mqtt_start();
+        connect_cam_init();
     }
 
     if (RUN_BENCHMARK && cam == ESP_OK && net) {
@@ -124,6 +129,13 @@ void app_main(void)
             if (camera_capture_jpeg(80, &jpg, &jpg_len) == ESP_OK) {
                 ESP_LOGI(TAG, "JPEG %u bytes (software encoded, SOI ok)",
                          (unsigned) jpg_len);
+                /* Uploaded on a slow cadence, not every cycle. Connect is for
+                 * watching a print, not streaming, and the link here manages
+                 * about 2 frames a second at best - hammering it would achieve
+                 * nothing except keeping the radio busy. */
+                if (net && (n % SNAPSHOT_EVERY_CYCLES) == 0) {
+                    connect_cam_upload(jpg, jpg_len);
+                }
                 free(jpg);
             }
         }
