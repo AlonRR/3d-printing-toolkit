@@ -152,9 +152,47 @@ say so:
 - workstation reaches the server at a much higher rate over the wire, and routing to the board goes out the
   LAN adapter, not the VPN — so the receiver and the PC's network stack are not the constraint.
 
-~0.19 MB/s is about **1.5 Mbit/s**, which is characteristic of a **per-SSID bandwidth limit** on
-the access point rather than any property of the radio. ⚠️ Worth checking the AP's configuration
-for the IoT SSID before drawing conclusions about the ESP32's WiFi.
+### What the cap actually is — two hypotheses tested and refuted
+
+**Refuted 1: a per-SSID bandwidth limit on the AP.** The network is a the router vendor the mesh router + 2× X60,
+WiFi 6 hardware whose standard firmware offers QoS *prioritisation*, not hard per-SSID caps.
+
+**Refuted 2: the PSRAM-to-internal copy on the WiFi TX path.** The ESP32 cannot DMA out of external
+RAM, so sending from PSRAM costs a copy — a plausible fixed cost insensitive to signal. Measured
+directly, same size, same socket, same link:
+
+| buffer source | MB/s |
+|---|---|
+| PSRAM | 0.05 |
+| internal RAM | 0.06 |
+
+Identical. Not the cause.
+
+**⚠️ And the reasoning that pointed at the network was itself wrong.** The argument was "throughput
+did not change across 38 dB of signal, so RF is not the limit". **RSSI measures signal, not noise.**
+A strong signal on a congested 2.4 GHz channel still yields poor SNR and heavy retransmission, which
+looks exactly like this: low throughput, flat across RSSI, immune to TCP tuning and to memory
+source. Insensitivity to RSSI rules out *path loss*, not *interference*.
+
+**What the data actually shows** is throughput scaling with write size:
+
+| write size | MB/s |
+|---|---|
+| 32 KB | 0.05–0.06 |
+| 64 KB | 0.10–0.19 |
+| 614 KB | 0.15–0.38 |
+
+That is the signature of a link losing airtime to contention and retries, where bigger writes
+amortise the loss better. Consistent with a busy 2.4 GHz band — three a mesh nodes beaconing, mesh
+backhaul, and neighbouring networks.
+
+⚠️ **Enabling 5 GHz on the IoT SSID would not help**: the ESP32-S3 has no 5 GHz radio (2.4 GHz
+802.11 b/g/n only), and a combined-band SSID makes 2.4-only devices harder to onboard. What might
+help is a clear 2.4 GHz channel at 20 MHz, and checking which a mesh node the board associates with —
+a client on a satellite shares airtime with the wireless backhaul.
+
+**Calibration:** an ESP32 tops out near 1–2.5 MB/s of TCP even in ideal conditions. It is not a fast
+WiFi device, so the realistic headroom here is about 10×, not 100×.
 
 ### Therefore: keep the software JPEG
 

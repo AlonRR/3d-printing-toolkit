@@ -181,21 +181,49 @@ static void bench_encode(int frames)
              (unsigned) (jpg_bytes / ok));
 }
 
-static void bench_radio(size_t chunk, int reps)
+static void bench_radio(size_t chunk, int reps, bool from_psram)
 {
     /* One buffer, filled once, sent many times. No camera involved, so this is
      * the radio and TCP stack alone. */
-    uint8_t *buf = heap_caps_malloc(chunk, MALLOC_CAP_SPIRAM);
+    /* THE DISCRIMINATOR. The WiFi path cannot DMA out of external RAM, so a
+     * send from PSRAM costs a copy into internal DMA-capable memory first. If
+     * the internal-RAM figure is much higher, that copy is the bottleneck and
+     * the network is innocent - which would also explain why throughput did not
+     * move across a 38 dB change in signal. */
+    uint32_t caps = from_psram ? MALLOC_CAP_SPIRAM
+                               : (MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
+    /* SIZE THE BUFFER TO WHAT EXISTS. The first attempt asked for a fixed 64 KB
+     * of internal RAM and simply failed - internal memory is scarce here, being
+     * shared by the WiFi buffers, lwip and the camera driver. A phase that
+     * silently does not run is worse than a smaller one: the client still
+     * connects in order, so a skipped phase shifts every later measurement onto
+     * the wrong label. */
+    size_t largest = heap_caps_get_largest_free_block(caps);
+    if (largest < chunk) {
+        size_t reduced = largest > 8192 ? (largest / 2) : 0;
+        ESP_LOGW(TAG, "  only %u bytes free in %s; using %u",
+                 (unsigned) largest, from_psram ? "PSRAM" : "internal",
+                 (unsigned) reduced);
+        chunk = reduced;
+    }
+    if (chunk == 0) {
+        ESP_LOGE(TAG, "  no usable buffer in %s - phase skipped",
+                 from_psram ? "PSRAM" : "internal");
+        return;
+    }
+
+    uint8_t *buf = heap_caps_malloc(chunk, caps);
     if (!buf) {
-        ESP_LOGE(TAG, "3. RADIO ONLY   : could not allocate %u bytes",
-                 (unsigned) chunk);
+        ESP_LOGE(TAG, "  allocation of %u bytes failed anyway", (unsigned) chunk);
         return;
     }
     for (size_t i = 0; i < chunk; i++) {
         buf[i] = (uint8_t) i;   /* not all-zero: some paths compress */
     }
 
-    int fd = bench_accept("3. radio only");
+    int fd = bench_accept(from_psram ? "3a. radio only (PSRAM)"
+                                    : "3b. radio only (internal RAM)");
     if (fd < 0) { free(buf); return; }
 
     int64_t t0 = esp_timer_get_time();
@@ -211,7 +239,8 @@ static void bench_radio(size_t chunk, int reps)
     close(fd);
     free(buf);
 
-    ESP_LOGI(TAG, "3. RADIO ONLY   : %.2f MB in %.2f s = %.2f MB/s (rssi %d dBm)",
+    ESP_LOGI(TAG, "3%c. RADIO %-8s: %.2f MB in %.2f s = %.2f MB/s (rssi %d dBm)",
+             from_psram ? 'a' : 'b', from_psram ? "PSRAM" : "INTERNAL",
              sent / 1048576.0, us / 1e6, sent / (us / 1e6) / 1048576.0,
              wifi_rssi());
 }
@@ -268,6 +297,9 @@ void benchmark_run(int port)
     ESP_LOGI(TAG, "================ BENCHMARK ================");
     ESP_LOGI(TAG, "ip %s   rssi %d dBm   listening on port %d",
              wifi_ip_str(), wifi_rssi(), port);
+    ESP_LOGI(TAG, "internal heap: %u free, %u largest block",
+             (unsigned) heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+             (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
 
     /* The two local measurements need no network, so they run first and are
      * still useful even if nothing ever connects. */
@@ -279,7 +311,10 @@ void benchmark_run(int port)
         return;
     }
 
-    bench_radio(64 * 1024, 160);      /* ~10 MB, no camera involved */
+    /* Equal BYTE totals, not equal rep counts, so the two are comparable
+     * even when the internal buffer has to be smaller. */
+    bench_radio(32 * 1024, 96, true);    /* 3 MB from PSRAM    */
+    bench_radio(32 * 1024, 96, false);   /* 3 MB from internal */
     bench_pipeline(30, false);        /* capture -> send, raw */
     bench_pipeline(15, true);         /* capture -> encode -> send */
 
