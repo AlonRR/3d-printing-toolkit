@@ -44,35 +44,67 @@ typedef struct {
     const char *label;
 } cam_attempt_t;
 
-/* RGB565 ONLY, and that is a conclusion rather than a preference.
+/* YUV422 FIRST, RGB565 only as a fallback.
  *
- * An isolation matrix varying one axis at a time produced a completely clean
- * split on this board:
+ * The hardware JPEG encoder is broken on this board (isolation matrix below),
+ * which forced a raw capture format. RGB565 was the obvious choice and produced
+ * a persistent colour cast that survived three attempts to fix it:
  *
- *     RGB565 QQVGA DRAM   PASS      JPEG QQVGA DRAM   fail
- *     RGB565 QQVGA PSRAM  PASS      JPEG QQVGA PSRAM  fail
- *     RGB565 QVGA  PSRAM  PASS      JPEG VGA   PSRAM  fail
+ *   - a byte-order swap, which made it far worse because frame2jpg already
+ *     swaps internally and the second swap simply undid the first;
+ *   - enabling the sensor's auto white balance, gamma and lens correction,
+ *     which changed nothing visible;
+ *   - a grey-world correction in software, which moved the cast from teal to
+ *     green rather than removing it.
  *
- * Buffer location does not matter. Frame size does not matter. Halving XCLK
- * (PCLK 10 MHz -> 5 MHz) did not matter either, which had already ruled out the
- * usual "DMA cannot keep up" reading of NO-SOI. FORMAT is the only variable, so
- * the sensor's hardware JPEG path is simply broken here and no amount of clock,
- * buffer or resolution tuning will recover it.
+ * Measurement settled what argument could not. Pulling a raw frame off the
+ * board and correlating the channel planes scored the true layout at 0.925
+ * against 0.229 for the alternative, so the LAYOUT was right the whole time and
+ * per-channel gain was never going to fix it.
  *
- * The answer is to bypass it: capture RGB565 and encode JPEG in software with
- * frame2jpg(). For a snapshot every few seconds the CPU cost is irrelevant -
- * this is a print monitor, not a video stream.
+ * Reading upstream - which should have come first - found the RGB565 path on
+ * this chip is not trusted: espressif/esp32-camera issue 422 (byte order
+ * between RGB565 producers and consumers) and issue 692 (RGB565 wrong on
+ * ESP32-S3, unresolved). Neither matches exactly, but both say the same thing.
  *
- * The list below is therefore a fallback ladder by size, largest first, not a
- * search across formats. */
+ * YUV422 avoids the problem rather than compensating for it. The driver
+ * configures it through a SEPARATE register set - sensor_fmt_yuv422 rather than
+ * sensor_fmt_rgb565 - so it does not share the suspect path at all. And JPEG's
+ * native colour space is YCbCr, so YUV422 needs no colour conversion before
+ * encoding: it is both the most direct route and the least code.
+ *
+ * YUV422 WAS TRIED AND IS ALSO WRONG - differently wrong, yellow and pink
+ * rather than teal, but wrong. So the fault is not specific to the RGB565
+ * register path, and four attempts have now failed:
+ *
+ *   byte swap          -> far worse (frame2jpg already swaps)
+ *   sensor auto-WB     -> no visible change
+ *   grey-world in SW   -> cast moved, not removed
+ *   YUV422 capture     -> different cast, still wrong
+ *
+ * What every attempt has in common: STRUCTURE IS PERFECT and only colour is
+ * wrong, in every format. The remaining hypothesis that fits all four results
+ * is a one-byte PHASE OFFSET in the parallel capture - the DMA latching the
+ * byte stream half a pixel out. That would leave luminance intact while
+ * swapping the two bytes of an RGB565 pixel (which frame2jpg then compensates
+ * for) AND swapping Y with U/V in YUV422 (which nothing compensates for).
+ *
+ * It is a testable idea rather than another guess, but it has not been tested
+ * and the cast is cosmetic for print monitoring, so RGB565 - the least bad of
+ * the four - is restored as the default rather than chasing it further.
+ */
 static const cam_attempt_t ATTEMPTS[] = {
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_VGA,   2, CAMERA_GRAB_WHEN_EMPTY,
       CAMERA_FB_IN_PSRAM, "RGB565 VGA   PSRAM fb2" },
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QVGA,  2, CAMERA_GRAB_WHEN_EMPTY,
       CAMERA_FB_IN_PSRAM, "RGB565 QVGA  PSRAM fb2" },
+    { 20000000, PIXFORMAT_YUV422, FRAMESIZE_VGA,   2, CAMERA_GRAB_WHEN_EMPTY,
+      CAMERA_FB_IN_PSRAM, "YUV422 VGA   PSRAM fb2  (alt)" },
     { 20000000, PIXFORMAT_RGB565, FRAMESIZE_QQVGA, 1, CAMERA_GRAB_LATEST,
-      CAMERA_FB_IN_DRAM,  "RGB565 QQVGA DRAM  fb1" },
+      CAMERA_FB_IN_DRAM,  "RGB565 QQVGA DRAM  fb1  (fallback)" },
 };
+
+
 
 
 #define N_ATTEMPTS (sizeof(ATTEMPTS) / sizeof(ATTEMPTS[0]))
@@ -138,7 +170,8 @@ static bool capture_works(pixformat_t format, int tries)
                  * buffer is the size the geometry demands AND is not uniformly
                  * one value. An all-zero or all-0xFF buffer is what a dead
                  * parallel bus produces, and it would otherwise pass. */
-                size_t expect = (size_t) w * h * (format == PIXFORMAT_RGB565 ? 2 : 1);
+                size_t bpp = (format == PIXFORMAT_RGB565 || format == PIXFORMAT_YUV422) ? 2 : 1;
+                size_t expect = (size_t) w * h * bpp;
                 bool varied = false;
                 for (size_t k = 1; k < len && k < 4096; k++) {
                     if (fb->buf[k] != fb->buf[0]) { varied = true; break; }
