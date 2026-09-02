@@ -25,6 +25,7 @@
 #include "benchmark.h"
 #include "dht11.h"
 #include "mqtt.h"
+#include "ota.h"
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -110,6 +111,7 @@ void app_main(void)
     } else {
         mqtt_start();
         connect_cam_init();
+        ota_start(80);
     }
 
     if (RUN_BENCHMARK && cam == ESP_OK && net) {

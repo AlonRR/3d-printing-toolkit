@@ -241,6 +241,28 @@ esp_err_t camera_start(void)
     sensor_t *s = esp_camera_sensor_get();
     if (s != NULL) {
         s->set_vflip(s, 1);
+
+        /* COLOUR. The first snapshots reached Prusa Connect with whites showing
+         * purple and tans showing green.
+         *
+         * A byte-order swap was tried first and made it far worse - which was
+         * the evidence that the bytes were already aligned correctly. The
+         * reasoning that should have come first: swapping red and blue leaves
+         * WHITE unchanged, and white was not unchanged. Green was being lost,
+         * so the fault is white balance and gain, not pixel layout.
+         *
+         * These are on by default in the driver's JPEG path but are not applied
+         * when a raw format is selected, which is why capturing RGB565 - forced
+         * on us by the broken hardware JPEG - lost them. */
+        s->set_whitebal(s, 1);      /* auto white balance            */
+        s->set_awb_gain(s, 1);      /* and its gain control          */
+        s->set_wb_mode(s, 0);       /* auto, not a fixed preset      */
+        s->set_exposure_ctrl(s, 1); /* auto exposure                 */
+        s->set_gain_ctrl(s, 1);     /* auto gain                     */
+        s->set_raw_gma(s, 1);       /* gamma - without it mid-tones sink */
+        s->set_lenc(s, 1);          /* lens shading correction       */
+        s->set_bpc(s, 1);           /* bad pixel correction          */
+        s->set_wpc(s, 1);           /* white pixel correction        */
     }
     s_started = true;
     return ESP_OK;

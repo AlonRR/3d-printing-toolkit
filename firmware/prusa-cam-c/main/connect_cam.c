@@ -125,8 +125,13 @@ esp_err_t connect_cam_upload(const uint8_t *jpeg, size_t len)
     esp_http_client_close(c);
     esp_http_client_cleanup(c);
 
-    if (status == 204) {
-        ESP_LOGI(TAG, "uploaded %u bytes -> 204", (unsigned) len);
+    /* The published OpenAPI documents 204 as the success response. The LIVE
+     * server returns 200, verified by the snapshot appearing in Connect. Both
+     * are accepted, with the spec's own value listed first - being strict about
+     * 204 alone reported a working upload as a failure. A spec is evidence
+     * about intent; the server is evidence about behaviour. */
+    if (status == 204 || status == 200) {
+        ESP_LOGI(TAG, "uploaded %u bytes -> %d", (unsigned) len, status);
         return ESP_OK;
     }
 

@@ -26,7 +26,10 @@ CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
 
 # The default single-app partition is 1 MB, and the camera component alone
 # pushes past it once JPEG support is linked in.
-CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
+# Two OTA slots. The single-app layout has no ota partitions, so OTA cannot
+# work with it no matter what the firmware does.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
 # CONSOLE: deliberately NOT set to USB_SERIAL_JTAG.
 #
