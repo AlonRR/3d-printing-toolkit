@@ -237,3 +237,64 @@ capture:
 
 ⚠️ Prusa's firmware does **not** send its DHT reading to Connect — checked in `connect.cpp` and
 `exif.cpp`. Anything wanting that temperature in Home Assistant has to publish it itself.
+
+## The colour cast — five hypotheses tested, all refuted
+
+Structure is flawless in every capture format; only colour is wrong. Each attempt below was
+measured, not argued, and each is recorded so none gets repeated.
+
+| # | hypothesis | result |
+|---|---|---|
+| 1 | RGB565 byte-order swap | **far worse** — `frame2jpg` already swaps; the second swap undid it |
+| 2 | sensor auto-WB / gamma / lens correction | no visible change |
+| 3 | grey-world correction in software | cast moved teal → green, not removed |
+| 4 | YUV422 capture (separate register path) | a *different* cast, still wrong |
+| 5 | one-byte phase offset in the parallel capture | **refuted** — see below |
+
+### The data path is exonerated end to end
+
+**Layout** — correlating the channel planes across candidate decodes scored the true layout at
+**0.925** against 0.229. The layout was right from the first snapshot.
+
+**Phase** — every offset × byte-order combination, scored on a real frame:
+
+| candidate | saturation | chroma zigzag |
+|---|---|---|
+| offset 0, as-stored | 0.683 | 0.4651 |
+| **offset 0, swapped** (in use) | **0.473** | **0.0774** |
+| offset 1, as-stored | 0.474 | 0.0848 |
+| offset 1, swapped | 0.683 | 0.4721 |
+
+The **zigzag** metric was built for this: it measures how much *chroma* changes between adjacent
+pixels, with luminance divided out so brightness edges don't count. A half-pixel latch error makes
+neighbouring pixels take colour from each other's bytes, so hue alternates violently while
+structure stays smooth — the 0.47 rows. The decode in use scores best on both metrics.
+
+⚠️ **A trap worth recording:** an apparently clean *greyscale* image, produced by taking every
+second byte, briefly looked like proof the sensor was emitting YUV422. It wasn't. With the bytes
+swapped, every even byte is `RRRRRGGG` — that picture was the **red channel**, which naturally
+resembles a plausible monochrome photo.
+
+**Driver** — esp32-camera **2.1.7**, the current release, and `sensors/ov3660.c` is byte-identical
+to upstream master. There is no version to move to.
+
+### ⛔ Reflowing the ESP32-S3 would not help
+
+It is also the wrong chip: **JPEG compression happens inside the OV3660 module**, not the S3. And
+the connections are already proven — raw capture succeeds at VGA, QVGA *and* QQVGA, exercising all
+eight data lines plus `VSYNC`, `HREF` and `PCLK`, while SCCB covers `SIOD`/`SIOC`. A bad joint
+corrupts structure; structure is perfect in every format.
+
+### What remains is optical — check this before writing more code
+
+A missing or wrong **IR-cut filter** produces exactly this: a strong, spatially smooth, consistent
+cast that no decoding change affects, because the light reaching the sensor is already wrong. Cheap
+modules often omit it. Two checks, neither needing a build:
+
+- **Look at the lens** — a proper IR-cut filter is visible as blue-green tinted glass behind the
+  barrel.
+- **Daylight vs incandescent** — an infrared problem shifts dramatically between them; a data
+  problem does not.
+
+The JPEG fault is then plausibly a separate, internal DSP problem in the module, which the software
+encoder already works around at 2.4 fps.
