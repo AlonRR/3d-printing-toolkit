@@ -122,6 +122,54 @@ had arrived intact and only the interpretation was wrong. The part is distinguis
 plausibility rather than by assuming a DHT11 leaves its fractional bytes at zero — modern DHT11s
 send tenths, and that assumption produced exactly those numbers.
 
+## Benchmark — how fast can it capture, and how fast can it send
+
+VGA RGB565. Two runs; the second adds TCP/WiFi buffer tuning and a 240 MHz CPU.
+Both ends of every transfer measured independently and agreed to two decimals.
+
+| | run 1 (−27 dBm) | run 2, tuned (−65 dBm) |
+|---|---|---|
+| **1. capture only** | 5.6 fps · 3.25 MB/s | **5.6 fps** · 3.25 MB/s |
+| **2. software JPEG** | 589 ms/frame · 1.7 fps ceiling | **401 ms** · 2.5 fps ceiling |
+| **3. radio only** | 0.19 MB/s | **0.18 MB/s** |
+| **4a. pipeline RAW** | 0.65 fps | 0.32 fps |
+| **4b. pipeline JPEG** | 1.53 fps | **2.36 fps** |
+
+### The three numbers that matter
+
+**5.6 fps is the capture ceiling** at VGA and nothing downstream can beat it. Unchanged between
+runs, so it is sensor/DMA-bound, not CPU-bound — the 240 MHz clock did not move it at all.
+
+**240 MHz cut the software encode by a third**, 589 → 401 ms. That is the one tuning change that
+clearly worked.
+
+**Throughput is capped at ~0.19 MB/s by the network, not by this board.** Three independent facts
+say so:
+
+- It did not change across a **38 dB** signal difference (−27 → −65 dBm). If RF were the limit,
+  that swing would dominate.
+- Raising the TCP window from 5760 to 65534 bytes changed nothing.
+- workstation reaches the server at a much higher rate over the wire, and routing to the board goes out the
+  LAN adapter, not the VPN — so the receiver and the PC's network stack are not the constraint.
+
+~0.19 MB/s is about **1.5 Mbit/s**, which is characteristic of a **per-SSID bandwidth limit** on
+the access point rather than any property of the radio. ⚠️ Worth checking the AP's configuration
+for the IoT SSID before drawing conclusions about the ESP32's WiFi.
+
+### Therefore: keep the software JPEG
+
+At the measured link speed **JPEG beats raw by 7×** — 2.36 fps against 0.32 — because the payload
+is 20× smaller (30 KB against 614 KB) and that dwarfs the 401 ms encode.
+
+This refutes the intuition that compression is unnecessary when power does not matter. It would be
+right if the link were fast; it is not, because the link is the bottleneck. The crossover is
+computable — raw gives `link/614400` fps, JPEG gives `1/(0.401 + 30631/link)` — and they are equal
+at **~1.4 MB/s**. Below that JPEG wins; above it raw does. The link is currently 0.19 MB/s, about
+7× short.
+
+Note the counter-intuitive consequence: making the encoder *faster* moves the break-even **up**,
+because it makes JPEG better. 240 MHz shifted it from ~0.95 to ~1.4 MB/s.
+
 ## Building
 
 The S3 needs the **xtensa** toolchain. This machine had only `riscv32-esp-elf`, because everything
