@@ -300,6 +300,86 @@ esp_err_t camera_capture_and_report(void)
     return ESP_OK;
 }
 
+
+/* Grey-world white balance, applied in software.
+ *
+ * WHY THIS EXISTS. Measured from a real frame pulled off the board: red averages
+ * 20% below green and blue 11% above, which renders as the teal cast the first
+ * snapshots showed. The sensor's own AWB is enabled but does not converge in a
+ * raw pixel format - the driver applies those corrections in its JPEG path, and
+ * capturing RGB565 is forced on us by the broken hardware encoder.
+ *
+ * Two wrong turns preceded this, both settled by measuring rather than by
+ * argument. A byte-order swap made the picture far worse, because frame2jpg
+ * ALREADY swaps internally and the extra swap simply undid it. Enabling the
+ * sensor's auto-correction changed nothing. Correlating the channel planes
+ * across candidate layouts scored the true layout at 0.925 against 0.229 for
+ * the alternative, which proved the layout was right all along and the fault
+ * was purely colour balance.
+ *
+ * ASSUMPTION, stated because it can be wrong: grey-world takes the scene to
+ * average to neutral. That holds for a printer and its surroundings and fails
+ * for a frame filled with one saturated colour - a large orange print would be
+ * partly desaturated. The gains are clamped so that failure is mild rather than
+ * absurd.
+ *
+ * The buffer is stored byte-swapped relative to the true RGB565 value, so each
+ * word is swapped on read and swapped back on write.
+ */
+static void white_balance(camera_fb_t *fb)
+{
+    if (fb->format != PIXFORMAT_RGB565 || fb->len < 4) {
+        return;
+    }
+
+    uint16_t *p = (uint16_t *) fb->buf;
+    size_t n = fb->len / 2;
+
+    /* Subsampled: 1 pixel in 16 is ample for a mean and keeps this well under
+     * the cost of the encode it precedes. */
+    uint32_t sr = 0, sg = 0, sb = 0, count = 0;
+    for (size_t i = 0; i < n; i += 16) {
+        uint16_t v = (uint16_t) ((p[i] >> 8) | (p[i] << 8));
+        sr += ((v >> 11) & 0x1F) << 3;
+        sg += ((v >> 5) & 0x3F) << 2;
+        sb += (v & 0x1F) << 3;
+        count++;
+    }
+    if (count == 0 || sr == 0 || sg == 0 || sb == 0) {
+        return;
+    }
+
+    uint32_t target = (sr + sg + sb) / (3 * count);
+
+    /* Fixed point, 8 fractional bits - no float in a per-pixel loop. */
+    int32_t gr = (int32_t) ((target * 256ULL * count) / sr);
+    int32_t gg = (int32_t) ((target * 256ULL * count) / sg);
+    int32_t gb = (int32_t) ((target * 256ULL * count) / sb);
+
+    /* Clamped to 0.5x - 2x. An unclamped gain on a scene that genuinely is one
+     * colour would swing wildly frame to frame, which looks far worse than a
+     * mild cast. */
+    const int32_t LO = 128, HI = 512;
+    if (gr < LO) { gr = LO; }
+    if (gr > HI) { gr = HI; }
+    if (gg < LO) { gg = LO; }
+    if (gg > HI) { gg = HI; }
+    if (gb < LO) { gb = LO; }
+    if (gb > HI) { gb = HI; }
+
+    for (size_t i = 0; i < n; i++) {
+        uint16_t v = (uint16_t) ((p[i] >> 8) | (p[i] << 8));
+        int32_t r = (((v >> 11) & 0x1F) * gr) >> 8;
+        int32_t g = (((v >> 5) & 0x3F) * gg) >> 8;
+        int32_t b = ((v & 0x1F) * gb) >> 8;
+        if (r > 31) r = 31;
+        if (g > 63) g = 63;
+        if (b > 31) b = 31;
+        uint16_t o = (uint16_t) ((r << 11) | (g << 5) | b);
+        p[i] = (uint16_t) ((o >> 8) | (o << 8));
+    }
+}
+
 esp_err_t camera_capture_jpeg(uint8_t quality, uint8_t **out, size_t *out_len)
 {
     if (!s_started || out == NULL || out_len == NULL) {
@@ -311,6 +391,8 @@ esp_err_t camera_capture_jpeg(uint8_t quality, uint8_t **out, size_t *out_len)
         ESP_LOGE(TAG, "capture failed");
         return ESP_FAIL;
     }
+
+    white_balance(fb);
 
     *out = NULL;
     *out_len = 0;

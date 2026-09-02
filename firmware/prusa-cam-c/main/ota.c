@@ -24,6 +24,7 @@
 #include "esp_app_desc.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
+#include "esp_camera.h"
 #include "esp_ota_ops.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
@@ -146,6 +147,39 @@ static esp_err_t ota_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+
+/* GET /raw - one frame, exactly as the sensor delivered it.
+ *
+ * A DIAGNOSTIC, not a feature. Two guesses at the colour cast have already been
+ * wrong, so the next step is to stop guessing and look at the actual bytes: the
+ * true pixel layout is decidable from the data itself, and a wrong guess costs
+ * a flash cycle while this costs an HTTP request.
+ *
+ * Dimensions and format travel in headers so the receiver never has to assume
+ * them - assuming geometry is how a layout bug gets misdiagnosed as a colour
+ * bug in the first place. */
+static esp_err_t raw_handler(httpd_req_t *req)
+{
+    camera_fb_t *fb = esp_camera_fb_get();
+    if (!fb) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "capture failed");
+        return ESP_FAIL;
+    }
+
+    char v[16];
+    snprintf(v, sizeof(v), "%u", (unsigned) fb->width);
+    httpd_resp_set_hdr(req, "X-Width", v);
+    snprintf(v, sizeof(v), "%u", (unsigned) fb->height);
+    httpd_resp_set_hdr(req, "X-Height", v);
+    snprintf(v, sizeof(v), "%d", (int) fb->format);
+    httpd_resp_set_hdr(req, "X-Format", v);
+
+    httpd_resp_set_type(req, "application/octet-stream");
+    esp_err_t err = httpd_resp_send(req, (const char *) fb->buf, fb->len);
+    esp_camera_fb_return(fb);
+    return err;
+}
+
 esp_err_t ota_start(int port)
 {
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
@@ -169,6 +203,10 @@ esp_err_t ota_start(int port)
     httpd_uri_t status_uri = {
         .uri = "/", .method = HTTP_GET, .handler = status_handler,
     };
+    httpd_uri_t raw_uri = {
+        .uri = "/raw", .method = HTTP_GET, .handler = raw_handler,
+    };
+    httpd_register_uri_handler(server, &raw_uri);
     httpd_register_uri_handler(server, &ota_uri);
     httpd_register_uri_handler(server, &status_uri);
 
