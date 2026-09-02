@@ -23,9 +23,14 @@ Measured on the bench, 1 Sep 2026:
 ```
 adopting: RGB565 VGA PSRAM fb2
 frame 640x480  614400 bytes            <- exactly 640x480x2
-JPEG 20378 bytes (software encoded, SOI ok)
-free heap 7471943                      <- identical across every cycle
+JPEG 31631 bytes (software encoded, SOI ok)
+DHT 11: 28.2 C  64.4 %RH               <- GPIO20
+free heap 7471723                      <- identical across every cycle
 ```
+
+The 28.2 °C is cross-checked against a **separate device**: the printer's own heatbed sensor read
+26.9–27.3 °C at the same time, so a DHT sitting beside warm electronics reading about a degree
+higher is right. An internally-consistent number proves nothing on its own.
 
 640x480 RGB565 captured, compressed to a valid ~20 KB JPEG on the CPU in roughly 570 ms. The free
 heap is byte-identical cycle after cycle, which is the check that matters for a camera loop: a
@@ -94,7 +99,7 @@ few seconds the CPU cost is irrelevant — this is not a video stream.
 
 ### The DHT
 
-`GPIO47`, from the same Prusa header, and free of every camera pin. The driver is bit-banged here
+**`GPIO20`** — see `board_pins.h` for why not 47. Free of every camera pin. The driver is bit-banged here
 rather than pulled in as a component — the protocol is ~80 lines and every library available brings
 either an Arduino dependency or a conflicting IDF pin.
 
@@ -103,13 +108,19 @@ It distinguishes three outcomes deliberately, because they mean different things
 | Log | Meaning |
 |---|---|
 | `DHT 11: 24.0 C  41.0 %RH` | working |
-| `DHT no response on GPIO47` | nothing wired to the pin |
+| `DHT no response on GPIO20` | nothing wired to the pin |
 | `DHT checksum failed` | **wired and responding**, but the frame was corrupted |
 
 A timeout and a checksum failure are very different problems, and collapsing them into one "sensor
 error" is how a wiring question gets mistaken for a timing bug.
 
-Wiring, KY-015 module: `−` → GND, `+` → 3V3, `S` → GPIO47.
+Wiring, KY-015 module: `−` → GND, `+` → 3V3, `S` → **GPIO20**.
+
+⚠️ **A passing checksum with absurd values is a DECODE bug, not a wiring fault.** This bit once:
+the sensor reported 742.5 °C and 1715.7 %RH with the checksum *passing*, which meant all 40 bits
+had arrived intact and only the interpretation was wrong. The part is distinguished by physical
+plausibility rather than by assuming a DHT11 leaves its fractional bytes at zero — modern DHT11s
+send tenths, and that assumption produced exactly those numbers.
 
 ## Building
 

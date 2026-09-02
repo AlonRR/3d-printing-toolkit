@@ -127,24 +127,42 @@ esp_err_t dht_read(dht_reading_t *out)
         return ESP_ERR_INVALID_CRC;
     }
 
-    /* TELLING THE TWO PARTS APART. Both send 5 bytes with the same checksum, but
-     * they encode differently: the DHT11 puts whole units in bytes 0 and 2 and
-     * leaves the fractional bytes at zero, while the DHT22 sends a 16-bit
-     * tenths value spanning both bytes of each pair. So a nonzero byte[1] or
-     * byte[3] means DHT22 - and a DHT11 reading 20 C / 40 %RH would otherwise
-     * decode as 522.4 C if treated as a DHT22. */
-    bool dht22 = (bytes[1] != 0) || (bytes[3] != 0);
+    /* TELLING THE TWO PARTS APART, by PLAUSIBILITY rather than by zero bytes.
+     *
+     * An earlier version here decided "byte[1] or byte[3] nonzero means DHT22",
+     * on the assumption that a DHT11 leaves its fractional bytes at zero. That
+     * is false: modern DHT11s do send tenths. The real sensor on this bench
+     * returned 67, 5, 29, 1 - a perfectly good 67.5 %RH and 29.1 C - and the
+     * zero-byte rule read it as a DHT22 and reported 1715.7 %RH at 742.5 C.
+     *
+     * The checksum had passed, which is the important part: those absurd values
+     * were a DECODING bug, not a wiring or timing fault. A valid checksum means
+     * the 40 bits arrived intact and only their interpretation was wrong.
+     *
+     * So decode as a DHT22 and then ask whether the answer is physically
+     * possible. The two encodings are far apart: at 67.5 %RH a real DHT22 sends
+     * 675, so byte[0] is 2; a DHT11 sends 67 in byte[0]. Reading a DHT11 as a
+     * DHT22 therefore always overshoots wildly and fails the range test, while
+     * a genuine DHT22 always passes it. */
+    float h22 = (float) ((bytes[0] << 8) | bytes[1]) * 0.1f;
+    float t22 = (float) (((bytes[2] & 0x7F) << 8) | bytes[3]) * 0.1f;
+    if (bytes[2] & 0x80) {
+        t22 = -t22;
+    }
+
+    /* Datasheet ranges, generously bounded: DHT22 covers 0-100 %RH and
+     * -40 to +80 C. Anything outside that is not a reading. */
+    bool dht22 = (h22 >= 0.0f && h22 <= 100.0f && t22 >= -40.0f && t22 <= 80.0f);
 
     if (dht22) {
-        out->humidity_pct = ((bytes[0] << 8) | bytes[1]) * 0.1f;
-        int16_t raw = ((bytes[2] & 0x7F) << 8) | bytes[3];
-        out->temperature_c = raw * 0.1f;
-        if (bytes[2] & 0x80) {
-            out->temperature_c = -out->temperature_c;
-        }
+        out->humidity_pct = h22;
+        out->temperature_c = t22;
     } else {
-        out->humidity_pct = (float) bytes[0];
-        out->temperature_c = (float) bytes[2];
+        /* DHT11: whole units in bytes 0 and 2, tenths in 1 and 3 on the parts
+         * that send them. The guard keeps a garbage fractional byte from
+         * corrupting an otherwise sound whole number. */
+        out->humidity_pct = (float) bytes[0] + (bytes[1] < 10 ? bytes[1] * 0.1f : 0.0f);
+        out->temperature_c = (float) bytes[2] + (bytes[3] < 10 ? bytes[3] * 0.1f : 0.0f);
     }
     out->is_dht22 = dht22;
 
