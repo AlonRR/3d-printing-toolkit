@@ -225,6 +225,63 @@ while the toolchain sits right there.
 Then `set-target esp32s3` and `build`. The first build needs network: `espressif/esp32-camera` is
 pulled by the component manager.
 
+## Reaching it once it is mounted — name, not address
+
+The board answers to **`prusa-cam.local`**, and that is not a convenience. OTA here is a **push**:
+the developer machine POSTs firmware *to* the board, so something has to know where the board is.
+Nothing else does — MQTT and the Prusa Connect upload are both **outbound**, so they keep working
+perfectly from any address and would never reveal that the DHCP lease had moved. The failure is
+silent right up until the day an update is needed. It has already moved once in practice, `.120` to
+`.127` between two checks on the same day.
+
+Once the board is cased and mounted on the printer there is no serial console left to ask, so a
+moved lease would mean unscrewing it to recover. Hence a name, set three ways in `wifi.c`:
+
+| Mechanism | Gives you |
+|---|---|
+| `esp_netif_set_hostname()` | a named DHCP lease, so the router lists `prusa-cam` and a reservation is easy to make |
+| `mdns_hostname_set()` | `prusa-cam.local` resolves from the workstation |
+| `mdns_service_add(_http._tcp)` | discoverable by service when the name is not known |
+
+⚠️ **mDNS is link-local multicast and does NOT cross a subnet or a VLAN.** It resolves today only
+because workstation (`192.0.2.106`) and the board sit on the same `/24`. Putting the IoT network behind
+the the firewall on its own VLAN is a planned project, and that change would silently break name
+resolution from the workstation. **A DHCP reservation on the router is the belt to this braces** —
+it survives segmentation, a flash erase, and this firmware being replaced entirely.
+
+The hostname is set *before* the interface starts, because it travels as DHCP option 12 in the lease
+request itself. Set it afterwards and the router has already recorded an anonymous client.
+
+## Verifying an OTA push — the sha, never the timestamp
+
+```
+curl -X POST --data-binary @build/prusa_cam_c.bin      -H "X-OTA-Key: <ota_password>" http://prusa-cam.local/ota
+curl http://prusa-cam.local/          # read back what is actually running
+```
+
+⛔ **`built:` does not change between builds and must not be used to confirm an update landed.**
+The app description's date and time come from compiling `esp_app_desc.c`, and ccache reuses that
+object across rebuilds. Measured: four successive OTA pushes of genuinely different binaries all
+reported `Sep  3 2026 19:55:05`. Anyone checking that field would conclude the push had failed —
+and reflash a board that was already correct.
+
+✅ **`sha:` is the honest indicator.** It is the first 8 bytes of `app_elf_sha256`, which changes
+whenever the ELF does. Compare it with the local build:
+
+```
+xxd -s 176 -l 8 -p build/prusa_cam_c.bin     # 176 = 0x20 image header + 144 into esp_app_desc
+```
+
+Verified end to end, 3 Sep 2026: pushed by name, client got `HTTP 200 ok, rebooting`, partition
+flipped `ota_1 -> ota_0`, and the running sha `b26031f66edc1627` matched the local binary exactly.
+
+**A `ConnectionResetError` on push is not necessarily a failure.** The board reboots immediately
+after replying, and on a weak link the reset outruns the response — the update has still applied.
+`ota_handler` now sends `Connection: close` and calls `httpd_sess_trigger_close()` before the
+2 s delay so the reply lands deterministically rather than depending on signal strength, but if you
+ever do see a reset, **read the sha back before concluding anything**. The transfer itself is
+signal-bound: 67 s at -72 dBm, 5 s at -26 dBm, for the same 1.18 MB.
+
 ## Roadmap
 
 `camera.c`, `dht11.c` and `main.c` are separate from the start so phase 2 drops in without touching

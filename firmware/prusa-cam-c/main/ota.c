@@ -40,11 +40,29 @@ static esp_err_t status_handler(httpd_req_t *req)
     const esp_partition_t *running = esp_ota_get_running_partition();
     const esp_app_desc_t *app = esp_app_get_description();
 
+    /* THE SHA IS THE ONLY HONEST FRESHNESS INDICATOR. "built" is not: the
+     * app description's date and time come from compiling esp_app_desc.c, and
+     * ccache happily reuses that object across rebuilds - measured here, three
+     * successive OTA pushes of genuinely different binaries all reported the
+     * same build timestamp. Anyone using it to confirm an update landed would
+     * conclude the push had failed and reflash, or worse, conclude it had
+     * succeeded when it had not.
+     *
+     * app_elf_sha256 changes whenever the ELF does, so it answers the one
+     * question that matters for a board nobody can reach: is it running the
+     * image I just pushed? Compare it against the local build with:
+     *   xxd -s 176 -l 8 -p build/prusa_cam_c.bin */
+    char sha[17] = {0};
+    for (int i = 0; i < 8; i++) {
+        sprintf(sha + i * 2, "%02x", app->app_elf_sha256[i]);
+    }
+
     char body[256];
     int n = snprintf(body, sizeof(body),
-                     "partition: %s\nversion:   %s\nbuilt:     %s %s\nidf:       %s\n",
+                     "partition: %s\n" "version:   %s\n" "built:     %s %s\n"
+                     "idf:       %s\n" "sha:       %s\n",
                      running->label, app->version, app->date, app->time,
-                     app->idf_ver);
+                     app->idf_ver, sha);
     httpd_resp_set_type(req, "text/plain");
     return httpd_resp_send(req, body, n);
 }
@@ -137,12 +155,22 @@ static esp_err_t ota_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "update accepted (%d bytes) - rebooting into %s",
              written, target->label);
+    httpd_resp_set_hdr(req, "Connection", "close");
     httpd_resp_sendstr(req, "ok, rebooting\n");
+    httpd_sess_trigger_close(req->handle, httpd_req_to_sockfd(req));
 
-    /* Delayed so the response actually reaches the client. Restarting inside
-     * the handler drops the connection and the uploader sees a failure for an
-     * update that succeeded. */
-    vTaskDelay(pdMS_TO_TICKS(500));
+    /* Connection: close AND an explicit session close, because esp_restart()
+     * tears the TCP stack down without sending a FIN - the client then gets an
+     * RST and reports a FAILURE for an update that fully succeeded.
+     *
+     * That is the worst available way for this to be wrong. Measured here: the
+     * board logged "update accepted" and rebooted into the new slot on every
+     * attempt, while the uploader saw ConnectionResetError on every one. The
+     * cost of believing the client is a needless retry, or unmounting a working
+     * camera to reflash it over USB - exactly the situation OTA exists to
+     * avoid. A 500 ms delay was not enough on its own: the close has to be
+     * REQUESTED, not merely waited for. */
+    vTaskDelay(pdMS_TO_TICKS(2000));
     esp_restart();
     return ESP_OK;
 }

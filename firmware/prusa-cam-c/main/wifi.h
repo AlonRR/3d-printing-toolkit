@@ -2,6 +2,12 @@
 
 #include "esp_err.h"
 
+/* The node's name on the network, used three ways: as the DHCP hostname option
+ * (so the router's client list shows a name rather than an anonymous lease,
+ * which is what makes a reservation easy to create), as the mDNS hostname
+ * (prusa-cam.local), and as the mDNS instance name. */
+#define WIFI_HOSTNAME "prusa-cam"
+
 /* Joins the station network and blocks until an IP arrives or the timeout
  * expires. Credentials come from the gitignored wifi_secrets.h. */
 esp_err_t wifi_connect(int timeout_ms);

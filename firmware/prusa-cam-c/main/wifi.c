@@ -18,6 +18,7 @@
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
+#include "mdns.h"
 #include "freertos/event_groups.h"
 #include "nvs_flash.h"
 #include "wifi_secrets.h"
@@ -30,6 +31,7 @@ static const char *TAG = "wifi";
 static EventGroupHandle_t s_events;
 static char s_ip[16] = "0.0.0.0";
 static int s_retries = 0;
+static esp_netif_t *s_netif = NULL;
 
 /* Retried rather than failed on first refusal. The IoT SSID here has a history
  * of rejecting a join attempt and accepting the next one. */
@@ -62,6 +64,62 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
     }
 }
 
+/* mDNS - the reason this node has a NAME and not only an address.
+ *
+ * OTA here is a PUSH: the developer machine POSTs firmware to the board, so
+ * something has to know where the board IS. Nothing else does. MQTT and the
+ * Prusa Connect upload are both OUTBOUND, so they keep working perfectly from
+ * any address and would never reveal that the lease had moved - the failure is
+ * silent until the day an update is needed. The address is DHCP and it has
+ * moved in practice, .120 to .127 between two checks on one day. Once the
+ * board is cased and mounted on the printer there is no serial console left to
+ * ask, so a moved lease would mean unscrewing it to recover.
+ *
+ * NOTHING HERE IS FATAL. A camera that works is worth more than a name that
+ * resolves, so every failure below is logged and stepped over rather than
+ * checked with ESP_ERROR_CHECK. An abort() on a printer-mounted node is the
+ * one outcome worse than an unreachable one.
+ *
+ * LIMIT WORTH KNOWING: mDNS is link-local multicast and does NOT cross a
+ * subnet or a VLAN. It resolves today because workstation (192.0.2.106) and this
+ * board sit on the same /24. Moving the IoT network behind the the firewall onto
+ * its own VLAN is a planned project, and that change would silently break name
+ * resolution from the workstation. A DHCP reservation on the router is the
+ * belt to this braces: it survives segmentation, a flash erase, and this
+ * firmware being replaced entirely.
+ */
+static void start_mdns(void)
+{
+    esp_err_t err = mdns_init();
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "mDNS init failed (%s) - reachable by IP only",
+                 esp_err_to_name(err));
+        return;
+    }
+
+    err = mdns_hostname_set(WIFI_HOSTNAME);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "mDNS hostname: %s", esp_err_to_name(err));
+        return;
+    }
+    mdns_instance_name_set("Prusa MK3S chamber camera");
+
+    /* The OTA/status server is advertised as a SERVICE as well as a name, so
+     * the node can be found by what it does when its name is not known. */
+    mdns_txt_item_t txt[] = {
+        {"board", "esp32-s3"},
+        {"role", "prusa-cam"},
+    };
+    err = mdns_service_add(NULL, "_http", "_tcp", 80, txt,
+                           sizeof(txt) / sizeof(txt[0]));
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "mDNS service: %s", esp_err_to_name(err));
+    }
+
+    ESP_LOGI(TAG, "mDNS up: %s.local -> %s  (OTA and status on port 80)",
+             WIFI_HOSTNAME, s_ip);
+}
+
 esp_err_t wifi_connect(int timeout_ms)
 {
     esp_err_t err = nvs_flash_init();
@@ -75,7 +133,12 @@ esp_err_t wifi_connect(int timeout_ms)
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_sta();
+    s_netif = esp_netif_create_default_wifi_sta();
+
+    /* Set BEFORE the interface starts, because it is sent as DHCP option 12 in
+     * the lease request itself - set it afterwards and the router has already
+     * recorded an anonymous client. */
+    ESP_ERROR_CHECK(esp_netif_set_hostname(s_netif, WIFI_HOSTNAME));
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -105,6 +168,7 @@ esp_err_t wifi_connect(int timeout_ms)
 
     if (bits & BIT_GOT_IP) {
         ESP_LOGI(TAG, "connected, ip %s, rssi %d dBm", s_ip, wifi_rssi());
+        start_mdns();
         return ESP_OK;
     }
     ESP_LOGE(TAG, "no IP after %d ms", timeout_ms);
