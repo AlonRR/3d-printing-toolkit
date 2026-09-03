@@ -50,6 +50,10 @@ JOBS = {
     "Inslogic PLA Pro @0.8 nozzle":        ("inslogic", "Generic PLA @0.8 nozzle",   "Yasin3D PLA @0.8 nozzle"),
     "Inslogic PETG Pro":                   ("inslogic", "Generic PETG",              "Yasin3D PLA @0.8 nozzle"),
     "Inslogic PETG Pro @0.8 nozzle":       ("inslogic", "Generic PETG @0.8 nozzle",  "Yasin3D PLA @0.8 nozzle"),
+    # No brand exists for these - the SKU is the identity. See
+    # slicer/filament/unbranded/README.md.
+    "PETG Basic NPETG087-ZX":              ("unbranded", "Generic PETG",             "Yasin3D PLA @0.8 nozzle"),
+    "PETG Basic NPETG087-ZX @0.8 nozzle":  ("unbranded", "Generic PETG @0.8 nozzle", "Yasin3D PLA @0.8 nozzle"),
     "Yasin3D PLA":                         ("yasin3d",  "Generic PLA",               "Yasin3D PLA @0.8 nozzle"),
     "Yasin3D PETG":                        ("yasin3d",  "Generic PETG",              "Yasin3D PLA @0.8 nozzle"),
     "Yasin3D PETG @0.8 nozzle":            ("yasin3d",  "Generic PETG @0.8 nozzle",  "Yasin3D PLA @0.8 nozzle"),
