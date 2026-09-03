@@ -117,23 +117,33 @@ The S3 camera node with its DHT11 was placed in the enclosure during a live prin
 sample it read **31.2–31.3 °C and 37.2–37.6 %RH**, flat rather than still climbing, so this is a
 plateau and not a mid-warmup number.
 
-**This is the measurement step 2 of the build order has been asking for, and the answer is lower than
-this page assumed.** The prediction above is that a properly closed enclosure reaches **40–50 °C on
-bed heat alone**. With one side deliberately open it reaches **31 °C** — roughly 5 °C over room
-ambient. The open side is costing something like 10–20 °C.
+⚠️ **THE DOOR WAS ALSO OPEN. This is NOT a measurement of the enclosure.** The first version of this
+entry read it as "one side deliberately open reaches 31 °C, so the open side costs 10–20 °C" — that
+conclusion is **withdrawn**, because it was never a measurement of the normal configuration. With
+the permanent open side *and* the door open, this is very nearly an unenclosed printer, and 31 °C is
+about what a bed at print temperature does to the air near an open machine.
 
-Three consequences:
+**So what this number actually establishes is a BASELINE, not a verdict** — and a baseline is worth
+having, because it is the control the closed-up measurement gets compared against. It says: with the
+box effectively open, the chamber sits ~5 °C over room ambient. Whatever closing it buys is measured
+from here.
 
-- **31 °C is not an ASA chamber.** ASA wants 40–60 °C. If warping is the problem, the open side is
-  the cause, not a missing heater — which supports the existing conclusion that closing it comes
-  before buying anything.
-- **The reading is biased HIGH, so the enclosure is doing worse than 31 °C suggests.** The DHT11 sits
+**Step 2 of the build order is therefore still outstanding.** It asks for the temperature with the
+enclosure *closed*, and that run has not happened.
+
+Consequences that do hold regardless:
+
+- **The reading is biased HIGH, so any enclosure conclusion drawn from it is doubly unsafe.** The DHT11 sits
   on the same PCB as an ESP32-S3 running WiFi and a camera continuously, and self-heating lifts it.
   True chamber air is likely a degree or two below the figure. Same error class as putting the
   camera's sensor inside its own sealed case.
 - **Do not read "31.2" as precision.** The DHT11 is ±2 °C with 1 °C resolution, so this is 31 ± 2.
   It is entirely adequate for "is the chamber warm" — which is the question being asked — and
   inadequate for characterising a 40–60 °C ASA chamber, which is the question that comes next.
+- **Record the CONFIGURATION with every future reading.** This entry had to be corrected within the
+  hour because the number was written down without noting that the door was open, and a chamber
+  temperature without its configuration is not a datum — it is a number that will be misread later
+  by someone who assumes the box was shut.
 
 ⚠️ **The DHT11 tops out at 50 °C.** It has ample headroom at 31, but if the side is closed and the
 chamber is pushed toward ASA temperatures the sensor will approach and then clip its own range. The
