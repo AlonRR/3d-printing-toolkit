@@ -76,7 +76,7 @@ exhaust next to the intake short-circuits the flow — the air leaves before cro
 | **12 V 5–6 A supply** | 50 W at 12 V is 4.2 A steady, and **a cold PTC pulls 2–3× that on startup** — inrush margin is a spec, not a nicety. Neither owned PD trigger board is a 12 V variant | ₪40–60 |
 | **Relay or MOSFET module, ≥10 A** | Same inrush reason. A module sized at 5 A is sized for the steady state only | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
-| **Small 12 V fan** (40–60 mm) for the plenum | The owned 40 mm Gdstimes are **24 V** and will not run properly on this rail. ⚠️ **Not the JUMPEAK 120 mm** — that belongs to the fume extractor, a live and fully-parted project, and 120 mm at 3200 RPM would blow the heat straight out the exhaust anyway | ₪10 |
+| **Small 12 V fan** (40–60 mm) for the plenum | ⚠️ **CHECK THE PART BEFORE BUYING THIS — it may already be in hand.** The PTC's listing title reads *"…Insulated Heater **WITH FAN** Pet Insulation Incubator…"*, and this class of element is commonly sold bonded to a blower. The order page does not say whether the 12 V 50 W variant shipped with one, and inferring it from a title is exactly the trap this lab keeps falling into — so it needs **eyes on the physical part**. If a fan is attached, delete this line. Otherwise: the owned 40 mm Gdstimes are **24 V** and will not run on this rail, and ⛔ **not the JUMPEAK 120 mm** — that belongs to the fume extractor, a live and fully-parted project, and 120 mm at 3200 RPM would blow the heat straight out the exhaust anyway | ₪10 |
 | **Silica gel / desiccant** | For the storage half. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
 Total is roughly **₪90–145**, against ₪184–349 for a bought single-spool unit that dries one spool
@@ -105,10 +105,17 @@ So:
 
 ## Checks before building — none of these are assumptions to carry forward
 
-1. **The PTC's actual Curie point and form factor.** Pull the AliExpress order detail page rather
-   than reasoning from typical listings, then **bench it in open air on the new supply and watch the
-   surface temperature settle.** The bench test happens either way — a measured number beats a
-   listing.
+1. **The PTC's Curie point — now known to be UNDOCUMENTED, which makes the bench test mandatory.**
+   The order detail page was pulled (ref `[order reference removed]`, 8 May 2026, ₪39.12) and it **states no
+   Curie point at all**. The variant is only `(INSULATED) 12V 50W`; "thermostatic" and "insulated"
+   are words on a title that also spans **50–400 W and five voltages** — the same variant-ladder
+   shape that has misled this lab repeatedly.
+
+   So there is no document to read, and **the bench test is the only source of that number.** Treat
+   the self-limiting temperature as **UNKNOWN** until measured: run it in open air on the new supply
+   and watch the surface temperature settle. Size the plenum on the measurement, not on the design
+   intent — if it settles near 200 °C, a printed plenum is not viable at all and the housing has to
+   be metal.
 2. **The controller board.** ⚠️ The ten owned C3s are **SuperMinis, whose antennas barely transmit**
    — that defect cost this lab days on the chamber-sensor project. §3x of
    [chamber-sensor](chamber-sensor.md) documents a 31 mm wire mod, but **that mod has not been
