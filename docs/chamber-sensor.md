@@ -130,7 +130,7 @@ Asked and answered here so it does not get re-opened from scratch:
   it. That means a thermal cutout or thermal fuse physically in series with the element. It is a
   different class of build from a sensor node, and it is why this is a separate project rather
   than a bolt-on.
-- The owned **12 V 50 W PTC** also needs **> 4 A at 12 V**, which the PD trigger board cannot
+- The **12 V 50 W PTC** is no longer owned by this project (reallocated to the drybox, 3 Sep 2026), and a replacement would still need **> 4 A at 12 V**, which the PD trigger board cannot
   supply, and 50 W is modest for a Lack-sized volume.
 
 **Order of operations: close the side, measure, and only then ask whether heat is missing.**
@@ -787,9 +787,14 @@ error rather than a clear one, so do not copy it from an older tutorial.
    feature.
 5. **Only then** close the side fully and run a long ASA print with all three temperatures
    logging to Grafana.
-6. **Then** revisit chamber heating. The 12 V 50 W PTC heater is owned and earmarked for the
-   enclosure, but 50 W is modest for a Lack-sized volume and it needs **> 4 A at 12 V**, which the
-   PD trigger board cannot supply. That is a separate power design, not a bolt-on.
+6. **Then** revisit chamber heating — and note the element is **no longer here**. The 12 V 50 W
+   PTC was **reallocated to the active drybox on 3 Sep 2026** by Alon's decision, precisely because
+   this step is deferred behind steps 1-5 while 10 kg of PETG absorbs humidity now. See
+   [drybox-active.md](drybox-active.md). Reviving chamber heating therefore starts with buying a
+   second element (₪39), which is cheap and was judged better than cannibalising a working build.
+   The rest of the objection stands regardless: 50 W is modest for a Lack-sized volume, it needs
+   **> 4 A at 12 V** which the PD trigger board cannot supply, and it needs a hardware thermal
+   cutout. That is a separate power design, not a bolt-on.
 
 Steps 1 and 2 need nothing bought and answer the question that decides whether the rest is worth
 doing.
