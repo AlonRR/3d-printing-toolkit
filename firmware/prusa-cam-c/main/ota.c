@@ -194,13 +194,30 @@ static esp_err_t raw_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
 
-    char v[16];
-    snprintf(v, sizeof(v), "%u", (unsigned) fb->width);
-    httpd_resp_set_hdr(req, "X-Width", v);
-    snprintf(v, sizeof(v), "%u", (unsigned) fb->height);
-    httpd_resp_set_hdr(req, "X-Height", v);
-    snprintf(v, sizeof(v), "%d", (int) fb->format);
-    httpd_resp_set_hdr(req, "X-Format", v);
+    /* THREE SEPARATE BUFFERS, and that is the whole point.
+     *
+     * httpd_resp_set_hdr stores the POINTER it is given, not a copy of the
+     * string. A single reused buffer therefore leaves all three headers aiming
+     * at the same bytes, and every one of them sends whatever was written LAST.
+     * Measured on the bench: X-Width, X-Height and X-Format all arrived as "0",
+     * because the last write was fb->format and RGB565 is format 0.
+     *
+     * That is a bad failure in this handler specifically. /raw exists so the
+     * receiver never has to ASSUME the geometry - assuming geometry is how a
+     * layout bug gets misdiagnosed as a colour bug, which is the mistake this
+     * endpoint was added to stop. A diagnostic that quietly reports 0x0 is
+     * worse than no diagnostic: the first client written against it built a
+     * zero-by-zero image and only an assertion on the byte count caught it.
+     *
+     * The buffers must also outlive the send, so they cannot be scoped tighter
+     * than the handler. */
+    char v_w[16], v_h[16], v_f[16];
+    snprintf(v_w, sizeof(v_w), "%u", (unsigned) fb->width);
+    httpd_resp_set_hdr(req, "X-Width", v_w);
+    snprintf(v_h, sizeof(v_h), "%u", (unsigned) fb->height);
+    httpd_resp_set_hdr(req, "X-Height", v_h);
+    snprintf(v_f, sizeof(v_f), "%d", (int) fb->format);
+    httpd_resp_set_hdr(req, "X-Format", v_f);
 
     httpd_resp_set_type(req, "application/octet-stream");
     esp_err_t err = httpd_resp_send(req, (const char *) fb->buf, fb->len);
