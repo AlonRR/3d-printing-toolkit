@@ -646,6 +646,76 @@ until the filtration system runs in its extract-to-outside mode
 *only* recirculate keeps ASA solvent welding and vapour smoothing permanently unavailable — a
 bigger consequence than it looks while drawing ducts.
 
+## ✅ DECIDED, 4 Sep 2026 — recirculate AND extract, at negative pressure
+
+**Alon's ruling, and it is a third option neither this page nor the homelab page considered:** during
+a print, run the recirculating filter **and** a small continuous extraction, sized so the chamber
+sits slightly **below room pressure**.
+
+**Why this is better than either thing that was being argued.** The recirculate-only proposal below
+cleans the chamber air but does nothing about *leakage* — a Lack enclosure is not airtight, and fumes
+escape through every gap regardless of how clean the air inside is. Extract-only exports the chamber
+heat that [asa-print-quality](asa-print-quality.md) is trying to build. Negative pressure resolves
+both at once, and it is the principle fume hoods, biosafety cabinets and cleanrooms all run on:
+**below ambient, every leak flows INWARD.** The enclosure no longer has to be sealed to contain
+fumes — it only has to be closed enough that a modest extraction can hold the differential.
+
+### What it requires
+
+- ⚠️ **The enclosure must actually be closed.** This is the one hard prerequisite. With a side
+  permanently open there is no differential to hold — the flow required scales with the leakage area,
+  and an open side is not leakage, it is a duct. This converges neatly with build-order step 2, which
+  already wanted the box closed and measured.
+- **Give it a DEFINED makeup-air inlet.** Do not rely on incidental gaps. A deliberate opening of
+  known area makes the inward flow predictable and lets the extraction be sized against something,
+  instead of against the sum of every unknown seam.
+- **A duct to somewhere that is not the room.** Extraction that vents indoors is recirculation with
+  extra steps.
+
+### The number that matters is face velocity, not pressure
+
+Containment is achieved when air moves **inward** through the opening faster than fumes can drift
+out — fume-hood practice is about **0.5 m/s** at the face. Since Q = v × A, a *small* defined inlet
+makes this cheap: a 10 × 10 cm inlet at 0.5 m/s is only ~18 m³/h, far below what any 120 mm fan
+moves. **The small inlet is what makes the small extraction sufficient**, which is also why the
+makeup air costs little chamber heat.
+
+### It changes the mechanical design — two fans, and NO damper
+
+The proposal below was one fan with a switchable outlet. Running both modes *simultaneously* means
+two independent air paths:
+
+| Path | Flow | Fan |
+|---|---|---|
+| Recirculation | high | the owned 120 mm axial, through HEPA + carbon, back into the chamber |
+| Extraction | low, continuous | a **separate small fan** to the outside duct |
+
+⚠️ **Do not use a second axial PC fan for the extraction leg.** This page already records that a
+120 mm axial produces only tens of pascals; a duct run needs static pressure, not free-air flow. The
+extraction leg wants a small **radial/blower** type, which trades flow for pressure — exactly the
+opposite of what the recirculation leg wants.
+
+**This simplifies the controller rather than complicating it.** There is no damper servo and no mode
+switching: both fans simply run during a print. Extraction can very likely be a fixed rate set once
+mechanically, since the differential is a property of fixed geometry, not something that needs a
+closed loop.
+
+### Verifying it — a tissue, not a sensor
+
+Hold a strip of tissue at the inlet: it should be drawn **in**. That is the whole test, and it is
+more trustworthy here than instrumentation.
+
+⛔ **Do not try to measure this with the BMP280.** The differential is a few pascals. The BMP280's
+*absolute* accuracy is ±100 Pa, and a differential built from two of them would have one sensor at
+50 °C chamber and the other at room temperature, with temperature-dependent offset swamping the
+signal. This is a case where the cheap physical test is not a shortcut — it is the better instrument.
+
+### One consequence worth banking
+
+A recirculate-only build was recorded below as closing the door on ASA solvent welding and vapour
+smoothing, which need real extraction. **This design keeps that door open**, since an extract path
+now exists — turn the extraction up for solvent work rather than rebuilding for it.
+
 **Proposed design, and it is a change of plan, not a reading of the existing one:** recirculate
 during the print, vent afterwards. One fan, one filter, a switchable outlet — a damper or a
 movable duct — decided now rather than reprinted later.
