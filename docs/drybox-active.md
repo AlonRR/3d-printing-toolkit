@@ -64,6 +64,30 @@ convenience:
 **Exhaust placement matters:** high, and diagonally opposite the intake. Warm moist air rises, and an
 exhaust next to the intake short-circuits the flow — the air leaves before crossing the spools.
 
+## Running it — what separate cables actually buy
+
+The fan and heater being independently switchable is not just a wiring detail; it is what lets the
+box do the one thing the opening section says a sealed heated box cannot.
+
+**During a cycle: fan continuous, heater modulated.** Hold 50 °C by cycling the *heater* against the
+AHT20 while the fan runs without interruption. Cycling both together would stall the airflow every
+time the setpoint is reached, and moisture only leaves while air is moving — the fan is doing the
+actual drying, the heater merely raises the air's capacity to carry water.
+
+**⭐ At the end: heater off, fan keeps running — the cooldown purge.** This is the payoff. The
+failure this whole design exists to avoid is warm wet air sitting in the box and giving its water
+back to the spools as it cools. A purge flushes that air out **while it is still warm and still
+holding the moisture**, so what cools down afterwards is dry ambient air rather than a loaded
+atmosphere. Without independent control this is impossible: cutting the heater would cut the fan,
+and the box would cool with the wet air still inside it.
+
+Run the purge until the box is near ambient — on the order of 15–30 minutes, though the AHT20 makes
+this measurable rather than guessed. **Then seal the box and let the desiccant hold it**, which is
+the point at which the active half hands over to the passive one.
+
+**Sequencing follows from the interlock:** fan on first, heater second; heater off first, fan last.
+That is also the order the hardware enforces, so software and wiring agree rather than compete.
+
 ## Parts
 
 ### Owned — nothing to buy
@@ -82,7 +106,7 @@ exhaust next to the intake short-circuits the flow — the air leaves before cro
 | Part | Why | Rough |
 |---|---|---|
 | **12 V 5–6 A supply** | 50 W at 12 V is 4.2 A steady, and **a cold PTC pulls 2–3× that on startup** — inrush margin is a spec, not a nicety. Neither owned PD trigger board is a 12 V variant | ₪40–60 |
-| **Relay or MOSFET module, ≥10 A** | Same inrush reason. A module sized at 5 A is sized for the steady state only | ₪10–15 |
+| **2-channel relay or MOSFET module**, heater channel **≥10 A** | Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
 | **Silica gel / desiccant** | For the storage half. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
@@ -109,16 +133,29 @@ So:
   **ASA** — not PLA, and not PETG, whose Tg is ~80 °C and which is the material being dried. How
   close it can sit to the outlet depends on the bench measurement below; leave a metal or air-gap
   standoff if the outlet runs hot.
-- **Heat with no airflow is the assembly's own hazard, and the interlock may already exist.**
-  ⚠️ **Check the wire count before designing anything around this.** If the fan and element share a
-  single 12 V feed, the interlock is inherent — the element physically cannot be energised with the
-  fan unpowered. If they have separate leads, wire them onto the **same switched leg** so it becomes
-  inherent. This is a two-minute look at the part and it decides whether any wiring work is needed
-  at all.
-- **A stalled fan is the case the thermal cutout exists for.** Shared wiring protects against the
-  fan being *unpowered*; it does nothing about a bearing that seizes with voltage still applied.
-  That failure is precisely what the in-series cutout catches, which is why the cutout is not
-  negotiable even though the airflow now looks well-behaved.
+- ⚠️ **The fan and heater have SEPARATE cables** (confirmed 3 Sep 2026), which is good for control
+  and is the reason the safety wiring below is not optional. Independent control means the state
+  **heater on, fan off** is now *reachable* — a crashed or buggy controller can produce it. Shared
+  cables would have made it physically impossible; separate cables hand that guarantee back to
+  software, and software is exactly what this repo's rule says not to rely on.
+- **Gate the heater on the fan's supply — an asymmetric hardware interlock.** Do not simply tie them
+  to one leg, because that would throw away the independent control that makes the purge below
+  possible. Instead take the heater switch's *control* power — the relay coil, or the MOSFET gate
+  driver's Vcc — **from the fan's switched output**:
+
+  | Fan | Heater | Possible? |
+  |---|---|---|
+  | off | on | ⛔ **physically impossible** — no control power to the heater switch |
+  | on | off | ✅ yes — this is the purge, and it is wanted |
+  | on | on | ✅ yes — normal drying |
+
+  One wire moved, no parts added, and it restores the guarantee the shared cable would have given
+  while keeping everything independent control buys.
+- **A stalled fan is still the case the thermal cutout exists for.** The interlock above covers the
+  fan being *unpowered*. It does nothing about a bearing that seizes with voltage still applied —
+  the fan leg reads live, the heater stays enabled, and the element sits at full power in still air.
+  That is precisely what the in-series cutout catches, and it is why the cutout is not negotiable no
+  matter how the control is wired.
 
 ## Checks before building — none of these are assumptions to carry forward
 
@@ -163,7 +200,7 @@ So:
 
 1. Bench the heater assembly on the new supply, **fan running**. Record outlet air temperature, outlet surface temperature, total current, and how long each takes to settle.
 2. Mod and measure one C3, far-end, against an unmodified control.
-3. Check the assembly's wire count. Fit the cutout in series with the element, and put the fan on the same switched leg if it is not already sharing one. Print the outlet duct in ASA, sized off step 1's surface measurement.
+3. Wire it: cutout in series with the element, and **the heater switch's control power taken from the fan's switched output** so heater-without-fan is physically impossible while the purge stays available. Print the outlet duct in ASA, sized off step 1's surface measurement.
 4. Cut intake and exhaust vents — exhaust **high and diagonally opposite** the intake.
 5. Wire the AHT20 out of the airstream; bring temperature and humidity into HA over MQTT, reusing the
    plumbing the camera node already has.
