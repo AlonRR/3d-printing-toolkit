@@ -282,6 +282,49 @@ after replying, and on a weak link the reset outruns the response — the update
 ever do see a reset, **read the sha back before concluding anything**. The transfer itself is
 signal-bound: 67 s at -72 dBm, 5 s at -26 dBm, for the same 1.18 MB.
 
+## Rollback — the net for an image that boots and then dies
+
+`CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y`, and it is not optional for a board nobody can reach.
+
+Without it, a pushed image that passes validation and **boots** but then crashes before it can serve
+— a camera-init hang, a WiFi regression — is permanent. It comes up, dies, and never offers an OTA
+endpoint to push a fix to. The only recovery is a USB cable, which means unscrewing a camera from
+inside a printer enclosure. Note that image *corruption* was never the risk here; the bootloader's
+structural check always catches that. The uncovered case was the one that is structurally perfect
+and behaviourally broken.
+
+With it, a freshly pushed image boots as **`PENDING_VERIFY`** and only becomes permanent when
+`esp_ota_mark_app_valid_cancel_rollback()` runs — which `ota_start()` calls *after* WiFi is up and
+the OTA endpoint is serving. An image that cannot get that far is rolled back to the previous slot
+on the next reset, automatically. "This build works" is therefore defined as "it can be updated
+again", which is the only definition that matters remotely.
+
+⚠️ **This is a BOOTLOADER option, and OTA does not replace the bootloader.** It can only ever be
+enabled over USB, so it had to be turned on before the board was mounted — afterwards is too late.
+
+`ota_start()` logs the state on every boot, because a config flag in a file is not evidence:
+
+```
+I (8455) ota: image state on boot: PENDING_VERIFY (rollback armed)   <- after an OTA push
+I (8446) ota: image state on boot: VALID                             <- after a USB flash
+```
+
+Verified 3 Sep 2026: pushed by name, `HTTP 200`, rebooted into `ota_1`, reported `PENDING_VERIFY`,
+then marked valid on reaching the OTA endpoint.
+
+## The build script is in the repo
+
+`build-cam.ps1` — run it with an optional COM port to flash as well:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File build-cam.ps1 COM9
+```
+
+It encodes the ESPHome-provisioned IDF cache paths, the unified `xtensa-esp-elf` PATH fix described
+above, and a guard so `set-target` does not wipe the build directory on every run. It is committed
+rather than kept in a scratchpad because none of that is recoverable from prose. An occasional
+`internal compiler error: Segmentation fault` from the toolchain is transient — re-run it.
+
 ## Roadmap
 
 `camera.c`, `dht11.c` and `main.c` are separate from the start so phase 2 drops in without touching

@@ -243,9 +243,23 @@ esp_err_t ota_start(int port)
      * means WiFi is up and the OTA endpoint is serving, which is a meaningful
      * definition of "this build works" - a build that cannot get here SHOULD be
      * rolled back. */
+    /* Reported BEFORE the image is confirmed, because this line is the only
+     * visible proof that the rollback net is actually armed. PENDING_VERIFY on
+     * the first boot after a push means the bootloader is holding the previous
+     * slot in reserve; UNDEFINED here would mean the safety net is off and a
+     * bad-but-bootable image would strand the board. */
+    const esp_partition_t *running = esp_ota_get_running_partition();
+    esp_ota_img_states_t state;
+    if (esp_ota_get_state_partition(running, &state) == ESP_OK) {
+        ESP_LOGI(TAG, "image state on boot: %s",
+                 state == ESP_OTA_IMG_PENDING_VERIFY ? "PENDING_VERIFY (rollback armed)"
+                 : state == ESP_OTA_IMG_VALID        ? "VALID"
+                 : state == ESP_OTA_IMG_UNDEFINED    ? "UNDEFINED - check CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
+                                                     : "other");
+    }
+
     esp_ota_mark_app_valid_cancel_rollback();
 
-    const esp_partition_t *running = esp_ota_get_running_partition();
     ESP_LOGI(TAG, "OTA ready on port %d, running from %s", port, running->label);
     ESP_LOGI(TAG, "  push:   curl -X POST --data-binary @firmware.bin \\");
     ESP_LOGI(TAG, "            -H \"X-OTA-Key: <ota_password>\" http://<ip>:%d/ota", port);

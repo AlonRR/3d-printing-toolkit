@@ -76,3 +76,21 @@ CONFIG_LWIP_TCP_SACK_OUT=y
 # 240 MHz rather than the 160 MHz default. Helps the TCP stack, and should also
 # cut the 589 ms software JPEG encode.
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+
+# ------------------------------------------------------------------ rollback
+#
+# THE SAFETY NET FOR A BOARD NOBODY CAN REACH. Without this, a pushed image
+# that validates and BOOTS but then crashes before it can serve - a camera-init
+# hang, a WiFi regression - is permanent: it comes up, dies, and never offers
+# an OTA endpoint to push a fix to. The only recovery is a USB cable, which
+# means unscrewing a camera from inside a printer enclosure.
+#
+# With it, a new image boots as PENDING_VERIFY and is only made permanent when
+# esp_ota_mark_app_valid_cancel_rollback() runs - which ota_start() calls after
+# WiFi is up and the OTA endpoint is serving. An image that cannot get that far
+# is rolled back to the previous slot on the next reset, automatically.
+#
+# ⚠️ THIS IS A BOOTLOADER OPTION, AND OTA DOES NOT REPLACE THE BOOTLOADER.
+# It can therefore only ever be enabled over USB. Turning it on after the board
+# is mounted is impossible - which is the whole reason it is on now.
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
