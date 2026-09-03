@@ -58,6 +58,24 @@ The spool label is the only real source:
 are a defensible starting point and nothing more. `filament_notes` says so, and says
 `UNTESTED` — as it should until a print has actually been run.
 
+### ⏸️ The tower is built and DELIBERATELY not printed yet
+
+`models/petg-temp-tower/petg-temp-tower.gcode` is sliced and ready — 2 h 41 m, 31.3 g, bands
+220/230/240/250/260 baked in, base plate laid at 240 °C so adhesion is not the variable.
+
+**Alon's decision, 3 Sep 2026: it waits for the active drybox** ([drybox-active](../../../docs/drybox-active.md)).
+This is a sequencing choice, not a delay to work around:
+
+- **Calibrating on wet filament measures the water, not the temperature.** Wet PETG strings and
+  bubbles at *every* band, so the print would look decisive and be wrong — and a wrong number here
+  gets written into a profile and trusted for months.
+- The bed-at-50 °C method documented above genuinely works, but a spool dried that way **starts
+  re-absorbing as soon as it comes off the bed**. Drying into a box that then *holds* it dry is what
+  makes the tower's answer reproducible rather than a one-off.
+
+So the drybox is now on the **critical path for this profile**, which is worth knowing when
+prioritising its parts.
+
 ### Drying — 50 °C for 4 h, inherited
 
 This filament publishes **no drying schedule**. The figure used is **50 °C for 4 hours**, taken from
