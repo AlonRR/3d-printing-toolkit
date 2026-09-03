@@ -685,15 +685,24 @@ makeup air costs little chamber heat.
 The proposal below was one fan with a switchable outlet. Running both modes *simultaneously* means
 two independent air paths:
 
-| Path | Flow | Fan |
+| Path | Flow | Source |
 |---|---|---|
-| Recirculation | high | the owned 120 mm axial, through HEPA + carbon, back into the chamber |
-| Extraction | low, continuous | a **separate small fan** to the outside duct |
+| Recirculation | high | the owned 120 mm fan, through HEPA + carbon, back into the chamber |
+| Extraction | low, continuous | a **metered bleed off the same fan's outlet**, into the duct |
 
-⚠️ **Do not use a second axial PC fan for the extraction leg.** This page already records that a
-120 mm axial produces only tens of pascals; a duct run needs static pressure, not free-air flow. The
-extraction leg wants a small **radial/blower** type, which trades flow for pressure — exactly the
-opposite of what the recirculation leg wants.
+⚠️ **CORRECTION, 4 Sep 2026 — and it changes the design back to ONE fan.** The claim below that "a
+120 mm axial produces only tens of pascals" is true of ordinary case fans and **not of the fan
+actually owned.** The JUMPEAK runs **3200 RPM** on a 120 mm frame, where ordinary case fans run
+1200–1500, and static pressure scales roughly with RPM² — it is an industrial high-static-pressure
+part.
+
+That makes a **single fan with a split outlet** the better design: it pushes the filter stack *and* a
+metered bleed out the duct, most of the flow returning to the chamber. One owned fan, no second
+purchase, no damper, and the extracted air is already filtered because the bleed comes off the
+downstream side of the HEPA. The full build is in [chamber-airflow](chamber-airflow.md).
+
+Two fans remain the upgrade path if the duct proves restrictive enough to collapse the bleed, or if
+solvent work later wants extraction turned up independently of the recirculation rate.
 
 **This simplifies the controller rather than complicating it.** There is no damper servo and no mode
 switching: both fans simply run during a print. Extraction can very likely be a fixed rate set once
