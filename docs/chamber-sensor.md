@@ -111,6 +111,37 @@ building anything on it.
 has no chamber-temperature feature**, so using it means a custom firmware build. That trades
 PrusaLink support and painless updates for a number an ESP32 gives you for free. Not worth it.
 
+### 📏 FIRST CHAMBER MEASUREMENT — 31 °C mid-print, 3 Sep 2026
+
+The S3 camera node with its DHT11 was placed in the enclosure during a live print. Over a 40 s
+sample it read **31.2–31.3 °C and 37.2–37.6 %RH**, flat rather than still climbing, so this is a
+plateau and not a mid-warmup number.
+
+**This is the measurement step 2 of the build order has been asking for, and the answer is lower than
+this page assumed.** The prediction above is that a properly closed enclosure reaches **40–50 °C on
+bed heat alone**. With one side deliberately open it reaches **31 °C** — roughly 5 °C over room
+ambient. The open side is costing something like 10–20 °C.
+
+Three consequences:
+
+- **31 °C is not an ASA chamber.** ASA wants 40–60 °C. If warping is the problem, the open side is
+  the cause, not a missing heater — which supports the existing conclusion that closing it comes
+  before buying anything.
+- **The reading is biased HIGH, so the enclosure is doing worse than 31 °C suggests.** The DHT11 sits
+  on the same PCB as an ESP32-S3 running WiFi and a camera continuously, and self-heating lifts it.
+  True chamber air is likely a degree or two below the figure. Same error class as putting the
+  camera's sensor inside its own sealed case.
+- **Do not read "31.2" as precision.** The DHT11 is ±2 °C with 1 °C resolution, so this is 31 ± 2.
+  It is entirely adequate for "is the chamber warm" — which is the question being asked — and
+  inadequate for characterising a 40–60 °C ASA chamber, which is the question that comes next.
+
+⚠️ **The DHT11 tops out at 50 °C.** It has ample headroom at 31, but if the side is closed and the
+chamber is pushed toward ASA temperatures the sensor will approach and then clip its own range. The
+upgrade decision arrives at the same moment the enclosure starts working.
+
+**Incidental but useful: WiFi reaches inside the enclosure.** The node stayed reachable by name from
+workstation and kept publishing throughout, which closes an open question about coverage at the printer.
+
 ### On a chamber heater — not yet, and the reasons are not just cost
 
 Asked and answered here so it does not get re-opened from scratch:
