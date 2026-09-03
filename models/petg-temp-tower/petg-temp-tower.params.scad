@@ -10,7 +10,15 @@ One band per temperature, printed bottom to top. These span the label's full 230
 
 The slicer is what changes the temperature; the model only makes each band identifiable and gives it features that fail visibly. Add an M104 at each band boundary via the layer slider - petg-temp-tower.scad echoes the exact Z heights and layer numbers to use.
 */
-temps = [230, 240, 250, 260];
+temps = [220, 230, 240, 250, 260];
+
+/*
+220 IS DELIBERATELY BELOW THE LABEL, which claims 230-260. The label is an
+unbranded OEM's generic claim with no data sheet behind it, and a documented
+Polymaker PETG turned out to print best at 220 - ten degrees under its own
+manufacturer's stated range. One extra band is cheap; discovering afterwards
+that the optimum sat below the range you tested is not.
+*/
 
 /* [Band geometry] */
 band_h  = 10.0;     /* Height of each band. MUST be a whole number of layers or the temperature change lands mid-band and the boundary stops being readable — the .scad asserts this against fdm_layer_h. */
@@ -21,12 +29,15 @@ body_d  = 18.0;     /* Front to back. Also the bridge span, so this is the numbe
 /*
 Each band carries the same three features, so the ONLY variable between bands is temperature. That is the entire experimental design: vary one thing.
 */
-shelf_len   = 7.0;      /* How far the shelf sticks out with nothing under it. A 90 degree overhang, deliberately the hardest case rather than a 45 degree one — too hot and it droops, and droop is easy to see against the band above. */
+shelf_len   = 7.0;      /* How far the shelf sticks out with nothing under it. A 90 degree overhang, deliberately the hardest case rather than a 45 degree one — too hot and it droops, and droop is easy to see against the band above. Sits on the BACK face: an earlier version put it on the +X face and mirrored the second tower, which pointed BOTH shelves into the valley and cut the travel gap from 40 mm to 33. */
 shelf_t     = 2.0;      /* Thickness of the shelf. Thin enough to sag if it is going to, thick enough to survive handling. */
-shelf_z     = 0.55;     /* Where the shelf sits within its band, 0..1. Just above middle, so the droop has clean air below it. */
+shelf_z     = 0.55;     /* Where the shelf sits within its band, 0..1. Above middle for the same settling reason as the bridge, and with clean air below it so droop is visible. */
 
-bridge_d    = 6.0;      /* Diameter of the through-hole. Its ceiling is an unsupported bridge of body_d across — sag here reads as too hot or too little cooling. */
-bridge_z    = 0.25;     /* Where the hole sits within its band, 0..1. Low, so the bridge is well clear of the shelf above it. */
+bridge_w    = 8.0;      /* Depth of the bridge bar, in Y. Wide enough to judge sag along its length, narrow enough that it does not shade the towers from the fan. */
+bridge_t    = 1.2;      /* Thickness, six layers. A bridge this thin sags visibly when too hot; a thick one just prints. */
+bridge_z    = 0.78;     /* Where the bridge sits within its band, 0..1. HIGH, near the top, and that is the important part.
+
+M104 does not wait. At each band boundary the new temperature is commanded and printing continues immediately, so the first layers of a band are still being fed plastic that was melted at the PREVIOUS temperature - the melt zone holds roughly a layer or two of it. A bridge at the bottom of a section is therefore a blend of two temperatures and cannot be attributed to either. Near the top, the band has long settled and the bridge tests the temperature its label claims. */
 
 fin_w       = 1.2;      /* A thin vertical fin on the back. Narrow features are where stringing and over-extrusion show first. */
 fin_len     = 4.0;      /* How far it stands off the back face. */

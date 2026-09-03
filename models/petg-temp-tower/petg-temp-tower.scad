@@ -40,8 +40,15 @@ assert(fin_w >= fdm_extrusion_w,
        str("fin_w (", fin_w, ") is under one extrusion width (", fdm_extrusion_w,
            ") and will not print"));
 
-/* The three features have to stay clear of each other or a failure cannot be attributed to one of them. */
-assert(bridge_z < shelf_z, "bridge must sit below the shelf within a band");
+/* The shelf and the bridge sit on DIFFERENT faces - shelf on the back, bridge spanning the valley - so they need no vertical separation from each other. Each only has to fit inside its own band, and each has to be far enough above the band boundary to have settled. */
+assert(bridge_z * band_h + bridge_t < band_h,
+       str("bridge at ", bridge_z, " of a ", band_h, " mm band, plus ", bridge_t,
+           " mm thickness, runs into the band above - it would join two temperatures and be unreadable"));
+
+/* M104 does not wait: the first layers of a band still extrude plastic melted
+ * at the PREVIOUS temperature, so anything printed there is a blend of two. */
+assert(bridge_z * band_h >= 4 * fdm_layer_h,
+       "bridge sits too close to the bottom of its band to have settled");
 
 /* The base is the thing that makes this one part; a fractional layer would
  * leave the join to a slicer rounding decision. */
@@ -68,11 +75,13 @@ Every feature is buried `weld` deep INTO the body for the same reason the bands 
 module features(i) {
     base = i * band_h;
 
-    /* Shelf: sticks out into open air with nothing beneath it. */
-    translate([body_w - weld, 0, base + shelf_z * band_h])
-        cube([shelf_len + weld, body_d, shelf_t]);
+    /* Shelf: sticks out into open air with nothing beneath it. On the BACK
+     * face, not the sides - the sides face the valley, and anything protruding
+     * there shortens the travel move the pair exists to create. */
+    translate([0, body_d - weld, base + shelf_z * band_h])
+        cube([body_w, shelf_len + weld, shelf_t]);
 
-    /* Fin: a thin blade standing off the back face. */
+    /* Fin: a thin blade, also on the back, beside the shelf. */
     translate([fin_x - fin_w / 2, body_d - weld, base + band_h * 0.15])
         cube([fin_w, fin_len + weld, band_h * 0.6]);
 
@@ -93,36 +102,74 @@ module features(i) {
                      valign = "center", $fn = 32);
 }
 
-module bridge(i) {
+/*
+The bridge SPANS the valley between the two towers, rather than being a hole
+through one of them.
+
+The earlier version drilled a horizontal hole through each tower body and called
+its ceiling a bridge. That is a weak test: the span is only body_d across and it
+is surrounded by solid material that carries the heat away. A genuine bridge is
+unsupported air on both sides for the full width of the gap, which is what
+actually sags when the nozzle is too hot.
+
+This is also what the established all-in-one temperature-and-bridging towers do,
+and the reason they are built as two columns rather than one.
+*/
+module bridge_span(i) {
     base = i * band_h;
-    /* Over-length in Y so both ends are genuinely open rather than skinned. */
-    translate([bridge_x, -1, base + bridge_z * band_h + bridge_d / 2])
-        rotate([-90, 0, 0])
-            cylinder(h = body_d + fin_len + 2, d = bridge_d, $fn = 48);
+    translate([body_w - weld, (body_d - bridge_w) / 2,
+               base + bridge_z * band_h])
+        cube([gap_clear + 2 * weld, bridge_w, bridge_t]);
 }
 
 module tower() {
-    difference() {
-        union() {
-            cube([body_w, body_d, total_h]);
-            for (i = [0 : n_bands - 1]) features(i);
-        }
-        for (i = [0 : n_bands - 1]) bridge(i);
-    }
+    cube([body_w, body_d, total_h]);
+    for (i = [0 : n_bands - 1]) features(i);
 }
 
-span_x = twin ? 2 * (body_w + shelf_len) + tower_gap - shelf_len
-              : body_w + shelf_len;
+/* With the shelves moved to the back, the towers are plain body_w blocks and
+ * the clear gap really is tower_gap. */
+gap_clear = tower_gap;
+span_x    = twin ? 2 * body_w + tower_gap : body_w;
 
 /* The base plate, joining both towers into a single solid, with the filament's
  * identity engraved into its top face in the gap between the towers. */
+
+
+
+/* The second tower is MIRRORED, not copied, so its shelf and fin face outward
+ * too. A plain copy would put the second tower's shelf into the gap, shortening
+ * the travel that this pair exists to create. */
+
+tower();
+
+/* A plain copy, not a mirror. Every protruding feature now lives on the BACK
+ * face, so both towers are identical and the valley between them stays empty
+ * apart from the bridges. Mirroring was the earlier approach and it pointed
+ * BOTH shelves inward, cutting the 40 mm travel gap to 33. */
+if (twin) translate([body_w + tower_gap, 0, 0]) tower();
+
+/* The bridges, spanning the gap and tying the two towers into one part. */
+if (twin) for (i = [0 : n_bands - 1]) bridge_span(i);
+
+/*
+The base plate, spanning both towers, with the filament's identity engraved into
+its top face in the valley between them.
+
+This block was silently DELETED once already, by a cleanup regex that matched
+"if (twin)" followed by indented lines while removing the old tower placement.
+Nothing complained: the bridges alone tie the towers into one solid, so the
+model still rendered as a single part and still passed scad-check. The loss was
+only visible in the G-code preview, where the plate and the engraving simply
+were not there. A part count is not a substitute for looking.
+*/
 if (twin)
     difference() {
         cube([span_x, body_d, base_t]);
 
-        /* Recessed from the TOP face down, so the cut is open upward and needs
-         * no support. Placed in the gap so it does not eat into either tower's
-         * footprint. */
+        /* Recessed from the TOP face downward, so the cut opens upward and
+         * needs no support. Sat in the valley, where it takes nothing away from
+         * either tower's footprint. */
         translate([span_x / 2, body_d / 2, base_t - label_depth])
             linear_extrude(label_depth + 1) {
                 translate([0, label_size * 0.62, 0])
@@ -134,24 +181,13 @@ if (twin)
             }
     }
 
-tower();
-
-/* The second tower is MIRRORED, not copied, so its shelf and fin face outward
- * too. A plain copy would put the second tower's shelf into the gap, shortening
- * the travel that this pair exists to create. */
-if (twin)
-    translate([2 * body_w + shelf_len + tower_gap, 0, 0])
-        mirror([1, 0, 0])
-            tower();
-
 /*
 ECHOES — the numbers needed at the slicer, so nobody has to count layers.
 */
 echo(str("PETG temperature tower: ", n_bands, " bands, ", band_h,
          " mm each, total ", total_h, " mm"));
-echo(str("footprint ", twin ? 2 * (body_w + shelf_len) + tower_gap
-                            : body_w + shelf_len,
-         " x ", body_d + fin_len, " mm", twin ? "  (twin towers)" : ""));
+echo(str("footprint ", span_x, " x ", body_d + shelf_len, " mm",
+         twin ? str("  (twin towers, ", tower_gap, " mm clear gap)") : ""));
 echo("--- add these in PrusaSlicer via the layer slider, right-click -> Add custom G-code ---");
 for (i = [0 : n_bands - 1])
     echo(str("  band ", i, ": ", temps[i], " C   from z ", i * band_h,
