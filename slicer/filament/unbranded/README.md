@@ -58,6 +58,27 @@ The spool label is the only real source:
 are a defensible starting point and nothing more. `filament_notes` says so, and says
 `UNTESTED` — as it should until a print has actually been run.
 
+### Drying — 50 °C for 4 h, inherited
+
+This filament publishes **no drying schedule**. The figure used is **50 °C for 4 hours**, taken from
+**Inslogic's PETG Pro TDS** — a real vendor number for the same material, which is a better basis
+than the 55–65 °C ranges quoted generically online. ⚠️ It is *inherited*, not this spool's own spec.
+
+**Do not go hotter.** PETG's glass transition is around 80 °C, but spools deform and windings **fuse
+together** well below that, and a welded spool is unrecoverable. 50 °C leaves 30 °C of headroom, and
+the extra drying speed from 65 °C does not pay for the risk.
+
+**Method, with equipment already on hand:** set the printer's **heated bed to 50 °C** from the LCD,
+put the spool on it, cardboard box over the top, and leave a gap so moist air can escape rather than
+recirculate. The bed is thermostatically controlled, which is exactly what this needs. Then straight
+into a bag with desiccant, or straight into the print.
+
+⛔ **Not a kitchen oven** — domestic ovens cycle far outside their setpoint at low temperatures, and
+an overshoot to 90 °C is how spools fuse. ⛔ **Not inside the Lack enclosure** — the Einsy board and
+PSU sit in that frame, and there is no print here to justify cooking them for six hours.
+
+*Drying fixes a wet spool; storage stops you needing to.*
+
 ### Density is an assumption
 
 `filament_density = 1.27` is the generic figure for PETG, **not a spec**. It feeds cost-per-volume
