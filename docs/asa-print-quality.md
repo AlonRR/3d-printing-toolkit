@@ -174,7 +174,7 @@ ASA wants a **warm, still chamber: 40–50 °C is the usual target**, and source
 temperature and the airflow across the part is asymmetric. That is the largest remaining
 variable, and no slicer setting substitutes for it.
 
-**Do not simply close it.** The Einsy board and the PSU sit *inside* the Lack frame. The
+**Do not simply close it — but the exposure is smaller than this page long claimed.** ⚠️ **CORRECTED 4 Sep 2026: the PSU is ALREADY OUTSIDE the enclosure.** Alon moved it out when he built the box, so every statement here and in `CLAUDE.md` that "the Einsy board and the PSU sit inside the frame" has been false since the enclosure was built, and the risk was being overstated in every document that repeated it. **Only the Einsy is inside.** That removes the larger heat source of the two — a PSU dissipates its own losses under bed load *and* stirs the bay with its fan — so the remaining question is Einsy-only. The
 failure mode is documented and specific: users printing ABS/ASA in a closed enclosure report
 **`TMC DRIVER OVERTEMP`** faults, and the practical advice is either active cooling on the
 electronics box or moving the board outside the enclosure. Reports conflict on whether an

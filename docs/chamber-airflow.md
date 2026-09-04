@@ -113,8 +113,10 @@ convenient.
 
 **This is close to free, and it may remove the whole reason to relocate the Einsy.**
 
-The negative-pressure design *requires* a continuous inward flow of room-temperature air. The Einsy
-and the PSU sit inside the Lack frame and are the parts most at risk from closing the box —
+The negative-pressure design *requires* a continuous inward flow of room-temperature air. **The Einsy
+is inside the Lack frame** and is the part most at risk from closing the box — ⚠️ the **PSU is already
+outside**, moved there when the enclosure was built, so target the inlet at the Einsy specifically
+rather than at a general "electronics bay" —
 [asa-print-quality](asa-print-quality.md) warns not to seal it for exactly this reason, and
 `chamber-sensor.md` puts Einsy trouble at around **60 °C**.
 
@@ -199,9 +201,10 @@ condition it exists for.
 
 - 📋 **The fan's real static-pressure figure**, from the listing rather than inferred from RPM.
 - 📋 **Where the duct terminates.** A physical decision about the room that gates step 4.
-- 📋 **Whether the Einsy tolerates a closed chamber.** `chamber-sensor.md` warns the board and PSU sit
-  inside the frame and the stepper drivers throttle when hot. Step 2 measures the chamber; **the
-  electronics bay needs watching in the same run**, because closing the box is what puts it at risk.
+- 📋 **Whether the Einsy tolerates a closed chamber.** The stepper drivers throttle when hot, so step 2
+  measures the chamber and **the Einsy needs watching in the same run** — closing the box is what puts
+  it at risk. ✅ **The PSU is already outside** (moved when the enclosure was built), which removes the
+  larger of the two heat sources and makes a good result substantially more likely.
 
   ✅ **This needs no hardware.** The Einsy's own ambient thermistor is physically point B, and Prusa's
   firmware reports it in `M105` as **`A:`** (alongside `P:` for the PINDA). Close the box, run a
