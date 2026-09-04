@@ -108,7 +108,7 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **12 V 5–6 A supply** | 50 W at 12 V is 4.2 A steady, and **a cold PTC pulls 2–3× that on startup** — inrush margin is a spec, not a nicety. Neither owned PD trigger board is a 12 V variant | ₪40–60 |
 | **2-channel relay or MOSFET module**, heater channel **≥10 A** | Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
-| **Silica gel / desiccant** | For the storage half. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
+| **Silica gel / desiccant** | For the storage half, and **not optional if 5–15 %RH is the goal** — at 50 °C on room air the box bottoms out near 17 %RH, so desiccant is what closes the last gap rather than a refinement. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
 Total is roughly **₪80–135** — the fan came off the list once the heater turned out to have one bonded
 to it. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
@@ -184,6 +184,47 @@ So:
 3. **Where the AHT20 sits.** **Not in the intake stream.** A sensor in the plume reads the heater,
    not the box, and the controller then undershoots the whole volume — the same error class as
    putting the camera's DHT inside its own sealed case.
+
+## 📐 The humidity floor — why heat alone cannot reach drybox numbers
+
+**Measured reference, 4 Sep 2026: the printer room is 25.8 °C / 64.4 %RH.** (From the Sensibo in the
+guest bedroom — the value is a `current_humidity` *attribute* on the climate entity, not a sensor
+entity, which is why it is invisible to anything reading entity states.)
+
+That number sets a hard limit on this design, because **a vented heated box cannot produce air drier
+than the air it is fed.** It has no desiccant and no condenser in the loop; heating only lowers RH by
+raising the air's capacity, so the *absolute* humidity coming in is the floor. Room air at 2.14 kPa
+vapour pressure, reheated:
+
+| Box temperature | Best achievable RH inside |
+|---|---|
+| 40 °C | 29 % |
+| **50 °C** ← the chosen setpoint | **17 %** |
+| 60 °C | 11 % |
+| 70 °C | 7 % |
+
+### The consequence: 50 °C dries well, but it will NOT hold a 5–15 %RH box
+
+A working drybox sits at **5–15 %RH** — that is the figure the AHT20 was bought for, since a DHT11
+floors at 20 %RH and physically cannot read one. At 50 °C on a day like today the active box bottoms
+out around **17 %**, just *above* that range.
+
+Both halves of the design are needed, and this is the number that proves it rather than asserting it:
+
+- **Drying works.** 17 % against a 64 % ambient is a very steep gradient, and that gradient is what
+  pulls water out of the spools. The active box does its job.
+- **Storage cannot be done by heat.** Sealing a box that has just been flushed with 17 % air leaves
+  it at 17 %, not at 5–15 %. **The desiccant is what closes that last gap**, which promotes it from
+  "nice to have" to a required part of reaching the target — see the buy list.
+
+⚠️ **This is one day's reading, and it is the wrong season to generalise from.** Israeli coastal
+humidity swings widely; a muggy day pushes every number in that table up, and the box gets worse
+exactly when the filament needs it most. **Log room RH over time rather than trusting a spot value** —
+that is the strongest argument for promoting the Sensibo attribute into a recorded sensor.
+
+⚠️ **Do not respond to this by raising the setpoint.** 70 °C reaches 7 % on paper, and would also
+deform spools and risk fusing windings — the reason 50 °C was chosen. The answer to the last few
+points of RH is desiccant, not heat.
 
 ## Temperature limit
 
