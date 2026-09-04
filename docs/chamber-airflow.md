@@ -109,6 +109,27 @@ convenient.
 - Put it **low and away from the filter intake**, so incoming cool air crosses the chamber rather
   than short-circuiting straight back into the fan.
 
+### ⭐ Site the inlet so the makeup air washes the electronics first
+
+**This is close to free, and it may remove the whole reason to relocate the Einsy.**
+
+The negative-pressure design *requires* a continuous inward flow of room-temperature air. The Einsy
+and the PSU sit inside the Lack frame and are the parts most at risk from closing the box —
+[asa-print-quality](asa-print-quality.md) warns not to seal it for exactly this reason, and
+`chamber-sensor.md` puts Einsy trouble at around **60 °C**.
+
+Put the inlet at the electronics bay, and that incoming air becomes **forced cooling of the
+electronics on its way in** — the coolest air in the system meeting the most heat-sensitive parts
+first, before it picks up any chamber heat. The airflow has to exist anyway; siting it well costs a
+hole in a different place.
+
+It also improves the chamber side: air entering at the bay is well away from the filter intake, so it
+crosses the volume rather than short-circuiting.
+
+**Order of operations matters here.** Measure the bay first (below), then site the inlet, then
+re-measure. If bay cooling turns out to be the inlet's real job, that should shape where it goes
+while the choice is still free.
+
 ## The duct
 
 - **It must terminate somewhere that is not the room.** Extraction that vents indoors is
@@ -181,3 +202,9 @@ condition it exists for.
 - 📋 **Whether the Einsy tolerates a closed chamber.** `chamber-sensor.md` warns the board and PSU sit
   inside the frame and the stepper drivers throttle when hot. Step 2 measures the chamber; **the
   electronics bay needs watching in the same run**, because closing the box is what puts it at risk.
+
+  ✅ **This needs no hardware.** The Einsy's own ambient thermistor is physically point B, and Prusa's
+  firmware reports it in `M105` as **`A:`** (alongside `P:` for the PINDA). Close the box, run a
+  print, read `A:` against the ~60 °C figure. **Do this before considering any relocation of the
+  board or PSU** — it is a free measurement that decides whether a large, safety-sensitive job is
+  needed at all.
