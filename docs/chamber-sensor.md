@@ -589,6 +589,57 @@ it reads radiant heat rather than air; **not** in the part-cooling fan's exhaust
 the frame, which conducts. If it reads high whenever the bed is hot but the print is going fine,
 it is seeing the bed — add a small printed baffle between probe and bed.
 
+### ⛔ And NEVER on the node's own PCB — the bias points at the answer
+
+**Measured, 3–4 Sep 2026.** The DHT11 riding on the S3 camera board reported 31.2 °C / 37.2 %RH in
+the chamber. Self-heating from an ESP32 running WiFi and a camera continuously means **both figures
+are wrong in the same direction**: a sensing element hotter than the air it samples over-reads
+temperature *and* under-reads RH, because RH is measured against saturation at the **element's**
+temperature, not the air's.
+
+| Self-heat | A true 48 %RH air reads |
+|---|---|
+| +1 °C | 45.3 % |
+| +2 °C | 42.8 % |
+| +3 °C | 40.4 % |
+
+⚠️ **This is why the error is dangerous rather than merely annoying: warmer-and-drier is exactly the
+reading that says "the chamber is fine, no heater needed, ASA will print".** The single measurement
+this whole project exists to make — *does the closed enclosure get hot enough* — is biased toward
+answering "yes" by the very sensor taking it. A random ±2 °C would average out; a **directional**
+bias never does, and it points at the conclusion.
+
+**The AHT20 does not fix this by being a better part.** It shrinks the error, it does not remove it:
+mount an AHT20 on a node PCB beside a WiFi radio and it inherits the same bias, just smaller.
+**Placement is the fix, not the part number.**
+
+### The wiring conflict this creates, and the resolution
+
+The requirements pull against each other:
+
+- §4 puts the **bay** probe on **1-Wire** specifically because *"I²C is not a long-cable bus and will
+  fail intermittently, which is the worst way for a safety sensor to fail"*.
+- §6 requires the **chamber** probe to hang **in free air, away from everything** — and now, away
+  from the node as well.
+- But the chamber probe is **I²C** (AHT20), so "far enough to avoid self-heating" and "close enough
+  for reliable I²C" appear to be in tension.
+
+✅ **They are not, once the node moves.** The conflict only exists if the node is assumed to be inside
+the chamber. **Mount the node on the OUTSIDE of the enclosure wall and run a short I²C tail through
+it to the sensor hanging inside.**
+
+- The I²C run stays **short** — 20–30 cm, which §4 already calls trivial at 100 kHz — so the
+  long-cable objection never arises.
+- The node's own heat is dumped **outside the chamber entirely**, which is strictly better than
+  moving it to a far corner inside.
+- It suits the rest of the design: the controller's other job is the fans, which live at the filter
+  and extraction points on the chamber wall, not in the middle of the print volume.
+- It also keeps the electronics out of a hot, ASA-fume-laden box, which is its own win.
+
+**So: node outside, sensor inside on a short tail, in free air.** Neither giving up humidity for
+1-Wire nor calibrating out an offset is necessary — and the second was never attractive, since it
+needs a trusted reference that does not exist yet.
+
 **Bay probe (B).** Against the Einsy's case or near the driver heatsinks, inside the electronics
 box, in still air. The TO-92 DS18B20 taped down is fine; the stainless-probe version is easier to
 wedge and easier to route.
