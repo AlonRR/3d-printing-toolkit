@@ -330,3 +330,7 @@ PrusaLink       http://prusalink.local          (= 192.0.2.128, same Pi)
 Home Assistant  https://ha.internal.example
 MQTT broker     mqtt.internal.example:1883
 ```
+
+---
+
+_Parts of this repository were drafted with the help of an LLM agent; reviewed and verified locally._
