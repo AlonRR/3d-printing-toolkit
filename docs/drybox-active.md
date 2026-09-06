@@ -363,9 +363,10 @@ plastic bag while hot — and let it cool closed.
 
 A kitchen oven at ~110 °C *is* acceptable here, and this is a real difference from filament: spools
 are ruined by an oven's temperature swings, while bentonite tolerates ±20 °C around 110 without
-harm. ⚠️ **But only if the material is clean.** If it is cat litter it may carry fragrance,
-clumping agents or dust suppressants, which bake off into the oven — in that case use a dedicated
-toaster oven, not the food one.
+harm. ✅ **Confirmed 6 Sep 2026: the material on hand is plain bentonite cat litter with no
+additives**, so there is no fragrance, clumping agent or dust suppressant to bake off and an
+ordinary oven is fine. The dust precautions above still apply in full — cat-litter bentonite is
+often *dustier* than pelletised desiccant, not less.
 
 ### ⚠️ Bentonite may not reach the 5–15 %RH target
 
@@ -378,6 +379,72 @@ That is not useless — it is a large improvement over an undried box, and it is
 is already on hand. But if the 5–15 % band is the actual goal, **silica gel is the right purchase**,
 and indicating silica gel additionally shows its own state by colour rather than requiring the scale.
 Bentonite is the sensible thing to start with and to learn the workflow on.
+
+## 💡 A dehumidifier — upstream, never inside
+
+The instinct is right and the placement inverts the answer. **Inside the box a household
+dehumidifier is useless. Upstream of it, the same appliance is transformative.**
+
+### ⛔ Inside the box: it cannot reach these humidities
+
+A compressor/refrigerant dehumidifier works by condensing water on a cold coil, so **the lowest RH it
+can hold is set by how cold that coil gets**:
+
+| Target inside the box | Coil must sit below |
+|---|---|
+| 30 %RH at 25 °C | +6.2 °C |
+| 20 %RH | **+0.5 °C** |
+| 10 %RH | **−8.8 °C** |
+
+Household units ice up and enter defrost around 0 °C, so the low band is not merely hard for them,
+it is **physically out of reach**. They are also rated for roughly 5–35 °C ambient, and the drybox
+runs at 50 °C — outside the envelope entirely.
+
+✅ **Confirmed in this house, which is better evidence than the theory:** the Cave dehumidifier is
+**set to 25 %RH, running, and the room is at 50 %.** It is not broken; it is at its limit. That is
+exactly the flattening this table predicts.
+
+*(A desiccant-rotor dehumidifier is the exception — those do reach low RH and work cold. But that is
+a different appliance and a purchase, and it is essentially a machine that automates what the
+desiccant tray already does.)*
+
+### ✅ Upstream: the heating multiplies it, and this is the big lever
+
+The box's floor is set by the **absolute** humidity of the air it is fed. Drop the room's humidity
+and the floor drops with it — then the 50 °C heating multiplies the gain:
+
+| Room at 25 °C | **Box floor at 50 °C** |
+|---|---|
+| 65 %RH *(measured today)* | 16.6 % |
+| 55 %RH | **14.1 %** ← in band |
+| 50 %RH | **12.8 %** |
+| 45 %RH | **11.5 %** |
+| 40 %RH | **10.2 %** |
+
+**A dehumidifier that cannot get below 45 %RH — the very limitation that makes it useless inside the
+box — is more than enough upstream to put the box comfortably inside the 5–15 % target.** It only
+has to do the easy part of its range, which is the part it is good at.
+
+⚠️ **This does not replace the desiccant.** Sealing the box always returns it to the *incoming* air's
+RH once it cools — heat never helps storage, only drying. What a drier room does is make the
+desiccant's job far easier: buffering against a 45 % room instead of a 65 % one, which is squarely
+where bentonite's weaker isotherm still performs.
+
+### What this actually buys, and what it costs
+
+**Two dehumidifiers are already owned** (Cave and Master Bedroom). Neither is in the printer room —
+the guest bedroom, the one measured at 64–69 %RH. Moving or borrowing one is a household decision,
+not a lab one.
+
+The leverage is unusually good, because a drier *room* improves everything at once: the active box's
+floor, the passive box's baseline, and every spool sitting out on a shelf. It is the single
+highest-leverage change available here, and it needs no purchase.
+
+⚠️ **One interaction to be aware of:** the chamber's negative-pressure extraction continuously pulls
+room air out of the house, drawing replacement air in from outside. **A dehumidifier is fighting that
+while a print runs.** Drying and printing need not overlap, so this is a scheduling note rather than
+a conflict — but running both at once means the dehumidifier is working against a deliberate
+ventilation system.
 
 ## Build order
 
