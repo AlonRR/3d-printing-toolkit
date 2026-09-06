@@ -1,0 +1,154 @@
+# Moisture sorption isotherms — filament and desiccant
+
+**Alon's framing was right and it changes the design conversation:** moisture uptake is not a
+threshold, it is a **curve**. A material sitting in air at a given relative humidity comes to an
+*equilibrium moisture content* on that curve, and the **shape** of the curve — not any single
+number — decides what a filament does when stored and what a desiccant can achieve.
+
+This page is the research behind the numbers used in [drybox-active](drybox-active.md).
+
+## The model
+
+The filament study fits every material to:
+
+> **w<sub>∞</sub> = a · RH<sup>c</sup> + b**
+
+and the exponent **c** is the whole story:
+
+| c | Shape | Meaning |
+|---|---|---|
+| **c = 1** | straight line | **Henry's law.** Moisture is directly proportional to RH. No threshold, no cliff — halve the RH and you halve the water |
+| **c > 1** | curves upward | **BET Type 3.** Uptake accelerates as RH rises; the material is disproportionately punished by damp storage |
+
+## Filament — measured, per material
+
+From a peer-reviewed study that equilibrated samples at 16, 47, 75 and 97 %RH and weighed them to
+constancy. Δw is the total swing across that range.
+
+| Material | c | Shape | **Δw over 16→97 %RH** |
+|---|---|---|---|
+| **PET-G** | **1.0** | **linear** | **0.696 %** |
+| PLA | 1.0 | linear | 0.706 % |
+| PC | 1.0 | linear | 0.550 % |
+| ABS (white) | 1.76 | curved | **0.157 %** |
+| **Nylon** | **2.0** | **strongly curved** | **8.127 %** |
+
+Moisture held **above the 16 %RH baseline**, as a percentage of spool weight:
+
+| Material | 20 % | 30 % | 40 % | 50 % | **65 %** | 80 % |
+|---|---|---|---|---|---|---|
+| PET-G | 0.034 | 0.120 | 0.206 | 0.292 | **0.421** | 0.550 |
+| ABS/ASA | 0.003 | 0.014 | 0.028 | 0.044 | **0.074** | 0.110 |
+| Nylon | 0.128 | 0.572 | 1.193 | 1.992 | **3.524** | 5.455 |
+
+### Three consequences that actually matter here
+
+**1. For PETG there is no "dry enough" line to cross.** Its isotherm is a straight line, so every
+point of RH you remove buys the same fixed amount of water back. This is the direct answer to the
+question that prompted this page: the number people quote as a drying threshold is a convention, not
+a physical transition. **Storage RH and spool moisture are proportional, all the way down.**
+
+**2. Nylon is a different problem, not a worse version of the same one.** At c = 2 it holds
+**8.4× more water than PETG at 65 %RH**, and its curve steepens with humidity — so damp storage hurts
+it disproportionately. Any rule of thumb derived from nylon horror stories over-states the PETG case
+badly.
+
+**3. ⭐ ASA barely cares, and this is a genuinely useful asymmetry.** ABS — the closest measured proxy
+for ASA — swings only **0.157 %** across the entire humidity range, about **⅕ of PETG** and 1/50th of
+nylon. The lab's ASA is far more forgiving of imperfect storage than its PETG. **The drybox should
+be prioritised for the 10 kg of PETG, not for the ASA.**
+
+### What that means in grams
+
+PETG's slope is **0.0086 % of spool weight per point of RH**. For the lab's actual case — a 4-spool
+box, ~4 kg:
+
+| Storage improvement | Per kg | **For a 4 kg box** |
+|---|---|---|
+| 65 → 45 %RH | 1.7 g | 6.9 g |
+| 65 → 30 %RH | 3.0 g | 12.0 g |
+| **65 → 15 %RH** | **4.3 g** | **17.2 g** |
+
+**~17 g of water** is the real target: what a drying cycle must drive out, and what the desiccant
+must then hold to keep it out.
+
+### ⏳ Equilibration is slow — days, not hours
+
+Time to reach 80 % of equilibrium, for 2.8 mm cylinders at 97 %RH: **PLA 27 h, ABS 101 h, nylon
+360 h.** Two practical consequences:
+
+- **A spool left out for an afternoon has not absorbed much.** Moisture panic is usually overdone.
+- **But a "quick dry" does not work at room temperature either.** The drybox's 50 °C matters as much
+  for *diffusion rate* as for the humidity gradient — warm plastic gives up water far faster.
+
+## Desiccant — three different curve shapes, three different jobs
+
+⚠️ **This section corrects an error made earlier in this project.** I previously wrote that clay is
+weaker than silica gel at low RH and that silica gel was the right purchase for a low-RH box.
+**That is backwards.** Two manufacturer sources — including one that sells all three materials, so
+has no axe to grind — state the opposite:
+
+| Desiccant | Manufacturer's own wording | Curve shape |
+|---|---|---|
+| **Molecular sieve** | *"relatively high at low humidity levels and remains almost constant as relative humidity increases"* | **Rectangular** — steep, then flat |
+| **Bentonite clay** | *"considerable even at low humidity levels & increases as relative humidity rises"* | Rising |
+| **Silica gel** | *"relatively small at low humidity levels but increases as humidity rises"* | Rising, back-loaded |
+
+Corroborated by a second supplier's stated peak-efficiency bands, which put them in the same order:
+**molecular sieve 0–30 %RH · clay 30–60 % · silica gel 40–70 %.**
+
+### 🔑 The shape decides the job, and it is not "which is best"
+
+- **To HOLD a low RH**, you need capacity where the box already is — a curve that is steep at the
+  *left*. That is molecular sieve, then clay. Silica gel is the weakest of the three there.
+- **To ABSORB a lot of water from damp air**, you want the right-hand end. That is silica gel.
+- Silica gel's popularity comes from the second job. **This box is the first job.**
+
+### ✅ So the bentonite on hand is the better material, not the compromise
+
+For a low-RH drybox, clay outranks silica gel. It is also the cheapest of the three, available in
+bulk as cat litter, and regenerates at the *lowest* temperature (~110 °C against silica gel's ~120 °C
+and molecular sieve's 200–300 °C — the last being genuinely awkward to do at home).
+
+**Molecular sieve remains the only material that can hold the 5–15 % band comfortably**, and it is
+worth knowing that if the band ever becomes a hard requirement. But it is a purchase, and its
+regeneration temperature is out of reach of a domestic oven.
+
+### Temperature: clay holds where silica gel fades
+
+Between **20 °C and 50 °C at constant RH**, capacity as a function of temperature:
+
+| | |
+|---|---|
+| Bentonite clay | **constant** |
+| Molecular sieve | **constant** |
+| Silica gel | **decreases slightly** |
+
+⚠️ **50 °C is clay's boundary, not its comfort zone** — a second source states capacity *"drops
+sharply above 50 °C"*. The drybox setpoint sits exactly on that edge, which has a useful consequence:
+at 50 °C in ~17 %RH air the clay is driven toward its low-RH equilibrium and **partially
+self-regenerates during a drying cycle**, with the released water going out of the exhaust. That is
+not a substitute for a proper 110 °C bake, but it means the desiccant is refreshed rather than
+degraded by living in the box.
+
+## Sizing the desiccant
+
+For the 4 kg PETG case moving 65 → 15 %RH, **17.2 g of water**:
+
+| Material | Assumed capacity | Bare minimum |
+|---|---|---|
+| Clay | 10 % | 172 g |
+| Clay (pessimistic) | 5 % | 344 g |
+| Molecular sieve | 20 % | 86 g |
+
+⚠️ **"Bare minimum" means fully spent with zero margin, holding nothing back for ingress.** Real
+sizing wants **3–5×** that, so **0.5–1.5 kg of bentonite** for this box. At cat-litter prices that is
+trivially affordable, and over-sizing costs nothing but volume — it directly extends the interval
+between regeneration bakes.
+
+## Sources
+
+- [Moisture Sorption and Degradation of Polymer Filaments Used in 3D Printing](https://pmc.ncbi.nlm.nih.gov/articles/PMC10304609/) — the isotherm coefficients, Δw values and equilibration times
+- [Süd-Chemie / Clariant desiccant performance data](https://www.sisweb.com/art/pdf/desiccant-performance-information.pdf) — the low-RH wording and 20–50 °C temperature behaviour, from a maker of all three materials
+- [Clariant — Desiccant Types and Performance](https://www.clariant.com/en/Solutions/Products/2014/09/10/00/28/DESICCANT-TYPES)
+- [Multisorb — Comparing Silica Gel, Clay, and Molecular Sieves](https://www.multisorb.com/blog/choose-between-silica-clay-molecular-desiccants/) — peak-efficiency bands, capacity at 50 %RH, the >50 °C clay note

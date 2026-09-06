@@ -108,7 +108,7 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **12 V 5–6 A supply** | 50 W at 12 V is 4.2 A steady, and **a cold PTC pulls 2–3× that on startup** — inrush margin is a spec, not a nicety. Neither owned PD trigger board is a 12 V variant | ₪40–60 |
 | **2-channel relay or MOSFET module**, heater channel **≥10 A** | Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
-| **Silica gel / desiccant** | For the storage half, and **not optional if 5–15 %RH is the goal** — at 50 °C on room air the box bottoms out near 17 %RH, so desiccant is what closes the last gap rather than a refinement. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
+| ~~Silica gel~~ **— no longer needed** | ⚠️ **Struck 6 Sep 2026: the owned bentonite is the better material for this job** (see [moisture-isotherms](moisture-isotherms.md)). Kept here only so the change is visible. Originally listed as: for the storage half, and **not optional if 5–15 %RH is the goal** — at 50 °C on room air the box bottoms out near 17 %RH, so desiccant is what closes the last gap rather than a refinement. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
 Total is roughly **₪80–135** — the fan came off the list once the heater turned out to have one bonded
 to it. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
@@ -368,17 +368,29 @@ additives**, so there is no fragrance, clumping agent or dust suppressant to bak
 ordinary oven is fine. The dust precautions above still apply in full — cat-litter bentonite is
 often *dustier* than pelletised desiccant, not less.
 
-### ⚠️ Bentonite may not reach the 5–15 %RH target
+### ✅ Bentonite is the RIGHT material here — correcting an earlier claim
 
-Clay is a **weaker desiccant than silica gel at low humidity**. Its adsorption isotherm is
-favourable at high RH and flattens badly at low RH, so it pulls a box down efficiently from 65 %
-but struggles to hold the low band. Expect it to settle somewhere around **20–35 %RH** rather than
-5–15 %.
+⚠️ **This section previously said clay is weaker than silica gel at low RH and that silica gel was
+the right purchase. That is backwards**, and it was written from recall rather than from data.
+Manufacturer sources — including one selling all three materials — put capacity at **low** humidity
+in this order:
 
-That is not useless — it is a large improvement over an undried box, and it is free if the material
-is already on hand. But if the 5–15 % band is the actual goal, **silica gel is the right purchase**,
-and indicating silica gel additionally shows its own state by colour rather than requiring the scale.
-Bentonite is the sensible thing to start with and to learn the workflow on.
+> **molecular sieve > bentonite clay > silica gel**
+
+Silica gel is described by its own maker as *"relatively small at low humidity levels"*, while clay
+is *"considerable even at low humidity levels"*. Silica gel's reputation comes from a different job:
+absorbing a lot of water from **damp** air. **This box is the low-RH job**, which is clay's end of
+the range.
+
+So the bentonite on hand is not a compromise — it outranks the silica gel that was on the buy list,
+costs nothing, comes in bulk, and regenerates at the *lowest* temperature of the three.
+
+**Molecular sieve is the only material that holds the 5–15 % band comfortably**, and is worth knowing
+about if that band ever becomes a hard requirement — but it needs 200–300 °C to regenerate, which is
+out of reach of a domestic oven.
+
+Full curves, per-material filament data and the sizing arithmetic:
+**[moisture-isotherms.md](moisture-isotherms.md)**.
 
 ## 💡 A dehumidifier — upstream, never inside
 
