@@ -217,10 +217,49 @@ Both halves of the design are needed, and this is the number that proves it rath
   it at 17 %, not at 5–15 %. **The desiccant is what closes that last gap**, which promotes it from
   "nice to have" to a required part of reaching the target — see the buy list.
 
-⚠️ **This is one day's reading, and it is the wrong season to generalise from.** Israeli coastal
-humidity swings widely; a muggy day pushes every number in that table up, and the box gets worse
-exactly when the filament needs it most. **Log room RH over time rather than trusting a spot value** —
-that is the strongest argument for promoting the Sensibo attribute into a recorded sensor.
+### ⚠️ Track ABSOLUTE humidity, not RH — a worked example of why
+
+Two readings of the same room, two days apart:
+
+| | Room | Vapour pressure | Absolute | **Floor in a 50 °C box** |
+|---|---|---|---|---|
+| 4 Sep | 25.8 °C / **64.4 %RH** | 2.135 kPa | 15.5 g/m³ | **17.3 %** |
+| 6 Sep | 24.7 °C / **68.6 %RH** | 2.130 kPa | 15.5 g/m³ | **17.2 %** |
+
+**The RH rose by more than four points and nothing about the drybox changed.** The air holds
+precisely the same amount of water; the room is simply cooler, because the AC was running, and
+cooler air at the same moisture content reads a higher RH.
+
+This is the trap in monitoring RH alone: **relative humidity is a ratio, and its denominator moves.**
+A rising number can mean more water, or it can mean a cooler room. The quantity that sets what this
+box can achieve is the **absolute** humidity of the air it is fed, which is unchanged here.
+
+✅ **So the logging must capture temperature AND humidity together**, and the useful derived series is
+vapour pressure or g/m³, not the raw RH. The Sensibo climate entity carries both, so this costs
+nothing extra — but a dashboard showing RH alone would have reported a change that did not happen.
+
+⚠️ **Do not read a single RH figure as good or bad news.** It was tempting to read 68.6 % as "the
+floor moved up, the desiccant case got stronger". It did not move. The desiccant case was already
+made and stands on its own.
+
+### The floor across a realistic local range
+
+Since the ambient does genuinely move, this is the span that matters, at ~25 °C room:
+
+| Room | Box floor at 50 °C |
+|---|---|
+| 50 %RH | **12.8 %** ← inside the 5–15 % target |
+| 60 %RH | 15.3 % |
+| 70 %RH | 17.9 % |
+| 80 %RH | 20.5 % ← above what a DHT11 can even read |
+
+**On a dry day the active box alone lands in the target range; on a humid day it cannot get close.**
+That is the real argument for desiccant: not that the box is inadequate, but that its performance is
+hostage to the weather, and the desiccant is what makes the *storage* half independent of it.
+
+⚠️ Israeli coastal humidity swings widely, and the box is worst exactly when filament needs it most.
+**Log over time rather than trusting any spot value** — that is what the recorded Sensibo sensors
+now provide, with 38 hourly rows accumulating since 4 Sep.
 
 ⚠️ **Do not respond to this by raising the setpoint.** 70 °C reaches 7 % on paper, and would also
 deform spools and risk fusing windings — the reason 50 °C was chosen. The answer to the last few
