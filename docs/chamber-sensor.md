@@ -348,6 +348,62 @@ same part mounted in opposite orientations on different boards. **Ohm it out:**
 the feed pad has continuity to an ESP32 pin, the other pad reads open to
 everything. Thirty seconds, and it removes the single most common failure.
 
+### Why 31 mm — and the thing it makes the mod depend on
+
+Source: GreatScott!, *"I Found the Secret to WiFi Antennas! EB#68"*, 24 May 2026
+([Q_5bna_cyBw](https://www.youtube.com/watch?v=Q_5bna_cyBw)). Measured with a VNA and RSSI A/B
+tests, so the numbers below are his measurements, not theory.
+
+**The 31 mm is not arbitrary and it checks out.** At 2.4 GHz the wavelength is ~12.5 cm:
+
+| Antenna | Conductor length | Needs a ground plane? |
+|---|---|---|
+| **Dipole** — half wave | **6.25 cm** | No — the second element *is* the other half |
+| **Monopole** — quarter wave | **3.125 cm** | **Yes** — the ground plane supplies the missing half |
+
+So **§3x's 31 mm wire is a quarter-wave monopole**, and that classification is the useful part,
+because it says what the mod's performance actually rests on.
+
+### ⚠️ Which means the ground plane is the limiting factor, not the wire
+
+His DIY monopole — 3.2 cm of solid core wire on an SMA connector — matched commercial monopoles
+**while clamped in a metal vice**. Removing it from the vice, i.e. shrinking its ground plane,
+**visibly degraded it**, and on the VNA the same antenna read *"pretty terrible"* until a ground
+plane was attached.
+
+**A C3 SuperMini is a 22 × 18 mm board.** Its ground plane is a postage stamp. That is very likely
+the real explanation for the ceiling already recorded above — that a *modded* SuperMini reaches
+-45 dBm where a properly laid-out C3 reads -33 dBm on the same desk. The wire is the right length;
+it is standing on almost nothing.
+
+**Consequence for this build:** effort spent on the ground plane is likely worth more than effort
+spent on the wire. Anything that enlarges it — a ground pour, a scrap of copper tape bonded to the
+board's ground, mounting against a grounded metal surface — attacks the actual limit.
+
+### 💡 A dipole would sidestep the problem entirely
+
+His explicit verdict: *"if you want an easy and reliable WiFi antenna, get yourself a dipole."*
+Dipoles beat monopoles across his whole test set, and the reason is exactly this — **a dipole carries
+its own second half and does not care about the ground plane.**
+
+On a SuperMini that means two ~31 mm elements instead of one: one on the antenna feed, one on
+ground, extending in **opposite** directions. Untested here, and it is a bigger physical change than
+the §3x wire, but it targets the defect rather than compensating for it.
+
+### Two free wins, whichever antenna is used
+
+- **Orient the wire vertically**, matching the AP's antennas. Simple straight antennas radiate in a
+  donut — strong to the sides, weak off the ends — and he measured co-alignment as clearly best.
+  For a drybox or chamber node this costs nothing at mounting time.
+- ⛔ **Do not use a longer wire.** *"Bigger is not always better"* — his largest antenna was a
+  monopole and lost to the dipoles. Length has an optimum, not a direction.
+
+⚠️ **What this source does NOT settle.** He tests SMA-connected wire antennas on boards with uFL
+connectors; he explicitly lists **chip antennas and PCB antennas as not yet covered**, and those are
+what a SuperMini actually has. The SuperMini's fault is a layout and impedance-matching problem, and
+this video does not measure that class of part. Treat the ground-plane finding as a strong
+explanation for the observed ceiling, not as a measurement of this board.
+
 ### Measure it honestly
 
 **Do not measure at 5 cm.** At 2.4 GHz that is about 0.4 wavelengths — inside
