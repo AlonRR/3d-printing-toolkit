@@ -430,6 +430,53 @@ RH once it cools — heat never helps storage, only drying. What a drier room do
 desiccant's job far easier: buffering against a 45 % room instead of a 65 % one, which is squarely
 where bentonite's weaker isotherm still performs.
 
+### ⛔ Do NOT close the loop — duct the OUTLET only
+
+The natural next step is to duct both the dehumidifier's intake *and* its outlet to the box, so it
+recirculates box air. **That is the one arrangement that performs worse than either alternative**, and
+the reason is worth understanding because it is not obvious.
+
+**Dehumidifying and heating are antagonistic in the same air.** Condensation needs the air *cold
+enough* to reach the coil's dew point; low RH needs the air *hot*. Put both in one loop and they
+fight — and the compressor loses, because a household unit is only rated to about **35 °C return
+air**. The dehumidifier is also a **net heater** (all its electrical input plus the latent heat of
+condensation ends up in the air), so a sealed loop drives itself toward the temperature that shuts
+the compressor down.
+
+Box temperature is exactly what buys low RH, so capping it at 35 °C throws away the main lever:
+
+| Same dried air, coil at 5 °C | Box at | Result |
+|---|---|---|
+| closed loop — compressor's limit | 35 °C | **15.5 %** |
+| | 40 °C | 11.8 % ← compressor cannot tolerate this return air |
+| | 50 °C | 7.1 % ← nor this |
+
+✅ **The fix is to use half the idea: duct the OUTLET to the box intake, and let the box exhaust to
+the room.** That makes the two stages *sequential* rather than simultaneous — dehumidify at room
+temperature where the unit works well, **then** heat, where the box works well.
+
+| Arrangement | Box floor |
+|---|---|
+| Closed loop, box capped ~33 °C | ~17 % |
+| Dehumidifier in the room, box on room air, 50 °C | 11.5 % |
+| **Outlet ducted to the intake, box at 50 °C** | **~8 %** ← best, and it is half the plumbing |
+
+The outlet air's absolute humidity is bounded below by saturation at the coil, roughly 0.9–1.2 kPa in
+practice — **drier than the room average**, which is why tapping the outlet beats dehumidifying the
+whole room volume.
+
+**Practical notes, since this is now the recommended arrangement:**
+
+- **No tight ducting needed.** A household unit moves 100–200 m³/h; the box wants ~18 m³/h. Simply
+  **siting the box intake at the dehumidifier's outlet** captures the effect, and the surplus spills
+  into the room — which helps the passive box and the shelves anyway.
+- **The PTC is still required.** Outlet air is ~24 %RH at 30 °C; it is the *heating* that turns that
+  into ~8 %. Neither stage reaches the band alone.
+- **Condensate must drain**, or the tank fills and the unit stops — with a closed loop that failure
+  is silent, because the box just quietly stops being dried.
+- ⚠️ **A closed loop also ices.** As the air dries the latent load falls, the coil runs colder, and it
+  frosts — after which the unit spends its time in defrost rather than drying.
+
 ### What this actually buys, and what it costs
 
 **Two dehumidifiers are already owned** (Cave and Master Bedroom). Neither is in the printer room —
