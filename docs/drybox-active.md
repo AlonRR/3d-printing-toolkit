@@ -513,8 +513,16 @@ ventilation system.
 4. Cut intake and exhaust vents — exhaust **high and diagonally opposite** the intake.
 5. Wire the AHT20 out of the airstream; bring temperature and humidity into HA over MQTT, reusing the
    plumbing the camera node already has.
-6. **Run it open-loop first, with the cutout as the only protection**, watching the sensor, before any
+6. **Prepare the desiccant — it is a prerequisite, not an afterthought.** Regenerate the bentonite at
+   ~110 °C for 2–3 h spread thin, **weigh it dry and record that mass** (the only honest
+   done-indicator), cool it in a sealed jar, and **put it in a sachet or fine mesh — never loose in
+   the airstream**, which is a fan pointed at the room and clay carries respirable silica. Sizing:
+   **0.5–1.5 kg**, from the isotherm arithmetic in
+   [moisture-isotherms](moisture-isotherms.md).
+7. **Run it open-loop first, with the cutout as the only protection**, watching the sensor, before any
    automation closes the loop. A safety feature that has never been seen to fire is not one.
+8. **Only then close the loop** — heater modulated against the AHT20, fan continuous, and the
+   cooldown purge on the end of the cycle.
 
 ## What this does not do
 
