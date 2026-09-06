@@ -28,6 +28,7 @@ static const char *TAG = "mqtt";
 
 static esp_mqtt_client_handle_t s_client;
 static volatile bool s_connected = false;
+static int s_since_avail = 0;
 
 /* The device block ties both entities to one device in HA, so they appear
  * together rather than as two orphans. */
@@ -154,4 +155,28 @@ void mqtt_publish_reading(float temperature_c, float humidity_pct)
      * problem the last will exists to prevent. Availability is retained; the
      * measurement is not. */
     esp_mqtt_client_publish(s_client, TOPIC_STATE, payload, 0, 0, 0);
+
+    /* RE-ASSERT AVAILABILITY PERIODICALLY. Publishing "online" once per connect
+     * is not enough, and this was measured rather than theorised: both HA
+     * entities sat "unavailable" while this node was connected and publishing a
+     * reading every 3 s, because the RETAINED availability topic held "offline".
+     *
+     * The cause is a race the last will creates on every reboot. The node
+     * reconnects fast - an OTA takes about ten seconds - and publishes "online"
+     * from MQTT_EVENT_CONNECTED. The broker then notices the PREVIOUS session is
+     * dead, by keepalive expiry or by client-id takeover, and publishes that
+     * session's will. The stale "offline" lands AFTER the new "online" and
+     * overwrites it. Nothing is broken at either end; the ordering simply is not
+     * guaranteed, and the failure is invisible from the device, which sees its
+     * own publish succeed and carries on reporting into a topic HA has stopped
+     * believing.
+     *
+     * Re-asserting makes it self-healing: a stale will is corrected within ~30 s
+     * rather than persisting until the next reboot. It also covers a broker that
+     * restarts without its retained store. Every tenth reading rather than every
+     * one, because each retained publish rewrites broker state. */
+    if (++s_since_avail >= 10) {
+        s_since_avail = 0;
+        esp_mqtt_client_publish(s_client, TOPIC_AVAIL, "online", 0, 1, 1);
+    }
 }

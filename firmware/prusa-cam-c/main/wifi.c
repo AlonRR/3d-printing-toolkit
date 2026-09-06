@@ -20,6 +20,7 @@
 #include "freertos/FreeRTOS.h"
 #include "mdns.h"
 #include "freertos/event_groups.h"
+#include "esp_timer.h"
 #include "nvs_flash.h"
 #include "wifi_secrets.h"
 
@@ -32,10 +33,47 @@ static EventGroupHandle_t s_events;
 static char s_ip[16] = "0.0.0.0";
 static int s_retries = 0;
 static esp_netif_t *s_netif = NULL;
+static esp_timer_handle_t s_retry_timer = NULL;
+static volatile bool s_have_ip = false;
+static int64_t s_last_ip_us = 0;
 
-/* Retried rather than failed on first refusal. The IoT SSID here has a history
- * of rejecting a join attempt and accepting the next one. */
-#define MAX_RETRIES 8
+/* Reconnecting from a TIMER rather than straight from the event handler, so a
+ * backoff delay never blocks the event loop. */
+static void retry_cb(void *arg)
+{
+    esp_wifi_connect();
+}
+
+/* ⛔ THIS NODE MUST NEVER STOP TRYING TO RECONNECT.
+ *
+ * The previous version gave up permanently after 8 consecutive disconnects: the
+ * handler stopped calling esp_wifi_connect() and nothing else ever did, because
+ * main() calls wifi_connect() exactly once at boot. The board kept running -
+ * reading its sensor, capturing frames - with its radio idle and no way back
+ * short of a power cycle.
+ *
+ * That is the single worst outcome for a board mounted inside a printer
+ * enclosure, and it DEFEATS the mDNS and OTA work entirely: both need the node
+ * on the network, so neither can recover a node that has left it. Recovery
+ * meant physical access, which is exactly what all of it existed to avoid.
+ *
+ * It happened, 4 Sep 2026: the node dropped off the network in the chamber and
+ * had to be power-cycled. Signal is the likely trigger - -26 dBm on the bench
+ * against -72 dBm in the enclosure, on a a mesh network whose band-steering and AP
+ * handoffs produce exactly the transient disconnects that burn retries.
+ *
+ * So: retry FOREVER. The counter now only chooses the backoff delay; it is
+ * never a budget that can run out.
+ */
+#define FAST_RETRIES     8       /* immediate retries before backing off */
+#define BACKOFF_MIN_MS   1000
+#define BACKOFF_MAX_MS   30000
+
+/* Last resort. Retrying forever fixes a lost AP, but not a supplicant wedged in
+ * a state that no amount of esp_wifi_connect() escapes. A reboot does. Generous
+ * enough that a router restart does not cause a reboot loop, short enough that
+ * a wedged node is not lost for a whole print. */
+#define REBOOT_AFTER_NO_IP_S  900
 
 static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
@@ -43,23 +81,44 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
         esp_wifi_connect();
     } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
         wifi_event_sta_disconnected_t *d = (wifi_event_sta_disconnected_t *) data;
-        if (s_retries < MAX_RETRIES) {
-            s_retries++;
-            /* The reason code is the single most useful thing in a failed join
-             * and is usually thrown away. 15 = 4-way handshake timeout,
-             * 201 = AP not found, 205 = connection failed. */
-            ESP_LOGW(TAG, "disconnected (reason %d), retry %d/%d",
-                     d->reason, s_retries, MAX_RETRIES);
+        s_have_ip = false;
+        s_retries++;
+
+        /* The reason code is the single most useful thing in a failed join and
+         * is usually thrown away. 15 = 4-way handshake timeout, 201 = AP not
+         * found, 205 = connection failed. */
+        if (s_retries <= FAST_RETRIES) {
+            ESP_LOGW(TAG, "disconnected (reason %d), immediate retry %d",
+                     d->reason, s_retries);
             esp_wifi_connect();
         } else {
-            ESP_LOGE(TAG, "giving up after %d retries (reason %d)",
-                     MAX_RETRIES, d->reason);
-            xEventGroupSetBits(s_events, BIT_FAILED);
+            /* Backoff doubles from 1 s and is capped, so a genuinely absent AP
+             * is retried about twice a minute forever rather than hammered. */
+            int shift = s_retries - FAST_RETRIES - 1;
+            if (shift > 5) shift = 5;
+            int delay_ms = BACKOFF_MIN_MS << shift;
+            if (delay_ms > BACKOFF_MAX_MS) delay_ms = BACKOFF_MAX_MS;
+
+            int64_t down_s = (esp_timer_get_time() - s_last_ip_us) / 1000000;
+            ESP_LOGW(TAG, "disconnected (reason %d), retry %d in %d ms "
+                          "(no IP for %llds)",
+                     d->reason, s_retries, delay_ms, (long long) down_s);
+
+            /* The wedged-supplicant escape hatch. */
+            if (down_s > REBOOT_AFTER_NO_IP_S) {
+                ESP_LOGE(TAG, "no IP for %llds - rebooting to recover",
+                         (long long) down_s);
+                esp_restart();
+            }
+            esp_timer_stop(s_retry_timer);
+            esp_timer_start_once(s_retry_timer, (uint64_t) delay_ms * 1000);
         }
     } else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *e = (ip_event_got_ip_t *) data;
         snprintf(s_ip, sizeof(s_ip), IPSTR, IP2STR(&e->ip_info.ip));
         s_retries = 0;
+        s_have_ip = true;
+        s_last_ip_us = esp_timer_get_time();
         xEventGroupSetBits(s_events, BIT_GOT_IP);
     }
 }
@@ -130,6 +189,12 @@ esp_err_t wifi_connect(int timeout_ms)
     ESP_ERROR_CHECK(err);
 
     s_events = xEventGroupCreate();
+    s_last_ip_us = esp_timer_get_time();
+
+    const esp_timer_create_args_t targs = {
+        .callback = retry_cb, .name = "wifi_retry",
+    };
+    ESP_ERROR_CHECK(esp_timer_create(&targs, &s_retry_timer));
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -171,8 +236,17 @@ esp_err_t wifi_connect(int timeout_ms)
         start_mdns();
         return ESP_OK;
     }
-    ESP_LOGE(TAG, "no IP after %d ms", timeout_ms);
+    /* Not terminal any more. The retry machinery above keeps running in the
+     * background, so a node that misses this window still joins later and comes
+     * back on its own - it simply starts without MQTT until it does. */
+    ESP_LOGE(TAG, "no IP after %d ms - continuing, reconnection keeps running",
+             timeout_ms);
     return ESP_FAIL;
+}
+
+bool wifi_is_connected(void)
+{
+    return s_have_ip;
 }
 
 const char *wifi_ip_str(void)

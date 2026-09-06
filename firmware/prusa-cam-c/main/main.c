@@ -105,14 +105,24 @@ void app_main(void)
     /* THE BENCHMARK. Runs once, after the camera is up, then the node falls
      * back to the milestone-1 loop. Kept as a one-shot rather than a mode flag
      * because a benchmark that runs continuously would itself be the load. */
+    /* THE SERVICES ARE STARTED ONCE, WHENEVER THE NETWORK FIRST ARRIVES - not
+     * only if it happened to be up at boot.
+     *
+     * Previously this ran once and that was the only chance: a node that missed
+     * the 30 s window came up permanently without MQTT, Connect or OTA even
+     * after WiFi returned. Combined with the old retry cap that meant a board
+     * could be powered, healthy and completely unreachable, which is precisely
+     * the state this node was found in on 4 Sep 2026. */
     bool net = (wifi_connect(30000) == ESP_OK);
     if (!net) {
-        ESP_LOGE(TAG, "no WiFi - readings will be logged locally only");
+        ESP_LOGE(TAG, "no WiFi yet - logging locally; services start when it "
+                      "connects");
     } else {
         mqtt_start();
         connect_cam_init();
         ota_start(80);
     }
+    bool services_up = net;
 
     if (RUN_BENCHMARK && cam == ESP_OK && net) {
         benchmark_run(BENCH_PORT);
@@ -142,6 +152,17 @@ void app_main(void)
             }
         }
         log_dht();
+
+        /* Late start, if the network arrived after boot. Guarded so it happens
+         * exactly once - these are not idempotent. */
+        if (!services_up && wifi_is_connected()) {
+            ESP_LOGW(TAG, "network arrived after boot - starting services now");
+            mqtt_start();
+            connect_cam_init();
+            ota_start(80);
+            services_up = true;
+            net = true;
+        }
 
         ESP_LOGI(TAG, "cycle %u  uptime %llu s  free heap %u",
                  n++, esp_timer_get_time() / 1000000ULL,

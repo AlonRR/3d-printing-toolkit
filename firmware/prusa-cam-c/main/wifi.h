@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "esp_err.h"
 
 /* The node's name on the network, used three ways: as the DHCP hostname option
@@ -11,6 +13,10 @@
 /* Joins the station network and blocks until an IP arrives or the timeout
  * expires. Credentials come from the gitignored wifi_secrets.h. */
 esp_err_t wifi_connect(int timeout_ms);
+
+/* True while the station holds an IP. The reconnect machinery runs forever in
+ * the background, so this can go false and true again at any time. */
+bool wifi_is_connected(void);
 
 /* Dotted-quad of the address obtained, or "0.0.0.0" if not connected. */
 const char *wifi_ip_str(void);
