@@ -242,20 +242,45 @@ nothing extra — but a dashboard showing RH alone would have reported a change 
 floor moved up, the desiccant case got stronger". It did not move. The desiccant case was already
 made and stands on its own.
 
-### The floor across a realistic local range
+### The floor over ten days of MEASURED room air
 
-Since the ambient does genuinely move, this is the span that matters, at ~25 °C room:
+⚠️ **An earlier version of this section used hypothetical inputs — 50 % and 80 %RH at 25 °C — and
+drew the wrong conclusion from them.** The recorder holds the real ones: **5760 paired
+temperature+humidity points, 27 Aug → 6 Sep**, from the Sensibo climate entity's own recorded
+attributes. Arithmetic below re-derived independently rather than taken on trust.
 
-| Room | Box floor at 50 °C |
-|---|---|
-| 50 %RH | **12.8 %** ← inside the 5–15 % target |
-| 60 %RH | 15.3 % |
-| 70 %RH | 17.9 % |
-| 80 %RH | 20.5 % ← above what a DHT11 can even read |
+| | Room air | Vapour pressure | **Floor at 50 °C** |
+|---|---|---|---|
+| **Driest** seen (31 Aug) | 24.1 °C / 61 %RH | 1.83 kPa | **14.8 %** |
+| **Moistest** seen (29 Aug) | 27.7 °C / 84 %RH | 3.12 kPa | **25.2 %** |
 
-**On a dry day the active box alone lands in the target range; on a humid day it cannot get close.**
-That is the real argument for desiccant: not that the box is inadequate, but that its performance is
-hostage to the weather, and the desiccant is what makes the *storage* half independent of it.
+Note the two swings, because the difference between them is the whole point of the section above:
+
+- **Raw RH swing: 26 points** (61 → 86 %) — mostly temperature, largely an artefact
+- **Actual floor swing: 10.2 points** (14.8 → 25.2 %) — physical
+
+### ⛔ The heated box alone never reaches the target band in this room
+
+**The 25 °C / 50 %RH day the old table imagined does not occur here.** Over ten days the *single
+driest sample on record* lands the floor at **14.8 %** — right at the top edge of the 5–15 % band,
+with no margin — and every other sample sits above it.
+
+So the conclusion is stronger than "desiccant makes storage weather-independent":
+
+> 🔑 **Desiccant is not a refinement to the storage half. In this room it is what makes the storage
+> half work at all** — heat and airflow alone cannot deliver the 5–15 %RH band, on any day yet
+> recorded.
+
+**This does not weaken the case for the heated box; it clarifies the division of labour.** The two
+halves do different jobs and are sequential, not competing:
+
+- **Heat + airflow = DRYING.** Its job is the *gradient*: ~17 % inside against ~65 % ambient is what
+  pulls water out of a wet spool, and nothing passive achieves that.
+- **Desiccant = STORAGE.** Its job is *holding* the result, in a band the airflow can never reach.
+
+⚠️ **Caveat, and it is the honest one:** ten days is a single weather pattern in one season. It bounds
+what this room *has* done, not what it will do. A dry winter spell could well drop the floor into
+band — which is an argument for keeping the logging, not for discounting the finding.
 
 ⚠️ Israeli coastal humidity swings widely, and the box is worst exactly when filament needs it most.
 **Log over time rather than trusting any spot value** — that is what the recorded Sensibo sensors
