@@ -301,6 +301,84 @@ points of RH is desiccant, not heat.
   would ruin the seal the *storage* half depends on. Breaking the passive box to speed up the active
   one is a bad trade.
 
+## Regenerating the desiccant — bentonite specifically
+
+Desiccant is not consumed, it is *filled*. Regenerating it means driving the adsorbed water back
+off with heat. **Bentonite (montmorillonite clay) is not silica gel and the differences all matter.**
+
+### ⚠️ The real hazard is dust, not heat
+
+**Bentonite dust can contain respirable crystalline silica**, and bone-dry clay is far dustier than
+damp clay — so the moment it is most hazardous is exactly when you have just finished regenerating
+it. This is a genuine long-term respiratory hazard, not a nuisance.
+
+- Handle it **outdoors or with ventilation**, wear a dust mask (**P2/N95 or better**) while pouring
+  hot dry material, and let it settle before disturbing it.
+- ⛔ **Never put loose bentonite in the drybox airstream.** The design has a fan pushing air through
+  the box; loose clay in that path is a dust generator aimed at the room, and it would also foul the
+  filament. **Contain it** — a breathable sachet, a fine-mesh bag, or a vented tub with fabric over
+  the opening.
+- Don't blow it clean with compressed air, for the same reason.
+
+### Temperature — LOWER than silica gel, and the ceiling is real
+
+| | Regenerate at | Do not exceed |
+|---|---|---|
+| **Bentonite / clay** | **~105–120 °C** | ~150 °C — above this the clay structure collapses and capacity is **permanently** lost |
+| Silica gel (for contrast) | ~120 °C | ~150 °C for indicating types (the dye degrades first) |
+
+The instinct is that desiccant should be baked hot. For clay it should not: **overheating does not
+over-dry it, it destroys it**, and the damage is invisible until it stops working.
+
+**Time: 2–3 hours at ~110 °C, spread THIN** — a single layer on a tray, not a heap. A deep pile
+regenerates only at the surface and the middle stays wet, which is why "it was in there for hours"
+is not evidence of anything.
+
+### ✅ How to know it is actually done: weigh it
+
+This is the only honest indicator, and it costs nothing.
+
+1. Weigh the batch **once, right after a full regeneration** — that is its dry mass, recorded and
+   reused forever.
+2. Weigh it when it comes out of service to see how loaded it was.
+3. Regenerate until it returns to the dry mass. **When the weight stops falling, it is done** — and
+   further heat is only risk.
+
+A clay desiccant holds roughly 10–20 % of its own weight in water, so a 500 g batch that comes out
+60 g heavy is genuinely saturated and the change is easy to see on kitchen scales.
+
+### Cool it SEALED, or you undo the work
+
+Hot desiccant adsorbs fast. Left to cool in room air at ~65 %RH it will be measurably loaded before
+it ever reaches the box. **Move it hot into an airtight container** — a jar with a metal lid, not a
+plastic bag while hot — and let it cool closed.
+
+### ⛔ Two things not to use
+
+- **Not the printer's heated bed.** It reaches the right temperature, but it means abrasive
+  silica-bearing dust on the PEI sheet and around the linear rails and leadscrews. Wrong place.
+- **Not the drybox itself.** At 50 °C it is nowhere near the ~110 °C needed. **The active drybox
+  cannot regenerate its own desiccant** — regeneration is always a separate operation with a
+  separate heat source. Worth knowing before the build, because it is tempting to assume otherwise.
+
+A kitchen oven at ~110 °C *is* acceptable here, and this is a real difference from filament: spools
+are ruined by an oven's temperature swings, while bentonite tolerates ±20 °C around 110 without
+harm. ⚠️ **But only if the material is clean.** If it is cat litter it may carry fragrance,
+clumping agents or dust suppressants, which bake off into the oven — in that case use a dedicated
+toaster oven, not the food one.
+
+### ⚠️ Bentonite may not reach the 5–15 %RH target
+
+Clay is a **weaker desiccant than silica gel at low humidity**. Its adsorption isotherm is
+favourable at high RH and flattens badly at low RH, so it pulls a box down efficiently from 65 %
+but struggles to hold the low band. Expect it to settle somewhere around **20–35 %RH** rather than
+5–15 %.
+
+That is not useless — it is a large improvement over an undried box, and it is free if the material
+is already on hand. But if the 5–15 % band is the actual goal, **silica gel is the right purchase**,
+and indicating silica gel additionally shows its own state by colour rather than requiring the scale.
+Bentonite is the sensible thing to start with and to learn the workflow on.
+
 ## Build order
 
 1. Bench the heater assembly on the new supply, **fan running**. Record outlet air temperature, outlet surface temperature, total current, and how long each takes to settle.
