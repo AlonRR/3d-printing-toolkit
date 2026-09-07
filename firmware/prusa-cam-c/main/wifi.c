@@ -34,6 +34,9 @@ static char s_ip[16] = "0.0.0.0";
 static int s_retries = 0;
 static esp_netif_t *s_netif = NULL;
 static esp_timer_handle_t s_retry_timer = NULL;
+
+/* Defined below, but called from the event handler above it. */
+static void mdns_announce(void);
 static volatile bool s_have_ip = false;
 /* CUMULATIVE, never reset - s_retries resets on every success, so it cannot
  * answer "how unstable has this link been". This one can. */
@@ -123,6 +126,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
         s_retries = 0;
         s_have_ip = true;
         s_last_ip_us = esp_timer_get_time();
+        mdns_announce();
         xEventGroupSetBits(s_events, BIT_GOT_IP);
     }
 }
@@ -151,6 +155,8 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
  * belt to this braces: it survives segmentation, a flash erase, and this
  * firmware being replaced entirely.
  */
+static bool s_mdns_up = false;
+
 static void start_mdns(void)
 {
     esp_err_t err = mdns_init();
@@ -179,8 +185,43 @@ static void start_mdns(void)
         ESP_LOGW(TAG, "mDNS service: %s", esp_err_to_name(err));
     }
 
+    s_mdns_up = true;
     ESP_LOGI(TAG, "mDNS up: %s.local -> %s  (OTA and status on port 80)",
              WIFI_HOSTNAME, s_ip);
+}
+
+/* ⛔ RE-ANNOUNCE ON EVERY IP, not just the first - two fixes that each worked
+ * alone and did not compose.
+ *
+ * The reconnect logic above deliberately never gives up, so the node now
+ * survives a WiFi drop without rebooting. But start_mdns() used to be called
+ * once, from wifi_connect(), on the FIRST successful association. After a
+ * reconnect the node therefore held a new DHCP address while mDNS still
+ * advertised - or had stopped advertising - the old one.
+ *
+ * The result was the worst shape available: a node that stays up, keeps
+ * publishing, and quietly stops being reachable BY NAME. Measured 7 Sep 2026 -
+ * the node was healthy at 192.0.2.116 and publishing every few seconds while
+ * prusa-cam.local failed to resolve, with prusalink.local resolving fine from the
+ * same machine as a control. That defeats the entire point of giving it a name,
+ * and it defeats OTA with it, since the push resolves by name.
+ *
+ * Announcing from the GOT_IP handler means every address the node ever holds is
+ * published, including ones it acquires without a reboot. */
+static void mdns_announce(void)
+{
+    if (!s_mdns_up) {
+        start_mdns();
+        return;
+    }
+    /* Re-setting the hostname is what triggers a fresh announcement. */
+    esp_err_t err = mdns_hostname_set(WIFI_HOSTNAME);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "mDNS re-announce failed (%s) - reachable by IP only",
+                 esp_err_to_name(err));
+        return;
+    }
+    ESP_LOGI(TAG, "mDNS re-announced: %s.local -> %s", WIFI_HOSTNAME, s_ip);
 }
 
 esp_err_t wifi_connect(int timeout_ms)
@@ -237,7 +278,8 @@ esp_err_t wifi_connect(int timeout_ms)
 
     if (bits & BIT_GOT_IP) {
         ESP_LOGI(TAG, "connected, ip %s, rssi %d dBm", s_ip, wifi_rssi());
-        start_mdns();
+        /* mDNS is announced from the GOT_IP handler, which has already run
+         * by this point and will run again on every later reconnect. */
         return ESP_OK;
     }
     /* Not terminal any more. The retry machinery above keeps running in the
