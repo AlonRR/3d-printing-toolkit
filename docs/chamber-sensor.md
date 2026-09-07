@@ -464,9 +464,67 @@ way — but common-mode current rides the ground element. Do not expect textbook
 - ⚠️ **§3x's 1.0 mm spec is largely mechanical** — its loop has to hold an 8 mm circle unaided. **A
   dipole has no loop**, so it tolerates thinner wire than the mod does. Cores too floppy for A are
   perfectly usable for C.
-- **Strip individual conductors out of multi-core cable; never use it as a cable.** Two cores in one
+- **Strip individual conductors out of multi-core cable; never use it as a cable.** *(The cable on hand is measured and specified just below.)* Two cores in one
   jacket run parallel and adjacent, and a dipole's elements must be **collinear and opposite** —
   separated, in line, pointing away from each other.
+
+### The wire on hand: 1.37 mm, measured — thicker than the mod's spec
+
+**4 m of 3-core cable with 1.37 mm conductors**, measured 7 Sep 2026. That is **~15.5 AWG**, against
+the §3x spec of 1.0 mm / 18 AWG — so it is *thicker*, not thinner, which was the risk being checked
+for. Three consequences, one of them a hazard.
+
+**1. ⛔ THE HAZARD: 1.37 mm solid wire will tear the pad off the board.**
+
+A 15 AWG conductor soldered to an SMD antenna pad is a **lever**. The wire's own stiffness is the
+problem — any knock, any flex of the element, any tug on the board transfers straight into a pad
+measured in fractions of a millimetre, and SMD pads lift. This is the most likely way to destroy a
+board during this work, more likely than any RF mistake.
+
+**Strain-relieve it, and treat that as part of the joint, not a finishing touch:**
+
+- Anchor the wire to the PCB with epoxy or hot glue **a few millimetres past the solder joint**, so
+  mechanical load lands in the adhesive rather than the pad.
+- Better where it fits: solder a **short length of thin flexible wire to the pad**, and join the
+  1.37 mm element to *that* a few millimetres away. The thin section becomes a deliberate mechanical
+  fuse, and it costs nothing electrically at these lengths.
+- Do the strain relief **before** the first bend, not after the element is already being handled.
+
+**2. Mechanically it is otherwise ideal.** It holds a straight 31 mm without help and will not wander
+between measurements — which matters, because a dimension that changes as you handle it makes the
+whole A/B comparison meaningless.
+
+**3. ⚠️ Fat elements resonate SHORT — cut long and trim.** The resonant length depends on the
+length-to-diameter ratio, and this wire gives a low one:
+
+| | |
+|---|---|
+| Wavelength at 2.442 GHz | 122.8 mm |
+| Quarter wave, ideal thin wire | **30.7 mm** |
+| **L/d ratio here** | 30.7 / 1.37 = **22** — a *fat* element |
+
+The shortening factor **k** falls as L/d falls: ~0.98 for thin wire, ~0.96 at L/d ≈ 100, and
+**~0.93–0.94 at L/d ≈ 22**. So:
+
+| k | Element | Dipole overall |
+|---|---|---|
+| 0.98 | 30.1 mm | 60.2 mm |
+| 0.95 | 29.2 mm | 58.3 mm |
+| 0.93 | **28.5 mm** | 57.1 mm |
+
+**Start at 31 mm and trim toward ~29 mm**, measuring far-end RSSI as you go. The correction points
+*shorter*, and trimming is possible where lengthening is not. ⚠️ Do not treat 28.5 mm as the answer —
+without a VNA the honest procedure is to walk it down and keep the best, against a control board.
+
+*(This barely matters for the §3x loop mod, whose length is mostly matching structure rather than
+radiator. It matters for a dipole, whose elements are pure radiator.)*
+
+**4. ✅ There is enough wire to fail repeatedly, which changes the approach.** 4 m of 3-core is
+**12 m of conductor**, and a dipole needs ~61 mm — about **195 dipoles' worth** for 10 boards.
+
+**So practice is free: do the first one on a board you have written off**, get the strain relief and
+the joint right where it does not cost anything, and only then work on boards you intend to keep.
+Wire is not the constraint here; pads are.
 
 ### How to tell whether any of it worked — the same protocol either way
 
