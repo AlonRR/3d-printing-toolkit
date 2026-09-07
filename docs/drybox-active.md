@@ -101,17 +101,23 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **ESP32-C3 ×10** | Controller — with a caveat, below |
 | Dupont crimp kit, resistor kit | Wiring and I²C pull-ups |
 
-### Must be bought — four items, all small
+### Must be bought — nine items, all small
 
 | Part | Why | Rough |
 |---|---|---|
 | **12 V 5–6 A supply** | 50 W at 12 V is 4.2 A steady, and **a cold PTC pulls 2–3× that on startup** — inrush margin is a spec, not a nicety. Neither owned PD trigger board is a 12 V variant | ₪40–60 |
-| **2-channel relay or MOSFET module**, heater channel **≥10 A** | Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
+| **2-channel MOSFET module** (⚠️ **not a relay**), heater channel **≥10 A** | ⚠️ **MOSFET specifically, because a relay cannot PWM and PWM soft-start is what handles the inrush** — see the inrush section. Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
+| **One-shot thermal fuse, ~84 °C** | The non-resettable backstop *above* the cutout, so a genuine fault stops rather than cycling | ₪5 |
+| **18 AWG silicone wire** | ⛔ **The owned Dupont kit is 26–28 AWG, rated 0.3–0.5 A, against a 4.2 A heater.** Dupont is fine for I²C and logic and is a fire risk on the heater leg | ₪15 |
+| **Screw terminals or XT30** for the heater leg | Dupont housings are rated ~1–3 A, under the 4.2 A continuous draw | ₪10 |
+| **Inline fuse holder + ~7.5 A fuse** | Protects the wiring, not just the supply's own internal limit | ₪10 |
+| **DC barrel socket** | To accept the supply | ₪5 |
 | ~~Silica gel~~ **— no longer needed** | ⚠️ **Struck 6 Sep 2026: the owned bentonite is the better material for this job** (see [moisture-isotherms](moisture-isotherms.md)). Kept here only so the change is visible. Originally listed as: for the storage half, and **not optional if 5–15 %RH is the goal** — at 50 °C on room air the box bottoms out near 17 %RH, so desiccant is what closes the last gap rather than a refinement. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
-Total is roughly **₪80–135** — the fan came off the list once the heater turned out to have one bonded
-to it. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
+Total is roughly **₪125–180**. The fan came off once the heater turned out to have one bonded to it;
+the wire, connectors, fuses and socket went on once the 4.2 A load was checked against what the
+Dupont kit can actually carry. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
 spools to cycle that is three runs against ten.
 
 ## 🔥 Safety — hardware over-temperature, not software
@@ -505,11 +511,99 @@ while a print runs.** Drying and printing need not overlap, so this is a schedul
 a conflict — but running both at once means the dehumidifier is working against a deliberate
 ventilation system.
 
+## ⚡ Inrush: why a capacitor cannot replace the supply
+
+Reasonable instinct — buffer the surge instead of paying for a bigger brick — and the arithmetic
+kills it decisively. **C = I·t/ΔV**, for the ~6.3 A of extra current a cold PTC draws, allowing a 2 V
+sag on the 12 V rail:
+
+| If the surge lasts | Capacitance needed |
+|---|---|
+| 1 ms | 3,150 µF |
+| 100 ms | 315,000 µF |
+| **1 s** | **3.2 FARADS** |
+| 5 s | 15.8 farads |
+
+And from the other direction: **a 10,000 µF capacitor — already a large, expensive part — holds that
+current for 3 milliseconds.**
+
+🔑 **The reason is that a PTC's inrush is THERMAL, not electrical.** It lasts until the element
+self-heats to its operating point, which is **seconds**. Capacitors serve microsecond-to-millisecond
+transients — switching spikes, motor commutation. This is the wrong tool by three to six orders of
+magnitude, and no amount of capacitance bridges that gap at a sane cost or size.
+
+### ✅ But the right answer to the same instinct is FREE: soft-start
+
+**Ramp the heater's PWM duty cycle up over a few seconds** and the peak current never exceeds the
+steady 4.2 A, because the element is allowed to warm before it is asked for full power. That costs
+nothing, needs no parts, and it does what the capacitor was meant to do.
+
+⚠️ **This decides relay vs MOSFET.** A relay cannot PWM. **Choose the MOSFET module**, and the
+soft-start becomes available for free.
+
+⚠️ **It does NOT license a smaller supply.** 4.2 A steady against a 5 A brick is only 19 % margin for
+a continuously-running load, and the inrush multiplier is *itself* unmeasured — the Curie point is
+undocumented, so 2–3× is an estimate. **Size at 5–6 A and soft-start as well.** The bench test in
+step 1 is what turns the estimate into a number.
+
+## ⛔ Parts that were missing, and one of them was unsafe
+
+**The owned Dupont crimp kit cannot carry this load, and the parts table implied it could.**
+
+| Wire | Rating | vs 4.2 A heater |
+|---|---|---|
+| 28 AWG *(typical Dupont)* | ~0.3 A | ⛔ **14× over** |
+| 26 AWG *(typical Dupont)* | ~0.5 A | ⛔ **8× over** |
+| 22 AWG | ~1.5 A | ⛔ unsafe |
+| **18 AWG** | ~5 A | ✅ minimum |
+| 16 AWG | ~8 A | ✅ comfortable |
+
+Dupont jumpers are fine for the sensor's I²C and the controller's logic. **On the heater circuit they
+are a fire risk**, and the same applies to the connectors: Dupont housings are rated ~1–3 A, well
+under 4.2 A continuous.
+
+So the buy list gains: **18 AWG silicone wire**, **screw terminals or XT30 connectors** for the
+heater leg, a **DC barrel socket** to accept the supply, and an **inline fuse**.
+
+## 🔥 Safety mechanisms to add — four, none expensive
+
+The thermal cutout was already specified. These are the gaps beside it:
+
+**1. A one-shot thermal fuse, above the cutout.** The KSD9700 is *resettable*, which means a genuine
+fault makes it cycle rather than stop — masking the problem while the element keeps trying. Put a
+**non-resettable thermal fuse at ~84 °C** in series as well, comfortably above the 65–70 °C cutout so
+it only ever fires if the cutout has failed. That is the ladder domestic appliances use, and it is
+the difference between "it kept tripping" and "it stopped, permanently, and told you why".
+
+**2. ⚠️ Check the relay/MOSFET module's polarity — this one bites silently.** Many cheap relay boards
+are **active-LOW**, and an ESP32's GPIOs float or are pulled high during boot and reset. On such a
+module **the heater energises on every reset and stays on until firmware takes control.** Verify the
+polarity before wiring, and fit a **pull-down (or pull-up, to match) on the gate/control line** so the
+default state with no firmware running is OFF.
+
+**3. Enable the ESP32's hardware watchdog.** The whole failure this design fears is a crashed
+controller with the heater latched on. The task watchdog reboots on a hang — and because the control
+line defaults OFF (point 2), a reboot is a safe state.
+
+**4. Firmware interlocks the hardware cannot provide.** Cheap, and they cover the cases the cutout
+does not:
+
+- **Sensor-failure cutoff.** If the AHT20 stops responding, returns implausible values, or the
+  temperature **stops changing while the heater is on**, shut the heater down. A stuck sensor
+  reporting a constant 25 °C would otherwise drive the element forever.
+- **Maximum on-time.** A dead-man limit — no drying cycle needs more than a few hours, so cap it. If
+  everything else fails, the run still ends.
+
+⚠️ **None of these replaces the cutout or the fuse.** Software interlocks handle sensible failures;
+the hardware ladder handles the ones where the software is the thing that failed.
+
 ## Build order
 
 1. Bench the heater assembly on the new supply, **fan running**. Record outlet air temperature, outlet surface temperature, total current, and how long each takes to settle.
 2. Mod and measure one C3, far-end, against an unmodified control.
-3. Wire it: cutout in series with the element, and **the heater switch's control power taken from the fan's switched output** so heater-without-fan is physically impossible while the purge stays available. Print the outlet duct in ASA, sized off step 1's surface measurement.
+3. ⚠️ **Check the MOSFET module's control polarity and fit the pull-down BEFORE wiring the heater**,
+   so the default state with no firmware running is OFF. Then wire it: cutout **and the one-shot
+   thermal fuse** in series with the element, and **the heater switch's control power taken from the fan's switched output** so heater-without-fan is physically impossible while the purge stays available. Print the outlet duct in ASA, sized off step 1's surface measurement.
 4. Cut intake and exhaust vents — exhaust **high and diagonally opposite** the intake.
 5. Wire the AHT20 out of the airstream; bring temperature and humidity into HA over MQTT, reusing the
    plumbing the camera node already has.
