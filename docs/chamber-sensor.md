@@ -361,8 +361,12 @@ tests, so the numbers below are his measurements, not theory.
 | **Dipole** — half wave | **6.25 cm** | No — the second element *is* the other half |
 | **Monopole** — quarter wave | **3.125 cm** | **Yes** — the ground plane supplies the missing half |
 
-So **§3x's 31 mm wire is a quarter-wave monopole**, and that classification is the useful part,
-because it says what the mod's performance actually rests on.
+So **§3x's 31 mm of wire is roughly a quarter wave in total**, and it behaves monopole-like: a
+single-ended radiator working against the board's ground. ⚠️ **Do not read it as a plain quarter-wave
+whip, though** — the procedure is 16 mm of loop plus 15 mm of straight, with the chip antenna left in
+circuit, so most of that length is an impedance-matching structure and only the straight part sticks
+out and radiates. The classification is still the useful part, because it names what the mod's
+performance rests on: the ground plane.
 
 ### ⚠️ Which means the ground plane is the limiting factor, not the wire
 
@@ -406,13 +410,63 @@ section, and it is the exact variable his experiment isolated — his DIY monopo
 ones *in a metal vice* and degraded out of it.
 
 **C — the dipole.** Two ~31 mm elements, one on the antenna feed and one on board ground, extending
-in **opposite** directions and in line with each other. That is a half-wave dipole and it stops
-caring about the ground plane.
+in **opposite** directions and **in line** with each other. Each is a quarter wave, so the pair makes
+a half-wave dipole, and it stops caring about the ground plane.
 
-⚠️ **Be honest about what this is:** the SuperMini's feed is single-ended, so this is a dipole fed
-unbalanced, without a balun. It works in practice — plenty of cheap dipoles are built this way — but
-some common-mode current rides the ground element, so do not expect textbook behaviour. It is also
-the most invasive option and the hardest to undo.
+### ⚠️ A dipole is NOT "the §3x mod twice" — and the difference is the whole mechanism
+
+The natural reading is that C is A plus one more wire. It is not:
+
+| | §3x mod (A) | Dipole (C) |
+|---|---|---|
+| Shape | **16 mm loop + 15 mm straight** | **two plain straight elements** |
+| Attaches to | both **chip-antenna pads** | one on **feed**, one on **GROUND** |
+| Direction | one radiator | **opposite, collinear** |
+| Chip antenna | **left in place** — it completes the loop | in the way; see below |
+
+Two consequences, both load-bearing:
+
+- **A second wire soldered to the feed is not a dipole, it is a fatter monopole.** The second element
+  must go to **ground**. Ground supplying the other half of the radiator — instead of the board's
+  tiny ground plane doing it badly — *is* the mechanism.
+- **The §3x loop is a matching structure, not a radiator.** Its 16 mm does impedance work together
+  with the chip antenna; only the 15 mm sticks out and radiates. A dipole discards that arrangement
+  rather than duplicating it.
+
+📋 **Open question, untested: what to do with the ceramic chip antenna.** §3x found leaving it in
+place measured *better* — but that is for the loop mod, which deliberately uses it. Under a dipole it
+sits in parallel with the driven element and will pull the match around. Removing it is
+irreversible. **Try it in place first**, since that is reversible, and only remove it on a board
+already accepted as possibly sacrificial.
+
+### ⭐ Mobility is the real argument for the dipole — stronger than "B needs metal"
+
+**A monopole's other half is effectively whatever it is sitting near.** Its ground plane is the board
+plus any nearby conductive mass. For a fixed node that is merely small; **for a node that moves it is
+a variable** — the same board performs differently on a bench, in a plastic box, and beside a printer
+frame, and it changes with no warning and no error.
+
+**A dipole is self-contained**: both halves are soldered to it, so it behaves the same wherever it
+goes. **For a mobile node that consistency is worth more than raw dB**, because a link budget you
+cannot predict is one you cannot design around.
+
+⚠️ **Be honest about what a dipole here is:** the SuperMini's feed is single-ended, so this is a
+dipole fed unbalanced with no balun. It works in practice — plenty of cheap dipoles are built this
+way — but common-mode current rides the ground element. Do not expect textbook performance; expect
+*consistent* performance, which is the point.
+
+### Wire: what matters, and what does not
+
+- **Diameter barely affects the resonant LENGTH.** It sets **bandwidth** — thicker is more forgiving
+  of a length error. WiFi's ~80 MHz at 2.4 GHz is undemanding, so **thin wire still works.**
+- **Solid beats stranded for mechanical reasons only.** An element must hold a straight 31 mm and
+  stay there; stranded wanders and its effective length changes as it is handled.
+- ⚠️ **§3x's 1.0 mm spec is largely mechanical** — its loop has to hold an 8 mm circle unaided. **A
+  dipole has no loop**, so it tolerates thinner wire than the mod does. Cores too floppy for A are
+  perfectly usable for C.
+- **Strip individual conductors out of multi-core cable; never use it as a cable.** Two cores in one
+  jacket run parallel and adjacent, and a dipole's elements must be **collinear and opposite** —
+  separated, in line, pointing away from each other.
 
 ### How to tell whether any of it worked — the same protocol either way
 
