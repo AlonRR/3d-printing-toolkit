@@ -21,6 +21,16 @@ bool wifi_is_connected(void);
 /* Dotted-quad of the address obtained, or "0.0.0.0" if not connected. */
 const char *wifi_ip_str(void);
 
+/* How many times the station has LOST its association since boot, cumulative
+ * and never reset. Distinguishes a link that reconnects constantly from one
+ * that has been up throughout. */
+unsigned wifi_disconnect_count(void);
+
+/* BSSID of the associated AP as "aa:bb:cc:dd:ee:ff", or "" when not associated.
+ * A change here with RSSI intact is a mesh roam; RSSI falling with this
+ * unchanged is a weak spot. */
+const char *wifi_bssid_str(void);
+
 /* Current AP signal strength in dBm, or 0 if unavailable. Worth logging beside
  * any throughput figure: a number measured at -75 dBm means something quite
  * different from the same number at -45 dBm. */

@@ -35,6 +35,9 @@ static int s_retries = 0;
 static esp_netif_t *s_netif = NULL;
 static esp_timer_handle_t s_retry_timer = NULL;
 static volatile bool s_have_ip = false;
+/* CUMULATIVE, never reset - s_retries resets on every success, so it cannot
+ * answer "how unstable has this link been". This one can. */
+static unsigned s_disconnects = 0;
 static int64_t s_last_ip_us = 0;
 
 /* Reconnecting from a TIMER rather than straight from the event handler, so a
@@ -83,6 +86,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
         wifi_event_sta_disconnected_t *d = (wifi_event_sta_disconnected_t *) data;
         s_have_ip = false;
         s_retries++;
+        s_disconnects++;
 
         /* The reason code is the single most useful thing in a failed join and
          * is usually thrown away. 15 = 4-way handshake timeout, 201 = AP not
@@ -247,6 +251,30 @@ esp_err_t wifi_connect(int timeout_ms)
 bool wifi_is_connected(void)
 {
     return s_have_ip;
+}
+
+unsigned wifi_disconnect_count(void)
+{
+    return s_disconnects;
+}
+
+/* The BSSID is what separates a ROAM from a signal collapse: on a mesh, a
+ * handoff shows as this value changing while RSSI stays healthy, whereas a weak
+ * spot shows as RSSI falling with the BSSID unchanged. Without it the two are
+ * indistinguishable in the history, which is exactly the question being asked of
+ * the printer-area drops. */
+const char *wifi_bssid_str(void)
+{
+    static char s_bssid[18] = "";
+    wifi_ap_record_t ap;
+    if (esp_wifi_sta_get_ap_info(&ap) == ESP_OK) {
+        snprintf(s_bssid, sizeof(s_bssid), "%02x:%02x:%02x:%02x:%02x:%02x",
+                 ap.bssid[0], ap.bssid[1], ap.bssid[2],
+                 ap.bssid[3], ap.bssid[4], ap.bssid[5]);
+    } else {
+        s_bssid[0] = '\0';
+    }
+    return s_bssid;
 }
 
 const char *wifi_ip_str(void)

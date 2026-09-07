@@ -14,6 +14,8 @@
 
 #include "mqtt.h"
 
+#include "wifi.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -60,6 +62,40 @@ static void publish_discovery(void)
              "\"unique_id\":\"chamber_rh\"," DEVICE_JSON "}");
     esp_mqtt_client_publish(s_client,
         "homeassistant/sensor/chamber_rh/config", payload, 0, 1, 1);
+
+    /* LINK TELEMETRY. Added at homelab's request so the printer-area weak spot
+     * becomes a SERIES rather than the single bench observation that -72 dBm in
+     * the enclosure against -26 dBm on the desk currently is. These ride the
+     * existing state topic, so they cost one extra publish of nothing - the
+     * message was being sent anyway. */
+    snprintf(payload, sizeof(payload),
+             "{\"name\":\"Chamber WiFi RSSI\",\"device_class\":\"signal_strength\","
+             "\"unit_of_measurement\":\"dBm\",\"state_topic\":\"" TOPIC_STATE "\","
+             "\"value_template\":\"{{ value_json.rssi }}\","
+             "\"availability_topic\":\"" TOPIC_AVAIL "\","
+             "\"entity_category\":\"diagnostic\","
+             "\"unique_id\":\"chamber_rssi\"," DEVICE_JSON "}");
+    esp_mqtt_client_publish(s_client,
+        "homeassistant/sensor/chamber_rssi/config", payload, 0, 1, 1);
+
+    snprintf(payload, sizeof(payload),
+             "{\"name\":\"Chamber WiFi disconnects\",\"state_class\":\"total_increasing\","
+             "\"state_topic\":\"" TOPIC_STATE "\","
+             "\"value_template\":\"{{ value_json.wifi_drops }}\","
+             "\"availability_topic\":\"" TOPIC_AVAIL "\","
+             "\"entity_category\":\"diagnostic\","
+             "\"unique_id\":\"chamber_wifi_drops\"," DEVICE_JSON "}");
+    esp_mqtt_client_publish(s_client,
+        "homeassistant/sensor/chamber_wifi_drops/config", payload, 0, 1, 1);
+
+    snprintf(payload, sizeof(payload),
+             "{\"name\":\"Chamber WiFi BSSID\",\"state_topic\":\"" TOPIC_STATE "\","
+             "\"value_template\":\"{{ value_json.bssid }}\","
+             "\"availability_topic\":\"" TOPIC_AVAIL "\","
+             "\"entity_category\":\"diagnostic\","
+             "\"unique_id\":\"chamber_bssid\"," DEVICE_JSON "}");
+    esp_mqtt_client_publish(s_client,
+        "homeassistant/sensor/chamber_bssid/config", payload, 0, 1, 1);
 
     esp_mqtt_client_publish(s_client, TOPIC_AVAIL, "online", 0, 1, 1);
     ESP_LOGI(TAG, "discovery published; entities will appear in HA unaided");
@@ -146,9 +182,12 @@ void mqtt_publish_reading(float temperature_c, float humidity_pct)
         return;
     }
 
-    char payload[96];
+    char payload[192];
     snprintf(payload, sizeof(payload),
-             "{\"temp_c\":%.1f,\"rh_pct\":%.1f}", temperature_c, humidity_pct);
+             "{\"temp_c\":%.1f,\"rh_pct\":%.1f,\"rssi\":%d,"
+             "\"wifi_drops\":%u,\"bssid\":\"%s\"}",
+             temperature_c, humidity_pct, wifi_rssi(),
+             wifi_disconnect_count(), wifi_bssid_str());
 
     /* NOT retained, deliberately. A retained reading is replayed to HA on every
      * reconnect and shown as current, which is precisely the stale-value
