@@ -487,52 +487,62 @@ going thinner is negligible: the element length moves by 0.6 mm, and the higher 
 
 **Cut 31 mm, trim toward ~29 mm**, measuring far-end RSSI against an unmodified control.
 
-⚠️ **The 1.37 mm is not waste — it is the right wire for the drybox heater**, where the buy list
+✅ **The inventory record agrees independently**, noting 22 AWG is *"NOT the gauge for the drybox PTC heater at ~4.2 A"*. ⚠️ **So the 1.37 mm is not waste — it is the right wire for that heater**, where the buy list
 calls for 18 AWG to carry 4.2 A continuous and where stiffness is a virtue. See
 [drybox-active](drybox-active.md).
 
-### 📋 UNRESOLVED: which 0.60 mm wire this actually is
+### ✅ IDENTIFIED: UL1007 22 AWG solid tinned copper, 5 × 10 m coils
 
-A full inventory search on 7 Sep 2026 returned **NOT FOUND**, and the gap is worth recording rather
-than papering over.
+**`Hookup wire, UL1007 22AWG solid tinned copper - 5 colours, 10m each`** — HomeBox, parts storage.
 
-- **The only record in HomeBox stating 0.60 mm is the Cat7 part roll**, which Alon explicitly
-  excluded — and that is almost certainly the source of an earlier wrong assumption in this
-  session.
-- **The plausible candidate** is `Rigid jumper wire kit, 65 pcs` (parts storage, `unassigned-stock`,
-  from an ELEGOO Fun Kit): *"pre-formed solid-core jumpers cut to breadboard pitch"*. **Its gauge is
-  recorded nowhere**, so this is a candidate, not an identification.
-- **Checked and clean:** no enamelled/magnet wire, hookup reel, Kynar, wire-wrap, florist or
-  modelling rod anywhere in 221 entities. ⚠️ **two marketplaces were signed out and NOT searched**,
-  and a second marketplace's order search failed its negative control (a nonsense string returned a match), so
-  this is *not found in the sources named*, never *not owned*.
+| | |
+|---|---|
+| Conductor | **22 AWG solid tinned copper** — 0.644 mm nominal, measures 0.60 |
+| Insulation | PVC |
+| Quantity | **5 coils, 10 m each — 50 m total**, in black, red, blue, green, yellow |
+| Provenance | AliExpress ref `[order reference removed]`, a marketplace seller, 20 Apr 2026, ₪75.85 |
+| Model | `DXXAW22YL-10M` |
 
-### ⛔ Two things to check before cutting, if it is the jumper kit
+**Every open question about this wire is closed, and all three answers are the good ones:**
 
-**1. Copper-clad aluminium.** ELEGOO lists **CCA** on at least one jumper SKU. At 2.4 GHz that is
-electrically fine — skin depth is ~1.3 µm and the cladding is copper — **but CCA is mechanically
-brittle**, work-hardens fast and can fail at the copper/aluminium interface. That partly undercuts
-the whole reason for choosing the thinner wire, which was to be gentle on the joint. **Confirm the
-material before committing ten boards to it.**
+- ✅ **Tinned copper, not CCA.** The copper-clad-aluminium worry — brittle, work-hardens, fails at
+  the copper/aluminium interface — does not apply. This is real copper.
+- ✅ **Pre-tinned, so there is no enamel to strip.** It takes solder directly.
+- ✅ **50 m against the ~700 mm ten boards need** — about **70× margin**. Quantity is a non-issue and
+  practice attempts cost nothing.
 
-**2. Usable straight length, and a label that may be swapped.** These kits are **pre-bent into
-staples**, so only the longest bins yield a clean ≥31 mm run — the 50/75/100/125 mm sizes.
-HomeBox records a 65-pc kit as solid and a 140-pc kit as "flexible", but both descriptions were
-written from a parts *list* rather than from the parts, and ELEGOO's "flexible" SKU is often the
-boxed solid U-shape kit. **If the labels are swapped the usable count roughly doubles**; if not, the
-65-pc kit yields perhaps ~18 usable pieces against the 20 elements ten boards need — which is
-marginal, and marginal is a bad place to start a process that includes practice failures.
+### 💡 Use two different colours, and let the wire prevent the mistake
 
-⚠️ **Re-straightened wire is not fresh wire.** Bending work-hardens copper, and a straightened piece
-holds its line less well — which matters for an element whose length is being trimmed and measured.
+Five colours is not decoration here. **The most likely way to build a dipole wrong is to solder both
+elements to the feed**, which produces a fatter monopole that looks identical, measures worse, and
+gives no visible clue why.
 
-### One physical check settles all of it
+**Pick one colour for the feed element and another for the ground element, and hold that convention
+across all ten boards.** The error then becomes visible at a glance instead of needing a meter — and
+across a batch, a mistake you can see beats one you have to measure.
 
-> **Pick up the boxed multi-length breadboard jumper kit on the parts storage. Is that the wire measured
-> at 0.60 mm — and how many pieces are 50 mm or longer?**
+### 📋 Why two searches missed it — a race, not a search failure
 
-That answers the identity, the material question and the quantity in one go. Until then the wire
-section above is physics, not a parts list.
+Worth recording, because the obvious lesson would be the wrong one. A full inventory agent and a
+direct ten-route search both returned **NOT FOUND**, and **both were correct when they ran**:
+
+| | Entities |
+|---|---|
+| Agent's sweep | 221 |
+| Direct search | 222 |
+| The search that found it | **223** |
+
+**The record was created while the searches were running**, by another session working the same
+inventory. Nothing was mis-searched and no keyword was wrong — a `hookup` query genuinely returned
+zero, minutes before the row existed.
+
+⚠️ **The generalisable point: `NOT FOUND` against a live shared inventory carries a timestamp.** It
+describes a moment, not a property of the world, and re-running it costs seconds. The house rule
+that *a match proves presence and nothing proves absence* already implies this; this is what it looks
+like in practice.
+
+*(What led here was `homebox-add-hookup-wire.py` in `Tools/inventory/scripts/` — **a script named
+for a part is evidence the part exists, even when the record does not yet.**)*
 
 ### If the 1.37 mm is used after all — strain relief is mandatory
 
