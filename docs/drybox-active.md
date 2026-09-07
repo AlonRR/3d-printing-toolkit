@@ -597,6 +597,53 @@ does not:
 ⚠️ **None of these replaces the cutout or the fuse.** Software interlocks handle sensible failures;
 the hardware ladder handles the ones where the software is the thing that failed.
 
+## 🔋 This decision deletes the battery node — and its whole central problem
+
+`homelab/docs/manual/battery-sensor-node.md` designs a **battery-powered** ESP32-C3 humidity node
+for this box. **Making the box active invalidates its premise**, and the doc says so itself, in a
+correction that has since been overtaken:
+
+> *"**Corrected 22 Aug 2026.** An earlier version of this page argued the drybox was probably heated
+> (from the owned PTC heater + 40 mm fans) and that the node should therefore run off the box's
+> supply and need no battery. **That was wrong: the PTC heater is for the printer enclosure.**"*
+
+That correction was **right when it was written** — the heater was allocated to the enclosure then.
+But **Alon reallocated the PTC to this drybox on 3 Sep 2026**, so the rejected inference is now
+simply true, arrived at from the other direction and by decision rather than by guess.
+
+### What that removes
+
+The doc's design is driven by one constraint:
+
+> *"**The consequence that should drive the design: every recharge opens the box.** A passive drybox
+> works by being sealed. Recharging means opening it, which admits humid room air and puts a load on
+> the desiccant — so a charge is not just an inconvenience, it is a **humidity event**."*
+
+**An active box has a 12 V supply in it anyway.** Feed the node from that through an owned TPS63020
+and the recharge disappears, and with it the humidity event, the battery sizing exercise, the
+chemistry decision, and the fuel-gauge question.
+
+⛔ **Do not buy** the LiPo/18650 + holder, the protected TP4056, the `R_PROG` resistor or the
+MAX17048 **for this box**. They were the right answer to a problem this project has removed.
+
+### It composes with the sensor-placement rule, and that is what makes it clean
+
+[chamber-sensor](chamber-sensor.md) already requires the **node outside the enclosure with a short
+I²C tail to the sensor inside**, because a board that self-heats next to its own sensor reads warm
+and dry — biased toward exactly the "no heater needed" conclusion the project exists to test.
+
+Applied here: **the node never enters the box.** It mounts outside, next to the heater assembly and
+its supply, and only a thin I²C tail passes through the wall. So there is no cable gland problem, no
+board in a humid box, and nothing to open the box for.
+
+⚠️ **One wiring consequence to get right:** leave the 12 V supply permanently connected and switch
+only the **heater and fan** with the 2-channel MOSFET module. If the supply itself is switched, the
+sensor dies whenever the box is merely storing — which is precisely the period the AHT20 exists to
+watch, since storage RH is what says whether the desiccant is still working.
+
+**Sensor is already settled and owned:** AHT20 + BMP280 (arrived 2 Sep). The DHT11 cannot be used —
+it floors at 20 %RH and a working drybox sits below that.
+
 ## Build order
 
 1. Bench the heater assembly on the new supply, **fan running**. Record outlet air temperature, outlet surface temperature, total current, and how long each takes to settle.
