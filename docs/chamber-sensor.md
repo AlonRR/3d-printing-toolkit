@@ -468,63 +468,87 @@ way — but common-mode current rides the ground element. Do not expect textbook
   jacket run parallel and adjacent, and a dipole's elements must be **collinear and opposite** —
   separated, in line, pointing away from each other.
 
-### The wire on hand: 1.37 mm, measured — thicker than the mod's spec
+### Which wire: 0.60 mm is preferred, and the reason is the fourth-power law
 
-**4 m of 3-core cable with 1.37 mm conductors**, measured 7 Sep 2026. That is **~15.5 AWG**, against
-the §3x spec of 1.0 mm / 18 AWG — so it is *thicker*, not thinner, which was the risk being checked
-for. Three consequences, one of them a hazard.
+Two solid wires are on hand and measured. **The thinner one is the better element**, and the margin
+is not close:
 
-**1. ⛔ THE HAZARD: 1.37 mm solid wire will tear the pad off the board.**
+| Wire | AWG | L/d | Element | **Bending stiffness** |
+|---|---|---|---|---|
+| **0.60 mm** | 22.6 | 51 | **~29.3 mm** | **1×** |
+| 1.00 mm *(§3x spec)* | 18.2 | 31 | ~29.0 mm | 7.7× |
+| 1.37 mm *(3-core)* | 15.5 | 22 | ~28.7 mm | **27×** |
 
-A 15 AWG conductor soldered to an SMD antenna pad is a **lever**. The wire's own stiffness is the
-problem — any knock, any flex of the element, any tug on the board transfers straight into a pad
-measured in fractions of a millimetre, and SMD pads lift. This is the most likely way to destroy a
-board during this work, more likely than any RF mistake.
+**Second moment of area scales with d⁴**, so the 1.37 mm is not "somewhat stiffer" than the
+0.60 mm — it is **27× stiffer**, and all of that torque is delivered to an SMD pad. Against ten
+boards worth keeping, that dominates every other consideration in the table. The electrical cost of
+going thinner is negligible: the element length moves by 0.6 mm, and the higher L/d sits marginally
+*closer* to the nominal quarter wave.
 
-**Strain-relieve it, and treat that as part of the joint, not a finishing touch:**
+**Cut 31 mm, trim toward ~29 mm**, measuring far-end RSSI against an unmodified control.
+
+⚠️ **The 1.37 mm is not waste — it is the right wire for the drybox heater**, where the buy list
+calls for 18 AWG to carry 4.2 A continuous and where stiffness is a virtue. See
+[drybox-active](drybox-active.md).
+
+### 📋 UNRESOLVED: which 0.60 mm wire this actually is
+
+A full inventory search on 7 Sep 2026 returned **NOT FOUND**, and the gap is worth recording rather
+than papering over.
+
+- **The only record in HomeBox stating 0.60 mm is the Cat7 part roll**, which Alon explicitly
+  excluded — and that is almost certainly the source of an earlier wrong assumption in this
+  session.
+- **The plausible candidate** is `Rigid jumper wire kit, 65 pcs` (parts storage, `unassigned-stock`,
+  from an ELEGOO Fun Kit): *"pre-formed solid-core jumpers cut to breadboard pitch"*. **Its gauge is
+  recorded nowhere**, so this is a candidate, not an identification.
+- **Checked and clean:** no enamelled/magnet wire, hookup reel, Kynar, wire-wrap, florist or
+  modelling rod anywhere in 221 entities. ⚠️ **two marketplaces were signed out and NOT searched**,
+  and a second marketplace's order search failed its negative control (a nonsense string returned a match), so
+  this is *not found in the sources named*, never *not owned*.
+
+### ⛔ Two things to check before cutting, if it is the jumper kit
+
+**1. Copper-clad aluminium.** ELEGOO lists **CCA** on at least one jumper SKU. At 2.4 GHz that is
+electrically fine — skin depth is ~1.3 µm and the cladding is copper — **but CCA is mechanically
+brittle**, work-hardens fast and can fail at the copper/aluminium interface. That partly undercuts
+the whole reason for choosing the thinner wire, which was to be gentle on the joint. **Confirm the
+material before committing ten boards to it.**
+
+**2. Usable straight length, and a label that may be swapped.** These kits are **pre-bent into
+staples**, so only the longest bins yield a clean ≥31 mm run — the 50/75/100/125 mm sizes.
+HomeBox records a 65-pc kit as solid and a 140-pc kit as "flexible", but both descriptions were
+written from a parts *list* rather than from the parts, and ELEGOO's "flexible" SKU is often the
+boxed solid U-shape kit. **If the labels are swapped the usable count roughly doubles**; if not, the
+65-pc kit yields perhaps ~18 usable pieces against the 20 elements ten boards need — which is
+marginal, and marginal is a bad place to start a process that includes practice failures.
+
+⚠️ **Re-straightened wire is not fresh wire.** Bending work-hardens copper, and a straightened piece
+holds its line less well — which matters for an element whose length is being trimmed and measured.
+
+### One physical check settles all of it
+
+> **Pick up the boxed multi-length breadboard jumper kit on the parts storage. Is that the wire measured
+> at 0.60 mm — and how many pieces are 50 mm or longer?**
+
+That answers the identity, the material question and the quantity in one go. Until then the wire
+section above is physics, not a parts list.
+
+### If the 1.37 mm is used after all — strain relief is mandatory
+
+⛔ **A 15 AWG solid conductor on an SMD antenna pad is a lever.** Its stiffness means any knock, flex
+or tug transfers into a pad measured in fractions of a millimetre, and SMD pads lift. This is the
+most likely way to destroy a board in this work — more likely than any RF mistake.
 
 - Anchor the wire to the PCB with epoxy or hot glue **a few millimetres past the solder joint**, so
-  mechanical load lands in the adhesive rather than the pad.
-- Better where it fits: solder a **short length of thin flexible wire to the pad**, and join the
-  1.37 mm element to *that* a few millimetres away. The thin section becomes a deliberate mechanical
-  fuse, and it costs nothing electrically at these lengths.
-- Do the strain relief **before** the first bend, not after the element is already being handled.
+  load lands in adhesive rather than the pad.
+- Better: solder a **short thin flexible section to the pad** and join the heavy element to *that*
+  a few millimetres away, making the thin part a deliberate mechanical fuse.
+- Do the strain relief **before** the first bend.
 
-**2. Mechanically it is otherwise ideal.** It holds a straight 31 mm without help and will not wander
-between measurements — which matters, because a dimension that changes as you handle it makes the
-whole A/B comparison meaningless.
-
-**3. ⚠️ Fat elements resonate SHORT — cut long and trim.** The resonant length depends on the
-length-to-diameter ratio, and this wire gives a low one:
-
-| | |
-|---|---|
-| Wavelength at 2.442 GHz | 122.8 mm |
-| Quarter wave, ideal thin wire | **30.7 mm** |
-| **L/d ratio here** | 30.7 / 1.37 = **22** — a *fat* element |
-
-The shortening factor **k** falls as L/d falls: ~0.98 for thin wire, ~0.96 at L/d ≈ 100, and
-**~0.93–0.94 at L/d ≈ 22**. So:
-
-| k | Element | Dipole overall |
-|---|---|---|
-| 0.98 | 30.1 mm | 60.2 mm |
-| 0.95 | 29.2 mm | 58.3 mm |
-| 0.93 | **28.5 mm** | 57.1 mm |
-
-**Start at 31 mm and trim toward ~29 mm**, measuring far-end RSSI as you go. The correction points
-*shorter*, and trimming is possible where lengthening is not. ⚠️ Do not treat 28.5 mm as the answer —
-without a VNA the honest procedure is to walk it down and keep the best, against a control board.
-
-*(This barely matters for the §3x loop mod, whose length is mostly matching structure rather than
-radiator. It matters for a dipole, whose elements are pure radiator.)*
-
-**4. ✅ There is enough wire to fail repeatedly, which changes the approach.** 4 m of 3-core is
-**12 m of conductor**, and a dipole needs ~61 mm — about **195 dipoles' worth** for 10 boards.
-
-**So practice is free: do the first one on a board you have written off**, get the strain relief and
-the joint right where it does not cost anything, and only then work on boards you intend to keep.
-Wire is not the constraint here; pads are.
+**There is no shortage of it:** 4 m of 3-core is **12 m of conductor**, about **195 dipoles' worth**
+for 10 boards. Practice is free — **do the first attempt on a board already written off**, because
+wire is not the constraint here, pads are.
 
 ### How to tell whether any of it worked — the same protocol either way
 
