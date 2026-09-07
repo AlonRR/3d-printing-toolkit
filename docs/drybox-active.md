@@ -101,7 +101,7 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **ESP32-C3 ×10** | Controller — with a caveat, below |
 | Dupont crimp kit, resistor kit | Wiring and I²C pull-ups |
 
-### Must be bought — eight items, all small
+### Must be bought — seven items, all small
 
 | Part | Why | Rough |
 |---|---|---|
@@ -109,15 +109,15 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **2-channel MOSFET module** (⚠️ **not a relay**), heater channel **≥10 A** | ⚠️ **MOSFET specifically, because a relay cannot PWM and PWM soft-start is what handles the inrush** — see the inrush section. Two channels, because the fan and heater are separately cabled and controlling them independently is the whole point — see the purge above. The heater channel carries 4.2 A steady and **2–3× that as a cold PTC's inrush**, so a 5 A part is sized for the steady state only; the fan channel is trivial by comparison. Dual-channel modules cost about the same as single | ₪10–15 |
 | **NC thermal cutout, ~65–70 °C** (KSD9700 type) | **Not optional — see safety** | ₪10 |
 | **One-shot thermal fuse, ~84 °C** | The non-resettable backstop *above* the cutout, so a genuine fault stops rather than cycling | ₪5 |
-| **18 AWG silicone wire** | ⛔ **The owned Dupont kit is 26–28 AWG, rated 0.3–0.5 A, against a 4.2 A heater.** Dupont is fine for I²C and logic and is a fire risk on the heater leg | ₪15 |
+| ~~18 AWG silicone wire~~ **— OWNED, struck 7 Sep 2026** | ✅ **The 4 m of 3-core cable on hand is 1.37 mm conductor = ~15.5 AWG**, heavier than the 18 AWG this asked for and good for ~8–10 A against the heater's 4.2 A. 4 m of 3-core is 12 m of conductor and the heater leg needs 1–2 m. ⛔ The original warning still stands and is why this row is struck rather than deleted: **the Dupont kit is 26–28 AWG, rated 0.3–0.5 A**, fine for I²C and logic and a fire risk on the heater leg | — |
 | **Screw terminals or XT30** for the heater leg | Dupont housings are rated ~1–3 A, under the 4.2 A continuous draw | ₪10 |
 | **Inline fuse holder + ~7.5 A fuse** | Protects the wiring, not just the supply's own internal limit | ₪10 |
 | **DC barrel socket** | To accept the supply | ₪5 |
 | ~~Silica gel~~ **— no longer needed** | ⚠️ **Struck 6 Sep 2026: the owned bentonite is the better material for this job** (see [moisture-isotherms](moisture-isotherms.md)). Kept here only so the change is visible. Originally listed as: for the storage half, and **not optional if 5–15 %RH is the goal** — at 50 °C on room air the box bottoms out near 17 %RH, so desiccant is what closes the last gap rather than a refinement. **None is owned** — an order-history sweep found no desiccant or silica gel at all | ₪20–40 |
 
-Total is roughly **₪125–180**. The fan came off once the heater turned out to have one bonded to it;
-the wire, connectors, fuses and socket went on once the 4.2 A load was checked against what the
-Dupont kit can actually carry. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
+Total is roughly **₪110–165**. The fan came off once the heater turned out to have one bonded to it,
+and the wire came off once the 3-core on hand was measured at 1.37 mm; the connectors, fuses and
+socket went on when the 4.2 A load was checked against what the Dupont kit can actually carry. Against ₪184–349 for a bought single-spool unit that dries one spool instead of four. With ten
 spools to cycle that is three runs against ten.
 
 ## 🔥 Safety — hardware over-temperature, not software
