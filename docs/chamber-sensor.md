@@ -380,15 +380,56 @@ it is standing on almost nothing.
 spent on the wire. Anything that enlarges it — a ground pour, a scrap of copper tape bonded to the
 board's ground, mounting against a grounded metal surface — attacks the actual limit.
 
-### 💡 A dipole would sidestep the problem entirely
+### 💡 Three recovery routes, cheapest first — for the 10 owned SuperMinis
 
 His explicit verdict: *"if you want an easy and reliable WiFi antenna, get yourself a dipole."*
 Dipoles beat monopoles across his whole test set, and the reason is exactly this — **a dipole carries
 its own second half and does not care about the ground plane.**
 
-On a SuperMini that means two ~31 mm elements instead of one: one on the antenna feed, one on
-ground, extending in **opposite** directions. Untested here, and it is a bigger physical change than
-the §3x wire, but it targets the defect rather than compensating for it.
+Because ten of these boards are owned and recovering them is worth real effort, here are the three
+options ranked by effort, with what each actually attacks:
+
+| # | Change | Attacks | Effort | Tested here |
+|---|---|---|---|---|
+| **A** | §3x wire — one 31 mm element | antenna *absence*; leaves the ground plane tiny | 30 s solder | no |
+| **B** | **Enlarge the ground plane** | the measured limit, directly | copper tape | no |
+| **C** | **Dipole** — two 31 mm elements | removes ground-plane dependence entirely | rework | no |
+
+**A — the documented wire.** Already written up above. Expect +10 to +17 dB and a ceiling.
+
+**B — give the monopole a ground plane, which is the cheap win nobody tried.** A quarter-wave
+monopole ideally wants a ground plane of about **λ/4 radius — ~3 cm, so a ~6 cm disc**. The
+SuperMini's is a 22 × 18 mm board. Copper tape or thin sheet bonded to board ground, or simply
+mounting the board flat against a grounded metal surface, closes most of that gap for pennies.
+**This is the option I would try first**, because it is reversible, needs no rework of the RF
+section, and it is the exact variable his experiment isolated — his DIY monopole matched commercial
+ones *in a metal vice* and degraded out of it.
+
+**C — the dipole.** Two ~31 mm elements, one on the antenna feed and one on board ground, extending
+in **opposite** directions and in line with each other. That is a half-wave dipole and it stops
+caring about the ground plane.
+
+⚠️ **Be honest about what this is:** the SuperMini's feed is single-ended, so this is a dipole fed
+unbalanced, without a balun. It works in practice — plenty of cheap dipoles are built this way — but
+some common-mode current rides the ground element, so do not expect textbook behaviour. It is also
+the most invasive option and the hardest to undo.
+
+### How to tell whether any of it worked — the same protocol either way
+
+⛔ **Do not measure at 5 cm.** At 2.4 GHz that is inside the reactive near field, where two
+mismatched antennas couple in ways that ignore path loss.
+
+- Read **RSSI from the far end** — the AP, or another node — at several metres, through a wall.
+- **Keep one unmodified board as a permanent control**, and measure it in the same spot in the same
+  session. A number without a control is not a result.
+- **Orient the element vertically**, matching the AP's antennas. Simple antennas radiate in a donut —
+  strong to the sides, weak off the ends — and he measured co-alignment as clearly best. This is
+  free and applies to every option above.
+- ⛔ **Do not use a longer wire.** *"Bigger is not always better"* — his largest antenna was a
+  monopole that lost to the dipoles. Length has an optimum, not a direction.
+
+**For the drybox and chamber nodes specifically, the node is mounted OUTSIDE the box**, so there is
+physical room for a proper antenna and no reason to compromise the geometry to fit a lid.
 
 ### Two free wins, whichever antenna is used
 
