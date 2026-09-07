@@ -101,7 +101,7 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **ESP32-C3 ×10** | Controller — with a caveat, below |
 | Dupont crimp kit, resistor kit | Wiring and I²C pull-ups |
 
-### Must be bought — nine items, all small
+### Must be bought — eight items, all small
 
 | Part | Why | Rough |
 |---|---|---|
