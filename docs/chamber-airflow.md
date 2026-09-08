@@ -14,7 +14,69 @@ airtight. Below ambient, that stops mattering — air moves in through the gaps 
 moving out — so the enclosure only has to be *closed enough* for a small extraction to hold the
 differential.
 
-## Architecture — ONE fan, split outlet
+## ✅ DECIDED 8 Sep 2026 — TWO fans, split by job
+
+**Alon:** *"maybe the jumpeak should stay as the vent fan and the 40mm fans should be the
+filters?"*
+
+```
+            ┌──────────── chamber ────────────┐
+  makeup ──►│  (defined inlet, known area)    │
+   air in   │   ┌──────────────────────────┐  │
+            └──►│ ventobox: carbon + HEPA  │  │   recirculating scrubber
+                │   2-3 × 40 mm, 24 V      ├──┘   (all flow returns)
+                └──────────────────────────┘
+            ┌────────────────────────────────┐
+            └──► JUMPEAK 120 mm ──► duct ──► outside     the extraction
+```
+
+The **ventobox** scrubs continuously inside the chamber; the **JUMPEAK** pulls the bleed out
+through the duct. Two jobs, two fans, each sized for its own load.
+
+### ⚠️ Read the one-fan section below before assuming this is strictly better — it is not
+
+The single-fan design was not a compromise, and **the argument that killed it is NOT "a 120 mm
+fan cannot push a filter"**. This page already corrects exactly that: at 3200 RPM the JUMPEAK is
+an industrial-class, high-static-pressure part, and that correction still stands. It could do
+both jobs.
+
+**What actually decides it is three things the one-fan design cannot give:**
+
+1. **Independent extraction rate.** This page already names that as a two-fan trigger —
+   *"if solvent work later wants extraction turned up independently of the recirculation rate"*.
+   Splitting now buys it without a rebuild.
+2. **The 40 mm fans and their model already exist.** `ventobox/` (54 × 122 mm, 40 mm class,
+   downloaded 12 Apr 2026) is a complete carbon + HEPA tray stack with nothing else to do, and
+   the two 24 V Gdstime fans were bought for it. The one-fan design needs a 120 mm Bento body
+   printed instead.
+3. **The heavy restriction stops fighting the duct.** Carbon trays plus HEPA in series with a
+   duct bleed is one fan doing two dissimilar loads. Separating them means neither is a
+   compromise, and the *"do not PWM it down far"* constraint below applies only to the vent fan.
+
+### 📛 What this costs, stated plainly
+
+- **Noise, and it lands the wrong way round.** 7000 RPM in a 40 mm frame is a screamer, and the
+  scrubber runs *the whole print* while the bleed could be intermittent. Mitigate with duty
+  (a scrubber does not need full rpm) and with the box being inside the enclosure.
+- **⛔ NO STALL DETECTION ON THE SCRUBBER.** The Gdstime fans are **2-wire** — no tach. A seized
+  fan is indistinguishable from a running one, and here the fan *is* the filtration. The
+  single-fan design had the same blindness, but concentrated it in one part rather than two.
+- **A 24 V rail is now required** at the chamber. Nothing in the inventory makes 24 V; the
+  printer's own PSU is the intended source (2–3 fans at ~0.1 A each against 240 W).
+- **Fan count is unconfirmed** — 122 mm is almost exactly 3 × 40 mm and only two were bought.
+  Count the apertures in the slicer; a third is ~₪12.71.
+
+### 🔬 The measurement that would settle it
+
+**Two 40 mm fans may not turn the chamber over fast enough.** That is the one real risk and it
+is not answerable from a datasheet: build the ventobox, run it in the closed chamber, and use
+the tissue test in *Verification* plus the temperature rise. If the scrubber cannot keep up,
+the fallback is not a redesign — it is the one-fan architecture below, unchanged and still
+correct.
+
+---
+
+## The one-fan alternative — ONE fan, split outlet *(superseded 8 Sep 2026, kept intact)*
 
 The obvious reading of "recirculate and extract" is two fans. It does not need to be, and one fan is
 better here:
@@ -52,7 +114,21 @@ chamber sits below ambient.
 collapses, or if solvent work later wants extraction turned up independently of the recirculation
 rate. Treat that as an upgrade with a known trigger, not a thing to build first.
 
-## The fan — and a correction
+> ✅ **That second trigger was pulled on 8 Sep 2026** — see the decision at the top. Note *which*
+> reason applied: independent extraction control, plus two 40 mm fans and a matching model already
+> in hand. **Not** because the bleed collapsed, and **not** because the JUMPEAK was found wanting.
+
+## The fans — one each, and a correction that still stands
+
+Since 8 Sep 2026 there are **two**, doing different jobs:
+
+| | Fan | Duty | Rail |
+|---|---|---|---|
+| **Scrubber** | 2–3 × Gdstime 40 mm, 7000 RPM, **2-wire** | high restriction: carbon + HEPA | **24 V** — printer PSU |
+| **Extraction** | JUMPEAK 120 mm, 3200 RPM, 4-pin PWM | low restriction: the duct | 12 V — PD trigger board |
+
+Everything below is about the **JUMPEAK**, and the correction in it is the reason the split is a
+choice rather than a necessity.
 
 **JUMPEAK 120 mm, 12 V, 4-pin PWM, 3200 RPM, ₪36.51, owned.**
 
@@ -179,15 +255,20 @@ condition it exists for.
 2. **Measure the closed chamber temperature**, against the open-configuration baseline already
    recorded (31 °C ± 2, door open, 3 Sep 2026). This is the number that decides whether a chamber
    heater is ever needed — answer it before buying one.
-3. **Build the filter box** (`Bento box 120mm fan.3mf`, HEPA paper, the JUMPEAK) as a pure
-   recirculator. Verify airflow.
-4. **Add the bleed and the duct.** Size the orifice, run the duct out.
+3. **Build the SCRUBBER** — `ventobox/` (base, carbon trays, HEPA tray, fan tray), the HEPA
+   paper, the ENVIROCARB pellets, and the 40 mm Gdstime fans on a 24 V feed from the printer's
+   PSU. Run it as a pure recirculator inside the closed chamber and **verify it turns the
+   chamber over** — see *The measurement that would settle it*. ⚠️ Count the fan apertures in
+   the slicer first: 122 mm is almost exactly 3 × 40 mm and only two fans are owned.
+4. **Add the extraction** — the JUMPEAK on the duct, its own 12 V feed. Size the orifice, run
+   the duct out. ⚠️ **Take the duct off the ventobox's clean side**, so what leaves the house is
+   filtered air. That was free in the one-fan design and is now a plumbing decision.
 5. **Cut the makeup inlet.** Known area, low, away from the filter intake.
 6. **Tissue test, print running.** Adjust the orifice until inflow is unambiguous.
 7. **Then** add the control node, the sensor, and HA integration — automation last, after the
    mechanical design is known good. A fan that is manually switched and correct beats an automated
    one that has never been verified.
-8. Add carbon when convenient.
+8. ~~Add carbon when convenient.~~ **Carbon is in from step 3** — 20 kg of ENVIROCARB AP4-60 pellets are owned, and the ventobox has three carbon trays. It stopped being the deferred nice-to-have the moment it turned out not to need buying.
 
 ## Buy list
 
@@ -195,7 +276,8 @@ condition it exists for.
 |---|---|---|
 | **Ducting** + a termination | **Required** | Length and type depend on where it vents |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
-| — | | The fan, HEPA paper, control board and PD trigger are **all owned** |
+| — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Ducting is the only purchase left on this page |
+| **A 24 V feed** for the scrubber fans | **Required** | Nothing here makes 24 V — the PD trigger boards stop at 20 V. The printer's own PSU is the intended source: 2–3 fans at ~0.1 A each against 240 W. Free, if tapping it is acceptable |
 
 ## What is still open
 
