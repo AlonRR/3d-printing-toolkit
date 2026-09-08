@@ -58,9 +58,21 @@ both jobs.
 - **Noise, and it lands the wrong way round.** 7000 RPM in a 40 mm frame is a screamer, and the
   scrubber runs *the whole print* while the bleed could be intermittent. Mitigate with duty
   (a scrubber does not need full rpm) and with the box being inside the enclosure.
-- **⛔ NO STALL DETECTION ON THE SCRUBBER.** The Gdstime fans are **2-wire** — no tach. A seized
-  fan is indistinguishable from a running one, and here the fan *is* the filtration. The
-  single-fan design had the same blindness, but concentrated it in one part rather than two.
+- **No stall detection on the scrubber.** The Gdstime fans are **2-wire** — no tach, so a seized
+  fan is indistinguishable from a running one. The single-fan design had the same blindness, but
+  concentrated it in one part rather than two.
+
+  > ✅ **AND THE SPLIT MAKES THIS LESS SERIOUS, NOT MORE — I had it backwards when I first wrote
+  > this row.** This page's own principle is that *"with negative pressure the room is protected
+  > by **containment and export**, not by adsorption"*. So the safety-critical fan is the one
+  > holding the differential — **the extraction** — and that is the **JUMPEAK, which is 4-pin and
+  > already has a tach**. A stalled scrubber degrades filtration; it does not break containment,
+  > because the duct still pulls and makeup air still flows inward.
+  >
+  > Under the ONE-fan design the opposite was true: the single untached fan *was* the containment,
+  > and losing it lost everything. **Splitting moved the safety function onto the fan that can
+  > report on itself.** The scrubber's blindness is a quality-of-filtration problem, not a
+  > containment one — worth fixing, not urgent. See *Adding stall detection* below.
 - **A 24 V rail is now required** at the chamber. Nothing in the inventory makes 24 V; the
   printer's own PSU is the intended source (2–3 fans at ~0.1 A each against 240 W).
 - **Fan count is unconfirmed** — 122 mm is almost exactly 3 × 40 mm and only two were bought.
@@ -73,6 +85,32 @@ is not answerable from a datasheet: build the ventobox, run it in the closed cha
 the tissue test in *Verification* plus the temperature rise. If the scrubber cannot keep up,
 the fallback is not a redesign — it is the one-fan architecture below, unchanged and still
 correct.
+
+### 🔧 Adding stall detection — five ways, ranked for THIS lab
+
+Asked 8 Sep 2026. Ranked by fit with the constraint Alon set the same week — **no
+micro-electronics soldering** — not by cleverness.
+
+| # | Method | Parts | Verdict |
+|---|---|---|---|
+| **1** | **Buy 3-wire (tach) 40 mm 24 V fans** | ~₪15–25 | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
+| **2** | **SPS30 particulate sensor** — measure the OUTCOME | **owned** | Best *engineering*, different question. See below |
+| **3** | **Self-heated NTC in the airstream** | 1 NTC owned | A real airflow sensor: moving air cools a self-heated thermistor. Direct measure of *flow*, not rotation. Cheap, but analog and needs calibrating |
+| **4** | **Acoustic** — MAX4466 mic + band-pass | **10 owned** | 7000 rpm × blade count ≈ a strong tone. Non-contact. But the printer is noisy, so it needs real signal processing to discriminate |
+| **5** | **Current-ripple tach** | shunt + cap, owned | The clever one: a BLDC's supply current pulses at the commutation rate, so a shunt gives a true tach from a 2-wire fan. **But the ripple across a 1 Ω shunt at ~0.1 A is tens of mV** and needs amplification — exactly the analog bench work that is off the table |
+| — | **SW-420 vibration ×5 owned** | — | ❌ Considered and rejected. It is a *shock switch*, not a vibration transducer: pot-set, hysteretic, and the printer vibrates anyway |
+
+**⭐ Why option 2 deserves a look even though option 1 is the recommendation.** A tach proves the
+**rotor turns**. It does not prove the air is being *cleaned* — it says nothing about a HEPA that
+is unseated, a bypass leak, or carbon that has saturated. The **SPS30 (owned)** answers the
+question you actually care about: chamber particulate should fall when the scrubber runs and rise
+when it does not, whatever the cause. Two caveats: it is a **slow** signal (minutes, not seconds),
+and there is **one** SPS30, already wanted for air-quality work — so this competes rather than
+combines.
+
+**The honest recommendation: buy the 3-wire fans.** ₪15–25 removes a known blindness with no
+bench work, and it is the only option on this list that does not trade one unknown for another.
+Do it when the ducting is ordered — that is the only other purchase left on this page.
 
 ---
 
@@ -275,6 +313,7 @@ condition it exists for.
 | Item | Priority | Note |
 |---|---|---|
 | **Ducting** + a termination | **Required** | Length and type depend on where it vents |
+| **3-wire (tach) 40 mm 24 V fans ×2–3** | **Recommended** | ~₪15–25. Replaces the owned 2-wire Gdstime units and deletes the scrubber's stall blindness outright, with no analog bench work — see *Adding stall detection*. Same 40 mm frame, so the ventobox tray is unaffected. Order alongside the ducting; nothing else on this page needs buying |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Ducting is the only purchase left on this page |
 | **A 24 V feed** for the scrubber fans | **Required** | Nothing here makes 24 V — the PD trigger boards stop at 20 V. The printer's own PSU is the intended source: 2–3 fans at ~0.1 A each against 240 W. Free, if tapping it is acceptable |
