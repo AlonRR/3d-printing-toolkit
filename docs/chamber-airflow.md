@@ -77,7 +77,7 @@ solve that with mounting and duct design, not by throttling the thing the design
 | Layer | Catches | Status |
 |---|---|---|
 | **HEPA** | **Ultrafine particles** — the main measured hazard from printing ASA/ABS | ✅ **Owned**: HEPA paper, 300×1200 mm, 20 mm folds |
-| **Activated carbon** | **VOCs, including styrene** — the gas-phase hazard from ASA/ABS | ❌ **Not owned** — a purchase |
+| **Activated carbon** | **VOCs, including styrene** — the gas-phase hazard from ASA/ABS | ✅ **OWNED — ~20 kg**, air-filtration grade. Alon, 8 Sep 2026. ~~Not owned — a purchase~~ |
 
 **HEPA does nothing about gases, and carbon does nothing about particles.** They are not alternatives.
 
@@ -194,7 +194,7 @@ condition it exists for.
 | Item | Priority | Note |
 |---|---|---|
 | **Ducting** + a termination | **Required** | Length and type depend on where it vents |
-| **Activated carbon** media | Low | For styrene. HEPA-only works first |
+| ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | The fan, HEPA paper, control board and PD trigger are **all owned** |
 
 ## What is still open
