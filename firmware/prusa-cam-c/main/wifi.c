@@ -21,6 +21,7 @@
 #include "mdns.h"
 #include "freertos/event_groups.h"
 #include "esp_timer.h"
+#include "nvs.h"
 #include "nvs_flash.h"
 #include "wifi_secrets.h"
 
@@ -38,9 +39,66 @@ static esp_timer_handle_t s_retry_timer = NULL;
 /* Defined below, but called from the event handler above it. */
 static void mdns_announce(void);
 static volatile bool s_have_ip = false;
-/* CUMULATIVE, never reset - s_retries resets on every success, so it cannot
- * answer "how unstable has this link been". This one can. */
+/* LIFETIME, PERSISTED IN NVS - and the persistence is the whole point.
+ *
+ * ⛔ This was per-boot until 9 Sep 2026, while being published with
+ * state_class total_increasing. Those two cannot both be true, and the
+ * contradiction was mine: total_increasing promises Home Assistant a monotonic
+ * lifetime counter, so every reboot looked like a counter rollover. HA responds
+ * to a decrease by treating it as a reset and ADDING the new value to the
+ * running sum, which silently inflates the long-term total by disconnects that
+ * never happened.
+ *
+ * Measured by the homelab session: the series ran 0 -> 15 -> 16 -> 17 -> 15,
+ * and every one of those steps is explicable - the jumps are a genuine
+ * reconnect storm (FAST_RETRIES is 8, so a burst increments this many times in
+ * seconds) and the drop is a reboot. Nothing was wrong with the values; the
+ * DECLARED SEMANTICS were wrong.
+ *
+ * It also made the counter unusable to its only consumer. Two separate attempts
+ * were made to reconstruct a lifetime figure by summing across apparent resets,
+ * and both produced numbers the data does not support - because a per-boot
+ * series cannot be summed without knowing which decreases are reboots.
+ *
+ * Persisting it fixes the semantics rather than relabelling them. */
 static unsigned s_disconnects = 0;
+static int64_t s_last_save_us = 0;
+
+#define NVS_NS       "wifinet"
+#define NVS_KEY_DROP "drops"
+
+static void drops_load(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(NVS_NS, NVS_READONLY, &h) != ESP_OK) {
+        return;                     /* first boot: namespace does not exist yet */
+    }
+    uint32_t v = 0;
+    if (nvs_get_u32(h, NVS_KEY_DROP, &v) == ESP_OK) {
+        s_disconnects = v;
+    }
+    nvs_close(h);
+}
+
+/* Saved when the link is RESTORED, not on every disconnect. A burst of
+ * disconnects is one outage episode, so this is one write per episode rather
+ * than one per event - which matters because a pathological reconnect loop
+ * would otherwise hammer the flash. */
+static void drops_save(void)
+{
+    nvs_handle_t h;
+    if (nvs_open(NVS_NS, NVS_READWRITE, &h) != ESP_OK) {
+        return;
+    }
+    uint32_t cur = 0;
+    if (nvs_get_u32(h, NVS_KEY_DROP, &cur) != ESP_OK || cur != s_disconnects) {
+        if (nvs_set_u32(h, NVS_KEY_DROP, (uint32_t) s_disconnects) == ESP_OK) {
+            nvs_commit(h);
+        }
+    }
+    nvs_close(h);
+    s_last_save_us = esp_timer_get_time();
+}
 static int64_t s_last_ip_us = 0;
 
 /* Reconnecting from a TIMER rather than straight from the event handler, so a
@@ -126,6 +184,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
         s_retries = 0;
         s_have_ip = true;
         s_last_ip_us = esp_timer_get_time();
+        drops_save();   /* one write per outage episode, not per disconnect */
         mdns_announce();
         xEventGroupSetBits(s_events, BIT_GOT_IP);
     }
@@ -235,6 +294,7 @@ esp_err_t wifi_connect(int timeout_ms)
 
     s_events = xEventGroupCreate();
     s_last_ip_us = esp_timer_get_time();
+    drops_load();
 
     const esp_timer_create_args_t targs = {
         .callback = retry_cb, .name = "wifi_retry",
@@ -293,6 +353,11 @@ esp_err_t wifi_connect(int timeout_ms)
 bool wifi_is_connected(void)
 {
     return s_have_ip;
+}
+
+unsigned wifi_uptime_s(void)
+{
+    return (unsigned) (esp_timer_get_time() / 1000000LL);
 }
 
 unsigned wifi_disconnect_count(void)

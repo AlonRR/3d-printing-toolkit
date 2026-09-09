@@ -21,10 +21,15 @@ bool wifi_is_connected(void);
 /* Dotted-quad of the address obtained, or "0.0.0.0" if not connected. */
 const char *wifi_ip_str(void);
 
-/* How many times the station has LOST its association since boot, cumulative
- * and never reset. Distinguishes a link that reconnects constantly from one
+/* How many times the station has LOST its association, LIFETIME - persisted in
+ * NVS and carried across reboots, so it is genuinely monotonic and can be
+ * published as total_increasing without lying. Distinguishes a link that reconnects constantly from one
  * that has been up throughout. */
 unsigned wifi_disconnect_count(void);
+
+/* Seconds since boot. Published so that a counter reset - which should now
+ * only happen on an NVS wipe - is attributable rather than mysterious. */
+unsigned wifi_uptime_s(void);
 
 /* BSSID of the associated AP as "aa:bb:cc:dd:ee:ff", or "" when not associated.
  * A change here with RSSI intact is a mesh roam; RSSI falling with this

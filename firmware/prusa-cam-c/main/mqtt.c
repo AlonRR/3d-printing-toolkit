@@ -116,6 +116,20 @@ static void publish_discovery(void)
     esp_mqtt_client_publish(s_client,
         "homeassistant/sensor/chamber_bssid/config", payload, 0, 1, 1);
 
+    /* Uptime makes a counter reset attributable. With the drop counter now
+     * persisted, a reset means an NVS wipe or a reflash - and uptime is what
+     * distinguishes those from a bug. */
+    snprintf(payload, sizeof(payload),
+             "{\"name\":\"Chamber uptime\",\"device_class\":\"duration\","
+             "\"unit_of_measurement\":\"s\",\"state_class\":\"measurement\","
+             "\"state_topic\":\"" TOPIC_STATE "\","
+             "\"value_template\":\"{{ value_json.uptime_s }}\","
+             "\"availability_topic\":\"" TOPIC_AVAIL "\","
+             "\"entity_category\":\"diagnostic\","
+             "\"unique_id\":\"chamber_uptime\"," DEVICE_JSON "}");
+    esp_mqtt_client_publish(s_client,
+        "homeassistant/sensor/chamber_uptime/config", payload, 0, 1, 1);
+
     esp_mqtt_client_publish(s_client, TOPIC_AVAIL, "online", 0, 1, 1);
     ESP_LOGI(TAG, "discovery published; entities will appear in HA unaided");
 }
@@ -201,12 +215,12 @@ void mqtt_publish_reading(float temperature_c, float humidity_pct)
         return;
     }
 
-    char payload[192];
+    char payload[224];
     snprintf(payload, sizeof(payload),
              "{\"temp_c\":%.1f,\"rh_pct\":%.1f,\"rssi\":%d,"
-             "\"wifi_drops\":%u,\"bssid\":\"%s\"}",
+             "\"wifi_drops\":%u,\"uptime_s\":%u,\"bssid\":\"%s\"}",
              temperature_c, humidity_pct, wifi_rssi(),
-             wifi_disconnect_count(), wifi_bssid_str());
+             wifi_disconnect_count(), wifi_uptime_s(), wifi_bssid_str());
 
     /* NOT retained, deliberately. A retained reading is replayed to HA on every
      * reconnect and shown as current, which is precisely the stale-value
