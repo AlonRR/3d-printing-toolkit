@@ -312,16 +312,69 @@ condition it exists for.
 
 | Item | Priority | Note |
 |---|---|---|
-| **Ducting** + a termination | **Required** | Length and type depend on where it vents |
-| **3-wire (tach) 40 mm 24 V fans ×2–3** | **Recommended** | ~₪15–25. Replaces the owned 2-wire Gdstime units and deletes the scrubber's stall blindness outright, with no analog bench work — see *Adding stall detection*. Same 40 mm frame, so the ventobox tray is unaffected. Order alongside the ducting; nothing else on this page needs buying |
+| ~~**Ducting** + a termination~~ | **Required** | 🛒 **SHORTLISTED 9 Sep 2026** — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
+| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below** |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
-| — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Ducting is the only purchase left on this page |
+| — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased except the 24 V feed, which is a decision rather than a part |
+
+### 🛒 What was bought, and the two things this buy list had wrong
+
+**✅ The duct diameter came from a model already on disk, not from a guess.**
+`OneDrive\3D printing\usefull\120mm+Fan+To+100mm+Pipe+Adaptor+-+Modern+Long.3mf` measures
+**120 × 73 × 120 mm** — a 120 mm fan face tapering to a 100 mm pipe. So the owned JUMPEAK mates to
+**100 mm** ducting through a part that needs *printing*, not buying. This row said *"length and type
+depend on where it vents"* for a month; half of that was already answered on disk.
+
+**⚠️ CORRECTION 1 — the price was out by 2–3×.** This row said *"~₪15–25"*, which read as the cost of
+the lot. The real figure is **₪15.19 EACH**: ₪45.57 for three, against an estimate that implied ₪25
+for three. Four searches found nothing cheaper in this specification — the two best candidates were
+₪15.19 and ₪14.07, so this is the market price, not a bad pick.
+
+**⚠️ CORRECTION 2 — the 3-wire fan does not exist in 4020, only 4010. That is a real trade, and this
+row hid it.** The row said *"Same 40 mm frame, so the ventobox tray is unaffected"* — true, and about
+**fit**. It is silent on **performance**. The owned Gdstime are **4020** (40 × 40 × **20** mm); every
+3-wire 24 V unit found is **4010** (40 × 40 × **10**). Half the blade depth means materially less
+airflow and, more to the point here, **less static pressure** — which is the one property a carbon +
+HEPA stack actually consumes. So:
+
+> 📌 **Do NOT treat these as a drop-in replacement for the owned 4020s.** Bench-test them against the
+> Gdstime units on the built scrubber before committing. If the 4010s cannot hold flow through three
+> carbon trays plus HEPA, the answer is to keep the 4020s and take a different stall-detection route
+> from the ranked list above — the fans cost ₪45.57, which is cheap enough to be a test rather than a
+> commitment.
+
+**Why the tach fan is scarce at all — the same heuristic that read the INA226's shunt.** Fans compete
+on airflow and price, and a tach wire adds cost while improving no headline number. So the 3-wire
+variant is the one nobody markets, and in 4020 it appears not to be stocked at all. *A specification
+that makes a product look no better in its headline number is one the market selects against.*
+
+**✅ One thing that needs no hardware: the tach output is safe on a 3.3 V MCU even at 24 V.** It is an
+open-collector transistor, so it pulls to whatever rail the pull-up resistor is tied to. Tie the
+pull-up to **3.3 V** and the ESP32 reads it directly — **no level shifter, no divider.** The 24 V is
+only the motor supply.
+
+**📋 The termination assumes a permanent 100 mm penetration** (an exterior wall, or a cut window
+panel). If the plan is to hang the duct out of an open window, the grille is unnecessary — it is a
+separate cart line precisely so it can be dropped without touching the duct.
+⚠️ A reviewer on that listing notes the insect grid is **coarse** and that they added their own mesh
+behind it. Worth a square of finer mesh if insects are a concern.
+⚠️ **Nothing here has a backdraft flap.** With the fan off, the duct is an open path from outside into
+the chamber. If that matters, an inline 100 mm check valve is ~₪10 and independent of where the duct
+terminates — **not bought**, because a short duct with a running fan is the base case and this page
+never called for one.
+
+**📎 A second model on disk that this page should know about, and has not acted on.**
+`usefull\Bento box 120mm fan.3mf` is a **140 × 140 mm** tray stack (trays 40/45/30/100 mm tall, plus
+two tie rods) built around a **120 mm** fan — a complete alternative scrubber body to the 54 × 122 mm
+`ventobox/`. It is recorded here, not adopted: the two-fan split was **Alon's decision on 8 Sep** and
+this does not reopen it. But if the 4010 bench test above goes badly, this is the other end of the
+design space and it is already modelled.
 | **A 24 V feed** for the scrubber fans | **Required** | Nothing here makes 24 V — the PD trigger boards stop at 20 V. The printer's own PSU is the intended source: 2–3 fans at ~0.1 A each against 240 W. Free, if tapping it is acceptable |
 
 ## What is still open
 
 - 📋 **The fan's real static-pressure figure**, from the listing rather than inferred from RPM.
-- 📋 **Where the duct terminates.** A physical decision about the room that gates step 4.
+- 📋 **Where the duct terminates.** A physical decision about the room that gates step 4. ⚠️ **Narrowed, not closed, 9 Sep 2026:** the *diameter* is settled at 100 mm by the adapter model on disk, and 2 m of flex is in the cart. What is still undecided is **wall vs window vs open window**, which decides only whether the ₪17.94 grille is used and whether 2 m is enough. **If the run is longer than 2 m**, a second length plus a coupler is needed — buy that with the termination once the room is chosen, not before.
 - 📋 **Whether the Einsy tolerates a closed chamber.** The stepper drivers throttle when hot, so step 2
   measures the chamber and **the Einsy needs watching in the same run** — closing the box is what puts
   it at risk. ✅ **The PSU is already outside** (moved when the enclosure was built), which removes the
