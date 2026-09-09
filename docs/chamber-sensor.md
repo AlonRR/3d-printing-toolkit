@@ -117,6 +117,52 @@ The S3 camera node with its DHT11 was placed in the enclosure during a live prin
 sample it read **31.2–31.3 °C and 37.2–37.6 %RH**, flat rather than still climbing, so this is a
 plateau and not a mid-warmup number.
 
+### 📏 NEARLY CLOSED — +12.2 °C, 9 Sep 2026. Closing the box doubles the rise.
+
+**Alon, printing with the enclosure almost shut, one side 2 cm open.** This is the configuration the
+build order's step 2 has been asking for, and it is the first measurement of a chamber that is
+actually closed.
+
+| Configuration | Chamber | Room | **Rise** |
+|---|---|---|---|
+| Door **and** side open (3 Sep) | 31.2 °C | 25.8 °C | **+5.4 °C** |
+| **Side 2 cm open (9 Sep)** | **39.9 °C** | 27.7 °C | **+12.2 °C** |
+
+**Closing the box roughly doubled the rise over ambient**, which is the number that was missing —
+the earlier reading was a baseline with the box effectively open, and could not say what closing it
+would buy.
+
+**39.9 °C sits at the bottom of the 40–60 °C ASA band.** So a nearly-closed Lack on bed heat alone
+just reaches ASA territory, and the *"close it and measure before assuming a heater is needed"*
+position in this page's own build order is looking correct rather than merely cautious.
+
+### ⚠️ And this is exactly when the Einsy question stops being theoretical
+
+The chamber is at ~40 °C **now**, with the box nearly shut, and this page puts Einsy trouble at
+around **60 °C**. The electronics bay is not the chamber — it sits near the bed and the drivers
+self-heat — so bay temperature is expected to be *above* the 39.9 °C measured here, not equal to it.
+
+✅ **The measurement needs no hardware and can be taken during this print:** the Einsy's own ambient
+thermistor *is* point B, and Prusa's firmware reports it in **`M105`** as **`A:`** (alongside `P:`
+for the PINDA). Read it against ~60 °C.
+
+⚠️ **The DS18B20s on order do not replace this.** They arrive in days; `A:` is available now, in the
+condition that matters, and this condition may not be reproduced on demand.
+
+### 📛 The humidity number here is NOT a finding — it points the way the known bias points
+
+Measured 18.5 %RH at 39.9 °C, against room air at 27.7 °C / 68.5 %RH. Heating room air to 39.9 °C
+would give **34.6 %RH**, so the chamber reads as holding **~47 % less water than the room**.
+
+**Do not bank that.** The sensor is a DHT11 on the S3 camera board, which self-heats — and
+self-heating biases temperature **high** *and* RH **low**, both pushing in exactly the direction that
+would manufacture this result. Add the DHT11's own ±5 %RH and the two readings not being strictly
+simultaneous, and the apparent drying is inside the error budget of the instrument.
+
+It is the same trap already recorded on this page: *a directional bias is indistinguishable from the
+effect it mimics.* Worth re-testing once the AHT20 is on a node mounted **outside** the box, which is
+what the placement rule exists for.
+
 ⚠️ **THE DOOR WAS ALSO OPEN. This is NOT a measurement of the enclosure.** The first version of this
 entry read it as "one side deliberately open reaches 31 °C, so the open side costs 10–20 °C" — that
 conclusion is **withdrawn**, because it was never a measurement of the normal configuration. With
