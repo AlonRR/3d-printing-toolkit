@@ -495,6 +495,64 @@ whole room volume.
 - ⚠️ **A closed loop also ices.** As the air dries the latent load falls, the coil runs colder, and it
   frosts — after which the unit spends its time in defrost rather than drying.
 
+### ⛔ And closing the loop THROUGH the dehumidifier fails on heat, not on humidity
+
+Proposed 9 Sep 2026: duct the box's outlet into the dehumidifier's inlet as well, making it a
+**dry cabinet with sustained dryness** rather than a batch dryer. **The goal is right and is
+answered below — the machine is wrong, and the reason is not the one that killed the earlier
+closed-loop idea.**
+
+**A dehumidifier is a net heater**, and in a closed loop that heat has nowhere to go except the box
+walls. A SAMLA 22 L has about **0.59 m²** of wall:
+
+| Heat into the loop | Box must sit this far above room, to shed it |
+|---|---|
+| 150 W | **+25 °C** |
+| 250 W | **+42 °C** |
+| 400 W | **+67 °C** |
+
+**The compressor trips near 35 °C ambient.** So even the smallest household unit drives the loop past
+its own shutdown point long before it dries anything — the machine switches itself off, and the
+failure is self-inflicted rather than a limit of the physics. In an open loop that heat goes to the
+room, which is why the same appliance is fine feeding the intake and useless closing the circuit.
+
+Scale says the same thing independently: **100–200 m³/h through a 22 L box is 4,500–9,000 turnovers
+an hour**, with 100–150 mm ducting on a box 280 mm deep.
+
+⚠️ **A Peltier "wardrobe" dehumidifier is scale-appropriate and still wrong.** Its cold side only
+reaches 10–15 °C below ambient, so its floor is **39–54 %RH** — not a dry cabinet, for a completely
+different reason. Rejecting the household unit on size does not open that door.
+
+### ✅ MAINTENANCE MODE — the dry cabinet you already have, on a humidity trigger
+
+The goal behind the question is worth taking seriously, because this page currently describes a
+**batch** device: dry a spool, purge, seal, done. A dry cabinet is the *maintained* case, and the
+hardware here already does it — **what is missing is a trigger, not a machine.**
+
+**Run a short cycle whenever the AHT20 says RH has drifted up**, rather than only when a spool is
+known wet:
+
+| | |
+|---|---|
+| During a cycle | **~17 %RH**, set by room absolute humidity heated to 50 °C |
+| Between cycles | the desiccant holds it |
+| What a cycle does to the desiccant | **partially regenerates it** — at 50 °C clay is driven toward its low-RH equilibrium and the released water leaves via the exhaust |
+
+That last row is what makes it self-sustaining rather than a slow slide: each cycle both dries the
+box *and* refreshes the thing that holds it dry between cycles. **Sustained dryness by duty cycle,
+with zero new hardware** — the trigger is firmware.
+
+⚠️ **It is not free, and the cost is where it always is.** A cycle heats 4 kg of spool to regenerate
+a few hundred grams of clay, which is wasteful in a way a commercial dry cabinet is not: those use a
+small dedicated desiccant module with its own heater, sealing *itself* off from the cabinet to
+regenerate and venting outside. Same principle, better-targeted. Worth knowing as the upgrade path if
+maintenance cycling turns out to run often enough to matter — but it is more mechanism, and this
+design gets most of the benefit with none of it.
+
+📋 **The threshold is a measurement, not a guess.** Set it once the box is running and the AHT20 has
+shown how fast RH actually climbs when sealed. Too low a trigger cycles constantly; too high lets the
+spools sit wet between runs. There is no way to pick it in advance.
+
 ### What this actually buys, and what it costs
 
 **Two dehumidifiers are already owned** (Cave and Master Bedroom). Neither is in the printer room —
