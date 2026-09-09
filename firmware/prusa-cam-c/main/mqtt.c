@@ -39,12 +39,29 @@ static int s_since_avail = 0;
     "\"name\":\"Print chamber\",\"manufacturer\":\"Espressif\"," \
     "\"model\":\"ESP32-S3-WROOM-1 camera node\"}"
 
+/* ⚠️ EVERY NUMERIC SENSOR HERE MUST DECLARE state_class, or its history is
+ * PERISHABLE. Home Assistant records states for any sensor, but it only builds
+ * LONG-TERM STATISTICS - the rows that survive the recorder purge and that
+ * Grafana reads for long ranges - for sensors that declare one.
+ *
+ * Measured 9 Sep 2026, and the gap is invisible until you look for it: the
+ * chamber temperature had 5,461 state rows and humidity 16,338, going back to
+ * 2 Sep, with ZERO statistics rows between them. wifi_drops had 48 statistics
+ * rows from two days - because it was the only entity that happened to declare
+ * state_class, and it declared it for a different reason (total_increasing, to
+ * make a counter render sensibly).
+ *
+ * So the data was real, visible in the UI, queryable, and on a purge clock. It
+ * would have vanished without an error, and the dashboards built on it would
+ * have simply lost their history. "The data exists" and "the data will still
+ * exist next month" are different claims. */
 static void publish_discovery(void)
 {
     char payload[512];
 
     snprintf(payload, sizeof(payload),
              "{\"name\":\"Chamber temperature\",\"device_class\":\"temperature\","
+             "\"state_class\":\"measurement\","
              "\"unit_of_measurement\":\"\\u00b0C\",\"state_topic\":\"" TOPIC_STATE "\","
              "\"value_template\":\"{{ value_json.temp_c }}\","
              "\"availability_topic\":\"" TOPIC_AVAIL "\","
@@ -56,6 +73,7 @@ static void publish_discovery(void)
 
     snprintf(payload, sizeof(payload),
              "{\"name\":\"Chamber humidity\",\"device_class\":\"humidity\","
+             "\"state_class\":\"measurement\","
              "\"unit_of_measurement\":\"%%\",\"state_topic\":\"" TOPIC_STATE "\","
              "\"value_template\":\"{{ value_json.rh_pct }}\","
              "\"availability_topic\":\"" TOPIC_AVAIL "\","
@@ -70,6 +88,7 @@ static void publish_discovery(void)
      * message was being sent anyway. */
     snprintf(payload, sizeof(payload),
              "{\"name\":\"Chamber WiFi RSSI\",\"device_class\":\"signal_strength\","
+             "\"state_class\":\"measurement\","
              "\"unit_of_measurement\":\"dBm\",\"state_topic\":\"" TOPIC_STATE "\","
              "\"value_template\":\"{{ value_json.rssi }}\","
              "\"availability_topic\":\"" TOPIC_AVAIL "\","
