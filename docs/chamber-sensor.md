@@ -117,6 +117,59 @@ The S3 camera node with its DHT11 was placed in the enclosure during a live prin
 sample it read **31.2–31.3 °C and 37.2–37.6 %RH**, flat rather than still climbing, so this is a
 plateau and not a mid-warmup number.
 
+### ✅ CORRELATED WITH PRINT HISTORY — and it kills my own "it never cools" claim
+
+Prusa Connect's print history, against the recorder's chamber series. **The chamber tracks print
+activity exactly**, and the apparent anomaly was an artefact of how busy the printer has been.
+
+| Print | Result | Ended |
+|---|---|---|
+| `…latch-m3-bolt-rev-02` 1h48m | finished | **7 Sep 18:03** |
+| `…m3-bolt-rev-01` 23h47m | **STOPPED** after 14 h 45 m | **8 Sep 08:55** |
+| `…m3-bolt-rev-01` 1d0h11m | finished after **1 d 0 h 24 m** | **9 Sep 09:27** |
+| `…m3-bolt-rev-01` 17h38m | **running**, started 9 Sep 12:15 | est. 10 Sep 05:57 |
+
+All PETG, 240 °C nozzle / 70 °C bed, 0.2 mm.
+
+**⛔ I reported that the chamber "holds 37–38 °C continuously, including overnight" and suggested the
+S3 board's own self-heating might be holding it warm. That was wrong.** The printer has been running
+almost continuously for two days — a 14 h 45 m attempt, then a 24 h print, now a 17 h 38 m one. The
+chamber was warm because something was always printing.
+
+**The one gap proves the box cools perfectly well:**
+
+| Local time | Chamber | What was happening |
+|---|---|---|
+| 09-09 08:00 | 37.7–38.7 | 24 h print finishing |
+| **09-09 09:27** | — | **print ends** |
+| 09-09 10:00 | 30.4–32.5 | cooling |
+| 09-09 11:00 | **29.5–30.3** | ← floor, ~2 °C over room |
+| **09-09 12:15** | — | **next print starts** |
+| 09-09 13:00 | 36.8–38.4 | back up |
+| 09-09 15:00 | 39.1–**39.9** | current |
+
+**From 38.3 °C to 29.5 °C in about two hours with the box nearly closed**, decaying toward a 27.7 °C
+room. So the enclosure has a thermal time constant on the order of an hour, and the flat two-day
+trace was a duty-cycle observation misread as a physical property.
+
+⚠️ **The lesson is the one this page keeps relearning:** a flat series is not evidence of a
+mechanism. I had two candidate explanations — continuous printing, or sensor self-heating — and
+chose the wrong one because the trace's *shape* looked more like self-heating. **The shape could not
+distinguish them; only the print log could**, and it was one page away.
+
+### What this does and does not say about the Einsy
+
+**It stands that the bay runs hot for very long stretches** — but because prints are back-to-back,
+not because the box cannot shed heat. The current job ends **10 Sep 05:57**, so the enclosure has
+another ~14 hours at ~40 °C ahead of it.
+
+**That is still a duty-cycle question rather than a peak one**, and it is the condition in which to
+take the `M105` `A:` reading — during a long print, not after one.
+
+📋 **Prusa Connect is the print-history source; Home Assistant is not.** The recorder holds no
+printer entity at all — the only matches are a Xerox office printer. Correlating chamber behaviour
+with print activity therefore means reading Connect, unless PrusaLink is added to HA.
+
 ### 📏 NEARLY CLOSED — +12.2 °C, 9 Sep 2026. Closing the box doubles the rise.
 
 **Alon, printing with the enclosure almost shut, one side 2 cm open.** This is the configuration the
