@@ -312,7 +312,7 @@ condition it exists for.
 
 | Item | Priority | Note |
 |---|---|---|
-| ~~**Ducting** + a termination~~ | **Required** | 🛒 **SHORTLISTED 9 Sep 2026** *(the offer was time-limited GMT+3 — the duct is −53%, ₪16.88 at risk)* — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
+| ~~**Ducting**~~ + ~~a termination~~ | **Required** | 🛒 **DUCT SHORTLISTED 9 Sep 2026** *(the offer was time-limited — the duct is −53%, ₪16.88 at risk)*. ✅ **THE TERMINATION IS BEING PRINTED** — Alon, 9 Sep. Grille dropped; print it in **ASA**, see below — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
 | ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below** |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased except the 24 V feed, which is a decision rather than a part |
@@ -358,7 +358,41 @@ fans, and a totem-pole tach referenced to the 24 V rail would destroy an ESP32 G
 probe the tach pin with no pull-up attached:** near 0 V or floating → open-collector, wire it straight;
 swinging to 24 V → divide it.
 
-**📋 The termination assumes a permanent 100 mm penetration** (an exterior wall, or a cut window
+### ✅ THE TERMINATION IS BEING PRINTED — Alon, 9 Sep 2026. Do not buy one.
+
+The ₪17.94 stainless grille is **dropped from the cart**. Nothing else changes: the duct is still
+100 mm, still 2 m, still in the cart.
+
+**No vent model exists on disk** — searched `vent` / `louv` / `grille` / `damper` / `flap` / `duct`
+across the whole model library and the only hit is `ventobox/`. So this is a design-or-download job,
+unlike the 120→100 adapter which was already there.
+
+**🎯 PRINT IT IN ASA, and this is not a preference.**
+
+| Material | Verdict |
+|---|---|
+| **ASA** — 2 kg owned | ⭐ **The right answer.** ~95–100 °C service and **UV-stable by design**. An exterior vent sits in direct Israeli sun; this is the material that exists for that |
+| PETG — 10 kg owned | Workable, but it **yellows and embrittles under prolonged UV**. Fine for an indoor-side flange, poor for the outdoor face |
+| PLA | ⛔ **No.** Softens around 60 °C. A dark vent in direct sun reaches that easily, and it sags into the duct bore |
+
+⚠️ **ASA warps**, and a vent face is exactly the wide flat part that warps worst — but the LACK
+enclosure this project is built around is the thing that fixes that. Print it closed.
+
+**Three things printing buys that the bought part could not:**
+
+1. ⭐ **A backdraft flap, free.** This page recorded that *nothing purchased had one* — fan off, the
+   duct is an open path from outside into the chamber. A gravity flap is a trivial printed part and
+   deletes that gap at zero cost.
+2. **A proper insect screen.** A reviewer on the bought grille said its mesh was **coarse enough that
+   they added their own behind it**. A printed part can capture real mesh in a designed seat.
+3. **It mates to a part already modelled.** Match the **100 mm** bore of
+   `120mm+Fan+To+100mm+Pipe+Adaptor`, and the fan → duct → vent chain is one consistent dimension.
+
+**📋 What still gates it:** where the duct terminates. That decides the **flange shape** (wall plate
+vs window panel) — not the bore, which is settled at 100 mm.
+
+**📋 The superseded note, kept because it explains why a grille was ever in the cart:**
+The bought termination assumed a permanent 100 mm penetration (an exterior wall, or a cut window
 panel). If the plan is to hang the duct out of an open window, the grille is unnecessary — it is a
 separate cart line precisely so it can be dropped without touching the duct.
 ⚠️ A reviewer on that listing notes the insect grid is **coarse** and that they added their own mesh
