@@ -157,6 +157,39 @@ mechanism. I had two candidate explanations — continuous printing, or sensor s
 chose the wrong one because the trace's *shape* looked more like self-heating. **The shape could not
 distinguish them; only the print log could**, and it was one page away.
 
+### 🕛 The two multi-day gaps were the WiFi give-up bug, and they stopped when it was fixed
+
+Homelab found two holes in the node's series and the pattern that identifies them:
+
+| Gap | Started | Ended |
+|---|---|---|
+| 16.7 h | **3 Sep 00:00:27Z** | 3 Sep 16:40Z |
+| **53.9 h** | **4 Sep 00:00:29Z** | 6 Sep 05:54Z |
+
+**Both start within two seconds of midnight UTC**, on consecutive nights — a schedule, not a roam.
+And it was not a recorder outage: the bucket took 1,765–9,339 points per 6 h throughout, so HA and
+InfluxDB were up and only this node was absent.
+
+**The duration was `wifi.c`'s give-up bug**, and the dates line up exactly:
+
+- The handler stopped calling `esp_wifi_connect()` after 8 consecutive disconnects, permanently.
+- The 53.9 h gap **ends 6 Sep 05:54** — when the node was power-cycled by hand, the only recovery
+  that bug left.
+- The fix landed **6 Sep 12:22** (`43607f7`).
+- Since then the node's longest unbroken stretch runs **7 Sep 17:00Z → 9 Sep 07:00Z**, which
+  **contains two midnights**, and it is up now.
+
+**So the trigger is still unexplained but is no longer consequential.** Something at midnight UTC
+disturbs this link — a scheduled AP event, a lease renewal, a channel re-selection — and before the
+fix that burst exhausted an 8-retry budget and stranded the node for days. It now costs a
+reconnection. ⚠️ **Worth chasing as "why does the link blip at midnight", not as "why does the node
+vanish".**
+
+📋 **And it bounds what this node's own history can support.** Availability and channel count are
+different things: the probes hang off the same board and the same uplink, so *"a DS18B20 goes into
+HA automatically"* is true only while the node is up — and it demonstrably was not for 54 of the
+140 hours before the fix.
+
 ### What this does and does not say about the Einsy
 
 **It stands that the bay runs hot for very long stretches** — but because prints are back-to-back,
@@ -179,7 +212,7 @@ actually closed.
 | Configuration | Chamber | Room | **Rise** |
 |---|---|---|---|
 | Door **and** side open (3 Sep) | 31.2 °C | 25.8 °C | **+5.4 °C** |
-| **Side 2 cm open (9 Sep)** | **39.9 °C** | 27.7 °C | **+12.2 °C** |
+| **Side 2 cm open (9 Sep)** | **40.2 °C** ⚠️ *still rising when quoted at 39.9 — plateaued at 40.0–40.2* | 27.7 °C | **+12.5 °C** |
 
 **Closing the box roughly doubled the rise over ambient**, which is the number that was missing —
 the earlier reading was a baseline with the box effectively open, and could not say what closing it
