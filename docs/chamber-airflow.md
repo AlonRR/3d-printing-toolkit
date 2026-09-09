@@ -312,7 +312,7 @@ condition it exists for.
 
 | Item | Priority | Note |
 |---|---|---|
-| ~~**Ducting** + a termination~~ | **Required** | 🛒 **SHORTLISTED 9 Sep 2026** — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
+| ~~**Ducting** + a termination~~ | **Required** | 🛒 **SHORTLISTED 9 Sep 2026** *(the offer was time-limited GMT+3 — the duct is −53%, ₪16.88 at risk)* — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
 | ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below** |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased except the 24 V feed, which is a decision rather than a part |
@@ -352,6 +352,11 @@ that makes a product look no better in its headline number is one the market sel
 open-collector transistor, so it pulls to whatever rail the pull-up resistor is tied to. Tie the
 pull-up to **3.3 V** and the ESP32 reads it directly — **no level shifter, no divider.** The 24 V is
 only the motor supply.
+
+⚠️ **That is the convention, not a datasheet reading — verify before wiring.** These are no-brand ₪15
+fans, and a totem-pole tach referenced to the 24 V rail would destroy an ESP32 GPIO. **Run the fan and
+probe the tach pin with no pull-up attached:** near 0 V or floating → open-collector, wire it straight;
+swinging to 24 V → divide it.
 
 **📋 The termination assumes a permanent 100 mm penetration** (an exterior wall, or a cut window
 panel). If the plan is to hang the duct out of an open window, the grille is unnecessary — it is a
