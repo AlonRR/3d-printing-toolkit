@@ -157,6 +157,54 @@ mechanism. I had two candidate explanations — continuous printing, or sensor s
 chose the wrong one because the trace's *shape* looked more like self-heating. **The shape could not
 distinguish them; only the print log could**, and it was one page away.
 
+### 🌡️ THE BAY MEASUREMENT — 50–51 °C, 9 Sep 2026. Read it before closing the box further.
+
+**Taken from the printer's own LCD (`Support → Temperatures`) during a print, box one side 2 cm
+open.** This is the measurement build-order step 2 has been asking for since this page was written,
+and it is the first number that bears directly on the Einsy.
+
+| | | |
+|---|---|---|
+| Room | 27.7 °C | |
+| Chamber air | 40.2 °C | +12.5 over room |
+| **EINSY BAY** | **50–51 °C** | **+10.3 over chamber air** |
+| Trouble figure | ~60 °C | |
+| **Headroom** | **≈ 9.5 °C** | |
+
+### ⚠️ This corrects an assessment I gave earlier the same day
+
+Arguing against relocating the Einsy, I wrote *"twenty degrees of headroom at the worst moment two
+days of printing could produce"*. **That used chamber AIR as if it were the bay.** The bay runs
+about **10 °C hotter**, so the real figure was never 20 °C — it is **9.5 °C**, and it was 9.5 °C
+while I was saying 20.
+
+The conclusion I drew may still hold; the margin I drew it from does not. That distinction matters
+because the whole argument was *"relocation is solving a problem nobody has shown exists"* — and the
+problem is now measured, and closer to the line than the number I used.
+
+### What the 10 °C offset actually means
+
+**The bay tracks chamber air with a roughly fixed offset, so any change that raises chamber
+temperature spends bay headroom directly.** Two consequences:
+
+- ⛔ **Do not close that last 2 cm without re-reading the bay.** Whatever fully closing buys in
+  chamber temperature comes off the 9.5 °C.
+- ⭐ **The makeup-air inlet siting is no longer a nice-to-have.** [chamber-airflow](chamber-airflow.md)
+  proposes putting the negative-pressure design's inlet **at the electronics bay**, so incoming
+  room-temperature air washes the Einsy before picking up chamber heat. At 50–51 °C with 9.5 °C of
+  margin, that stops being an elegant free extra and becomes the thing that buys the headroom back.
+
+### Caveats, so this is not over-read either
+
+- **~60 °C is a rule of thumb, not a datasheet limit.** The hard guard is the printer's own
+  `TMC DRIVER OVERTEMP`, which fires far higher. 50–51 °C is *warm and sustained*, not dangerous —
+  the honest reading is "less margin than assumed", not "the board is at risk tonight".
+- **It is a spot reading from an LCD**, not a series. The bay has no remote readout: it is absent
+  from Prusa Connect's telemetry, from every PrusaLink 0.8.1 endpoint, and from Home Assistant.
+  Verified in all three on 9 Sep — which is precisely why the DS18B20s were bought.
+- **Conditions:** mid-print, ~33 % through a 17 h 38 m PETG job at 240/70, after two days of
+  near-continuous printing. This is close to a realistic worst case, but the box was not fully shut.
+
 ### 🕛 The two multi-day gaps were the WiFi give-up bug, and they stopped when it was fixed
 
 Homelab found two holes in the node's series and the pattern that identifies them:
@@ -193,7 +241,7 @@ HA automatically"* is true only while the node is up — and it demonstrably was
 ### What this does and does not say about the Einsy
 
 **It stands that the bay runs hot for very long stretches** — but because prints are back-to-back,
-not because the box cannot shed heat. The current job ends **10 Sep 05:57**, so the enclosure has
+not because the box cannot shed heat. ✅ **And the bay figure is now measured: 50–51 °C, see above.** The current job ends **10 Sep 05:57**, so the enclosure has
 another ~14 hours at ~40 °C ahead of it.
 
 **That is still a duty-cycle question rather than a peak one**, and it is the condition in which to
