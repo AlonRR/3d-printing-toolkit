@@ -514,7 +514,8 @@ chamber is pushed toward ASA temperatures the sensor will approach and then clip
 upgrade decision arrives at the same moment the enclosure starts working.
 
 **Incidental but useful: WiFi reaches inside the enclosure.** The node stayed reachable by name from
-workstation and kept publishing throughout, which closes an open question about coverage at the printer.
+the workstation and kept publishing throughout, which closes an open question about coverage at
+the printer.
 
 ### On a chamber heater — not yet, and the reasons are not just cost
 
@@ -636,7 +637,7 @@ listen well.**
 
 | Role | Board | Port | Firmware |
 |---|---|---|---|
-| Sender + DHT11 | ESP32-C3-**MINI-1** | `COM8` on workstation | `firmware/chamber-sensor-mini1.yaml` |
+| Sender + DHT11 | ESP32-C3-**MINI-1** | `COM8` on the workstation | `firmware/chamber-sensor-mini1.yaml` |
 | Receiver / hub | C3 **SuperMini** | `/dev/ttyACM0` on the server | `firmware/chamber-hub-espnow.yaml` |
 
 The server's console, continuously:

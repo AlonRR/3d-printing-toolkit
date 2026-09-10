@@ -149,7 +149,7 @@ say so:
 - It did not change across a **38 dB** signal difference (−27 → −65 dBm). If RF were the limit,
   that swing would dominate.
 - Raising the TCP window from 5760 to 65534 bytes changed nothing.
-- workstation reaches the server at a much higher rate over the wire, and routing to the board goes out the
+- The workstation reaches the server at a much higher rate over the wire, and routing to the board goes out the
   LAN adapter, not the VPN — so the receiver and the PC's network stack are not the constraint.
 
 ### What the cap actually is — two hypotheses tested and refuted

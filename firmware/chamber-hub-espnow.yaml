@@ -1,4 +1,4 @@
-# chamber-hub-espnow — the receiver, on the C3 plugged into the NAS's USB.
+# chamber-hub-espnow — the receiver, on the C3 plugged into the server's USB.
 #
 # Pairs with firmware/chamber-sensor-espnow.yaml. The sensor node broadcasts
 # readings over ESP-NOW; this one receives them and prints them to its USB
