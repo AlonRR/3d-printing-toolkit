@@ -259,9 +259,72 @@ same two-second-of-midnight signature as the 3 and 4 Sep gaps. The node rides it
 now — which is exactly what the reconnect fix was for.
 
 ✅ **This narrows the trigger usefully.** It is not a roam and not a chamber-thermal effect: it is
-a **scheduled event on the network side at midnight UTC** — a lease renewal, an AP channel
-re-selection, a cron'd radio reset. **That is a homelab question, not a printer one**, and it has
-been passed over. Nothing on this node can fix it; the node's job is only to survive it, and it does.
+a scheduled event at midnight UTC. ⭐ **It has since been narrowed much further — to the access
+point itself. See the next section.** Nothing on this node can fix it; the node's job is only to
+survive it, and it does.
+
+### 📡 It is the access point, not the network — and a free test settles it on 25 October
+
+Homelab ran the other half of the correlation from a **wired** host at 5-minute resolution, across
+both midnight windows:
+
+| Target | 00:00Z | 00:05Z | 00:10Z | 00:15Z |
+|---|---|---|---|---|
+| Gateway | 0 % / 0.70 ms | 0 % / 0.77 ms | 0 % / 0.68 ms | 0 % / 0.83 ms |
+| Two public resolvers | 0 % loss | 0 % loss | 0 % loss | 0 % loss |
+
+**The router never stops answering and never slows down.** So the event is not a router reboot, not
+a routing or uplink outage, and not congestion. A sweep of the lab found no scheduled task — no
+timers, no cron entries — firing at that moment on any host or container.
+
+⚠️ **Stated rather than buried: a wired host cannot observe a WiFi deauthentication.** That
+evidence rules out the network; it cannot say what the radio did. For that, the only witness is
+this node.
+
+**And this node's own association log is the positive evidence.** It has ever associated with
+exactly **two BSSIDs of the same SSID, differing in the final octet alone**, and at the event it
+gets bounced between them:
+
+| Night | Association changes in the 02:50–03:20 window |
+|---|---|
+| 8 Sep | settles on the second BSSID at 03:04:15 |
+| 9 Sep | one change, 03:03:40 |
+| 10 Sep | three changes — 03:00:27, 03:00:30, 03:03:06 |
+
+So the node is being **re-associated at the moment of the burst**, while routing stays perfect.
+That is an access point re-initialising or re-steering, not a network fault.
+
+### ⚠️ Two readings fit this, and the data does not yet separate them
+
+The obvious reading is **band-steering between a 2.4 and a 5 GHz radio in one box**. It is probably
+right, but it is not the only thing that produces two BSSIDs differing in one octet:
+
+- **Two radios, one AP** — band-steering or a nightly radio re-init.
+- **Two virtual APs on the SAME radio** — vendors assign a per-SSID BSSID from the same base
+  address, which gives an identical last-octet pattern.
+
+📏 **The signal strength mildly disfavours the band explanation.** Across the 10 Sep event the
+node read about −49 to −53 dBm on the first BSSID and about −51 to −56 dBm on the second — a
+difference of only a few dB. A genuine 2.4 → 5 GHz move at this range would usually cost more than
+that. Not conclusive — cross-band RSSI comparisons are not clean — but it is a reason not to write
+"band-steering" down as settled.
+
+**What is settled:** the trigger is on the AP, it re-associates this node nightly, and the node
+survives it.
+
+### ⭐ THE FREE TEST — 25 October 2026, costs nothing, needs no equipment
+
+00:00 UTC is **03:00 Israel local**, the classic hour for a consumer AP's nightly maintenance or
+channel re-selection. **Israel leaves DST on 25 Oct 2026**, which separates the two hypotheses
+cleanly at zero cost:
+
+| What happens that night | What it means |
+|---|---|
+| The event moves to **01:00 UTC** | The AP schedules in **local** time — a nightly maintenance job |
+| The event stays at **00:00 UTC** | It is genuinely **UTC**-scheduled, and the local-time theory is wrong |
+
+📋 **Whoever looks at this in November: that shift is the experiment, not a glitch.** Read the
+disconnect counter and the association log for the nights either side of 25 October.
 
 ### ⛔ THE COUNTER IS CORRUPTING THE STATISTICS — node says 18, Home Assistant says 50
 
