@@ -87,16 +87,47 @@ is the enclosure and outdoor material here. PLA Pro is *stronger* on paper — 5
 tensile against ASA's 52.40 — and still the wrong choice for anything that sits in a car or
 near the printer's own heat.
 
-**Three transcription notes, kept because they are the vendor's, not mine:**
+**⚠️ PETG Pro's glass transition contradicts the vendor's own heat-deflection figure.**
+This is the one to know about, because Tg is what decides when a printed part starts to creep.
+
+| | Tg | HDT @ 0.45 MPa | |
+|---|---|---|---|
+| ASA | 108 °C | 98 °C | HDT below Tg ✅ |
+| PLA Pro | 65.3 °C | 55.0 °C | HDT below Tg ✅ |
+| **PETG Pro** | **65.5 °C** | **72 °C** | **HDT 6.5 °C ABOVE Tg** ❓ |
+
+For an amorphous thermoplastic, heat deflection at 0.45 MPa sits *below* the glass transition —
+the part deflects precisely because it is passing through Tg. ASA and PLA Pro both behave that
+way. PETG Pro does not. Two further hints point the same direction: published PETG Tg is
+generally **78–85 °C**, and 65.5 sits 0.2 °C from PLA Pro's 65.3, which is the sort of near-
+coincidence that usually means a column was filled from a neighbouring sheet.
+
+**Verified against the PETG sheet on its own: it really does say 65.5 °C**, next to its own
+72 °C HDT. So this is the vendor's inconsistency, not a transcription slip — recorded, not
+corrected, the same as the TPU figures below.
+
+*Practical effect here:* the measured hot spots in this lab are the chamber during a print
+(38–40 °C), the Einsy bay (50–51 °C) and the active drybox (~50 °C). A PETG bracket in any of
+those has ~15 °C of margin if Tg is really 65.5 and ~30 °C if it is 80. **Treat 65.5 as the
+conservative number and test any load-bearing PETG part that lives above 40 °C.**
+
+**Four transcription notes, kept because they are the vendor's, not mine:**
 
 - The ASA sheet cites **ISO 11375-3** for melting and glass transition. No such standard
-  applies; the other three sheets cite **ISO 11357-3** (DSC), which is the correct one. Recorded
-  above as 11357-3.
-- The ASA sheet gives a **melting temperature of 120 °C**. ASA is amorphous and has no true
-  melting point, so this is a softening figure at best — the 108 °C glass transition is the
-  number to design against.
+  applies — ISO 11375 is not a plastics thermal standard at all; the other three sheets cite
+  **ISO 11357-3** (DSC, melting/crystallisation), which is correct. Recorded above as 11357-3.
+- **Neither ASA nor PETG Pro has a true melting point.** ASA is an amorphous styrenic
+  terpolymer; PETG is glycol-modified PET, where the glycol modification exists specifically to
+  *suppress* crystallisation. Both sheets nevertheless give one — 120 °C and 128 °C. Read both
+  as softening figures at best, and design against the glass transition instead. **PLA Pro at
+  166 °C is the only one of the three where a melting temperature is meaningful**, because it
+  is genuinely semi-crystalline.
 - The TPU sheet's feature list claims **maximum elongation of 1063 %** while its own
   properties table says **1050 %**. Both are the vendor's; the table figure is used above.
+- Every figure above was cross-checked **against its own material's sheet**, not merely against
+  the four sheets as a corpus: 38/38 values matched, 0 mismatches. That distinction matters —
+  a corpus-wide check cannot detect a number transcribed from the wrong sheet, which is exactly
+  the failure mode the PETG Tg anomaly would have looked like.
 
 **Density is what to price by, not spool weight.** All four ship as 1 kg, but ASA at
 1.05 g/cm³ gives ~20 % more printed volume per spool than PETG Pro at 1.26 g/cm³. For a
