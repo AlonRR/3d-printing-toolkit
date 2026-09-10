@@ -32,6 +32,8 @@ import argparse
 import csv
 import json
 import re
+import glob
+import os
 import sys
 import time
 from datetime import datetime
@@ -44,12 +46,54 @@ import serial
 LINE = re.compile(r"CHAMBER\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)")
 MOVED_C = 2.0
 
-# The hub always enumerates under this name because the path embeds its MAC, so
-# it stays correct no matter what else is plugged in or in what order. Plain
+# The hub enumerates under a by-id path because that path embeds its MAC, so it
+# stays correct no matter what else is plugged in or in what order. Plain
 # /dev/ttyACM0 is positional, and a second board appearing silently renames it -
 # which would point this logger at the wrong device with no error at all.
-DEFAULT_PORT = ("/dev/serial/by-id/"
-                "usb-Espressif_USB_JTAG_serial_debug_unit_aa:bb:cc:dd:ee:03-if00")
+#
+# That MAC used to be hardcoded here. Two problems with that, and only one of
+# them is about publication:
+#
+#   - it is a real device address, in a repo that is published, and
+#   - it is WRONG for any other board. Replacing the hub meant editing the
+#     script, which is not what a default is for.
+#
+# So resolve it instead: an explicit --port wins, then CHAMBER_HUB_PORT, then a
+# glob over the by-id directory.
+PORT_ENV = "CHAMBER_HUB_PORT"
+PORT_GLOB = "/dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_*-if00"
+
+
+def resolve_port(explicit):
+    """Find the hub's serial device, or fail loudly saying what was actually seen.
+
+    REFUSES TO GUESS when the glob is ambiguous, which is the entire point of
+    using a by-id path. Taking matches[0] would silently reintroduce the bug the
+    by-id path exists to prevent - logging a different board with no error - and
+    would do it only sometimes, depending on USB enumeration order. An
+    intermittent wrong answer is worse than a hard failure.
+    """
+    if explicit:
+        return explicit
+    env = os.environ.get(PORT_ENV)
+    if env:
+        return env
+
+    matches = sorted(glob.glob(PORT_GLOB))
+    if len(matches) == 1:
+        return matches[0]
+
+    where = Path("/dev/serial/by-id")
+    seen = sorted(x.name for x in where.iterdir()) if where.is_dir() else []
+    if not matches:
+        raise SystemExit(
+            "no Espressif JTAG device matched " + PORT_GLOB + "\n"
+            "  /dev/serial/by-id contains: " + (", ".join(seen) or "(nothing, or no such directory)") + "\n"
+            "  pass --port, or set " + PORT_ENV)
+    raise SystemExit(
+        str(len(matches)) + " Espressif JTAG devices matched - refusing to guess:\n"
+        + "".join("    " + m + "\n" for m in matches)
+        + "  pass --port, or set " + PORT_ENV + " to the one you want")
 
 # Home Assistant creates the entities from these by itself, so there is no UI
 # work to do on the HA side. Retained, so they survive an HA restart.
@@ -119,7 +163,9 @@ def mqtt_connect(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", default=DEFAULT_PORT)
+    ap.add_argument("--port", default=None,
+                    help="serial device; default resolves via $"
+                         + PORT_ENV + " then a by-id glob")
     ap.add_argument("--baud", type=int, default=115200)
     ap.add_argument("--csv", default="/opt/chamber-logger/chamber.csv")
     ap.add_argument("--note", default="")
@@ -141,6 +187,7 @@ def main():
     ap.add_argument("--mqtt-pass-file", default="/etc/chamber-logger/mqtt.pass")
     ap.add_argument("--mqtt-prefix", default="chamber")
     a = ap.parse_args()
+    a.port = resolve_port(a.port)
 
     client = mqtt_connect(a)
     state_topic = f"{a.mqtt_prefix}/state"
