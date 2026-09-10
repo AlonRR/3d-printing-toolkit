@@ -48,7 +48,7 @@ logger:
 # DEBUG. A radio that was never switched on is the only thing that explains
 # silence in both directions with no error anywhere.
 #
-# softAP rather than joining HomeNet_IoT deliberately: the point of moving to
+# softAP rather than joining the IoT SSID deliberately: the point of moving to
 # ESP-NOW was to stop depending on that access point, and a mesh with three
 # radios could put the two nodes on different channels, which would break the
 # link in a way that looks exactly like this.

@@ -1085,7 +1085,7 @@ v1/v2 mixes still work for payloads under the 250-byte v1 limit. **Stay under
 Two facts about this house's networks decide where the node can live, and neither
 is discoverable from the ESP32's error messages.
 
-### `HomeNet` (the main SSID) is permanently impossible for this hardware
+### The main SSID is permanently impossible for this hardware
 
 It runs **WPA3-Personal with GCMP-256**. ESP32 radios implement **CCMP only** —
 GCMP is not a setting being refused, it is a cipher the silicon does not have. The
@@ -1097,7 +1097,7 @@ profile for that SSID, and its key matched `secrets.yaml` byte for byte, case
 sensitive. Same length, identical string, still refused. **Do not spend time
 retyping the password for this network** — no ESP32 will ever join it.
 
-### `HomeNet_IoT` works, but only since it was set to WPA2-only
+### The IoT SSID works, but only since it was set to WPA2-only
 
 It was **WPA/WPA2 mixed**, offering TKIP alongside AES. That was the root cause of
 an evening of the node working for ~17 minutes, then being refused by every radio
