@@ -151,27 +151,26 @@ silently discarded on quit.
 ### ⚠️ Two DNS traps worth knowing before trusting any `.internal.example` name
 
 **1. `*.internal.example` is a wildcard pointing at the reverse proxy, so *every* name resolves.**
-Verified: `definitely-not-a-real-name.internal.example` answers `192.0.2.26`. So do `mk3.internal.example`,
+Verified: `definitely-not-a-real-name.internal.example` resolves, and so do `mk3.internal.example`,
 `prusa.internal.example` and `printer.internal.example` — none of which exists. **Resolving is not serving.**
-Confirm a real response before depending on a name; the 14 names Caddy actually serves are
-`files gitea grafana ha influxdb intake inventory jellyfin jikan mediapipeline minio msgbus pve
-rc-panel`. Specific A records do override the wildcard — `mqtt.internal.example` is a real record
-pointing at `192.0.2.22`, and answers a genuine MQTT `CONNACK`.
+Confirm a real *response* before depending on a name, rather than a successful lookup. Specific A
+records do override the wildcard — `mqtt.internal.example` is a real record and answers a genuine MQTT
+`CONNACK`.
 
 **2. Do not read `nslookup` output with "first `Address:` wins".** The first one is the *DNS
 server's* address, not the answer. That single mistake made every name here look like it pointed
-at `192.0.2.26` and nearly put a wrong claim in this file. Use `getaddrinfo` (or read the whole
+at the proxy and nearly put a wrong claim in this file. Use `getaddrinfo` (or read the whole
 `nslookup` block), which also picks up mDNS — the thing pure DNS cannot see.
 
-The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straight to the Pi
-(`192.0.2.128`, plus a link-local v6). Pure DNS cannot resolve it; the system resolver can.
+The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straight to the Pi (plus a
+link-local v6). Pure DNS cannot resolve it; the system resolver can.
 
 ### The printer's name, and why it is LAN-only on purpose
 
 Answered and then built by the homelab session, 1 Sep 2026 (`f89f4a2`).
 
 ```
-prusalink.internal.example  ->  Caddy (192.0.2.26)  ->  192.0.2.128
+prusalink.internal.example  ->  reverse proxy  ->  the Pi
                      tls internal, access-logged
 ```
 
@@ -187,7 +186,7 @@ its `X-Api-Key` crossed the LAN **in cleartext** before this. Now they are insid
 printer appears in the Caddy access log with the true client IP.
 
 ⚠️ **No DNS record was added, and that corrects an assumption both sessions made.** The
-`address=/internal.example/192.0.2.26` wildcard already routes every unclaimed name to Caddy, so
+`address=/internal.example/<proxy>` wildcard already routes every unclaimed name to the proxy, so
 adding the vhost was sufficient on its own. The explicit `address=` lines exist only for the
 **direct** names that must bypass the proxy — `git.`, `nas.`, `mqtt.`. `ha.`, `gitea.` and
 `grafana.` have no record either. The earlier note here that "a specific record beats the wildcard"
@@ -310,7 +309,7 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    - **Verified end to end**, not assumed:
      ```
      GET https://prusalink.internal.example/api/version   X-Api-Key: <new>   -> 200  {"api":"2.0.0",...}
-     GET http://192.0.2.128/api/version     X-Api-Key: <new>   -> 200
+     GET http://<pi-address>/api/version       X-Api-Key: <new>   -> 200
      GET https://prusalink.internal.example/api/version   X-Api-Key: <old>   -> 403
      ```
      The third line is the one that makes the first two mean anything: a check that cannot fail
@@ -321,12 +320,12 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
 ## Quick paths
 
 ```
-Models          C:\Users\<user>\OneDrive\3D printing\
-Slicer config   C:\Users\<user>\AppData\Roaming\PrusaSlicer\
-CAD library     C:\Users\<user>\Code\print_scripts_tree_d\
-Print station   C:\Users\<user>\Tools\homelab\docs\manual\print-station.md
-Fume fan        C:\Users\<user>\Tools\homelab\docs\manual\fume-fan-esp32.md
-PrusaLink       http://prusalink.local          (= 192.0.2.128, same Pi)
+Models          %USERPROFILE%\OneDrive\3D printing\
+Slicer config   %USERPROFILE%\AppData\Roaming\PrusaSlicer\
+CAD library     %USERPROFILE%\Code\print_scripts_tree_d\
+Print station   %USERPROFILE%\Tools\homelab\docs\manual\print-station.md
+Fume fan        %USERPROFILE%\Tools\homelab\docs\manual\fume-fan-esp32.md
+PrusaLink       http://prusalink.local          (mDNS to the Pi)
 Home Assistant  https://ha.internal.example
 MQTT broker     mqtt.internal.example:1883
 ```

@@ -279,7 +279,7 @@ static void start_mdns(void)
  *
  * The result was the worst shape available: a node that stays up, keeps
  * publishing, and quietly stops being reachable BY NAME. Measured 7 Sep 2026 -
- * the node was healthy at 192.0.2.116 and publishing every few seconds while
+ * the node was healthy at its DHCP address and publishing every few seconds while
  * prusa-cam.local failed to resolve, with prusalink.local resolving fine from the
  * same machine as a control. That defeats the entire point of giving it a name,
  * and it defeats OTA with it, since the push resolves by name.

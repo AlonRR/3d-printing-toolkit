@@ -44,7 +44,7 @@ GRACE_DEFAULT_S = 90.0  # tolerate routine SSE reconnects before calling it an o
 
 # NO IP FALLBACK, DELIBERATELY. An earlier version cached the resolved address
 # and fell back to it when mDNS failed. On a DHCP network that is dangerous: the
-# node's lease moved, 192.0.2.100 was reassigned to a Shelly Dimmer 2, and
+# node's lease moved, its old address was reassigned to a smart dimmer, and
 # every "is it up" check then passed against a light dimmer that happily answers
 # on port 80. A wrong host that responds is far worse than no host - it turns a
 # visible gap into silent, plausible, wrong data.

@@ -1448,7 +1448,7 @@ wifi:
   password: !secret wifi_password
 
 mqtt:
-  # The name, not 192.0.2.22 - Home Assistant's own MQTT integration is
+  # The name, not a bare IP - Home Assistant's own MQTT integration is
   # configured against this name, so the two agree by construction.
   broker: mqtt.internal.example
   port: 1883
