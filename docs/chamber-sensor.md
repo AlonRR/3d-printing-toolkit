@@ -238,11 +238,95 @@ different things: the probes hang off the same board and the same uplink, so *"a
 HA automatically"* is true only while the node is up — and it demonstrably was not for 54 of the
 140 hours before the fix.
 
+### 🕒 CAUGHT IN THE ACT — the midnight event, two consecutive nights, 10 Sep 2026
+
+The section above could only infer the midnight trigger from *gaps*, because the give-up bug turned
+every burst into a multi-day outage. With the reconnect fix in and the disconnect counter
+published, the event is now visible **directly**, as a counter burst:
+
+| Local time | `wifi_drops` | |
+|---|---|---|
+| 09-09 03:03:40 | 17 | night 1 — burst, then a reboot resets it |
+| 09-09 03:04:06 | 15 | |
+| 09-09 15:49:04 | **0** | the `state_class` reflash |
+| **10-09 03:00:30** | **1** | ← **night 2 begins, 00:00:30 UTC** |
+| 10-09 03:03:06 | 15 | |
+| 10-09 03:03:54 | 16 | |
+| **10-09 03:04:08** | **18** | ← **ends. ~14 reconnects in 3 m 38 s** |
+
+**So it is confirmed, recurring, and self-healing.** 03:00–03:04 local is **00:00–00:04 UTC**, the
+same two-second-of-midnight signature as the 3 and 4 Sep gaps. The node rides it out and is up
+now — which is exactly what the reconnect fix was for.
+
+✅ **This narrows the trigger usefully.** It is not a roam and not a chamber-thermal effect: it is
+a **scheduled event on the network side at midnight UTC** — a lease renewal, an AP channel
+re-selection, a cron'd radio reset. **That is a homelab question, not a printer one**, and it has
+been passed over. Nothing on this node can fix it; the node's job is only to survive it, and it does.
+
+### ⛔ THE COUNTER IS CORRUPTING THE STATISTICS — node says 18, Home Assistant says 50
+
+Measured 10 Sep 2026, and this is the concrete cost of the `total_increasing` contradiction that
+[`f276ff1`](../firmware/prusa-cam-c/main/wifi.c) fixes:
+
+| Source | Value |
+|---|---|
+| The node's own counter | **18** |
+| HA long-term statistics `sum` | **50** |
+
+**A 178 % overstatement, from exactly two decreases.** `17 → 15` on night 1, and `15 → 0` when the
+`state_class` reflash rebooted the board. HA reads any decrease in a `total_increasing` series as a
+counter rollover and **adds** the new value to the running sum, so each reboot donated its whole
+count a second time. The hourly rows show the jump cleanly: `sum` sat at 32 while the state read 0,
+then became 50 the moment the state reached 18.
+
+⚠️ **Nothing here is a measurement error.** Every individual value the node published was
+correct. The **declared semantics** were wrong, and a per-boot counter cannot be summed across
+reboots without knowing which decreases are reboots — which is why two separate attempts to
+reconstruct a lifetime figure by hand both produced numbers the data does not support.
+
+📋 **The fix stops future corruption; it does not repair the past.** The inflated sum stays
+inflated, and the flash itself will cause **one final reset** (18 → 0), because the old firmware
+never wrote NVS so there is nothing for the new one to load. That is a one-time, understood cost.
+Correcting the historical sum is a Home Assistant operation (Developer Tools → Statistics →
+*Adjust sum*), so it belongs to homelab, not to this firmware.
+
+### ✅ The `state_class` fix is verified in the field
+
+All four chamber series now build long-term statistics, where three of them had **zero**:
+
+| Series | Long-term rows |
+|---|---|
+| `chamber_temperature` | 21 |
+| `chamber_humidity` | 21 |
+| `chamber_wifi_rssi` | 21 |
+| `chamber_wifi_disconnects` | 69 *(it always had `state_class`)* |
+
+The three at 21 are counting from the flash; the history *before* it was recorded as states only
+and is on the purge clock. **The data was never missing — it was perishable**, and that distinction
+is the whole reason this was worth fixing.
+
+### 📉 Second cooling observation — the box sheds heat, again
+
+The 17 h 38 m print ended on schedule at **10 Sep 05:57**, and the chamber behaved exactly as the
+9 Sep observation predicted:
+
+| Local time | Chamber | |
+|---|---|---|
+| 10-09 05:00 | 39.3–39.9 °C | print running |
+| **10-09 ~06:00** | — | **print ends** |
+| 10-09 06:00 | 32.2–39.6 °C | falling |
+| 10-09 07:00 | 30.6–32.1 °C | |
+| 10-09 08:00–11:00 | **30.1–31.1 °C** | ← floor, idle |
+
+**39.6 → 30.6 °C inside one hour**, settling ~3 °C above room. This is the second independent
+confirmation that the enclosure's thermal time constant is on the order of an hour, and it closes
+out the retracted "the chamber never cools" claim for good.
+
 ### What this does and does not say about the Einsy
 
 **It stands that the bay runs hot for very long stretches** — but because prints are back-to-back,
-not because the box cannot shed heat. ✅ **And the bay figure is now measured: 50–51 °C, see above.** The current job ends **10 Sep 05:57**, so the enclosure has
-another ~14 hours at ~40 °C ahead of it.
+not because the box cannot shed heat. ✅ **And the bay figure is now measured: 50–51 °C, see above.** ✅ **That job ended on schedule at 10 Sep 05:57** and the chamber
+has been idle at ~31 °C since — see the cooling observation above.
 
 **That is still a duty-cycle question rather than a peak one**, and it is the condition in which to
 take the `M105` `A:` reading — during a long print, not after one.
