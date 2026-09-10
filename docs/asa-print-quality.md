@@ -276,4 +276,6 @@ already at the printer.
 - [Understanding chamber heating — ThreeDimensionPrinters](https://threedimensionprinters.com/understanding-chamber-heating-why-ambient-temperature-matters-for-abs-and-asa/) — 40–50 °C enclosure, no drafts
 - [How hot can enclosure get? — Prusa forum](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-user-mods-octoprint-enclosures-nozzles/how-hot-can-enclosure-get/) and [Electronics in or out the enclosure?](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-improvements-archive/electronics-in-or-out-the-enclosure/) — `TMC DRIVER OVERTEMP`, Einsy placement
 - [Does ASA filament need drying? — goodprints3d](https://www.goodprints3d.com/blogs/3d/does-asa-filament-need-to-stay-dry-or-do-people-overstate-the-moisture-problem) and [ASA drying temperature — 3dtrcek](https://3dtrcek.com/en/blog/post/asa-drying-temperature-how-to-properly-dry-filament-for-best-prints-2) — 0.2–0.4 % water in 24 h, 80–90 °C, wet symptoms
-- Inslogic ASA Technical Data Sheet rev. 12.02.2024, archived at [`../slicer/reference/inslogic_asa_tds.pdf`](../slicer/reference/inslogic_asa_tds.pdf)
+- Inslogic ASA Technical Data Sheet rev. 12.02.2024 — figures transcribed in
+  [`../slicer/reference/inslogic-filament-data.md`](../slicer/reference/inslogic-filament-data.md);
+  the PDF itself is Inslogic's and is not redistributed here

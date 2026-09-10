@@ -1,8 +1,9 @@
 # Inslogic filament profiles — Prusa MK3S+
 
 PrusaSlicer filament profiles for **Inslogic ASA**, **TPU 95A**, **PLA Pro** and **PETG Pro**,
-built from Inslogic's own Technical Data Sheets (all rev. 12.02.2024, archived in
-[`../../reference/`](../../reference/)).
+built from Inslogic's own Technical Data Sheets (all rev. 12.02.2024). The figures are
+transcribed in [`../../reference/inslogic-filament-data.md`](../../reference/inslogic-filament-data.md);
+the PDFs themselves are Inslogic's and are not redistributed here.
 
 Inslogic's [download center](https://www.inslogic3d.com/pages/download-center) publishes
 **TDS/SDS data sheets only — no slicer profiles**, for any slicer. These were derived from

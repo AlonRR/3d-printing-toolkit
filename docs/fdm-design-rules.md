@@ -309,7 +309,9 @@ checking geometry, and PLA lies to you least.
 
 The §6 table above ranks materials by how hard they are to *print*. This one
 ranks them by how the finished part fails, using the numbers from Inslogic's own
-data sheets in [`../slicer/reference/`](../slicer/reference/) rather than folklore.
+data sheets, transcribed in
+[`../slicer/reference/inslogic-filament-data.md`](../slicer/reference/inslogic-filament-data.md),
+rather than folklore.
 
 | | **PLA Pro** | **PETG Pro** | **ASA** |
 |---|---|---|---|
