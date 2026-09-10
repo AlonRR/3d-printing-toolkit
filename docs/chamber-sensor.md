@@ -390,6 +390,78 @@ never wrote NVS so there is nothing for the new one to load. That is a one-time,
 Correcting the historical sum is a Home Assistant operation (Developer Tools → Statistics →
 *Adjust sum*), so it belongs to homelab, not to this firmware.
 
+### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
+
+`f276ff1` is running. It had been built and committed but not deployed for a day, while the
+per-boot counter carried on inflating the statistics above.
+
+| | |
+|---|---|
+| Partition | `ota_0` → **`ota_1`** |
+| `app_elf_sha256` | **`ca8176f8b61bd346`** |
+| Version string | `007e706-dirty` — the tree the image was built from |
+| Reply | **`HTTP 200 "ok, rebooting"`** |
+
+⭐ **That clean 200 is itself a result.** Every previous OTA looked like a failure: the board
+logged `update accepted` while the client got a connection reset, because the reboot outran the
+reply. The `Connection: close` + `httpd_sess_trigger_close()` change in `ota.c` fixed it, and this
+is the first flash that reported honestly. **The old rule — "a reset on POST is success" — is
+retired; a non-200 now means something.**
+
+### 📏 `app_elf_sha256` is the ELF's hash, NOT the .bin's — this nearly caused a false alarm
+
+Two sessions checked the artifact and briefly disagreed, because they hashed different things:
+
+| What was measured | Value |
+|---|---|
+| The `app_elf_sha256` **field**, at offset **0xB0 inside the .bin** | `ca8176f8b61bd346` |
+| `sha256` of **`prusa_cam_c.elf`** | `ca8176f8b61bd346` ✅ same |
+| `sha256` of **`prusa_cam_c.bin`** | `47813091ebfdf869` — a different, correct, irrelevant number |
+
+**The field is the ELF's hash, embedded in the app descriptor.** Hashing the `.bin` answers a
+question nobody asked. Getting this backwards produces a discrepancy that looks like a corrupted
+artifact and is not one — and the two readings agreeing is *stronger* evidence than either alone,
+because they are independent paths to the same value.
+
+### ✅ Verified by behaviour, not by the upload returning
+
+The POST's return value is not evidence — that is the whole lesson of the reset-as-success era.
+What was actually checked:
+
+- **Read-back**: partition flipped and the running sha matches the built image.
+- **Publishing resumed** within seconds — temp 39.0 °C, RSSI −55.
+- ⭐ **The new `uptime` entity exists and is counting** (26 → 30 → 33 s). This is the one that
+  matters: it proves the **new discovery ran**, not merely that a new image booted. A sha proves
+  what is in flash; a new entity proves the new code is doing its job.
+
+### ⚠️ The one-time reset happened, exactly as predicted: 18 → 0
+
+At 13:29:46Z the counter went from 18 to 0. **Expected and unavoidable**: the old firmware never
+wrote NVS, so the new one had nothing to load. Once only.
+
+📋 **It makes the Home Assistant correction easier, not harder.** A `total_increasing`
+rollover adds the *new* value, which was 0, so the inflated sum stays at 50 and from here
+`sum = 50 + (node counter)`. The offset is now a **constant +50** against a counter that starts at
+zero and is meant to persist — where before it was +32 against a counter that reset unpredictably,
+with no stable target to correct to.
+
+⛔ **Do not correct the sum yet.** Persistence is still unproven, and if `drops_save()` does not
+fire the target moves again.
+
+### 🔬 WHAT IS STILL UNPROVEN — and the test is tonight
+
+**Deployment is not vindication.** The counter sits at 0 with no disconnects since boot, so nothing
+meaningful has reached NVS; rebooting now would load 0 and prove nothing either way.
+
+The real test is the next midnight event:
+
+1. ~03:00 local should drive the count to roughly **14–18**.
+2. `drops_save()` should fire on the reconnect that ends the burst.
+3. **The next reboot after that should come back non-zero instead of at 0.**
+
+Step 3 is the only one that proves the fix. Until then this section records a deployment, not a
+working feature.
+
 ### ✅ The `state_class` fix is verified in the field
 
 All four chamber series now build long-term statistics, where three of them had **zero**:
