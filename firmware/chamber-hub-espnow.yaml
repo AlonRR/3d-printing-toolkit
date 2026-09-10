@@ -37,13 +37,16 @@ espnow:
     # The MINI-1 board is the transmitter now - it is the only board here that
     # demonstrably radiates. MAC read from the plain-C test, where both
     # SuperMinis received its pings perfectly:
-    #   RX 30 bytes from aa:bb:cc:dd:ee:01
+    #   RX 30 bytes from aa:bb:cc:dd:ee:01   (redacted; real value in secrets.yaml)
     # The documented hub pattern lists real sender MACs rather than broadcast,
     # and packets are accepted from registered peers - so a hub that knows only
     # the broadcast address may reject everything the sensor sends. Getting this
     # MAC required catching the sender's boot output, which is the one thing I
     # could not see for most of this exercise.
-    - aa:bb:cc:dd:ee:01
+    # !secret, not a literal: this is a real device address and this repo is
+    # published. Substituting it at publish time is a filter that must be
+    # remembered every time; keeping it out of source cannot be forgotten.
+    - !secret espnow_peer_mini1
     - FF:FF:FF:FF:FF:FF
   # Diagnostics. All THREE triggers, deliberately: the docs separate a directed
   # packet from a registered peer (on_receive) from a broadcast (on_broadcast),

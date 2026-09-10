@@ -575,7 +575,8 @@ SuperMini-B   RX 30 bytes from aa:bb:cc:dd:ee:01 : PING 22 ...
 MINI-1        (nothing, ever)
 ```
 
-`aa:bb:cc:dd:ee:01` is the MINI-1. **Both SuperMinis hear it flawlessly, every
+`aa:bb:cc:dd:ee:01` is the MINI-1 — **the address is redacted here**, and what the test turns on is
+that it is the SAME address on both lines. **Both SuperMinis hear it flawlessly, every
 ping. It hears neither of them. And they never hear each other** — every
 received frame in the capture came from the MINI-1.
 
