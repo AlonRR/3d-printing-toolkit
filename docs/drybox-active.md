@@ -47,6 +47,40 @@ simplifies the build twice over. There is no plenum to design around a loose ele
 And that duct sits **downstream of the element, carrying warm air rather than sitting beside a hot
 one**, which is a far easier thermal environment for a printed part than the original plan.
 
+### ⛔ PRINT THE DUCT IN ASA, NOT PETG — and the numbers now say why
+
+The build step already specifies ASA. This records the reason, because **the lab holds 10 kg of
+PETG and none of the parts list says "not this one"** — which is exactly how a substitution happens
+at the bench.
+
+Glass transition is the number that matters. A part does not need to melt to fail; it needs to
+creep under its own load while warm, and that starts at T₉:
+
+| | T₉ | Heat deflection @ 0.45 MPa | Margin over a 50 °C duct |
+|---|---|---|---|
+| **ASA** | **108 °C** | 98 °C | **~58 °C** — comfortable |
+| PETG Pro | 65.5 °C *(see caveat)* | 72 °C | ~15 °C — thin |
+| PLA Pro | 65.3 °C | 55.0 °C | ~15 °C, and worse under load |
+
+Source: [inslogic-filament-data](../slicer/reference/inslogic-filament-data.md).
+
+⚠️ **The PETG figure is the vendor's own and it is internally inconsistent.** Its sheet gives
+T₉ 65.5 °C but a heat-deflection temperature of 72 °C — and for an amorphous plastic HDT sits
+*below* T₉, which is what ASA (108/98) and PLA (65.3/55.0) both do. Published PETG T₉ is usually
+78–85 °C. **Treat 65.5 as conservative rather than correct, and do not design to either number.**
+
+📏 **The duct is not the only warm part in this lab.** The same table applies anywhere a
+printed part sits in measured heat:
+
+| Location | Measured | PETG margin at T₉ 65.5 |
+|---|---|---|
+| Chamber during a print | 38–40 °C | ~25 °C |
+| **Einsy bay** | **50–51 °C** | **~15 °C** |
+| Drybox target | ~50 °C | ~15 °C |
+
+**Load-bearing PETG above 40 °C wants checking after a long print**, not assuming. Unloaded clips
+and covers are fine; anything carrying weight or holding an alignment is not obviously fine.
+
 What putting the element outside actually buys — each of these is a failure mode removed, not a
 convenience:
 
@@ -206,7 +240,7 @@ it floors at 20 %RH and a working drybox sits below that.
 2. Mod and measure one C3, far-end, against an unmodified control.
 3. ⚠️ **Check the MOSFET module's control polarity and fit the pull-down BEFORE wiring the heater**,
    so the default state with no firmware running is OFF. Then wire it: cutout **and the one-shot
-   thermal fuse** in series with the element, and **the heater switch's control power taken from the fan's switched output** so heater-without-fan is physically impossible while the purge stays available. Print the outlet duct in ASA, sized off step 1's surface measurement.
+   thermal fuse** in series with the element, and **the heater switch's control power taken from the fan's switched output** so heater-without-fan is physically impossible while the purge stays available. Print the outlet duct in **ASA, not PETG** — see the T₉ table above — sized off step 1's surface measurement.
 4. Cut intake and exhaust vents — exhaust **high and diagonally opposite** the intake.
 5. Wire the AHT20 out of the airstream; bring temperature and humidity into HA over MQTT, reusing the
    plumbing the camera node already has.
