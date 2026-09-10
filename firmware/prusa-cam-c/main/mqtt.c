@@ -82,10 +82,14 @@ static void publish_discovery(void)
         "homeassistant/sensor/chamber_rh/config", payload, 0, 1, 1);
 
     /* LINK TELEMETRY. Added at homelab's request so the printer-area weak spot
-     * becomes a SERIES rather than the single bench observation that -72 dBm in
-     * the enclosure against -26 dBm on the desk currently is. These ride the
+     * becomes a SERIES rather than a single bench observation. These ride the
      * existing state topic, so they cost one extra publish of nothing - the
-     * message was being sent anyway. */
+     * message was being sent anyway.
+     *
+     * IT ANSWERED, 10 Sep 2026, at 44,378 samples: mean -56.1 dBm, max -46,
+     * min -74, and only 30 samples (0.07%) at or below -70. So the -72 dBm the
+     * comments were built around is REAL but is the extreme tail, not the
+     * level. Exactly the correction a series exists to make. */
     snprintf(payload, sizeof(payload),
              "{\"name\":\"Chamber WiFi RSSI\",\"device_class\":\"signal_strength\","
              "\"state_class\":\"measurement\","

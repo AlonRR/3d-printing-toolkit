@@ -122,9 +122,28 @@ static void retry_cb(void *arg)
  * meant physical access, which is exactly what all of it existed to avoid.
  *
  * It happened, 4 Sep 2026: the node dropped off the network in the chamber and
- * had to be power-cycled. Signal is the likely trigger - -26 dBm on the bench
- * against -72 dBm in the enclosure, on a a mesh network whose band-steering and AP
- * handoffs produce exactly the transient disconnects that burn retries.
+ * had to be power-cycled.
+ *
+ * The trigger was NOT signal, and this comment said it was until 10 Sep 2026.
+ * Two later findings replaced it, and both are in docs/chamber-sensor.md:
+ *
+ *   - The multi-day outages were THIS BUG, not a weak link: the give-up left
+ *     the radio idle until a human power-cycled it. Duration was the defect.
+ *   - The disconnects themselves are a nightly event at 00:00 UTC in which the
+ *     uplink re-associates this node. Routing is measurably perfect throughout,
+ *     so it is the access point re-optimising, not a signal failure.
+ *
+ * The old sentence also blamed "band-steering", which is IMPOSSIBLE here: this
+ * is an ESP32-S3, 802.11 b/g/n, 2.4 GHz only, with no 5 GHz PHY on the die. A
+ * client that cannot receive 5 GHz cannot be steered onto it.
+ *
+ * And it set -26 dBm on the bench against -72 dBm in the enclosure, which reads
+ * as a 46 dB penalty. -72 is real but it is the 0.07th percentile of 44,378
+ * samples; the mean is -56, so mean-to-mean the penalty is nearer 30 dB.
+ *
+ * NONE OF THIS CHANGES THE DECISION BELOW. Retrying forever is right whether
+ * the disconnect is a roam, a weak link or an AP reboot - only the stated
+ * reason was wrong, and a stale reason in code outlives the docs that fix it.
  *
  * So: retry FOREVER. The counter now only chooses the backoff delay; it is
  * never a budget that can run out.

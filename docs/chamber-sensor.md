@@ -294,23 +294,60 @@ gets bounced between them:
 So the node is being **re-associated at the moment of the burst**, while routing stays perfect.
 That is an access point re-initialising or re-steering, not a network fault.
 
-### ⚠️ Two readings fit this, and the data does not yet separate them
+### ✅ SETTLED BY THE SILICON — band-steering is impossible, not merely unlikely
 
-The obvious reading is **band-steering between a 2.4 and a 5 GHz radio in one box**. It is probably
-right, but it is not the only thing that produces two BSSIDs differing in one octet:
+I recorded band-steering as "probably right but not proven". **It is not right at all, and the part
+number settles it without anyone reading the AP's configuration.**
 
-- **Two radios, one AP** — band-steering or a nightly radio re-init.
-- **Two virtual APs on the SAME radio** — vendors assign a per-SSID BSSID from the same base
-  address, which gives an identical last-octet pattern.
+`sdkconfig` says `CONFIG_IDF_TARGET_ESP32S3=y`. **The ESP32-S3 is 802.11 b/g/n — 2.4 GHz only.
+There is no 5 GHz PHY on the die.** A client that cannot receive 5 GHz cannot be steered onto it,
+so **both BSSIDs are necessarily 2.4 GHz** and "bouncing between the 2.4 and 5 GHz radios" is
+excluded by hardware.
 
-📏 **The signal strength mildly disfavours the band explanation.** Across the 10 Sep event the
-node read about −49 to −53 dBm on the first BSSID and about −51 to −56 dBm on the second — a
-difference of only a few dB. A genuine 2.4 → 5 GHz move at this range would usually cost more than
-that. Not conclusive — cross-band RSSI comparisons are not clean — but it is a reason not to write
-"band-steering" down as settled.
+📏 **The RSSI hint was pointing the right way.** A few dB between the two associations is
+exactly what two 2.4 GHz BSSIDs look like — which is why the small difference felt wrong for a band
+change. The instinct was sound; the silicon is the proof.
 
-**What is settled:** the trigger is on the AP, it re-associates this node nightly, and the node
-survives it.
+### ⚠️ "One physical AP" is withdrawn too — MAC adjacency proves nothing here
+
+The other half of the inference was that five identical octets meant two radios in one box. That
+does not hold either:
+
+- The uplink is a **consumer mesh system**, so two 2.4 GHz BSSIDs are as easily **two separate
+  units** as two virtual APs on one unit.
+- The BSSIDs have the **locally-administered bit set** — they are derived/virtual addresses. Once
+  an address is synthesised, **numerical adjacency says nothing about physical identity.**
+
+**So the honest position is: two 2.4 GHz BSSIDs from one vendor allocation, physical topology
+undetermined.** Which lands back where the 9 Sep analysis started — **these are roams** — and makes
+a **mesh-wide re-optimisation at 03:00 local** the natural candidate, since consumer mesh systems
+ship exactly such a scheduled job. That fits every observation and leaves the 25 October test
+exactly as decisive.
+
+⭐ **The general lesson, and it caught two sessions in two days:** a plausible mechanism built from
+a structural pattern is not evidence. Both "seven flips" and "one physical AP" came from reading
+structure — row counts, address adjacency — as if it were observation. **The datasheet was one
+lookup away the whole time.**
+
+### 📈 The −72 dBm figure, checked against the series it was collected for
+
+The RSSI series was added so the enclosure's weak spot would stop being a single bench observation.
+At **44,378 samples** it can now answer that:
+
+| | |
+|---|---|
+| Mean | **−56.1 dBm** |
+| Max | −46.0 dBm |
+| Min | −74.0 dBm |
+| At or below −70 dBm | **30 samples — 0.07 %** |
+
+**−72 dBm is real; the enclosure reaches it and worse.** But it is the **extreme tail, not the
+level.** Typical is −56, and the box sits below −70 about seven hundredths of one percent of the
+time.
+
+⚠️ **Caveat that limits this:** the series begins 7 Sep 12:12Z, so there is **no RSSI data for
+4 Sep** and the original spot reading cannot be checked — only the enclosure's general level since.
+The 4 Sep observation is not being called wrong.
 
 ### ⭐ THE FREE TEST — 25 October 2026, costs nothing, needs no equipment
 
