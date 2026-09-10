@@ -154,8 +154,8 @@ say so:
 
 ### What the cap actually is — two hypotheses tested and refuted
 
-**Refuted 1: a per-SSID bandwidth limit on the AP.** The network is a the router vendor the mesh router + 2× X60,
-WiFi 6 hardware whose standard firmware offers QoS *prioritisation*, not hard per-SSID caps.
+**Refuted 1: a per-SSID bandwidth limit on the AP.** The uplink is a consumer WiFi 6 mesh, whose
+standard firmware offers QoS *prioritisation*, not hard per-SSID caps.
 
 **Refuted 2: the PSRAM-to-internal copy on the WiFi TX path.** The ESP32 cannot DMA out of external
 RAM, so sending from PSRAM costs a copy — a plausible fixed cost insensitive to signal. Measured
@@ -183,12 +183,12 @@ source. Insensitivity to RSSI rules out *path loss*, not *interference*.
 | 614 KB | 0.15–0.38 |
 
 That is the signature of a link losing airtime to contention and retries, where bigger writes
-amortise the loss better. Consistent with a busy 2.4 GHz band — three a mesh nodes beaconing, mesh
+amortise the loss better. Consistent with a busy 2.4 GHz band — three mesh units beaconing, mesh
 backhaul, and neighbouring networks.
 
 ⚠️ **Enabling 5 GHz on the IoT SSID would not help**: the ESP32-S3 has no 5 GHz radio (2.4 GHz
 802.11 b/g/n only), and a combined-band SSID makes 2.4-only devices harder to onboard. What might
-help is a clear 2.4 GHz channel at 20 MHz, and checking which a mesh node the board associates with —
+help is a clear 2.4 GHz channel at 20 MHz, and checking which mesh unit the board associates with —
 a client on a satellite shares airtime with the wireless backhaul.
 
 **Calibration:** an ESP32 tops out near 1–2.5 MB/s of TCP even in ideal conditions. It is not a fast
@@ -244,8 +244,8 @@ moved lease would mean unscrewing it to recover. Hence a name, set three ways in
 | `mdns_service_add(_http._tcp)` | discoverable by service when the name is not known |
 
 ⚠️ **mDNS is link-local multicast and does NOT cross a subnet or a VLAN.** It resolves today only
-because workstation (`192.0.2.106`) and the board sit on the same `/24`. Putting the IoT network behind
-the the firewall on its own VLAN is a planned project, and that change would silently break name
+because the workstation and the board sit on the same `/24`. Putting the IoT network behind a
+firewall on its own VLAN is a planned project, and that change would silently break name
 resolution from the workstation. **A DHCP reservation on the router is the belt to this braces** —
 it survives segmentation, a flash erase, and this firmware being replaced entirely.
 
