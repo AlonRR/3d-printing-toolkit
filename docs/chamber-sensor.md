@@ -448,9 +448,45 @@ attached to anything and no longer extend.
 | `sensor.print_chamber_chamber_wifi_disconnects` | 92 |
 | `sensor.print_chamber_chamber_uptime` | 19 |
 
-⭐ **So the C3 must reuse `chamber_temp`, `chamber_rh`, `chamber_rssi`, `chamber_wifi_drops` and
-`chamber_uptime` as its discovery `unique_id`s**, and must keep `state_class` on every numeric one
-— that is what makes the history durable at all.
+⚠️ **CORRECTION, same day.** The paragraph above originally said the C3 *must* publish the same
+`unique_id`s or the history is lost. That overstated it, and I wrote it before checking what the
+statistics are actually keyed to. Measured since:
+
+| | |
+|---|---|
+| `statistics_meta.statistic_id` | **is the `entity_id`** — confirmed, it matches a `states_meta` row |
+| `unique_id` | only decides **which registry entry** the device binds to |
+
+**So the thing to preserve is the ENTITY_ID.** `unique_id` matters only because it is what makes
+Home Assistant reuse the existing registry entry, which is what keeps the entity_id the same.
+
+The current unique_ids, read from the registry:
+
+| Entity | `unique_id` |
+|---|---|
+| `sensor.print_chamber_chamber_temperature` | `chamber_temp` |
+| `sensor.print_chamber_chamber_humidity` | `chamber_rh` |
+| `sensor.print_chamber_chamber_wifi_rssi` | `chamber_rssi` |
+| `sensor.print_chamber_chamber_wifi_disconnects` | `chamber_wifi_drops` |
+| `sensor.print_chamber_chamber_uptime` | `chamber_uptime` |
+
+**Two routes, and the second is the safety net that makes this a low-risk migration:**
+
+- ✅ **Route A — publish the same `unique_id`s.** The new device binds to the existing registry
+  entries, keeps the entity_ids, and statistics continue with nothing to fix. Cleanest.
+  ⚠️ **Unverified for ESPHome**: ESPHome generates MQTT discovery unique_ids itself and it is not
+  established that they can be set to arbitrary strings. Check before relying on this. If they
+  cannot be, that is an argument for custom discovery (`discovery: false` plus published configs)
+  rather than an argument against ESPHome.
+- ✅ **Route B — let it create new entities, then repoint them.** Different unique_ids produce new
+  registry entries, whose entity_ids collide and get a `_2` suffix; the statistics stay attached to
+  the old ids. **This is repairable in the UI**: delete the old registry entries, then rename the
+  new entities to the original entity_ids. Because statistics are keyed by entity_id, they
+  reattach.
+
+**So a unique_id mismatch costs a tidy-up, not the history** — which is the opposite of what the
+first version of this section implied. Keep `state_class` on every numeric sensor either way; that
+is the part with no workaround.
 
 ### What the chamber loses, stated rather than discovered later
 
@@ -497,12 +533,14 @@ I2C wants two ordinary pins clear of all of the above.
    separate mini.
 2. Wire AHT20+BMP280 over I2C on non-strapping, non-USB pins. Record the choice **with reasons**,
    the way `board_pins.h` now does.
-3. Build from the existing ESPHome chamber config, **reusing the five `unique_id`s above**, every
-   numeric sensor declaring `state_class`, and availability with an LWT.
+3. Build from the existing ESPHome chamber config. **Aim for the five `unique_id`s above (Route
+   A); if ESPHome will not set them, take Route B and repoint the entities afterwards.** Every
+   numeric sensor must declare `state_class`, with availability on an LWT.
 4. **Overlap period**: run C3 and S3 together and compare the two temperature/humidity series before
    trusting the new one.
-5. Verify long-term statistics **continue on the same rows** rather than starting new ones — check
-   `statistics_meta` for duplicates, which is what an accidental `unique_id` change looks like.
+5. Verify long-term statistics **continue on the same `statistic_id`s** rather than starting new
+   ones — a `sensor.*_2` appearing in `statistics_meta` is exactly what Route B looks like before
+   it is repaired.
 6. Only then release the S3 to cell-tester.
 7. Re-prove the NVS counter on the C3 build (open item 9c), since the S3 will not be available to
    answer it.
