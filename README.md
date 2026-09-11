@@ -372,11 +372,57 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    same partition holds the network name and password in plaintext. Filter the parser output to
    `wifinet`, never commit the dump, delete it after.
 
-   | Stored value | Meaning |
+   ⭐ **Read the WRITE HISTORY, not just the value.** NVS never overwrites in place: each save appends
+   a new entry and marks the old one `Erased`, and erased entries survive until their page is
+   reclaimed. This firmware writes far too few entries to fill a page. The history settles the
+   verdict *regardless of when the read happens*. That matters because the nightly midnight event
+   causes about 18 disconnects, so a counter that restarted from 0 could climb back to 18 in one
+   night and pass a value-only check.
+
+   The code narrows the failure modes: `nvs_flash_init()` runs before `drops_load()`, both use the
+   same namespace and key, and `drops_save()` runs on every IP acquisition. The board was on WiFi
+   after the reboot, so that boot reached one.
+
+   | `drops` history (written and erased entries, in order) | Verdict |
    |---|---|
-   | **≥ 18** | the 18 survived a reboot — **persistence works, the fix is proven** |
-   | 1 – 17 | restarted from 0 and re-accumulated — it writes but does not persist |
-   | 0 or key absent | the save never wrote a nonzero value |
+   | never falls below 18 once it reaches 18 | **persistence works — the fix is proven** |
+   | a value below 18 appears **after** an 18 | **reading back failed** — a boot restarted from 0 and its reconnect overwrote the saved count |
+   | no `drops` entries at all | the save never committed |
+   | only `0` entries | saves work, but the 11 Sep `18` was never written |
+
+   ⚠️ **`0` is not "never saved".** An earlier version of this table said it was. If reading back
+   fails, the first reconnect overwrites the saved 18 with a fresh 0. So a current value of 0 is the
+   fingerprint of a failed load, and only a missing key means the save never worked.
+
+   **Verified commands, PowerShell** (not Git Bash, which rewrites `findstr`'s `/B` into a path):
+
+   ```powershell
+   esptool --port COM9 --before default-reset --after no-reset read-flash 0x9000 0x6000 s3_nvs.bin
+   $nt = "$env:LOCALAPPDATA\esphome\Cache\idframeworks.5.5\components
+vs_flash
+vs_partition_tool
+vs_tool.py"
+   # current value - prints only drops, or a loud not-found listing namespace NAMES
+   $j = python $nt -d minimal -f json s3_nvs.bin | ConvertFrom-Json
+   $hit = $j | Where-Object { $_.namespace -eq 'wifinet' -and $_.key -eq 'drops' }
+   if ($hit) { "wifinet:drops = $($hit.data)" } else { "NOT FOUND: wifinet:drops absent. Namespaces present: " + (($j | Select-Object -ExpandProperty namespace -Unique) -join ', ') }
+   # write history - every drops entry, written and erased
+   $all = python $nt -d all --color never s3_nvs.bin
+   $h = $all | Select-String -SimpleMatch '| drops:'
+   if ($h) { $h | ForEach-Object { $_.Line.Trim() } } else { "(no drops entries in -d all)" }
+   Remove-Item s3_nvs.bin
+   ```
+
+   ⛔ **Never run `-d minimal` or `-d all` unfiltered.** `minimal` prints the WiFi password as
+   `key = value`. `all` prints it as a readable ASCII hex dump on a line that does not contain the key
+   name, so filtering on the key would not even catch it.
+
+   📋 **The first filter handed out for this was broken, and silently.** It was
+   `findstr /B "wifinet:"`, but every `minimal` line begins with a space, so it matched nothing, and
+   the empty output would have been recorded as "key absent". It was caught only by building a fake
+   partition (fake password, `drops=18`) and running the exact command on it. Both commands above
+   passed that test, including a missing-key run that failed loudly. **An untested filter on a
+   one-time read is a guess with a deadline.**
 
    **A deployment is still not a verification** — and a closure is only as good as the premise it
    rests on.
