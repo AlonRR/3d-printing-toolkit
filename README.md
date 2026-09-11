@@ -420,9 +420,21 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    Counts-only output confirmed **both** by reading `storage_stats()` and by another session running
    it on generated fixtures: no key names, no values, not even the string `drops`.
 
-   The partition is `0x6000`, so **6 pages**; at a 4096-byte page and 32-byte entries, each page
-   holds **126** data entries once its header and entry-state bitmap are taken out. **Expect 756
-   entries in total.** How to read the counts:
+   The partition is `0x6000`, so **6 pages**; at a 4096-byte page and 32-byte entries each page has
+   **126** slots once its header and entry-state bitmap are taken out, so the partition holds 756.
+
+   ⛔ **Do not expect the counts to add up to 756 — a healthy dump totals LESS.** A value longer than
+   32 bytes occupies a header slot plus continuation slots, and the tool counts the value as **one**
+   `Written` entry while placing its continuation slots in **no bucket at all**. The real partition
+   stores the WiFi credentials as strings and blobs, so its reported total *will* come in under 756,
+   and that is normal.
+
+   Measured on fixtures: u32 values only gave a per-page Total of 126 and a global 756; adding one
+   100-character string gave Total 122 and global 752 — the four missing slots being that string's
+   continuations.
+
+   ⚠️ **An earlier version of this section said to expect 756**, which would have made a healthy dump
+   look anomalous. **The total is not a signal.** `Empty` and `Invalid` are. How to read the counts:
 
    | Reading | Meaning |
    |---|---|
