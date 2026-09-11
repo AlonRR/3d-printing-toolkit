@@ -325,31 +325,30 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    | **9c** persisted counter | ⛔ **CLOSED UNANSWERED.** The S3 was reassigned before it ever rebooted, so nothing read the NVS value back. See below. |
 
    ⛔ **THE GC DOES NOT MAKE THIS REPO PUBLISHABLE WITH HISTORY, and "9a done" must not be read
-   that way.** The rewrites and the GC cleaned the **identifier** class — SSID, network addresses,
-   device MACs, hostnames, and the copyright PDFs, all now 0 in full history. The
-   **deployed-infrastructure inventory** class is a different matter and is **still present in
-   reachable history**:
-
-   | String | Commits |
-   |---|---|
-   | `the mesh router` | 4 |
-   | `the firewall` | 2 |
-   | `the router vendor` | 2 |
+   that way.** The rewrites and the GC cleaned the **identifier** class — network name, addresses,
+   device MACs, hostnames, and the copyright PDFs, all now 0 in full history. A second class, the
+   **deployed-infrastructure inventory**, is **still present in reachable history**: three hardware
+   product names, across eight commits, in file content rather than only commit messages.
 
    ⚠️ **A garbage collection can never fix these.** They live in commits that are **ancestors of
-   `main`** — verified with `merge-base --is-ancestor`, all three return YES. Reachable objects are
-   not garbage, so pruning does not touch them. Only a `filter-repo --replace-text` pass would, and
-   that is a deliberate decision nobody has taken.
+   `main`** — verified with `merge-base --is-ancestor`. Reachable objects are not garbage, so
+   pruning does not touch them. Only a `filter-repo --replace-text` pass would, and that decision
+   has not been taken.
 
-   ⭐ **And the sharpest lesson of the whole audit is here.** The class was removed by an *ordinary
-   commit* (`7c33c99`, "drop deployed-infrastructure inventory from the prose"). That commit's own
-   diff contains **5 deleted lines carrying the strings verbatim**, including the full hardware
-   lineup. So the commit that removed the inventory is now **the single most legible place in the
-   repository to find it** — grep the log for the removal and you get the thing removed, with
-   context, in one hit.
+   📋 **The strings themselves are deliberately NOT listed here.** They are held in the
+   homelab repository, which is DO-NOT-PUBLISH. Ask there for the table.
 
-   **Redacting by ordinary commit makes a value MORE findable, not less.** It concentrates it in one
-   labelled, obviously-interesting diff. Only a history rewrite actually removes anything.
+   ⭐ **AND THAT OMISSION IS THE LESSON, LEARNED THE EMBARRASSING WAY.** The first version of this
+   very section listed all three names in a table — and so *the commit documenting that the names
+   were in history put the names in history*. Its table was wrong the instant it was written: it
+   said one name appeared four times, and committing it made five. **A self-invalidating document**,
+   and not fixable by correcting the count, because any correction increments it again.
+
+   The rule generalises past redaction, which is where it was first noticed: **in a repository that
+   may be published, NAMING the value is the leak — whether you are removing it, documenting it, or
+   warning about it.** A removal commit concentrates the value in one labelled, greppable diff; a
+   warning commit does the same and advertises itself with the exact words someone would search for
+   when asking whether the repo is safe to publish. **Describe the class; never instantiate it.**
 
    ⚠️ **9c is the one to read.** The fix was deployed and is *still unproven*. It reached 18
    across a real outage — which only shows it COUNTS, something it already did. The single thing
