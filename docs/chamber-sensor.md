@@ -390,6 +390,63 @@ never wrote NVS so there is nothing for the new one to load. That is a one-time,
 Correcting the historical sum is a Home Assistant operation (Developer Tools → Statistics →
 *Adjust sum*), so it belongs to homelab, not to this firmware.
 
+### ✅ INSTALLED AND VALIDATED — the C3 is in the chamber, 11 Sep 2026
+
+Flashed, mounted, and publishing. `firmware/chamber-c3.yaml`.
+
+### ⭐ The signal got BETTER, which was not the expectation
+
+| | min | max | mean | n |
+|---|---|---|---|---|
+| **C3-MINI-1, in the chamber** | −46 | −28 | **−32.9** | 22 |
+| S3, same enclosure, full history | −75 | −46 | −56.5 | 61,278 |
+
+**The C3's WORST reading so far equals the S3's BEST EVER**, and its mean is ~24 dB better. The
+MINI-1 module has a proper shielded antenna where the S3 board did not, and that difference shows
+up through the same enclosure wall.
+
+📋 **This bears directly on [§3a](#3a-which-wifi-network--this-cost-an-evening-so-it-is-written-down)
+and the midnight-event work.** A long-running theory was that the enclosure was marginal for
+signal. It was marginal *for that board*. Whether the nightly re-association follows the node or
+stays with the AP is now a cleanly testable question, because the link budget changed by 24 dB and
+the event did not depend on it.
+
+### ✅ VALIDATED AGAINST AN INDEPENDENT INSTRUMENT — and the raw RH would have misled you
+
+The overlap comparison against the S3 was lost when its DHT came out. **A better check replaced
+it**: the room's own climate sensor — different manufacturer, different room, no shared wiring,
+nothing in common with the new node but the air.
+
+| | T | RH | **Vapour pressure** |
+|---|---|---|---|
+| Chamber (AHT20) | 28.9 °C | 47.6 % | **1.893 kPa** |
+| Room reference | 25.1 °C | 58.9 % | **1.873 kPa** |
+| | | | **Δ = 1 %** |
+
+⛔ **Read the RH column alone and you would conclude the chamber is 11 points drier than the room.
+It is not — it is the SAME AIR.** Converted to vapour pressure the two agree to about one percent,
+which is inside both sensors' accuracy.
+
+This is the rule [§RH is a ratio](#) already states, demonstrated on live hardware rather than in
+the abstract: *never compare two humidity readings taken at different temperatures.* The chamber
+holds room air because the enclosure was opened to fit the sensor, and the vapour pressure says so
+while the RH hides it.
+
+⭐ **It is also the strongest sensor validation this project has had.** The old cross-check would
+have been two sensors on one bench sharing a supply and a bus. This one shares nothing.
+
+### ✅ OTA verified over the network — tested, not assumed
+
+```
+chamber-c3.local -> resolved by mDNS
+INFO Handshake complete
+INFO OTA successful          (5.47 s, no USB)
+```
+
+**The node never has to leave the enclosure for a config change**, which is precisely what the S3
+could not offer: its rollback flag is a *bootloader* option, so it could not be enabled after
+deployment, and a bad image there meant opening the box. Adding a sensor here is now an OTA away.
+
 ### 🔄 THE S3 IS LEAVING — migration to a C3 mini + AHT20, 11 Sep 2026
 
 **Alon reassigned the ESP32-S3 N16R8 CAM to the cell-tester project**, which needs a camera to read
