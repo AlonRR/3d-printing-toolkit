@@ -390,6 +390,123 @@ never wrote NVS so there is nothing for the new one to load. That is a one-time,
 Correcting the historical sum is a Home Assistant operation (Developer Tools → Statistics →
 *Adjust sum*), so it belongs to homelab, not to this firmware.
 
+### 🔄 THE S3 IS LEAVING — migration to a C3 mini + AHT20, 11 Sep 2026
+
+**Alon reassigned the ESP32-S3 N16R8 CAM to the cell-tester project**, which needs a camera to read
+QR labels off battery cells and has no other board that can. The chamber sensing moves to a **C3
+mini** (an interim board, held until the C3 SuperMinis get their antenna fix) carrying the owned
+**AHT20+BMP280**.
+
+⚠️ **The inventory did not know this board was in use.** HomeBox recorded the S3 against
+`cell-tester` and `edge-ai`, with three claimants, and **none of them was 3d-printing** — while the
+board was powered, on WiFi, publishing to Home Assistant and serving camera frames. The cell-tester
+session asked rather than assuming, which is the only reason it surfaced. *A record proves presence
+and never absence*, and this is the cleanest instance of it in the lab so far.
+
+### ✅ "Do we need the DHT11 if we have the AHT20?" — No. And the part is not a DHT11.
+
+**Measured from 22,020 humidity and 7,070 temperature samples**, rather than read off the parts
+list:
+
+| Evidence | Reading | What it means |
+|---|---|---|
+| Humidity minimum | **9.3 %** | A DHT11 **floors at 20 %** and cannot go here |
+| Distribution near the low end | smooth taper, 1→2→3→5→10→20 samples | **No pile-up** — so no clamp |
+| Integer-valued humidity | 2,246 of 22,020 | **0.1 % resolution**, not the DHT11's 1 % steps |
+| Integer-valued temperature | 798 of 7,070 | **0.1 °C resolution**, not the DHT11's 1 °C steps |
+
+**So the chamber part is a DHT22/AM2302, not a DHT11** — which also explains why `dht11.c` carries
+plausibility-based type detection: the two are protocol-compatible and a DHT11 read as a DHT22
+decodes 20 °C as 522.4 °C.
+
+**The AHT20 still supersedes it**, just by less than the parts list implied:
+
+| | DHT22 *(what is actually there)* | **AHT20+BMP280** |
+|---|---|---|
+| RH accuracy | ±2–5 % | **±2 %** |
+| Temp accuracy | ±0.5 °C | **±0.3 °C** |
+| Interface | single-wire, timing-critical bit-bang | **I2C** — shared bus, no timing to get wrong |
+| Pressure | none | **yes**, via the BMP280 |
+| Standby | mA-class | sub-µA |
+
+📋 **Keep the DHT on the bench for one overlap period.** Run both briefly and compare against
+the existing series — a new sensor validated against a known one is nearly free, and it is the only
+cheap way to catch a wiring or scaling error before it silently becomes the record.
+
+### ⛔ WHAT MUST NOT BE LOST — the unique_ids carry the history
+
+Five series already hold long-term statistics. **Home Assistant keys entity identity to
+`unique_id`, not to topic or device.** If the C3 firmware publishes different ones, HA creates
+*new* entities and the existing statistics orphan — they are not deleted, they simply stop being
+attached to anything and no longer extend.
+
+| Entity | Statistics rows |
+|---|---|
+| `sensor.print_chamber_chamber_temperature` | 44 |
+| `sensor.print_chamber_chamber_humidity` | 44 |
+| `sensor.print_chamber_chamber_wifi_rssi` | 44 |
+| `sensor.print_chamber_chamber_wifi_disconnects` | 92 |
+| `sensor.print_chamber_chamber_uptime` | 19 |
+
+⭐ **So the C3 must reuse `chamber_temp`, `chamber_rh`, `chamber_rssi`, `chamber_wifi_drops` and
+`chamber_uptime` as its discovery `unique_id`s**, and must keep `state_class` on every numeric one
+— that is what makes the history durable at all.
+
+### What the chamber loses, stated rather than discovered later
+
+- **The camera.** `/raw`, the Prusa Connect uploader, and any future spaghetti-detection or
+  timelapse work. The C3 has no camera interface and 4 MB of flash.
+- **Open item 9c becomes untestable on this hardware.** The persisted-disconnect-counter fix is
+  deployed and unproven, and proving it needs a reboot of *that* board. If the S3 is repurposed
+  before that reboot happens, the question closes unanswered — the NVS code moves to the C3 build
+  and gets re-proved there instead.
+- **Pressure is gained**, which the chamber has never had.
+
+### ⚠️ THE SAME CONTENTION IS ABOUT TO REPEAT — the AHT20 is the drybox's sensor
+
+**HomeBox records the AHT20+BMP280 against `project-x`, the DRYBOX sensor**, bought specifically
+because *"DHT11 floors at 20 %RH and a working drybox is 5–15 %RH"*. There is **one** of them.
+
+Allocating it to the chamber leaves the drybox without the part chosen for it — and the drybox is
+the build where the floor argument actually bites, because a working drybox lives below the DHT11's
+floor while the chamber does not. **Flagged, not blocked:** Alon has allocated it, and a second
+AHT20 is a ~₪5 part. It is recorded here so the drybox build does not discover it at assembly time,
+which is exactly how the S3 was nearly lost.
+
+### Build path — there is prior art, do not start from the C firmware
+
+`prusa-cam-c` is S3-specific: camera driver, octal PSRAM, 16 MB flash. **None of it ports to a C3**,
+and it should not be attempted. The chamber already has C3 ESPHome configs from the ESP-NOW work —
+[`chamber-sensor-espnow.yaml`](../firmware/chamber-sensor-espnow.yaml) and
+[`chamber-sensor-mini1.yaml`](../firmware/chamber-sensor-mini1.yaml) — and ESPHome has a native
+`aht10` platform (which covers the AHT20) plus `bmp280`. That is the short path.
+
+**C3 pin constraints, which this lab has already been bitten by once:**
+
+| Pin | Why to avoid |
+|---|---|
+| GPIO2, 8, 9 | **strapping pins** — a sensor here can prevent boot |
+| GPIO18, 19 | **native USB** — same class of trap as the S3's GPIO20 |
+| ADC2 channels | unusable while WiFi is active |
+
+I2C wants two ordinary pins clear of all of the above.
+
+### 📋 Migration checklist
+
+1. Confirm which physical C3 is the interim board, and whether it is one of the 10 SuperMinis or a
+   separate mini.
+2. Wire AHT20+BMP280 over I2C on non-strapping, non-USB pins. Record the choice **with reasons**,
+   the way `board_pins.h` now does.
+3. Build from the existing ESPHome chamber config, **reusing the five `unique_id`s above**, every
+   numeric sensor declaring `state_class`, and availability with an LWT.
+4. **Overlap period**: run C3 and S3 together and compare the two temperature/humidity series before
+   trusting the new one.
+5. Verify long-term statistics **continue on the same rows** rather than starting new ones — check
+   `statistics_meta` for duplicates, which is what an accidental `unique_id` change looks like.
+6. Only then release the S3 to cell-tester.
+7. Re-prove the NVS counter on the C3 build (open item 9c), since the S3 will not be available to
+   answer it.
+
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 
 `f276ff1` is running. It had been built and committed but not deployed for a day, while the
