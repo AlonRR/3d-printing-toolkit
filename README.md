@@ -426,12 +426,26 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    ⛔ **Do not expect the counts to add up to 756 — a healthy dump totals LESS.** A value longer than
    32 bytes occupies a header slot plus continuation slots, and the tool counts the value as **one**
    `Written` entry while placing its continuation slots in **no bucket at all**. The real partition
-   stores the WiFi credentials as strings and blobs, so its reported total *will* come in under 756,
+   stores the WiFi credentials as strings and blobs, so its reported total *will* come in *well* under 756,
    and that is normal.
 
-   Measured on fixtures: u32 values only gave a per-page Total of 126 and a global 756; adding one
-   100-character string gave Total 122 and global 752 — the four missing slots being that string's
-   continuations.
+   **The general rule, measured:** hidden slots are the sum of `(span - 1)` over all entries, for
+   **any** multi-entry value — blobs as well as strings. Decomposition of a fixture holding a
+   realistic WiFi station record, which came up exactly 9 short:
+
+   | Entry | Type | Span | Hides |
+   |---|---|---|---|
+   | `sta.ssid` | string | 2 | 1 |
+   | `sta.apinfo` | blob | **6** | **5** |
+   | `sta.pmk` | blob | 2 | 1 |
+   | `sta.apsw` | blob | 2 | 1 |
+   | `sta.pswd` | string | 2 | 1 |
+   | | | | **9** |
+
+   Control from the same fixtures: single-slot values hide nothing — one namespace and two
+   namespaces both reported exactly 756 — so only payload spanning multiple slots is invisible.
+   Because the real partition carries `sta.apinfo` with a large span plus the other blobs, expect its
+   total to fall **well** short. **Do not anchor on any number.**
 
    ⚠️ **An earlier version of this section said to expect 756**, which would have made a healthy dump
    look anomalous. **The total is not a signal.** `Empty` and `Invalid` are. How to read the counts:
