@@ -315,8 +315,27 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      The third line is the one that makes the first two mean anything: a check that cannot fail
      proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
 
-9. **THREE THINGS ARE PENDING A DECISION, as of 11 Sep 2026.** Recorded here because each existed
-   only in a session's working memory, which does not survive the session.
+9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **ALL THREE RESOLVED 11 Sep 2026.** Kept for
+   the reasoning, which outlived the tasks. Outcomes first:
+
+   | | Outcome |
+   |---|---|
+   | **9a** Gitea GC | ✅ **DONE.** Repo 17 M → 283 K. Both superseded SHAs now **REFUSED** on fetch, verified from a throwaway clone. SSID and PDFs: 0 in full history. |
+   | **9b** −50 statistics | ✅ **DONE.** Terminal sum corrected 68 → **18**, matching the node's own counter. |
+   | **9c** persisted counter | ⛔ **CLOSED UNANSWERED.** The S3 was reassigned before it ever rebooted, so nothing read the NVS value back. See below. |
+
+   ⚠️ **9c is the one to read.** The fix was deployed and is *still unproven*. It reached 18
+   across a real outage — which only shows it COUNTS, something it already did. The single thing
+   the fix changed, that the value survives a boot, was never tested, because the board never
+   rebooted before being handed to another project. **A deployment is not a verification**, and
+   this is the cleanest example of the difference in this repo.
+
+   It became unanswerable remotely for a reason worth carrying elsewhere: `main.c`'s `log_dht()`
+   publishes the **entire** MQTT payload — counter, uptime and BSSID — only on a **good DHT read**.
+   Removing the sensor took the diagnostics with it. **Never gate diagnostic publishing on a sensor
+   read**: a failed probe is exactly when you want the device to still be talking.
+
+   *Original text follows, because the reasoning is the useful part.*
 
    **9a. The Gitea garbage collection has NOT run, and the obvious commands do not work.**
    Two superseded commits — the pre-rewrite tip (`3f6babb`) and the post-rewrite-1 tip

@@ -390,6 +390,56 @@ never wrote NVS so there is nothing for the new one to load. That is a one-time,
 Correcting the historical sum is a Home Assistant operation (Developer Tools → Statistics →
 *Adjust sum*), so it belongs to homelab, not to this firmware.
 
+### ⚠️ INSTRUMENT CHANGEOVER — 11 Sep 2026 ~14:30 local. Read this before trusting a long graph.
+
+The chamber entity_ids were **repointed**: the C3's entities were renamed onto the S3's historical
+ids, so the long-term statistics continue as one unbroken series.
+
+**That is convenient and it hides something.** The same graph now contains two different
+instruments:
+
+| | Before ~14:30, 11 Sep | After |
+|---|---|---|
+| Board | ESP32-S3 CAM | ESP32-C3-MINI-1 |
+| Temp / RH sensor | **DHT22** (single-wire) | **AHT20** (I2C) |
+| RH accuracy | ±2–5 % | ±2 % |
+| Temp accuracy | ±0.5 °C | ±0.3 °C |
+| Firmware | hand-written C | ESPHome |
+| Typical RSSI | −56.5 mean | −32.9 mean |
+
+⛔ **So a step change at that timestamp is an INSTRUMENT ARTEFACT, not the chamber doing
+something.** Anyone analysing a multi-day trend across it must treat it as two series joined, not
+one measurement. The enclosure was also opened at the changeover, so its air was exchanged with the
+room at that moment too — a second, independent discontinuity at the same instant.
+
+📋 **Why merge at all, then?** Continuity of the 47-row statistics series was judged worth
+more than the seam, and the seam is recoverable *because it is written down here*. The alternative
+— leaving `sensor.chamber_c3_*` separate — would have been more honest by default and less useful
+in every graph. **This note is the price of that choice; do not delete it.**
+
+### What was renamed, and what deliberately was not
+
+| Renamed onto the historical id | Left alone |
+|---|---|
+| temperature, humidity, wifi_rssi, uptime, wifi_bssid | `chamber_c3_chamber_pressure`, `chamber_c3_chamber_temperature_bmp280` — **new capabilities with no predecessor**, so there is no series to continue and nothing to hide |
+| | `print_chamber_chamber_wifi_disconnects` — the C3 publishes no such sensor, so it is a **closed historical series** |
+
+⚠️ **The rename had a prerequisite that is not obvious.** `statistic_id` is UNIQUE, and the C3 had
+already created its own statistics rows, so renaming onto the old ids would have collided. The
+working order is **clear the new statistics first, then remove the old registry entries, then
+rename** — and the ~30 minutes of new statistics cleared in step one is the deliberate cost.
+
+### ✅ The disconnect sum is corrected — and the series is closed
+
+`recorder/adjust_sum_statistics`, −50 at the final hour: terminal sum **68 → 18**, matching the
+node's own counter.
+
+⚠️ **Earlier rows still read 68, and that is not an oversight.** The inflation accrued over days
+from a real semantic bug, and there is **no recoverable true lifetime total** — a per-boot counter
+cannot be summed across reboots without knowing which decreases were reboots, which is the whole
+reason the bug mattered. The final value is now the one number that *is* knowable. The step from 68
+to 18 in the last row is the correction itself, not another reset.
+
 ### ✅ INSTALLED AND VALIDATED — the C3 is in the chamber, 11 Sep 2026
 
 Flashed, mounted, and publishing. `firmware/chamber-c3.yaml`.
