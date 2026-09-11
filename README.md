@@ -394,6 +394,39 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    fails, the first reconnect overwrites the saved 18 with a fresh 0. So a current value of 0 is the
    fingerprint of a failed load, and only a missing key means the save never worked.
 
+   📐 **Why a history exists at all — verified in ESP-IDF 5.5.5 source, not assumed.**
+   `Page::eraseEntryAndSpan()` only flips the entry-state bits via `alterEntryState()`; it never
+   overwrites the entry payload, so a superseded value stays physically present and parses as
+   `Erased`. The history is destroyed only when a page is reclaimed, and
+   `PageManager::requestNewPage()` reclaims one only when **fewer than two free pages remain in the
+   whole partition**, then takes the page with the most unused entries. That is whole-partition
+   space pressure, not "a page filled up".
+
+   ⚠️ **Correcting an earlier claim in this section.** It said the firmware "writes far too few
+   entries to fill a page". That ignored the WiFi stack, which writes NVS itself:
+   `CONFIG_ESP_WIFI_NVS_ENABLED` is on and the firmware calls `esp_wifi_set_config()` on every boot,
+   so the `sta.*` entries are the stack's, not ours. The conclusion survives for a better reason —
+   the two-free-pages bar across six pages — but the reasoning was wrong, and it is now checkable
+   rather than assumed.
+
+   ✅ **Check it rather than trusting it.** `-d storage_info` prints only counts — Written, Erased,
+   Empty and Invalid per page, plus page size and total pages. No keys, no values, so it is the one
+   mode safe to run unfiltered:
+
+   ```powershell
+   python $nt -d storage_info --color never s3_nvs.bin
+   ```
+
+   Erased entries present **and** pages still Empty means no reclaim has run and the history is
+   intact. Empty near zero across all pages means a reclaim may have run and the `drops` history may
+   be partial — in which case only the current value is available, with the midnight caveat.
+
+   ⛔ **The one case that yields a WRONG verdict rather than an unclear one:** a reclaim has run,
+   only a single `Written` `drops` entry survives, reading back had failed, and the counter climbed
+   back to 18 or more through midnight bursts. A value-only read then says "works" and is wrong.
+   `storage_info` is what flags that situation; in every other case the failure is inconclusive
+   rather than wrong, which is the right way round.
+
    **Verified commands, PowerShell** (not Git Bash, which rewrites `findstr`'s `/B` into a path):
 
    ```powershell
