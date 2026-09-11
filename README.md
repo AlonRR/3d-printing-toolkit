@@ -324,6 +324,33 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    | **9b** −50 statistics | ✅ **DONE.** Terminal sum corrected 68 → **18**, matching the node's own counter. |
    | **9c** persisted counter | ⛔ **CLOSED UNANSWERED.** The S3 was reassigned before it ever rebooted, so nothing read the NVS value back. See below. |
 
+   ⛔ **THE GC DOES NOT MAKE THIS REPO PUBLISHABLE WITH HISTORY, and "9a done" must not be read
+   that way.** The rewrites and the GC cleaned the **identifier** class — SSID, network addresses,
+   device MACs, hostnames, and the copyright PDFs, all now 0 in full history. The
+   **deployed-infrastructure inventory** class is a different matter and is **still present in
+   reachable history**:
+
+   | String | Commits |
+   |---|---|
+   | `the mesh router` | 4 |
+   | `the firewall` | 2 |
+   | `the router vendor` | 2 |
+
+   ⚠️ **A garbage collection can never fix these.** They live in commits that are **ancestors of
+   `main`** — verified with `merge-base --is-ancestor`, all three return YES. Reachable objects are
+   not garbage, so pruning does not touch them. Only a `filter-repo --replace-text` pass would, and
+   that is a deliberate decision nobody has taken.
+
+   ⭐ **And the sharpest lesson of the whole audit is here.** The class was removed by an *ordinary
+   commit* (`7c33c99`, "drop deployed-infrastructure inventory from the prose"). That commit's own
+   diff contains **5 deleted lines carrying the strings verbatim**, including the full hardware
+   lineup. So the commit that removed the inventory is now **the single most legible place in the
+   repository to find it** — grep the log for the removal and you get the thing removed, with
+   context, in one hit.
+
+   **Redacting by ordinary commit makes a value MORE findable, not less.** It concentrates it in one
+   labelled, obviously-interesting diff. Only a history rewrite actually removes anything.
+
    ⚠️ **9c is the one to read.** The fix was deployed and is *still unproven*. It reached 18
    across a real outage — which only shows it COUNTS, something it already did. The single thing
    the fix changed, that the value survives a boot, was never tested, because the board never
