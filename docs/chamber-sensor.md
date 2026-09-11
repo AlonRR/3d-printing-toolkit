@@ -625,10 +625,10 @@ is the part with no workaround.
 
 - **The camera.** `/raw`, the Prusa Connect uploader, and any future spaghetti-detection or
   timelapse work. The C3 has no camera interface and 4 MB of flash.
-- **Open item 9c becomes untestable on this hardware.** The persisted-disconnect-counter fix is
-  deployed and unproven, and proving it needs a reboot of *that* board. If the S3 is repurposed
-  before that reboot happens, the question closes unanswered — the NVS code moves to the C3 build
-  and gets re-proved there instead.
+- **Open item 9c moves with the S3, not with the chamber.** The persisted-counter fix is deployed on
+  the S3 and was believed untestable because that board had not rebooted. It since has (README item
+  9c), so the answer is sitting in its NVS partition — readable from flash, and destroyed by a
+  reflash. The C3's ESPHome build has no equivalent counter, so there is nothing to re-prove here.
 - **Pressure is gained**, which the chamber has never had.
 
 ### ⚠️ THE SAME CONTENTION IS ABOUT TO REPEAT — the AHT20 is the drybox's sensor
@@ -698,11 +698,11 @@ I2C wants two ordinary pins clear of all of the above.
    ones — a `sensor.*_2` appearing in `statistics_meta` is exactly what Route B looks like before
    it is repaired.
 6. Only then release the S3 to cell-tester.
-7. Re-prove the NVS counter on the C3 build (open item 9c). ⚠️ **The S3 can no longer answer it
-   remotely at all**: the firmware publishes the whole MQTT state payload — counter, uptime and
-   BSSID included — only on a GOOD DHT read (`main.c`, `log_dht()`), and there is no DHT. With the
-   sensor gone the diagnostics went with it, so the only way to read that counter now is over the
-   serial console. Worth knowing before anyone plans to close 9c from Home Assistant.
+7. ⛔ **NOT re-provable on the C3 — the ESPHome build has no persisted counter at all.** The only
+   place the 9c answer exists is the S3's own NVS partition. It is **not** readable over the serial
+   console — an earlier version of this step said it was, and that was wrong: the firmware never
+   prints the lifetime count. Read it from flash in ROM download mode (README item 9c) before the S3
+   is reflashed, or the answer is gone for good.
 
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 

@@ -315,14 +315,14 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      The third line is the one that makes the first two mean anything: a check that cannot fail
      proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
 
-9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **ALL THREE RESOLVED 11 Sep 2026.** Kept for
+9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **9a AND 9b RESOLVED 11 Sep 2026; 9c REOPENED.** Kept for
    the reasoning, which outlived the tasks. Outcomes first:
 
    | | Outcome |
    |---|---|
    | **9a** Gitea GC | ✅ **DONE.** Repo 17 M → 283 K. Both superseded SHAs now **REFUSED** on fetch, verified from a throwaway clone. SSID and PDFs: 0 in full history. |
    | **9b** −50 statistics | ✅ **DONE.** Terminal sum corrected 68 → **18**, matching the node's own counter. |
-   | **9c** persisted counter | ⛔ **CLOSED UNANSWERED.** The S3 was reassigned before it ever rebooted, so nothing read the NVS value back. See below. |
+   | **9c** persisted counter | 🔄 **REOPENED — answerable with one flash read, not yet read.** Closed at first as unprovable because the S3 was believed never to have rebooted. It has. See below. |
 
    ⛔ **THE GC DOES NOT MAKE THIS REPO PUBLISHABLE WITH HISTORY, and "9a done" must not be read
    that way.** The rewrites and the GC cleaned the **identifier** class — network name, addresses,
@@ -350,11 +350,36 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    warning commit does the same and advertises itself with the exact words someone would search for
    when asking whether the repo is safe to publish. **Describe the class; never instantiate it.**
 
-   ⚠️ **9c is the one to read.** The fix was deployed and is *still unproven*. It reached 18
-   across a real outage — which only shows it COUNTS, something it already did. The single thing
-   the fix changed, that the value survives a boot, was never tested, because the board never
-   rebooted before being handed to another project. **A deployment is not a verification**, and
-   this is the cleanest example of the difference in this repo.
+   ⚠️ **9c is the one to read — and it was first closed on a false premise.** The fix reached 18
+   across a real outage, which only shows it COUNTS. The one thing it changed, that the value survives
+   a boot, needed a reboot. This item recorded that the board never rebooted before being handed over,
+   and closed as unprovable. **That was wrong:** it has since booted at least once (with an SD card
+   inserted, per the session now holding it), so the test has already run. What has not happened is
+   anyone reading the result.
+
+   **It can only be read from flash, not from the running firmware.** No HTTP route exposes it, MQTT
+   publishes it only on a good DHT read, and — contrary to what an earlier version of this repo said —
+   it is **never printed to the serial console**: the disconnect warnings print a per-episode retry
+   count that resets on every connect, not the lifetime value. The answer is in the NVS partition
+   (namespace `wifinet`, key `drops`), read with `esptool read-flash` and parsed with ESP-IDF's
+   `nvs_tool.py`.
+
+   ⛔ **Download mode, not a reboot.** The ROM bootloader never runs the app, so NVS is untouched.
+   Rebooting into the app can change the value — boot-time association failures increment it and the
+   next IP acquisition saves it. So no serial terminal, no monitor, no power cycle before the read.
+
+   ⛔ **The dump is a credential.** ESP-IDF persists the WiFi station config to NVS by default, so the
+   same partition holds the network name and password in plaintext. Filter the parser output to
+   `wifinet`, never commit the dump, delete it after.
+
+   | Stored value | Meaning |
+   |---|---|
+   | **≥ 18** | the 18 survived a reboot — **persistence works, the fix is proven** |
+   | 1 – 17 | restarted from 0 and re-accumulated — it writes but does not persist |
+   | 0 or key absent | the save never wrote a nonzero value |
+
+   **A deployment is still not a verification** — and a closure is only as good as the premise it
+   rests on.
 
    It became unanswerable remotely for a reason worth carrying elsewhere: `main.c`'s `log_dht()`
    publishes the **entire** MQTT payload — counter, uptime and BSSID — only on a **good DHT read**.
