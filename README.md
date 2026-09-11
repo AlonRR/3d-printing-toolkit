@@ -417,9 +417,23 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    python $nt -d storage_info --color never s3_nvs.bin
    ```
 
-   Erased entries present **and** pages still Empty means no reclaim has run and the history is
-   intact. Empty near zero across all pages means a reclaim may have run and the `drops` history may
-   be partial — in which case only the current value is available, with the midnight caveat.
+   Counts-only output confirmed **both** by reading `storage_stats()` and by another session running
+   it on generated fixtures: no key names, no values, not even the string `drops`.
+
+   The partition is `0x6000`, so **6 pages**; at a 4096-byte page and 32-byte entries, each page
+   holds **126** data entries once its header and entry-state bitmap are taken out. **Expect 756
+   entries in total.** How to read the counts:
+
+   | Reading | Meaning |
+   |---|---|
+   | `Erased` **> 0** | ✅ the good case — superseded values are still present, so the history is readable |
+   | `Erased` = 0 | `drops` has only ever been written **once** — itself informative, and not in a good way |
+   | `Empty` near zero on every page | ⚠️ a reclaim may have run; the history may be partial, so fall back to the current value |
+   | `Invalid` **> 0** | ⛔ **STOP.** Invalid means entries whose CRC does not match — corruption. Withhold the verdict rather than record one |
+
+   ⛔ **`Invalid` is a fourth outcome the rule did not have.** "Works", "failed" and "inconclusive"
+   all assume the dump is trustworthy. If the CRCs do not check out, none of them applies and the
+   right answer is to record nothing.
 
    ⛔ **The one case that yields a WRONG verdict rather than an unclear one:** a reclaim has run,
    only a single `Written` `drops` entry survives, reading back had failed, and the counter climbed
