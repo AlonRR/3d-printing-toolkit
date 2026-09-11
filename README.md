@@ -315,6 +315,56 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      The third line is the one that makes the first two mean anything: a check that cannot fail
      proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
 
+9. **THREE THINGS ARE PENDING A DECISION, as of 11 Sep 2026.** Recorded here because each existed
+   only in a session's working memory, which does not survive the session.
+
+   **9a. The Gitea garbage collection has NOT run, and the obvious commands do not work.**
+   Two superseded commits — the pre-rewrite tip (`3f6babb`) and the post-rewrite-1 tip
+   (`64e70dc`) — are **still fetchable from Gitea by full 40-char SHA**, and they carry the
+   content two deliberate rewrites removed: the network SSID, and the four copyright-encumbered
+   filament PDFs. Verified by fetching each into a throwaway repo.
+
+   ⛔ **`git gc --prune=now` is a NO-OP here, and so is the Gitea admin "Garbage collect all
+   repositories" button.** Both exit 0 and report success. The objects are unreferenced by any
+   branch but **pinned by the reflog**, and gc treats reflog-referenced objects as reachable.
+   Proof, on the bare repo: `git prune -n --expire=now` lists 510 objects and *neither SHA is
+   among them*. The admin button is weaker still — `GC_ARGS` is unset, so git falls back to
+   `gc.pruneExpire`, a 2-week default rather than "now".
+
+   **The working sequence, and the order is the whole point:**
+   ```
+   git reflog expire --expire=now --expire-unreachable=now --all
+   git gc --prune=now
+   ```
+   ⚠️ **Back up the bare repo as a DIRECTORY COPY first, not a bundle.** A bundle is built
+   from refs, so it would capture the current tip and miss precisely the two unreferenced commits
+   that are the entire reason for the operation. "Take a backup first" sounds complete, and the
+   obvious kind of backup would not be.
+   *Reassurance that makes this a smaller decision than it sounds:* the pre-rewrite history
+   already survives off-Gitea in two local fallbacks under `Backups\`, so expiring the server
+   reflog destroys the **server's** last copy, not the last copy.
+   **Verify by result, never by exit code:** success is the fetch of a full SHA being *refused*,
+   tested in a **throwaway** repo — never a working clone, because fetching an old SHA pulls those
+   objects into the local store where they sit unreferenced and invisible to `git log --all`.
+
+   **9b. The Home Assistant `wifi_disconnects` statistic is inflated by exactly +50.** Measured,
+   not inferred: compiled sum 68 against a node counter of 18, through a real disconnect event.
+   The cause is a per-boot counter published as `total_increasing`, since fixed in firmware. The
+   correction is Developer Tools → Statistics → *Adjust sum*, by −50. **It should wait on 9c**,
+   because if persistence turns out not to work the target moves again.
+
+   **9c. The persisted-counter firmware is deployed but NOT PROVEN.** `app_elf_sha256`
+   `ca8176f8b61bd346` is running (see [chamber-sensor](docs/chamber-sensor.md)). The counter has
+   since reached 18 across a real outage — but *that only proves it counts*, which it did before
+   the fix. The one thing the fix changed is that the value survives a reboot, and **the node has
+   not rebooted** (15+ h uptime, no decrease). `drops_save()` has written to NVS; nothing has read
+   it back.
+   **The only test is a reboot**, and the firmware exposes no reboot endpoint — it serves `/`,
+   `/ota` and `/raw` and nothing else — so it means a power cycle or re-flashing the same image.
+   Comes back **18** → the fix works and 9b can proceed. Comes back **0** → `drops_save()` is not
+   firing.
+
+
 ---
 
 ## Quick paths
