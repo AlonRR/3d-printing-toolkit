@@ -25,9 +25,17 @@ esp32:
     type: esp-idf
 
 logger:
-  # No hardware_uart override, matching chamber-sensor-mini1.yaml: this board carries
-  # an ESP32-C3-MINI-1 and exposes TWO USB-C ports, one native USB and one a UART
-  # bridge. The default sends the console to UART0, which is what the bridge carries.
+  # ⚠️ hardware_uart IS REQUIRED HERE, and chamber-sensor-mini1.yaml says otherwise.
+  # That file claims "the default sends the console to UART0, which is what the bridge
+  # carries". Measured 11 Sep 2026 and it is wrong: on the C3 under esp-idf, ESPHome
+  # defaults the logger to USB_SERIAL_JTAG — the OTHER USB-C port.
+  #
+  # The symptom is precise and misleading: the ROM bootloader prints to UART0, so the
+  # bridge shows `ESP-ROM:esp32c3-api1-20210207`, `rst:0x1 (POWERON)` and the load/entry
+  # lines — and then goes SILENT the moment ESPHome's own logger takes over. It looks
+  # like the firmware hung during boot. It has not; the console simply moved to a port
+  # with no cable in it.
+  hardware_uart: UART0
 
 wifi:
   ssid: !secret wifi_ssid
@@ -110,7 +118,16 @@ sensor:
   # reference than the spare DHT11 would have been — that part cannot be trusted below
   # 20 %RH, which is exactly where this chamber operates.
   - platform: bmp280_i2c
-    address: 0x76          # some modules strap 0x77; `scan: true` above will say which
+    # 0x77, MEASURED not assumed. This was 0x76 on the first flash — the commonly
+    # quoted default — and the boot scan settled it:
+    #     Found device at address 0x38     <- AHT20
+    #     Found device at address 0x77     <- this part
+    #     [E][bmp280.sensor:133]: Communication failed
+    # The failure is silent in Home Assistant: the entities appear and simply read
+    # `unknown` forever, which looks like a wiring fault rather than a wrong address.
+    # That is why `scan: true` stays on above — it costs one line at boot and turns a
+    # guess into a reading.
+    address: 0x77
     temperature:
       name: Chamber temperature (BMP280)
       device_class: temperature
