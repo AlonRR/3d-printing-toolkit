@@ -484,6 +484,26 @@ The current unique_ids, read from the registry:
   new entities to the original entity_ids. Because statistics are keyed by entity_id, they
   reattach.
 
+⭐ **AND THE RULE THAT GENERATED THESE IDS, WHICH MATTERS MORE THAN THE LIST:**
+
+> **Key the `unique_id` to the thing being MEASURED, never to the board measuring it.**
+
+Look at what they are: `chamber_temp`, `chamber_rh`, `chamber_rssi`. **Not** `prusacam_temp`. The
+subject is the chamber; the ESP32 is an instrument, and instruments get replaced — this migration
+is that happening. Because the ids name the chamber, a board swap is a wiring job rather than a
+history-losing event, and that is not luck: it is the only reason Route A is even available here.
+
+⛔ **So do not "tidy" these into board-named ids on the rebuild.** `c3mini_temp` would read as an
+improvement, describe the hardware accurately, and silently strand 243 rows of long-term
+statistics. A later reader has no way to tell that the old-looking name is load-bearing — which is
+why it is written down here rather than left to inference.
+
+📋 **The same rule, stated generally:** an id that lives on the instrument cannot outlive the
+instrument. Anything whose history has to survive a hardware change must be named after the subject
+of the measurement. *(Arrived at independently by the cell-tester project from the opposite
+direction — a cell id has to be physically written on the cell, because an anonymous result cannot
+be compared against a run 30 days later. Two routes to one principle.)*
+
 **So a unique_id mismatch costs a tidy-up, not the history** — which is the opposite of what the
 first version of this section implied. Keep `state_class` on every numeric sensor either way; that
 is the part with no workaround.
