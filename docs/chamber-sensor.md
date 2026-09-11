@@ -472,12 +472,18 @@ The current unique_ids, read from the registry:
 
 **Two routes, and the second is the safety net that makes this a low-risk migration:**
 
-- ✅ **Route A — publish the same `unique_id`s.** The new device binds to the existing registry
-  entries, keeps the entity_ids, and statistics continue with nothing to fix. Cleanest.
-  ⚠️ **Unverified for ESPHome**: ESPHome generates MQTT discovery unique_ids itself and it is not
-  established that they can be set to arbitrary strings. Check before relying on this. If they
-  cannot be, that is an argument for custom discovery (`discovery: false` plus published configs)
-  rather than an argument against ESPHome.
+- ⛔ **Route A — publish the same `unique_id`s. NOT AVAILABLE IN ESPHOME.** Tested against the
+  installed 2026.8.1 rather than assumed:
+
+  | Attempt | Result |
+  |---|---|
+  | per-sensor `unique_id: chamber_temp` | **rejected** — *"invalid option for [sensor.template]"* |
+  | per-component `mqtt: {unique_id: ...}` | **rejected** |
+  | `mqtt: discovery_unique_id_generator: legacy` | accepted — but it only selects between **built-in schemes**, it does not take a string |
+
+  So an ESPHome build cannot inherit the C firmware's ids. If entity continuity were ever worth
+  more than ESPHome's convenience, the alternative is `discovery: false` plus hand-published
+  configs — which is what `prusa-cam-c` does, and why *its* ids survive reflashes.
 - ✅ **Route B — let it create new entities, then repoint them.** Different unique_ids produce new
   registry entries, whose entity_ids collide and get a `_2` suffix; the statistics stay attached to
   the old ids. **This is repairable in the UI**: delete the old registry entries, then rename the
@@ -551,19 +557,45 @@ I2C wants two ordinary pins clear of all of the above.
 
 1. Confirm which physical C3 is the interim board, and whether it is one of the 10 SuperMinis or a
    separate mini.
-2. Wire AHT20+BMP280 over I2C on non-strapping, non-USB pins. Record the choice **with reasons**,
-   the way `board_pins.h` now does.
-3. Build from the existing ESPHome chamber config. **Aim for the five `unique_id`s above (Route
-   A); if ESPHome will not set them, take Route B and repoint the entities afterwards.** Every
-   numeric sensor must declare `state_class`, with availability on an LWT.
-4. **Overlap period**: run C3 and S3 together and compare the two temperature/humidity series before
-   trusting the new one.
+2. ✅ **DECIDED — `SDA = GPIO10`, `SCL = GPIO3`.** Every candidate went through `esphome config`
+   rather than being reasoned about: **2, 8, 9** warn as strapping; **18, 19** warn as
+   USB-Serial-JTAG; **20, 21** are UART0 and carry the console; **11–17** are internal flash.
+   ⭐ **0 and 1 validate CLEAN and were rejected anyway** — they are `XTAL_32K_P`/`XTAL_32K_N`, free
+   only if no 32.768 kHz crystal is fitted, and **ESPHome cannot know that, so it cannot warn**.
+   A clean validation is not the same as a safe pin. GPIO10 and GPIO3 have no alternate function.
+   ⚠️ **Module pin order is VDD, SDA, GND, SCL** — GND sits *between* the bus lines, which is not
+   the usual layout. It carries its own pull-ups; add none.
+3. ✅ **DONE — [`firmware/chamber-c3.yaml`](../firmware/chamber-c3.yaml)**, `esphome config`
+   valid with zero warnings. **Route B by necessity.** Every numeric sensor declares `state_class`
+   explicitly rather than trusting platform defaults; MQTT birth/will carries availability.
+   Deliberately no `api:` block — the native API would let the ESPHome integration discover the
+   same device a second time and create a duplicate entity set.
+4. ⛔ **THE OVERLAP COMPARISON IS NO LONGER POSSIBLE — capability lost 11 Sep 2026.** The DHT has
+   been physically removed from the S3 and from the chamber, so that board can no longer produce a
+   temperature or humidity series to compare against. It stopped publishing at **11:58** and the
+   record has a hole from there.
+
+   ⚠️ **This was a real check and it is gone, so say what replaces it rather than quietly
+   dropping the step.** What remains:
+   - ⭐ **The BMP280's own temperature** — an independent die on the same module reading the same
+     air. Two sensors disagreeing is still a genuine signal, and it survives the S3 leaving.
+   - **Room ambient** from the Sensibo unit, as a sanity bound: the chamber must read at or above
+     room when idle, and well above it during a print.
+   - **The historical series** — the chamber's own record (22,021 humidity, 7,070 temperature
+     samples) bounds what is plausible. A new sensor reading 55 °C idle is wrong regardless of
+     having nothing to compare against live.
+
+   *Lesson worth keeping: the comparison was available for days and was spent without being used.
+   A cross-check that depends on two things overlapping has a deadline, and nobody set one.*
 5. Verify long-term statistics **continue on the same `statistic_id`s** rather than starting new
    ones — a `sensor.*_2` appearing in `statistics_meta` is exactly what Route B looks like before
    it is repaired.
 6. Only then release the S3 to cell-tester.
-7. Re-prove the NVS counter on the C3 build (open item 9c), since the S3 will not be available to
-   answer it.
+7. Re-prove the NVS counter on the C3 build (open item 9c). ⚠️ **The S3 can no longer answer it
+   remotely at all**: the firmware publishes the whole MQTT state payload — counter, uptime and
+   BSSID included — only on a GOOD DHT read (`main.c`, `log_dht()`), and there is no DHT. With the
+   sensor gone the diagnostics went with it, so the only way to read that counter now is over the
+   serial console. Worth knowing before anyone plans to close 9c from Home Assistant.
 
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 
