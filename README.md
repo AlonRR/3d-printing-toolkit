@@ -398,10 +398,7 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
 
    ```powershell
    esptool --port COM9 --before default-reset --after no-reset read-flash 0x9000 0x6000 s3_nvs.bin
-   $nt = "$env:LOCALAPPDATA\esphome\Cache\idframeworks.5.5\components
-vs_flash
-vs_partition_tool
-vs_tool.py"
+   $nt = "$env:LOCALAPPDATA\esphome\Cache\idf\frameworks\5.5.5\components\nvs_flash\nvs_partition_tool\nvs_tool.py"
    # current value - prints only drops, or a loud not-found listing namespace NAMES
    $j = python $nt -d minimal -f json s3_nvs.bin | ConvertFrom-Json
    $hit = $j | Where-Object { $_.namespace -eq 'wifinet' -and $_.key -eq 'drops' }
