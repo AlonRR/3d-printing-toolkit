@@ -625,10 +625,11 @@ is the part with no workaround.
 
 - **The camera.** `/raw`, the Prusa Connect uploader, and any future spaghetti-detection or
   timelapse work. The C3 has no camera interface and 4 MB of flash.
-- **Open item 9c moves with the S3, not with the chamber.** The persisted-counter fix is deployed on
-  the S3 and was believed untestable because that board had not rebooted. It since has (README item
-  9c), so the answer is sitting in its NVS partition — readable from flash, and destroyed by a
-  reflash. The C3's ESPHome build has no equivalent counter, so there is nothing to re-prove here.
+- ✅ **Open item 9c went with the S3 — and was answered before it was reflashed.** The
+  persisted-counter fix is **proven**: its NVS partition held `drops = 18` with the complete write
+  history and no post-reboot regression (README item 9c). The C3's ESPHome build has no equivalent
+  counter, so there was never anything to re-prove here — which is exactly why reading it off the S3
+  first mattered.
 - **Pressure is gained**, which the chamber has never had.
 
 ### ⚠️ THE SAME CONTENTION IS ABOUT TO REPEAT — the AHT20 is the drybox's sensor
@@ -698,11 +699,11 @@ I2C wants two ordinary pins clear of all of the above.
    ones — a `sensor.*_2` appearing in `statistics_meta` is exactly what Route B looks like before
    it is repaired.
 6. Only then release the S3 to cell-tester.
-7. ⛔ **NOT re-provable on the C3 — the ESPHome build has no persisted counter at all.** The only
-   place the 9c answer exists is the S3's own NVS partition. It is **not** readable over the serial
-   console — an earlier version of this step said it was, and that was wrong: the firmware never
-   prints the lifetime count. Read it from flash in ROM download mode (README item 9c) before the S3
-   is reflashed, or the answer is gone for good.
+7. ✅ **DONE, 12 Sep 2026 — and it was never re-provable on the C3**, whose ESPHome build has no
+   persisted counter. The only copy of the answer was the S3's own NVS partition: not readable over
+   serial (the firmware never prints the lifetime count), so it was read from flash in ROM download
+   mode before the board was reflashed. **Result: `drops = 18`, persistence proven.** See README
+   item 9c for the evidence and the reasoning.
 
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 
@@ -759,22 +760,28 @@ rollover adds the *new* value, which was 0, so the inflated sum stays at 50 and 
 zero and is meant to persist — where before it was +32 against a counter that reset unpredictably,
 with no stable target to correct to.
 
-⛔ **Do not correct the sum yet.** Persistence is still unproven, and if `drops_save()` does not
-fire the target moves again.
+✅ **The sum was corrected on 11 Sep, and persistence was proven on 12 Sep.** This note used to
+say "do not correct the sum yet" because `drops_save()` might not fire. It does: the counter survived
+a reboot with its history intact (README item 9c). The −50 adjustment was applied to the final hour,
+taking the terminal sum from 68 to 18.
 
-### 🔬 WHAT IS STILL UNPROVEN — and the test is tonight
+### ✅ PROVEN, 12 Sep 2026 — and here is the prediction it was tested against
 
-**Deployment is not vindication.** The counter sits at 0 with no disconnects since boot, so nothing
-meaningful has reached NVS; rebooting now would load 0 and prove nothing either way.
-
-The real test is the next midnight event:
+**Deployment is not vindication**, so this section originally set out the test rather than claiming
+success. It is kept in full because the prediction was made *before* the evidence existed:
 
 1. ~03:00 local should drive the count to roughly **14–18**.
 2. `drops_save()` should fire on the reconnect that ends the burst.
 3. **The next reboot after that should come back non-zero instead of at 0.**
 
-Step 3 is the only one that proves the fix. Until then this section records a deployment, not a
-working feature.
+**All three held.** The count reached **18**. The NVS write history shows four saves, one per outage
+episode, exactly as `drops_save()` is designed to do: `0 → 1 → 17 → 18`. And after the reboot the
+counter continued from 18 rather than restarting — proven by what is *absent*, since a failed load
+would have written a low value and erased the 18, and none exists.
+
+⭐ **Step 3 was the only one that could prove the fix, and it nearly went unanswered.** The board was
+reassigned to another project while the question was still open; the answer existed only in flash
+that a reflash would have destroyed. Evidence and full reasoning: README item 9c.
 
 ### ✅ The `state_class` fix is verified in the field
 

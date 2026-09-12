@@ -315,14 +315,14 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
      The third line is the one that makes the first two mean anything: a check that cannot fail
      proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
 
-9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **9a AND 9b RESOLVED 11 Sep 2026; 9c REOPENED.** Kept for
+9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **ALL THREE RESOLVED — 9a and 9b on 11 Sep 2026, 9c on 12 Sep.** Kept for
    the reasoning, which outlived the tasks. Outcomes first:
 
    | | Outcome |
    |---|---|
    | **9a** Gitea GC | ✅ **DONE.** Repo 17 M → 283 K. Both superseded SHAs now **REFUSED** on fetch, verified from a throwaway clone. SSID and PDFs: 0 in full history. |
    | **9b** −50 statistics | ✅ **DONE.** Terminal sum corrected 68 → **18**, matching the node's own counter. |
-   | **9c** persisted counter | 🔄 **REOPENED — answerable with one flash read, not yet read.** Closed at first as unprovable because the S3 was believed never to have rebooted. It has. See below. |
+   | **9c** persisted counter | ✅ **ANSWERED 12 Sep 2026 — THE FIX WORKS.** `drops = 18`, complete write history, no post-reboot regression. Evidence below. |
 
    ⛔ **THE GC DOES NOT MAKE THIS REPO PUBLISHABLE WITH HISTORY, and "9a done" must not be read
    that way.** The rewrites and the GC cleaned the **identifier** class — network name, addresses,
@@ -350,12 +350,38 @@ Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
    warning commit does the same and advertises itself with the exact words someone would search for
    when asking whether the repo is safe to publish. **Describe the class; never instantiate it.**
 
-   ⚠️ **9c is the one to read — and it was first closed on a false premise.** The fix reached 18
-   across a real outage, which only shows it COUNTS. The one thing it changed, that the value survives
-   a boot, needed a reboot. This item recorded that the board never rebooted before being handed over,
-   and closed as unprovable. **That was wrong:** it has since booted at least once (with an SD card
-   inserted, per the session now holding it), so the test has already run. What has not happened is
-   anyone reading the result.
+   ✅ **9c IS ANSWERED, 12 Sep 2026: THE PERSISTED COUNTER WORKS.** Read from the S3's NVS
+   partition in ROM download mode before the board was reflashed — with about one reflash to spare.
+
+   ```
+   wifinet:drops = 18
+
+   058. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 0
+   061. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 1
+   091. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 17
+   094. Written, Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 18
+
+   Global  Written 42  Erased 52  Empty 200  Invalid 0  Total 294
+   ```
+
+   ⭐ **Why this is positive evidence and not merely an absence of failure.** The board was on WiFi
+   after its reboot, so an IP was acquired, and `drops_save()` runs on every IP acquisition — it
+   therefore certainly executed after the reboot. Had the load failed, it would have found
+   `s_disconnects = 0` against a stored 18, and `cur != s_disconnects` would have written a low value
+   and erased the 18. Had the load worked, it would have found 18 against 18 and written **nothing**.
+   The history ends `Written … 18` with nothing after it. **Only the working branch produces that
+   state.**
+
+   Supporting: `Invalid 0` everywhere, so the dump is trustworthy. `Empty` nowhere near zero, with a
+   whole page untouched, so no reclaim has run — meaning `0 → 1 → 17 → 18` is the *complete* history
+   of the key back to the first boot after the flash. And four writes for four outage episodes is
+   what `drops_save()`'s once-per-episode design predicts, so the steps match the mechanism rather
+   than merely rising.
+
+   📋 **What it cost to answer, and the margin.** This was the longest-running open question in
+   the repo. It was closed once as unprovable on a false premise, reopened, and nearly lost outright
+   when the board was reassigned — the answer lived only in flash that a reflash would have erased.
+   **A deployment is not a verification**, and the gap between the two was eight days and one read.
 
    **It can only be read from flash, not from the running firmware.** No HTTP route exposes it, MQTT
    publishes it only on a good DHT read, and — contrary to what an earlier version of this repo said —

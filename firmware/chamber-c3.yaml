@@ -8,9 +8,10 @@
 # WHAT IS LOST, so it is a decision rather than a surprise:
 #   * The camera. No /raw, no Prusa Connect upload, no future spaghetti detection.
 #     The C3 has no camera interface and 4 MB of flash.
-#   * The persisted-disconnect-counter proof (README open item 9c). It is deployed on
-#     the S3 and unproven, and proving it needs a reboot of THAT board. It has to be
-#     re-proved here instead, which is why there is no drop counter below yet.
+#   * The persisted-disconnect-counter proof (README open item 9c) went with the S3 -
+#     and was ANSWERED on 12 Sep before that board was reflashed: drops = 18 with the
+#     complete write history, so persistence is proven. Nothing to re-prove here; this
+#     build has no equivalent counter, which is why there is no drop sensor below.
 #
 # WHAT IS GAINED: pressure, which the chamber has never had, and a second independent
 # temperature reading — see the BMP280 note below.
