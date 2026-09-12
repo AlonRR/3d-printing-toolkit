@@ -133,10 +133,25 @@ reactivated for multiple uses"*. That is precisely why every downstream figure d
 recorded dry MASS is the done-indicator, not the thermostat**: temperature alone cannot say how far
 along the curve a bake got.
 
-✅ **Hotter is safe for clay.** Interlayer water leaves by ~200 °C; dehydroxylation and structural
-collapse need **400–600 °C**, unreachable in a domestic oven. The sieve figures above are the same
-kind of curve, which is also why published sieve numbers range from 121 °C to 550 °C without
-contradicting each other.
+⛔ **CORRECTED 12 Sep 2026 — "hotter is safe" was WRONG, and Alon caught the mechanism.** The
+ceiling is about **degradation, not desorption**: heating immobilises the interlayer cations, and
+*"even if water is added, the montmorillonite is not restored to the original state"*. So the clay
+does not merely dry out — it stops being a desiccant.
+
+| Activation temperature | Effect on capacity |
+|---|---|
+| natural → **300 °C** | capacity **rises** |
+| **500 °C** | capacity **reduced**; *"dehydroxylation and irreversible modification of the expandable sheet structure were initiated"* |
+
+⭐ **So the rule is BAKE LONGER, NEVER HOTTER.** Clariant's own Desi Pak procedure is **118 °C for
+16–24 h**, or **104 °C** for non-MIL reactivation; a peer-reviewed study used **150 °C through five
+cycles with no structural degradation**. Above ~300 °C you trade capacity away permanently and gain
+nothing, because the water is long gone by then.
+
+⚠️ **The trap that produced my error:** MIL-D-3464's regeneration sheet is full of temperature
+warnings — but they are about the **Tyvek bag melting at ~121–127 °C**, not about the clay. Reading
+a packaging limit as a material limit is what made 400–600 °C look like the only ceiling that
+existed.
 
 ### Temperature: clay holds where silica gel fades
 
