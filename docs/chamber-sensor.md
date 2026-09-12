@@ -705,6 +705,30 @@ I2C wants two ordinary pins clear of all of the above.
    mode before the board was reflashed. **Result: `drops = 18`, persistence proven.** See README
    item 9c for the evidence and the reasoning.
 
+8. ⛔ **Clear the retired node's RETAINED MQTT discovery configs — deleting the registry entries is
+   not enough.** Measured 12 Sep 2026: six of the S3's discovery topics are still retained on the
+   broker —
+   `homeassistant/sensor/chamber_{temp,rh,rssi,bssid,uptime,wifi_drops}/config` — even though that
+   board is powered down in a ROM bootloader and has published nothing since 11:58 on 11 Sep.
+
+   **Home Assistant recreates those entities whenever discovery is re-processed.** They returned on
+   12 Sep at 09:45:48 and landed as `..._2` duplicates on the old *Print chamber* device, because
+   the C3 now owns the original entity_ids. That was **not** an HA restart: 13 state rows in the
+   30-second window, 6 of them `unavailable`, and zero non-chamber entities.
+
+   ⚠️ **They are ghosts, not a conflict.** All six read `unavailable` with no state, and every live
+   reading is on the C3. But the device list becomes misleading: another session reading the
+   registry reasonably concluded that entity-to-device attribution had been scrambled, and that
+   there was no way to tell which physical node a reading came from. There is — only one set has
+   data — but the appearance alone cost a round of investigation.
+
+   **The fix:** publish an empty retained payload to each of those six topics, then delete the six
+   registry entries. Both are live-service changes, so both are Alon's call.
+
+   ⭐ **The lesson generalises to every MQTT node this lab retires: RETAINED DISCOVERY OUTLIVES BOTH
+   THE DEVICE AND THE REGISTRY ENTRY.** Removing the hardware, and even removing the entity, does
+   not remove the advertisement that recreates it.
+
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 
 `f276ff1` is running. It had been built and committed but not deployed for a day, while the
