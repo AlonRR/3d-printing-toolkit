@@ -762,7 +762,7 @@ typical particle size). Adding it to this node is **not blocked by the bus**:
 ⛔ **But three things stand in the way, and two of them are real:**
 
 1. **It needs a 5 V supply — 4.5–5.5 V, not 3.3 V.** It must come off the board's 5 V pin (present
-   when USB-powered, which this node is), never off 3V3. At ~60 mA typical that is comfortable on
+   when USB-powered, which this node is), never off 3V3. At **45-65 mA** in measurement mode (55 typ), with an **80 mA peak for the first 200 ms** as the fan spins up that is comfortable on
    USB, but it does mean the sensor dies if the node is ever moved to a 3.3 V battery rail.
 2. ⚠️ **Its operating ceiling is +60 °C, and that IS the chamber's target.** An ASA chamber is wanted
    at 40–60 °C. The chamber currently reads ~37 °C, so it is in spec *today* — but the whole point of

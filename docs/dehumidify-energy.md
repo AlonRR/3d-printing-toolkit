@@ -10,7 +10,7 @@ Per **litre of water removed** — the only fair unit, since the two machines ha
 | Season | AC | Dehumidifier | Winner |
 |---|---|---|---|
 | **Summer** (cooling wanted anyway) | **1.85 – 2.31 L/kWh** | **0.90 – 1.41 L/kWh** | ⭐ **AC, by ~1.5–2×** |
-| **Winter / shoulder** (heating wanted, or nothing) | **~1.29 L/kWh** | **2.79 – 8.04 L/kWh** | ⭐ **Dehumidifier, by 2–6×** |
+| **Winter / shoulder** (heating wanted, or nothing) | **≲1.3 L/kWh** ⚠️ *constructed* | **2.79 – 8.04 L/kWh** | ⭐ **Dehumidifier, by 2–6× or more** |
 
 **The reason is not efficiency, it is where the heat goes.** Both machines are the same device — a
 refrigeration loop condensing water on a cold coil. The difference is where the condenser sits:
@@ -91,9 +91,20 @@ dry mode strips out sensible heat that must then be bought back:
 | Dehumidifier, IEF 1.40 | **2.79 L/kWh** |
 | Dehumidifier, IEF 1.77 | **4.04 L/kWh** |
 | Dehumidifier, IEF 2.50 | **8.04 L/kWh** |
-| **AC dry mode**, 0.9 kW min capacity, reheating at COP 3.92 | **1.29 L/kWh** |
+| **AC dry mode**, 0.9 kW min capacity, reheating at COP 3.92 | **≲1.3 L/kWh** ⚠️ |
 
 The ranking inverts completely. That is why "which is cheaper" has no season-free answer.
+
+⚠️ **The AC's winter figure is CONSTRUCTED, and the three dehumidifier rows are not.** Those three are
+plain arithmetic on a published IEF. The AC row is not a table cell — it pairs the spec sheet's
+minimum capacity (0.9 kW) with its minimum input (0.25 kW) and a full-airflow SHR of 0.62, and **two
+of those three assumptions flatter the AC**: the 0.25 kW minimum is the lowest input anywhere in the
+envelope rather than the input at 0.9 kW specifically, and SHR at that much turndown is materially
+higher than 0.62 — at a warm enough coil much of the surface never reaches dew point at all, so the
+latent share could be well under half what is used here.
+
+**Both errors run the same way, so the real winter gap is *wider* than the table shows.** The
+conclusion is safe; the precision is not. Read it as "the dehumidifier wins clearly", never as 1.29.
 
 ## ⚠️ Three things these numbers do not cover
 
