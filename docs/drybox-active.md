@@ -155,6 +155,7 @@ rather than deleted.
 | ~~DC barrel socket~~ | ✅ **OWNED** | Female DC adapter, 2.1 mm jack to screw terminal. ⚠️ **But measure the plug first — see below** |
 | ~~18 AWG silicone wire~~ | ✅ **OWNED** | The 4 m of 3-core is 1.37 mm = ~15.5 AWG, heavier than specified |
 | ~~Silica gel~~ | ✅ **OWNED, better** | The bentonite outranks it at low RH |
+| ~~Molecular sieve~~ | ⛔ **EVALUATED 12 Sep 2026 — NOT BOUGHT** | The material [moisture-isotherms](moisture-isotherms.md) already names as the only one holding 5–15 %RH *comfortably*, and **86 g would do what 0.5–1.5 kg of clay does**. Declined anyway: **nothing owned needs that band** — holdings are PETG ×11, TPU ×4, ASA ×2, PLA ×1, **no nylon/PVA/PC** — and because **PETG's isotherm is linear**, 15→5 %RH recovers only **~3.4 g** on a 4 kg load. Its vendors specify a **200–550 °C furnace with a purge gas**; only hobby sources claim a home oven works. ~$20–35/kg, so cost was never the objection. ⭐ **Buy nylon or PC and this flips — and then 4A, NOT the 3A every guide names** (3A wins only below 0.03 kPa ≈ 1 %RH; a drybox runs 10–15× above that). Full reasoning: inventory `docs/shopping-list.md` §31 |
 
 ### ⚠️ Two traps found while buying, neither visible from a spec
 
