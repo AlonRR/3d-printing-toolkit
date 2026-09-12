@@ -245,9 +245,13 @@ it floors at 20 %RH and a working drybox sits below that.
 4. Cut intake and exhaust vents — exhaust **high and diagonally opposite** the intake.
 5. Wire the AHT20 out of the airstream; bring temperature and humidity into HA over MQTT, reusing the
    plumbing the camera node already has.
-6. **Prepare the desiccant — it is a prerequisite, not an afterthought.** Regenerate the bentonite at
-   ~110 °C for 2–3 h spread thin, **weigh it dry and record that mass** (the only honest
-   done-indicator), cool it in a sealed jar, and **put it in a sachet or fine mesh — never loose in
+6. **Prepare the desiccant — it is a prerequisite, not an afterthought.** Regenerate the bentonite
+   spread thin. ⭐ **Regeneration is a CURVE, not a setpoint** *(Alon, 12 Sep 2026)* — release begins
+   ~90 °C, **~80 % is driven off at 120 °C**, full regeneration ~150 °C. So ~110 °C for 2–3 h is a
+   fine working point, not a magic number, and **hotter is safe**: irreversible damage needs
+   400–600 °C, far beyond any oven. **Weigh it dry and record that mass** — *the only honest
+   done-indicator*, and now the load-bearing one, since temperature alone cannot say how far along
+   the curve you got. Cool it in a sealed jar, and **put it in a sachet or fine mesh — never loose in
    the airstream**, which is a fan pointed at the room and clay carries respirable silica. Sizing:
    **0.5–1.5 kg**, from the isotherm arithmetic in
    [moisture-isotherms](moisture-isotherms.md).

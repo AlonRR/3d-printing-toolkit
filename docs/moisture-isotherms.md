@@ -107,12 +107,36 @@ Corroborated by a second supplier's stated peak-efficiency bands, which put them
 ### ✅ So the bentonite on hand is the better material, not the compromise
 
 For a low-RH drybox, clay outranks silica gel. It is also the cheapest of the three, available in
-bulk as cat litter, and regenerates at the *lowest* temperature (~110 °C against silica gel's ~120 °C
-and molecular sieve's 200–300 °C — the last being genuinely awkward to do at home).
+bulk as cat litter, and regenerates at the lowest temperature of the three.
 
 **Molecular sieve remains the only material that can hold the 5–15 % band comfortably**, and it is
-worth knowing that if the band ever becomes a hard requirement. But it is a purchase, and its
-regeneration temperature is out of reach of a domestic oven.
+worth knowing that if the band ever becomes a hard requirement. ⛔ **Evaluated 12 Sep 2026 and
+deliberately NOT bought** — nothing owned needs that band (no nylon/PVA/PC), and PETG's linear
+isotherm means 15→5 %RH recovers only ~3.4 g on a 4 kg load. See the parts table in
+[drybox-active](drybox-active.md) and inventory `docs/shopping-list.md` §31. If it is ever bought,
+**buy 4A, not the 3A every guide names.**
+
+### 🌡️ Regeneration is a CURVE, not a setpoint
+
+*(Alon, 12 Sep 2026.)* This corrects a fixed-number framing used earlier on this page and in
+[drybox-active](drybox-active.md) step 6 — and it dissolves an apparent conflict between our own
+documents, which said ~110 °C here and ~125 °C in the HomeBox record. **Both were right.**
+
+| | Release begins | Substantially off | Full |
+|---|---|---|---|
+| **Bentonite clay** | ~90 °C | **~80 % at 120 °C** | ~150 °C |
+| Silica gel | ~90 °C | — | ~150 °C |
+| **Molecular sieve** | ~200 °C | — | **400–550 °C** |
+
+⭐ **Süd-Chemie, who make the clay, publish no regeneration temperature at all** — only *"can be
+reactivated for multiple uses"*. That is precisely why every downstream figure differs. **So the
+recorded dry MASS is the done-indicator, not the thermostat**: temperature alone cannot say how far
+along the curve a bake got.
+
+✅ **Hotter is safe for clay.** Interlayer water leaves by ~200 °C; dehydroxylation and structural
+collapse need **400–600 °C**, unreachable in a domestic oven. The sieve figures above are the same
+kind of curve, which is also why published sieve numbers range from 121 °C to 550 °C without
+contradicting each other.
 
 ### Temperature: clay holds where silica gel fades
 
@@ -124,12 +148,27 @@ Between **20 °C and 50 °C at constant RH**, capacity as a function of temperat
 | Molecular sieve | **constant** |
 | Silica gel | **decreases slightly** |
 
-⚠️ **50 °C is clay's boundary, not its comfort zone** — a second source states capacity *"drops
-sharply above 50 °C"*. The drybox setpoint sits exactly on that edge, which has a useful consequence:
-at 50 °C in ~17 %RH air the clay is driven toward its low-RH equilibrium and **partially
-self-regenerates during a drying cycle**, with the released water going out of the exhaust. That is
-not a substitute for a proper 110 °C bake, but it means the desiccant is refreshed rather than
-degraded by living in the box.
+⚠️ **50 °C is clay's boundary, not its comfort zone**, and it is a *separate* limit from
+regeneration above — much lower, and **reversible**. Manufacturer wording: *"clay works
+satisfactorily below ~50 °C; above that there is a possibility that the clay will **give
+up moisture rather than pulling it in**"*, and *"clay gives up moisture readily back into the
+container as temperatures rise."*
+
+**The drybox setpoint sits exactly on that edge, and it cuts both ways.** The useful half: at 50 °C
+in ~17 %RH air the clay is driven toward its low-RH equilibrium and **partially self-regenerates
+during a drying cycle**, the released water leaving via the exhaust — so the desiccant is refreshed
+rather than degraded by living in the box. The half that constrains the design: **during a heated
+cycle the bentonite is not adsorbing at all.** Two consequences follow —
+
+- ⭐ **The cooldown purge is load-bearing, not tidiness.** Seal the box while warm and the clay has
+  just released its water into the air you trapped.
+- ⛔ **Raising the setpoint above 50 °C makes the storage phase worse, not better**, however
+  attractive "hotter dries faster" sounds.
+
+⚠️ **Source spread, recorded rather than averaged:** sorbentsystems says **~50 °C**; Süd-Chemie
+claims constant capacity only *between* 20 and 50 °C, bounding the claim without saying what happens
+above it; Multisorb reads as **~32 °C** on a fresh read but is cited as 50 °C earlier on this
+page — same source, two readings. Most say ~50 °C.
 
 ## Sizing the desiccant
 
