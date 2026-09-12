@@ -729,6 +729,59 @@ I2C wants two ordinary pins clear of all of the above.
    THE DEVICE AND THE REGISTRY ENTRY.** Removing the hardware, and even removing the entity, does
    not remove the advertisement that recreates it.
 
+## What the C3 node actually measures — and whether the SPS30 can join it
+
+*Asked 12 Sep 2026. The sensor specs below are from the manufacturer datasheet, not assumed.*
+
+### The current complement
+
+| Sensor | Gives | Worth knowing |
+|---|---|---|
+| **AHT20** | temperature + **relative humidity** | The reason for the swap. 0–100 %RH at 0.1 % resolution — a DHT11 floors at 20 %RH in 1 % steps, and this chamber measured below 20 % in 7.3 % of 22,021 samples |
+| **BMP280** | **pressure** + a second temperature die | Pressure is new to the chamber. The second die is a **free cross-check**: two independent sensors reading the same air, where disagreement is itself a signal |
+| `wifi_signal` | RSSI | Link diagnostics — the C3 measured min −46 / mean −32.9 against the S3's min −75 / mean −56.5 |
+| `wifi_info` | **BSSID** | Which AP the node is on. This is the instrument the midnight re-association investigation runs on |
+| `uptime` | seconds since boot | Detects reboots that would otherwise look like a data gap |
+
+⚠️ **There is no disconnect counter on this node.** That was a feature of the S3's hand-written C
+firmware; the ESPHome build has no equivalent, which is deliberate — the question it existed to
+answer was closed first (README item 9c).
+
+### Adding the SPS30 — electrically easy, thermally marginal
+
+The lab owns **one** Sensirion SPS30 (PM1.0 / PM2.5 / PM4 / PM10 mass and number concentration, plus
+typical particle size). Adding it to this node is **not blocked by the bus**:
+
+| Check | Result |
+|---|---|
+| I2C address | **0x69** — no clash with AHT20 (0x38) or BMP280 (0x77) |
+| Logic levels | 3.3 V I2C is fine; **no level shifter needed** |
+| ESPHome support | native `sps30` platform |
+| Bus capacity | the C3's GPIO10/GPIO3 bus has two devices on it; a third is nothing |
+
+⛔ **But three things stand in the way, and two of them are real:**
+
+1. **It needs a 5 V supply — 4.5–5.5 V, not 3.3 V.** It must come off the board's 5 V pin (present
+   when USB-powered, which this node is), never off 3V3. At ~60 mA typical that is comfortable on
+   USB, but it does mean the sensor dies if the node is ever moved to a 3.3 V battery rail.
+2. ⚠️ **Its operating ceiling is +60 °C, and that IS the chamber's target.** An ASA chamber is wanted
+   at 40–60 °C. The chamber currently reads ~37 °C, so it is in spec *today* — but the whole point of
+   the enclosure work is to raise that number, and doing so walks the sensor to its limit. This is
+   the blocker that matters, and it is a design conflict rather than a wiring problem.
+3. **There is exactly one SPS30 and it is already claimed.** [chamber-airflow](chamber-airflow.md)
+   wants it to verify the *scrubber* — measuring whether particulate actually falls when the fan
+   runs, which a tachometer cannot tell you. Putting it in the chamber **competes with that use
+   rather than combining with it.**
+
+⭐ **Verdict: possible, but it is an allocation decision, not a wiring one.** Nothing technical
+prevents it. What prevents it is that the lab owns one sensor, has two good uses for it, and the
+chamber use pushes a +60 °C part to +60 °C. A second unit is ~₪50 and removes the contention; the
+thermal ceiling it does not remove.
+
+⚠️ **Also worth expecting: fouling.** The SPS30 is a laser scattering counter that pulls sample air
+across its optics with a fan. In an ASA/ABS chamber the thing it measures is also the thing that
+coats it. That is not a reason against — it is a reason to treat its calibration as perishable.
+
 ### 🚀 FLASHED — the persisted counter went live 10 Sep 2026, 13:29:46Z
 
 `f276ff1` is running. It had been built and committed but not deployed for a day, while the
