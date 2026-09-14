@@ -109,8 +109,8 @@ conclusion is safe; the precision is not. Read it as "the dehumidifier wins clea
 ## ⚠️ Three things these numbers do not cover
 
 1. **Neither device is rated where you would actually run it.** The AC's figures are at 46–52 %RH;
-   the dehumidifier's IEF is measured at **18.3 °C / 60 %RH** (DOE 10 CFR 430 appendix X1 — 65 °F
-   dry-bulb, 56.6 °F wet-bulb). Both degrade as the room dries, so **the published numbers flatter
+   the dehumidifier's IEF is measured at **18.3 °C / 60 %RH** (DOE 10 CFR 430 appendix X1 — 18.3 °C
+   dry-bulb, 13.7 °C wet-bulb). Both degrade as the room dries, so **the published numbers flatter
    both of them, roughly equally.**
 2. **The AC rows are optimistic at part load.** At reduced compressor speed the evaporator runs
    warmer, less of the coil sits below the dew point, SHR rises and litres-per-kWh **falls**. The
@@ -157,5 +157,5 @@ room is being dried anyway then filament benefits for free — but it does not j
   cooling-capacity tables (§4-1). Every AC number above is extracted from it:
   [manual PDF](https://www.viacomvs.com/wf-doc/fujitsu-klima-uredjaj-zidni-inverter-asyg12lmce-aoyg12lmce-technical-manual.pdf)
 - [ENERGY STAR — dehumidifier testing and capacity](https://www.energystar.gov/products/dehumidifier_testing_and_capacity)
-- [10 CFR part 430 appendix X1](https://www.ecfr.gov/current/title-10/chapter-II/subchapter-D/part-430/subpart-B/appendix-Appendix%20X1%20to%20Subpart%20B%20of%20Part%20430) — the 65 °F / 60 %RH test condition
+- [10 CFR part 430 appendix X1](https://www.ecfr.gov/current/title-10/chapter-II/subchapter-D/part-430/subpart-B/appendix-Appendix%20X1%20to%20Subpart%20B%20of%20Part%20430) — the 18.3 °C / 60 %RH test condition
 - [Israel electricity tariff, Jan 2026](https://www.timesofisrael.com/wave-of-price-rises-and-tax-hikes-takes-effect-fueling-costs-for-israelis-in-2026/) · [rate per kWh](https://www.globalpetrolprices.com/Israel/electricity_prices/)
