@@ -74,7 +74,12 @@ for port in ports:
         seqs = sorted({n for _, n in rows})
         span = seqs[-1] - seqs[0] + 1
         loss = 100.0 * (1 - len(seqs) / span) if span > 0 else 0.0
-        print("  from %s: n=%d  loss %.1f%% (seq %d..%d)" % (src, len(rows), loss, seqs[0], seqs[-1]))
+        # Gap loss alone lies when only a few packets arrive: 2 consecutive packets
+        # read as "0.0 % loss" from a sender that transmitted ~230. So also compare
+        # against what the firmware sends in the window (mean interval 0.5 s).
+        expected = secs / 0.5
+        print("  from %s: decoded %d of ~%d sent (%.0f%%); gaps within seq %d..%d: %.1f%%"
+              % (src, len(rows), expected, 100.0 * len(rows) / expected, seqs[0], seqs[-1], loss))
         print("    RSSI dBm  min %d  p10 %.1f  median %.1f  p90 %.1f  max %d  stdev %.1f"
               % (min(rssi), pct(rssi, 0.1), statistics.median(rssi), pct(rssi, 0.9), max(rssi),
                  statistics.pstdev(rssi)))
