@@ -1,0 +1,143 @@
+# air-quality-c3 — particulate (SPS30) and VOC/NOx (SGP41) on an ESP32-C3 SuperMini.
+#
+# ⚠️ BRING-UP DRAFT: validated with `esphome config`, not yet flashed or wired.
+#
+# ⛔ SETTLE THE NAME BEFORE THE FIRST FLASH. Home Assistant keys long-term statistics to
+# the entity_id, and ESPHome derives entity_ids from `name:` — it cannot set MQTT discovery
+# unique_ids. Renaming after history accrues means a registry repoint, which is exactly
+# what the S3 -> C3 chamber migration cost (docs/chamber-sensor.md).
+#
+# ------------------------------------------------------------------------------ WIRING
+#
+#   SuperMini          SPS30 (JST ZHR-5, 1.5 mm)        GY-SGP41
+#   ---------          -------------------------        --------
+#   5V  ------------>  pin 1 VDD                        (not connected)
+#   3V3 ---------------------------------------------->  VDD
+#   GND ------------>  pin 5 GND  +  pin 4 SEL  ------>  GND
+#   GPIO5 (SDA) ---->  pin 2 SDA  --------------------->  SDA
+#   GPIO6 (SCL) ---->  pin 3 SCL  --------------------->  SCL
+#
+# ⛔ PULL-UPS GO TO 3V3, NEVER TO 5V. ESPHome's SPS30 page says 10 kΩ from VDD (5 V) to
+#    SDA and SCL. The C3's GPIOs are not 5 V tolerant, so on this board that advice
+#    destroys the pins. It is also unnecessary: the datasheet puts the SPS30's input-high
+#    threshold at 2.31 V, so a 3.3 V pull-up is a valid logic high. If the GY-SGP41
+#    module carries its own pull-ups (check for two resistors near SDA/SCL), those already
+#    pull the shared bus to 3.3 V and nothing more is needed; otherwise fit 10 kΩ from
+#    each line to 3V3.
+#
+# ⛔ SEL (SPS30 pin 4) TO GND, before or at power-up. Left floating the sensor comes up in
+#    UART mode and simply never answers on I2C. Its absolute maximum is 4.0 V, so it must
+#    not be tied high to 5 V either.
+#
+# ⚠️ THE 5V PIN ONLY EXISTS ON USB POWER. The SPS30 needs 4.5-5.5 V (45-65 mA, 80 mA for
+#    the first 200 ms as its fan starts). The chamber-sensor power plan (§5) feeds the node
+#    3.3 V from the S09 converter straight into 3V3, which leaves the 5V pin dead — so a
+#    node built that way cannot run this sensor without its own 5 V source.
+#
+# The SGP41 goes on 3V3 whatever the module's label says: the bare part is 1.7-3.6 V, and
+# a module with an onboard regulator still works from 3.3 V.
+
+esphome:
+  name: air-quality-c3
+
+esp32:
+  board: esp32-c3-devkitm-1
+  variant: esp32c3
+  framework:
+    type: esp-idf
+
+logger:
+  # The SuperMini's USB-C port IS the USB_SERIAL_JTAG peripheral — no bridge chip. This is
+  # the opposite of the C3 mini in chamber-c3.yaml, whose port goes through a bridge and so
+  # needs UART0. Copying either setting to the other board silences the console.
+  hardware_uart: USB_SERIAL_JTAG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  reboot_timeout: 15min
+  # SuperMini antenna: use the §3x-MODDED board (docs/chamber-sensor.md). At the print
+  # station a stock SuperMini lost 2-24 % of packets where the modded one lost none. Only
+  # if this node must sit centimetres from another radio, cap the power:
+  # output_power: 8.5dB
+  ap:
+    ssid: air-quality-c3-fallback
+    password: !secret ap_password
+
+captive_portal:
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# ⛔ Deliberately no `api:` block — MQTT discovery only, the same as chamber-c3.yaml, so the
+# ESPHome integration cannot create a second, duplicate set of entities.
+mqtt:
+  broker: !secret mqtt_host
+  username: !secret mqtt_username
+  password: !secret mqtt_esp_password
+  topic_prefix: printer/air-quality-c3
+
+# GPIO5/GPIO6 is the house SuperMini I2C pair (docs/chamber-sensor.md §4), which keeps this
+# node on the same map as the planned fan-control node: GPIO7 1-Wire, GPIO10 fan PWM and
+# GPIO3 tach all stay free.
+i2c:
+  sda: GPIO5
+  scl: GPIO6
+  scan: true
+  # The SPS30 is standard-mode only — 100 kbit/s per its datasheet. The SGP41 could go
+  # faster, but a shared bus runs at the speed of its slowest device.
+  frequency: 100kHz
+
+sensor:
+  # ---------------------------------------------------------------------------- SPS30
+  # Address 0x69. Optical particle counter with its own fan. Readings follow a 30 s
+  # warm-up after measurement starts.
+  - platform: sps30
+    address: 0x69
+    pm_1_0:
+      name: PM1.0
+      state_class: measurement
+    pm_2_5:
+      name: PM2.5
+      state_class: measurement
+    pm_4_0:
+      name: PM4.0
+      state_class: measurement
+    pm_10_0:
+      name: PM10
+      state_class: measurement
+    pm_size:
+      name: Typical particle size
+      state_class: measurement
+    update_interval: 30s
+
+  # ---------------------------------------------------------------------------- SGP41
+  # Address 0x59. VOC and NOx INDICES (1-500), not concentrations — and not eCO2.
+  # compensation: is deliberately absent for bring-up. ESPHome wants the IDs of local
+  # temperature and humidity sensors, and this node has none yet; uncompensated it assumes
+  # fixed defaults, which is fine for proving the wiring.
+  - platform: sgp4x
+    voc_index:
+      name: VOC index
+      state_class: measurement
+    nox_index:
+      name: NOx index
+      state_class: measurement
+
+  # --------------------------------------------------------------------- diagnostics
+  # RSSI doubles as the first in-situ measurement of the §3x antenna mod — the bench
+  # numbers were taken at the print station, not at this node's final position.
+  - platform: wifi_signal
+    name: WiFi RSSI
+    device_class: signal_strength
+    state_class: measurement
+    entity_category: diagnostic
+    update_interval: 60s
+
+  - platform: uptime
+    name: Uptime
+    device_class: duration
+    state_class: measurement
+    entity_category: diagnostic
+    update_interval: 60s
