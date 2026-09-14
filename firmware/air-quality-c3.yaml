@@ -36,6 +36,11 @@
 #
 # The SGP41 goes on 3V3 whatever the module's label says: the bare part is 1.7-3.6 V, and
 # a module with an onboard regulator still works from 3.3 V.
+#
+# ⚠️ PLACEMENT HAS A TEMPERATURE CEILING, AND THE SGP41 SETS IT: -10 to +50 °C operating
+#    (datasheet Table 4). The SPS30 is rated to +60 °C. An ASA chamber is wanted at 40-60 °C,
+#    so inside a hot chamber the SGP41 runs out of spec and the SPS30 sits at its limit while
+#    its fan pulls fumes across its own optics. Outside the chamber both are in spec.
 
 esphome:
   name: air-quality-c3
