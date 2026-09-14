@@ -1531,6 +1531,21 @@ and the stock SuperMini — stayed at the PC.
 - **What settles it is the second half of experiment 2:** the stock SuperMini in the same spot,
   powered the same way.
 
+**A second stock board, beside the PC first.** Another unmodified SuperMini from the batch, same
+firmware at 19.5 dBm, captured at centimetres while the modded board kept transmitting from the
+print station:
+
+| Transmitter, same 2 min | Lost at the Nano | Lost at stock #1 |
+|---|---|---|
+| Stock #2, beside the PC | 5 %, median −32 dBm | 2.5 %, −37 dBm |
+| Stock #1, beside the PC | 0.4 %, −30 dBm | — |
+| Modded, at the print station | 16.7 %, −56 dBm | 14.3 %, −61 dBm |
+
+- Stock #2 works at full power at centimetres, like stock #1, with slightly more loss.
+- **The modded board's loss at the print station changes with nothing moved:** 33–48 % in the
+  first two captures, 14–17 % in this one. Conditions there vary — one more reason the comparison
+  has to be a stock board in that spot *at the same time*.
+
 ### Known ways it goes wrong
 
 Several people report WiFi going *dead* after the mod, or the board raising RSSI
