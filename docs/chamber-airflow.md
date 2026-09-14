@@ -24,7 +24,7 @@ filters?"*
   makeup ──►│  (defined inlet, known area)    │
    air in   │   ┌──────────────────────────┐  │
             └──►│ ventobox: carbon + HEPA  │  │   recirculating scrubber
-                │   2-3 × 40 mm, 24 V      ├──┘   (all flow returns)
+                │   3 × Delta 4020, 12 V   ├──┘   (all flow returns)
                 └──────────────────────────┘
             ┌────────────────────────────────┐
             └──► JUMPEAK 120 mm ──► duct ──► outside     the extraction
@@ -73,8 +73,9 @@ both jobs.
   > and losing it lost everything. **Splitting moved the safety function onto the fan that can
   > report on itself.** The scrubber's blindness is a quality-of-filtration problem, not a
   > containment one — worth fixing, not urgent. See *Adding stall detection* below.
-- **A 24 V rail is now required** at the chamber. Nothing in the inventory makes 24 V; the
-  printer's own PSU is the intended source (2–3 fans at ~0.1 A each against 240 W).
+- ~~**A 24 V rail is now required** at the chamber.~~ ⛔ **NO LONGER TRUE, 14 Sep 2026 — the
+  scrubber fans that were ORDERED are 12 V** (see the correction under *The fans*). No 24 V tap
+  into the printer PSU is needed, and applying one would destroy them.
 - **Fan count is unconfirmed** — 122 mm is almost exactly 3 × 40 mm and only two were bought.
   Count the apertures in the slicer; a third is ~₪12.71.
 
@@ -93,7 +94,7 @@ micro-electronics soldering** — not by cleverness.
 
 | # | Method | Parts | Verdict |
 |---|---|---|---|
-| **1** | **Buy 3-wire (tach) 40 mm 24 V fans** | ~₪15–25 | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
+| **1** | **Buy 3-wire (tach) 40 mm fans** — ✅ **ORDERED, as 12 V Delta EFB0412VHD 4020 ×3, not 24 V** | ~₪15–25 | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
 | **2** | **SPS30 particulate sensor** — measure the OUTCOME | **owned** | Best *engineering*, different question. See below |
 | **3** | **Self-heated NTC in the airstream** | 1 NTC owned | A real airflow sensor: moving air cools a self-heated thermistor. Direct measure of *flow*, not rotation. Cheap, but analog and needs calibrating |
 | **4** | **Acoustic** — MAX4466 mic + band-pass | **10 owned** | 7000 rpm × blade count ≈ a strong tone. Non-contact. But the printer is noisy, so it needs real signal processing to discriminate |
@@ -162,8 +163,19 @@ Since 8 Sep 2026 there are **two**, doing different jobs:
 
 | | Fan | Duty | Rail |
 |---|---|---|---|
-| **Scrubber** | 2–3 × Gdstime 40 mm, 7000 RPM, **2-wire** | high restriction: carbon + HEPA | **24 V** — printer PSU |
+| **Scrubber** | 3 × **Delta EFB0412VHD** 4020, **3-wire tach** *(on order)* | high restriction: carbon + HEPA | **12 V** — ⛔ **NOT the printer's 24 V PSU** |
 | **Extraction** | JUMPEAK 120 mm, 3200 RPM, 4-pin PWM | low restriction: the duct | 12 V — PD trigger board |
+
+⛔ **CORRECTED 14 Sep 2026 — THE SCRUBBER FANS ARE 12 V, AND A 24 V FEED DESTROYS THEM.** This table
+said Gdstime fans on the printer's 24 V PSU, and the cart row further down records `24V 3PIN FG`
+fans. **That was the cart, not the checkout.** What was actually ordered on 9 Sep is
+**3 × Delta EFB0412VHD**, variant `Standard 3pin` — and **`EFB0412` is Delta's 40 mm 12 V series**,
+so the part number itself says 12 V. Checked against the inventory order record, not only relayed
+by the session that reported it. The owned 24 V Gdstime units are no longer the scrubber's fans.
+
+📛 **How it went stale:** the fan variant was confirmed *from the cart page* at 11:58 on 9 Sep, and the
+checkout later that day chose differently. A cart is a draft of an order, and this page recorded the
+draft. Anyone building from the old wording would have put 24 V on three 12 V fans.
 
 Everything below is about the **JUMPEAK**, and the correction in it is the reason the split is a
 choice rather than a necessity.
@@ -294,10 +306,10 @@ condition it exists for.
    recorded (31 °C ± 2, door open, 3 Sep 2026). This is the number that decides whether a chamber
    heater is ever needed — answer it before buying one.
 3. **Build the SCRUBBER** — `ventobox/` (base, carbon trays, HEPA tray, fan tray), the HEPA
-   paper, the ENVIROCARB pellets, and the 40 mm Gdstime fans on a 24 V feed from the printer's
-   PSU. Run it as a pure recirculator inside the closed chamber and **verify it turns the
+   paper, the ENVIROCARB pellets, and the **3 × 12 V Delta EFB0412VHD** fans on a **12 V** feed — ⛔ **never the
+   printer's 24 V PSU**, which would destroy them. Run it as a pure recirculator inside the closed chamber and **verify it turns the
    chamber over** — see *The measurement that would settle it*. ⚠️ Count the fan apertures in
-   the slicer first: 122 mm is almost exactly 3 × 40 mm and only two fans are owned.
+   the slicer first: 122 mm is almost exactly 3 × 40 mm, and three fans are on order.
 4. **Add the extraction** — the JUMPEAK on the duct, its own 12 V feed. Size the orifice, run
    the duct out. ⚠️ **Take the duct off the ventobox's clean side**, so what leaves the house is
    filtered air. That was free in the one-fan design and is now a plumbing decision.
@@ -313,9 +325,9 @@ condition it exists for.
 | Item | Priority | Note |
 |---|---|---|
 | ~~**Ducting**~~ + ~~a termination~~ | **Required** | 🛒 **DUCT SHORTLISTED 9 Sep 2026** *(the offer was time-limited — the duct is −53%, ₪16.88 at risk)*. ✅ **THE TERMINATION IS BEING PRINTED** — Alon, 9 Sep. Grille dropped; print it in **ASA**, see below — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
-| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below** |
+| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below.** ⛔ **And the cart is not what was bought: checkout ordered 12 V Delta EFB0412VHD 4020 ×3** — see *The fans* |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
-| — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased except the 24 V feed, which is a decision rather than a part |
+| — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased. ~~Except the 24 V feed~~ — no 24 V feed is needed now that the ordered fans are 12 V |
 
 ### 🛒 What was bought, and the two things this buy list had wrong
 
@@ -343,20 +355,26 @@ HEPA stack actually consumes. So:
 > from the ranked list above — the fans cost ₪45.57, which is cheap enough to be a test rather than a
 > commitment.
 
+✅ **MOOT for the fans actually ordered.** The Delta EFB0412VHD is a **4020** — the same
+40 × 40 × 20 mm depth as the Gdstime units the tray was designed around — so the static-pressure
+trade above applies to the 4010s that were in the cart, not to what was bought.
+
 **Why the tach fan is scarce at all — the same heuristic that read the INA226's shunt.** Fans compete
 on airflow and price, and a tach wire adds cost while improving no headline number. So the 3-wire
 variant is the one nobody markets, and in 4020 it appears not to be stocked at all. *A specification
 that makes a product look no better in its headline number is one the market selects against.*
 
-**✅ One thing that needs no hardware: the tach output is safe on a 3.3 V MCU even at 24 V.** It is an
+**✅ One thing that needs no hardware: an open-collector tach is safe on a 3.3 V MCU whatever the
+motor rail** — now 12 V, see *The fans*. It is an
 open-collector transistor, so it pulls to whatever rail the pull-up resistor is tied to. Tie the
-pull-up to **3.3 V** and the ESP32 reads it directly — **no level shifter, no divider.** The 24 V is
+pull-up to **3.3 V** and the ESP32 reads it directly — **no level shifter, no divider.** The 12 V is
 only the motor supply.
 
-⚠️ **That is the convention, not a datasheet reading — verify before wiring.** These are no-brand ₪15
-fans, and a totem-pole tach referenced to the 24 V rail would destroy an ESP32 GPIO. **Run the fan and
+⚠️ **That is the convention, not a datasheet reading — verify before wiring.** The tach type of the
+ordered fans has not been measured here, and a totem-pole tach referenced to the 12 V rail would
+destroy an ESP32 GPIO. **Run the fan and
 probe the tach pin with no pull-up attached:** near 0 V or floating → open-collector, wire it straight;
-swinging to 24 V → divide it.
+swinging to 12 V → divide it.
 
 ### ✅ THE TERMINATION IS BEING PRINTED — Alon, 9 Sep 2026. Do not buy one.
 
@@ -408,7 +426,7 @@ two tie rods) built around a **120 mm** fan — a complete alternative scrubber 
 `ventobox/`. It is recorded here, not adopted: the two-fan split was **Alon's decision on 8 Sep** and
 this does not reopen it. But if the 4010 bench test above goes badly, this is the other end of the
 design space and it is already modelled.
-| **A 24 V feed** for the scrubber fans | **Required** | Nothing here makes 24 V — the PD trigger boards stop at 20 V. The printer's own PSU is the intended source: 2–3 fans at ~0.1 A each against 240 W. Free, if tapping it is acceptable |
+| ~~**A 24 V feed** for the scrubber fans~~ | ⛔ **NOT REQUIRED** | The ordered scrubber fans are **12 V** and a 24 V feed would destroy them. Struck rather than deleted so the old instruction stays visible as wrong. ~~Nothing here makes 24 V — the PD trigger boards stop at 20 V. The printer's own PSU is the intended source.~~ |
 
 ## What is still open
 
