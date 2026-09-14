@@ -1231,7 +1231,7 @@ options ranked by effort, with what each actually attacks:
 
 | # | Change | Attacks | Effort | Tested here |
 |---|---|---|---|---|
-| **A** | §3x wire — one 31 mm element | antenna *absence*; leaves the ground plane tiny | 30 s solder | **one board, near-field only** — worse than stock at full power; see *Measured here* |
+| **A** | §3x wire — one 31 mm element | antenna *absence*; leaves the ground plane tiny | 30 s solder | **one board** — +17–19 dB over stock at the far end, fails at full power at centimetres; see *Measured here* |
 | **B** | **Enlarge the ground plane** | the measured limit, directly | copper tape | no |
 | **C** | **Dipole** — two 31 mm elements | removes ground-plane dependence entirely | rework | no |
 
@@ -1491,19 +1491,25 @@ Every board broadcasts a counter every 0.3–0.7 s and logs the RSSI of each pac
 - **Chip temperature leans the way §3x predicts and proves nothing:** the stock board read 46–63 °C
   (it had just been flashed), the modded one 55–56 °C — two uncalibrated internal sensors.
 
-**Two experiments would settle it,** cheapest first:
+**Two experiments were proposed to settle it,** cheapest first:
 
 1. **Ohm the pad.** If the loop is on the ground pad, that is the answer. If it is on the feed pad,
    **remove the wire and re-run the sweep**: stock behaviour returning means the mod caused it;
-   failing anyway means the board was bad before the mod.
+   failing anyway means the board was bad before the mod. *Less pressing after experiment 2 — a
+   wrong-pad loop would not deliver +17–19 dB over a stock board.*
 2. **Measure at the far end.** The modded board on a USB power bank, several metres away through a
    wall, with the Nano logging at the PC — only the modded → Nano direction is needed. Then the stock
-   board in the same spot.
+   board in the same spot. ✅ **Done the same day, at the print station** (below) — and it reversed
+   the centimetre-range result.
 
-**Until then, prefer a stock board.** At this range a stock SuperMini at full power reached the Nano
-at −31 dBm. The modded board at its highest clean setting, **8.5 dBm** (`TX_QDBM=34`), reached
-−39 dBm — 8 dB worse. If the modded board is used anyway, that cap is the setting; in ESPHome it is
-`wifi: output_power: 8.5dB`, not yet tested with the espnow component.
+**Which board to use** *(revised after the print-station comparison below)*. For a node across a
+room — the chamber-sensor case — **the modded board**: at the print station it delivered 17–19 dB
+more at the Nano than a stock board, with no loss. The close-range failure only matters if it has
+to sit centimetres from another radio; then cap it at **8.5 dBm** (`TX_QDBM=34`), the highest
+setting decoded cleanly at that range. In ESPHome that is `wifi: output_power: 8.5dB`, not yet
+tested with the espnow component. An earlier version of this paragraph said to prefer a stock
+board; that rested on the centimetre-range numbers alone, and the print-station comparison
+reversed it.
 
 ⚠️ **Unexplained, and worth knowing before comparing receive numbers across builds:** the modded
 board reported incoming packets about 7 dB stronger (−14 against −21 dBm) whenever its *own* transmit
@@ -1545,6 +1551,34 @@ print station:
 - **The modded board's loss at the print station changes with nothing moved:** 33–48 % in the
   first two captures, 14–17 % in this one. Conditions there vary — one more reason the comparison
   has to be a stock board in that spot *at the same time*.
+
+**Both at the print station, same two minutes — and the result reverses.** Stock #2 was set down at
+the print station beside the modded board (exact placement and orientation not recorded), both at
+19.5 dBm, both receivers at the PC:
+
+| Capture | Modded — Nano / stock #1 | Stock #2 — Nano / stock #1 |
+|---|---|---|
+| 1st, 2 min | 0 % lost, −59 dBm / 0.4 %, −62 dBm | 24 % lost, −76 dBm / 13 %, −69 dBm |
+| 2nd, 2 min | 0 %, −56 dBm / 0 %, −61 dBm | 6 %, −75 dBm / 2 %, −70 dBm |
+
+- **At a real distance the modded board is the better one:** 17–19 dB stronger at the Nano and
+  8–9 dB at stock #1, with no loss, while the stock board lost 2–24 %. That is the +10 to +17 dB this
+  section predicts, arriving at receivers in another part of the house.
+- **So the close-range failure is a close-range effect.** A stronger antenna couples harder into a
+  radio centimetres away, and at full power that corrupts its frames. It is a reason not to mount a
+  modded board beside another radio — not a reason to avoid the mod. It also makes a wrong-pad loop
+  unlikely: that would not perform like this.
+- **The stock board's losses are mostly on the way, not at its transmitter:** only 3 packets were
+  lost by both receivers in the second capture.
+- **The modded board's earlier 14–48 % loss at the station** did not recur once both boards were
+  measured together. What changed is not known; the placement when stock #2 was set down is a
+  candidate.
+- **Board-to-board spread is small beside this:** next to the PC, stock #2 read −32 dBm at the Nano
+  and stock #1 −30 dBm.
+
+⚠️ **Still one modded board**, and the two station boards were not confirmed to share position and
+orientation. 20 dB is a lot for placement to explain, but a repeat with the two boards swapped
+would rule it out.
 
 ### Known ways it goes wrong
 
