@@ -1,0 +1,6 @@
+# build outputs and per-target generated config
+build-*/
+sdkconfig.esp32*
+sdkconfig.old
+dependencies.lock
+*.log
