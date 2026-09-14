@@ -1442,9 +1442,15 @@ good.**
 
 ### 📏 Measured here, 14 Sep 2026 — one modded board against one stock control
 
-⚠️ **Caveats first, because they are real.** This breaks the rule directly above: the boards sat
-**centimetres apart**, inside the reactive near-field, not at the far end. The modded board's
-**feed pad was not ohmed**. It is **one board of each kind**. A strong lead, not a verdict on the mod.
+⚠️ **Caveats first, because they are real.**
+
+- The boards sat **centimetres apart**, inside the reactive near-field — against the rule directly
+  above. That affects more than the RSSI numbers: coupling to a nearby antenna changes the load the
+  transmitter sees, so **the corruption itself may be a close-range effect**.
+- The modded board's **feed pad was not ohmed**.
+- **Nothing records how this board behaved before the mod**, or why it was the one chosen. If it
+  was already misbehaving, the result belongs to the board, not to the mod.
+- **One board of each kind.** A strong lead, not a verdict on the mod.
 
 **Method.** [`firmware/espnow-rssi`](../firmware/espnow-rssi) on three boards: the modded SuperMini,
 an unmodified SuperMini from the same batch, and an Arduino Nano ESP32 (S3) as a reference radio.
@@ -1469,29 +1475,40 @@ Every board broadcasts a counter every 0.3–0.7 s and logs the RSSI of each pac
 | Stock SuperMini | 242, median −31 dBm | 243, median −26 dBm |
 | Modded SuperMini | **2** of ~230 | **2** of ~230 |
 
-**What that shows.**
+**What that shows, at this range.**
 
-- **The modded board radiates.** At low power it is decoded cleanly, and the two full-power frames
-  that did get through arrived at about −22 dBm — *stronger* than the stock board's.
-- **Its full-power frames arrive corrupted, not weak.** Two different receivers — an S3 and a stock
-  C3 — fail on them identically, while both decode the stock board at the same power and range.
-  That is the transmitter, not receiver overload.
+- **The mod did not cut radiated power.** At low power the modded board is decoded cleanly, and the
+  two full-power frames that got through arrived at about −22 dBm — stronger than the stock board's
+  −31 dBm. Two packets are too few to put a number on it.
+- **Its frames arrive corrupted, not weak.** The cleanest evidence is one receiver at one signal
+  level: at 13 dBm the modded board reached the Nano at **−32 dBm and lost 42 %** of its packets; the
+  stock board reached the same Nano at **−31 dBm and lost 0.4 %** (separate runs). Same receiver, same
+  level, different transmitter. At 19.5 dBm, two different receivers — the S3 and the stock C3 —
+  failed on it identically.
 - **The failure begins between 8.5 and 13 dBm** and is total by 17 dBm.
-- **The stock board transmitted fine at full power** at this range. "SuperMinis receive but do not
-  transmit" did not reproduce on this one board — at centimetres. The far end is untested.
-- **Chip temperature did not separate them:** modded 55–56 °C, stock median 59 °C, from uncalibrated
-  internal sensors.
+- **The stock board transmitted fine at full power.** "SuperMinis receive but do not transmit" did
+  not reproduce on this one board — at centimetres. The far end is untested.
+- **Chip temperature leans the way §3x predicts and proves nothing:** the stock board read 46–63 °C
+  (it had just been flashed), the modded one 55–56 °C — two uncalibrated internal sensors.
 
-**The likeliest reading is the failure this section warns about** — a mod that tests *worse* than
-stock, with the loop on the wrong pad as the first suspect. **Ohm the feed pad before judging the mod.**
+**Two experiments would settle it,** cheapest first:
 
-**If the board is used as it is,** cap its transmit power at **8.5 dBm** (`TX_QDBM=34`), the highest
-setting decoded without loss. In ESPHome that is `wifi: output_power: 8.5dB` — not yet tested with the
-espnow component.
+1. **Ohm the pad.** If the loop is on the ground pad, that is the answer. If it is on the feed pad,
+   **remove the wire and re-run the sweep**: stock behaviour returning means the mod caused it;
+   failing anyway means the board was bad before the mod.
+2. **Measure at the far end.** The modded board on a USB power bank, several metres away through a
+   wall, with the Nano logging at the PC — only the modded → Nano direction is needed. Then the stock
+   board in the same spot.
 
-⚠️ **A reading artefact worth knowing before comparing receive numbers across builds:** the modded
+**Until then, prefer a stock board.** At this range a stock SuperMini at full power reached the Nano
+at −31 dBm. The modded board at its highest clean setting, **8.5 dBm** (`TX_QDBM=34`), reached
+−39 dBm — 8 dB worse. If the modded board is used anyway, that cap is the setting; in ESPHome it is
+`wifi: output_power: 8.5dB`, not yet tested with the espnow component.
+
+⚠️ **Unexplained, and worth knowing before comparing receive numbers across builds:** the modded
 board reported incoming packets about 7 dB stronger (−14 against −21 dBm) whenever its *own* transmit
-power was set to 17 dBm or more, with the other board unchanged.
+power was set to 17 dBm or more. The stock board's receive readings at 19.5 dBm were also noisy
+(spread 3.3 dB), so this may be C3 radio behaviour at high transmit power rather than this board.
 
 ### Known ways it goes wrong
 
