@@ -28,6 +28,10 @@ static const char *TAG = "rssi";
 
 #define ESPNOW_CHANNEL 1
 
+#ifndef TX_QDBM
+#define TX_QDBM 78
+#endif
+
 static const uint8_t BROADCAST[ESP_NOW_ETH_ALEN] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
@@ -68,10 +72,11 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_wifi_set_channel(ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 
-    /* Pin TX power so both boards transmit at the same, known level. 78 = 19.5 dBm
-     * in 0.25 dBm units; the driver clamps to what the chip allows, so the value
+    /* Pin TX power so both boards transmit at a known level, in 0.25 dBm units:
+     * default 78 = 19.5 dBm, lowest accepted 8 = 2 dBm. Override per build with
+     * -D TX_QDBM=<n>. The driver clamps to what the chip allows, so the value
      * actually in force is read back and logged. */
-    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(78));
+    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(TX_QDBM));
     int8_t txp = 0;
     ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&txp));
 
