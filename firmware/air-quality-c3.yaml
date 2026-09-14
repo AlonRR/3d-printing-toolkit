@@ -29,6 +29,17 @@
 #    UART mode and simply never answers on I2C. Its absolute maximum is 4.0 V, so it must
 #    not be tied high to 5 V either.
 #
+# ⛔ IDENTIFY PIN 1 WITH A METER, NOT BY WIRE COLOUR. Generic ZHR-5 leads use arbitrary
+#    colours, and a reversed lead puts 5 V on GND/SEL. Pin order is 1 VDD, 2 SDA, 3 SCL,
+#    4 SEL, 5 GND; the datasheet shows pin 1's position only in a figure.
+#
+# ⚠️ KEEP THE SPS30's I2C LEAD UNDER 20 cm. The datasheet recommends UART beyond that for
+#    EMI robustness, and ESPHome's sps30 platform is I2C. So put the node beside the sensor
+#    and run power/WiFi the distance, not the bus.
+#
+# ⚠️ THE SPS30's METAL HOUSING IS INTERNALLY TIED TO GND (pin 5). The datasheet says keep it
+#    electrically floating — do not mount it against the printer frame or other metal.
+#
 # ⚠️ THE 5V PIN ONLY EXISTS ON USB POWER. The SPS30 needs 4.5-5.5 V (45-65 mA, 80 mA for
 #    the first 200 ms as its fan starts). The chamber-sensor power plan (§5) feeds the node
 #    3.3 V from the S09 converter straight into 3V3, which leaves the 5V pin dead — so a
