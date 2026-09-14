@@ -1510,6 +1510,27 @@ board reported incoming packets about 7 dB stronger (−14 against −21 dBm) wh
 power was set to 17 dBm or more. The stock board's receive readings at 19.5 dBm were also noisy
 (spread 3.3 dB), so this may be C3 radio behaviour at high transmit power rather than this board.
 
+**Far end, first half of experiment 2 — same day, the modded board moved to the print station.**
+Still at 19.5 dBm and powered there; distance and walls not yet recorded. Both receivers — the Nano
+and the stock SuperMini — stayed at the PC.
+
+| Capture | Decoded at the Nano | Decoded at the stock SuperMini |
+|---|---|---|
+| 2 min | 125 of ~240 (52 %), median −51 dBm | 124 (52 %), median −56 dBm |
+| 2 min, packet by packet | 149 of 244 (61 %) | 154 (63 %) |
+
+- **Distance helped a lot:** from 0–2 decoded at centimetres to about half or more. Much of the
+  close-range failure was the close range — the first caveat above was right to worry.
+- **It is still a bad link.** Losing a third to a half of the packets at −51 dBm is not normal; next
+  to the PC, the stock board lost none in the same capture.
+- **Both receivers lost mostly the SAME packets:** 81 lost by both, where independent losses would
+  give about 35; 140 decoded by both, against about 94. So packets are lost *before* they reach the
+  receivers — at the transmitter, or on the way. ⚠️ **That does not separate the two**: both
+  receivers sit side by side at the PC and share almost the whole path. Lost packets were mostly
+  isolated (34 single, 11 double, 7 triple, one run of four), with no odd/even pattern.
+- **What settles it is the second half of experiment 2:** the stock SuperMini in the same spot,
+  powered the same way.
+
 ### Known ways it goes wrong
 
 Several people report WiFi going *dead* after the mod, or the board raising RSSI
