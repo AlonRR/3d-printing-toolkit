@@ -104,6 +104,16 @@ in_bar_cut = in_pitch - in_slot_cut;
 n_in = floor((grille_w + in_bar_w) / in_pitch);
 in_span = n_in * in_pitch - in_bar_w;
 
+/* The heater, standing off the lid's cap on two posts. heater_z is the underside of the element;
+   the air gap above it is what keeps the cabinet side cool, so it is measured and echoed. */
+heater_cut_w = heater_w + 2 * heater_clear + 2 * fdm_hole_comp;
+heater_cut_d = heater_d + 2 * heater_clear + 2 * fdm_hole_comp;
+post_h = turn_clear - heater_h - heater_gap;         /* post height under the element */
+heater_z = post_h;                                   /* element underside, above the bay opening */
+heater_to_skin = turn_clear - post_h - heater_h;     /* the air gap to the cap */
+post_w = 8;                                          /* post footprint */
+heater_lead_cut = heater_lead_w + 2 * fdm_hole_comp;
+
 /* Screw lengths - the number you buy rather than a dimension you draw. */
 screw_len_1 = lid_t + bay_h + fan_h + valve_h;
 screw_len_2 = lid_t + 2 * bay_h + fan_h + valve_h;
@@ -178,14 +188,28 @@ module fan_section() {
    the riser into the bed. No grille, no valve: the U put both of those in the valve section. */
 module lid() {
     difference() {
-        rrect(stack_w, stack_d, lid_t + turn_clear, corner_r);
+        union() {
+            rrect(stack_w, stack_d, lid_t + turn_clear, corner_r);
+            /* Four posts standing the heater off the cap. They are added AFTER the turn-over volume
+               is cut, or that cut would remove them. */
+            for (sx = [-1, 1], sy = [-1, 1])
+                translate([sx * heater_cut_w / 2, sy * heater_cut_d / 2, 0])
+                    linear_extrude(post_h) square([post_w, post_w], center = true);
+        }
         /* the turn-over volume, open downward */
         translate([0, 0, -eps])
             rrect(bay_cut, bay_cut_d, turn_clear + eps, inner_r);
         stack_bolts(lid_t + turn_clear);
-        /* the riser opens into the turn-over volume; the shaft does not reach this far */
+        /* the riser opens into the turn-over volume */
         translate([riser_x - riser_cut_d / 2, -riser_cut_w / 2, -eps])
             cube([riser_cut_d, riser_cut_w, turn_clear + eps]);
+        /* pilots for the element's screws, thread-forming rather than clearance */
+        for (sx = [-1, 1], sy = [-1, 1])
+            translate([sx * heater_cut_w / 2, sy * heater_cut_d / 2, -eps])
+                cylinder(h = post_h + 2 * eps, d = heater_screw_d + 2 * fdm_hole_comp);
+        /* lead slot out through the wall, at the element's height */
+        translate([-heater_lead_cut / 2, bay_cut_d / 2 - eps, heater_z])
+            cube([heater_lead_cut, stack_d, heater_h]);
     }
 }
 
@@ -347,7 +371,11 @@ echo(str("  gate             : ", gate_len, " x ", gate_w, " x ", gate_t,
          ", travel ", gate_travel, ", sweep ", gate_sweep));
 echo(str("  seals on         : ", sel_gap, " mm between ports, ", gate_over, " mm of lap"));
 echo(str("  cabinet grilles  : ", grille_cut_w, " x ", grille_cut_h, " as cut"));
-echo(str("lid                : a plain cap, ", lid_t, " + ", turn_clear, " mm of turn-over"));
+echo(str("lid                : cap ", lid_t, " + ", turn_clear, " mm of turn-over"));
+echo(str("  heater           : ", heater_cut_w, " x ", heater_cut_d, " as cut on ", post_h,
+         " mm posts (floor ", post_min, "), leads out a ", heater_lead_cut, " mm slot"));
+echo(str("  air gap to skin  : ", heater_to_skin,
+         " mm - air, not plastic, is what keeps the cabinet side cool"));
 echo(str("screws to buy      : M3 x ", screw_len_1, " for one cartridge, x ", screw_len_2,
          " for two, plus engagement"));
 echo(str("prints             : every part flat, vertical walls, 45 degree cones - no supports"));
@@ -391,6 +419,19 @@ assert(racetrack_reach < port_plate_w / 2 - perim3,
 assert(groove_in > port_bore / 2, "the gasket groove runs into the bores");
 assert(port_bore_pitch / 2 + bore_cut / 2 < port_plate_w / 2 - perim3,
        "the bores run off the edge of the plate");
+assert(post_h >= post_min,
+       "the heater posts are shorter than post_min - turn_clear has to be the SUM of post, element and air gap, and a post that merely exists cannot hold a screwed-down element");
+assert(heater_to_skin >= heater_gap - 1e-9,
+       "the element ends up closer to the lid's outer skin than heater_gap, and that skin is the cabinet side");
+assert(heater_cut_w + 2 * post_w < bay_cut && heater_cut_d + 2 * post_w < bay_cut_d,
+       "the heater and its posts do not fit inside the turn-over volume");
+/* ⛔ NO GUARD HERE FOR "a post lands in the riser", and that is deliberate. It was written, and then
+   proved UNREACHABLE: heater_w trips the fit guard at 116 while this needed >114.95 and fit is
+   asserted first; riser_d always trips the cavity/skin guard first; riser_w moves the channel's ends
+   and reaches the bolt guard; relaxing post_w trips the pilot guard. The fit guard below covers the
+   same failure more tightly. A guard nobody can make fire reads as coverage and is not. */
+assert(heater_screw_d + 2 * perim3 < post_w,
+       "the pilot leaves under 3 perimeters of post around it - the post splits when the screw forms its thread");
 assert(n_in >= 1, "no grille slot fits");
 assert(in_bar_cut > 0, "the grille slots are grown wider than their pitch - no bars left");
 assert(servo_w + 4 + sw_w < stack_w / 2,
@@ -421,6 +462,9 @@ warns = [
     if (sel_cut > gate_travel)
         str("the gate travels ", gate_travel, " mm to clear a ", sel_cut,
             " mm port - it cannot fully uncover one, so the open path is throttled"),
+    if (heater_to_skin < 8)
+        str("only ", heater_to_skin, " mm of air between the element and the cabinet side of the lid",
+            " - the reference design holds filament-area air at 30 C or under while regenerating"),
     if (draw_part == "stack")
         str("draw_part is \"stack\" - the STL is eight solids and will fail the single-part check")
 ];

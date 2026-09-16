@@ -69,9 +69,18 @@ and louvre — all render manifold and single-part, and the default passes `scad
 The valve section carries both gates, both cabinet grilles, both room bores, and the servo and
 microswitch pockets.
 
-⚠️ **Still `<<CONFIRM>>`:** the servo, microswitch and fan envelopes are typical figures rather than
-measurements off parts in hand, and **no heater pocket is cut yet** — the element's mounting is the
-one piece of the regenerating design the model does not yet carry.
+✅ **The heater mounting is cut too, and the airflow decided where it goes.** During a purge the flow
+is riser **up**, turn over at the lid, **down** through the bed — so the element has to warm the air
+*before* it crosses the desiccant, and the lid's turn-over volume is the only upstream space (the
+riser is a 7 mm slot in a wall).
+
+⛔ **It stands off on posts rather than sitting in a pocket.** The lid's outer face **is** the cabinet
+side, and the reference design holds filament-area air at ≤30 °C while regenerating. Sinking the
+element into solid plastic against that face conducts straight into the box; a **10 mm air gap** does
+not, and it costs only turn-over volume rather than wall.
+
+⚠️ **Still `<<CONFIRM>>`:** the servo, microswitch, fan and heater envelopes are typical figures
+rather than measurements off the parts in hand. Check all four before printing.
 
 ## Capacity scales by adding modules, not by redesigning
 

@@ -157,7 +157,38 @@ sw_screw_d = 2.4;       /* <<CONFIRM>> */
    into the bed, so it carries no grille and no valve - and the slots that used to be here moved to
    the valve section's cabinet-side openings, which is where box air actually enters. */
 lid_t = 3;
-turn_clear = 10;        /* Headroom above the cartridge for the flow to turn over. */
+/* ⚠️ THIS IS A SUM, NOT A CHOICE. It has to clear the posts, the element and the air gap above it:
+   post_min + heater_h + heater_gap = 6 + 10 + 10 = 26. At 18 the arithmetic left 2 mm of post - a
+   nub with a screw pilot down its whole length - and the guard passed it, because "post_h > 0" asks
+   whether the post exists rather than whether it can hold anything. Same shape of weak guard as the
+   riser one that never looked at the bolts. */
+turn_clear = 26;        /* Headroom above the cartridge: posts + heater + air gap. */
+post_min = 6;           /* Shortest post worth screwing an element to. */
+
+/* [The regeneration heater — UPSTREAM of the bed, which decides where it goes] */
+/*
+During a purge the flow is: riser UP, turn over at the lid, DOWN through the bed. The element has to
+warm the air BEFORE it crosses the desiccant, so it belongs in the lid's turn-over volume. There is
+nowhere else upstream: the riser is a 7 mm slot in a wall.
+
+⛔ IT IS NOT BURIED IN THE CAP. The lid's outer face IS the cabinet side, and the reference design
+holds filament-area air at 30 C or under while regenerating. Sinking the element into solid plastic
+against that face would conduct straight into the box; standing it off on two posts puts an AIR GAP
+between the element and the skin, and air is the better insulator by far. It also prints faster than
+a 16 mm slab.
+*/
+heater_w = 40;          /* <<CONFIRM>> PTC element including its fins - measure before printing. */
+heater_d = 40;          /* <<CONFIRM>> */
+heater_h = 10;          /* <<CONFIRM>> */
+heater_clear = 0.6;     /* Per side, so it drops between the posts. */
+/* 10, not 6. At 6 the default configuration tripped the model's own air-gap warning, which tests
+   below 8 - a part that ships warning about itself is either badly configured or has a test it does
+   not believe. The reference design holds filament-area air at 30 C or under while regenerating, so
+   the answer is more air rather than a softer test. Air gap is also the cheap direction: it costs
+   turn_clear, which is empty volume, not wall. */
+heater_gap = 10;        /* Air gap from the element to the lid's outer skin - the cabinet side. */
+heater_screw_d = 2.5;   /* Self-tap into the posts; M3 thread-forming, not clearance. */
+heater_lead_w = 8;      /* Slot for the element's leads and the cutout wiring. */
 in_slot_w = 4;          /* Cabinet grille slots - they only keep fingers and debris out. */
 in_bar_w = 2.4;
 in_margin = 6;          /* Solid border around a grille field. */
