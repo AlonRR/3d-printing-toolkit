@@ -24,7 +24,7 @@ filters?"*
   makeup ──►│  (defined inlet, known area)    │
    air in   │   ┌──────────────────────────┐  │
             └──►│ ventobox: carbon + HEPA  │  │   recirculating scrubber
-                │   3 × Delta 4020, 12 V   ├──┘   (all flow returns)
+                │   2 × Delta 4020, 12 V   ├──┘   (all flow returns)
                 └──────────────────────────┘
             ┌────────────────────────────────┐
             └──► JUMPEAK 120 mm ──► duct ──► outside     the extraction
@@ -94,7 +94,7 @@ micro-electronics soldering** — not by cleverness.
 
 | # | Method | Parts | Verdict |
 |---|---|---|---|
-| **1** | **Buy 3-wire (tach) 40 mm fans** — ✅ **ORDERED, as 12 V Delta EFB0412VHD 4020 ×3, not 24 V** | ~₪15–25 | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
+| **1** | **Buy 3-wire (tach) 40 mm fans** — ✅ **ORDERED, as 12 V Delta EFB0412VHD 4020 ×2, not 24 V** | about ₪17 each | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
 | **2** | **SPS30 particulate sensor** — measure the OUTCOME | **owned** | Best *engineering*, different question. See below |
 | **3** | **Self-heated NTC in the airstream** | 1 NTC owned | A real airflow sensor: moving air cools a self-heated thermistor. Direct measure of *flow*, not rotation. Cheap, but analog and needs calibrating |
 | **4** | **Acoustic** — MAX4466 mic + band-pass | **10 owned** | 7000 rpm × blade count ≈ a strong tone. Non-contact. But the printer is noisy, so it needs real signal processing to discriminate |
@@ -163,15 +163,27 @@ Since 8 Sep 2026 there are **two**, doing different jobs:
 
 | | Fan | Duty | Rail |
 |---|---|---|---|
-| **Scrubber** | 3 × **Delta EFB0412VHD** 4020, **3-wire tach** *(on order)* | high restriction: carbon + HEPA | **12 V** — ⛔ **NOT the printer's 24 V PSU** |
+| **Scrubber** | **2** × **Delta EFB0412VHD** 4020, **3-wire tach** | high restriction: carbon + HEPA | **12 V** — ⛔ **NOT the printer's 24 V PSU** |
 | **Extraction** | JUMPEAK 120 mm, 3200 RPM, 4-pin PWM | low restriction: the duct | 12 V — PD trigger board |
 
 ⛔ **CORRECTED 14 Sep 2026 — THE SCRUBBER FANS ARE 12 V, AND A 24 V FEED DESTROYS THEM.** This table
 said Gdstime fans on the printer's 24 V PSU, and the cart row further down records `24V 3PIN FG`
 fans. **That was the cart, not the checkout.** What was actually ordered on 9 Sep is
-**3 × Delta EFB0412VHD**, variant `Standard 3pin` — and **`EFB0412` is Delta's 40 mm 12 V series**,
+**2 × Delta EFB0412VHD**, variant `Standard 3pin` — and **`EFB0412` is Delta's 40 mm 12 V series**,
 so the part number itself says 12 V. Checked against the inventory order record, not only relayed
 by the session that reported it. The owned 24 V Gdstime units are no longer the scrubber's fans.
+
+⛔ **AND THE COUNT WAS WRONG TOO — TWO WERE BOUGHT, NOT THREE (16 Sep 2026).** Measured from the
+order detail pages by the inventory session, not relayed: order `…147484` holds **one line,
+`21.54 × 2`**, subtotal **43.08**. Three at 21.54 would be 64.62, so the subtotal alone rules three
+out. The **3 came from the confirm page on the day and was never an order line** — the same failure
+mode as the 24 V entry below it, one page later in the same checkout.
+
+💰 **Listed is not paid.** The pair was charged **about ₪17 each**, against ₪21.54 listed.
+Every order in that checkout was charged under its listed price.
+
+📐 **This is a build-time problem, not a documentation nit.** The tray is 54 × 122 mm, almost exactly
+**3 × 40 mm**, so the design wants three and two are in hand. A third is ~₪21.54 plus shipping.
 
 📛 **How it went stale:** the fan variant was confirmed *from the cart page* at 11:58 on 9 Sep, and the
 checkout later that day chose differently. A cart is a draft of an order, and this page recorded the
@@ -306,10 +318,10 @@ condition it exists for.
    recorded (31 °C ± 2, door open, 3 Sep 2026). This is the number that decides whether a chamber
    heater is ever needed — answer it before buying one.
 3. **Build the SCRUBBER** — `ventobox/` (base, carbon trays, HEPA tray, fan tray), the HEPA
-   paper, the ENVIROCARB pellets, and the **3 × 12 V Delta EFB0412VHD** fans on a **12 V** feed — ⛔ **never the
+   paper, the ENVIROCARB pellets, and the **2 × 12 V Delta EFB0412VHD** fans on a **12 V** feed — ⛔ **never the
    printer's 24 V PSU**, which would destroy them. Run it as a pure recirculator inside the closed chamber and **verify it turns the
    chamber over** — see *The measurement that would settle it*. ⚠️ Count the fan apertures in
-   the slicer first: 122 mm is almost exactly 3 × 40 mm, and three fans are on order.
+   the slicer first: 122 mm is almost exactly 3 × 40 mm, and **only two fans arrived** — see the count correction under *The fans*, above.
 4. **Add the extraction** — the JUMPEAK on the duct, its own 12 V feed. Size the orifice, run
    the duct out. ⚠️ **Take the duct off the ventobox's clean side**, so what leaves the house is
    filtered air. That was free in the one-fan design and is now a plumbing decision.
@@ -325,7 +337,7 @@ condition it exists for.
 | Item | Priority | Note |
 |---|---|---|
 | ~~**Ducting**~~ + ~~a termination~~ | **Required** | 🛒 **DUCT SHORTLISTED 9 Sep 2026** *(the offer was time-limited — the duct is −53%, ₪16.88 at risk)*. ✅ **THE TERMINATION IS BEING PRINTED** — Alon, 9 Sep. Grille dropped; print it in **ASA**, see below — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
-| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below.** ⛔ **And the cart is not what was bought: checkout ordered 12 V Delta EFB0412VHD 4020 ×3** — see *The fans* |
+| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below.** ⛔ **And the cart is not what was bought: checkout ordered 12 V Delta EFB0412VHD 4020 ×2** — neither the voltage nor the count survived the checkout. See *The fans* |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased. ~~Except the 24 V feed~~ — no 24 V feed is needed now that the ordered fans are 12 V |
 

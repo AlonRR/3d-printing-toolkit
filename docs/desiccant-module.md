@@ -14,27 +14,36 @@ to**. Fix one port and every enclosure — the SAMLA box, a cabinet, a future dr
 hole, and every module fits every one of them.
 
 ```
-        BOX WALL                      THE MODULE
-   ───────────────────┐
-                      │   ┌─────────────────────────────┐
-     box air  ────────┼──►│ inlet + sensor              │
-                      │   │   ↓                         │
-                      │   │ desiccant cartridge(s)      │
-                      │   │   ↓                         │
-     dry air  ◄───────┼───│ fan + dust filter           │
-                      │   └─────────────────────────────┘
-   ───────────────────┘
-          port: Ø62 bore, 4× M3 on a 70 mm square
+        BOX WALL                         THE MODULE
+   ───────────────────┐        ┌──────────────────────────────┐
+                      │        │  lid - turns the flow over   │
+                      │        │   ^                    |     │
+     box air ─────────┼──► ────┤   | riser        bed    v    │
+                      │        │   |          cartridge(s)    │
+     dry air ◄────────┼─── ────┤   |                     |    │
+                      │        │  valve section + fan + filter│
+    room  ◄═══════════┼════════┤  ^ two bores, only open      │
+    room  ═══════════►┼═══════►┤    during a purge            │
+   ───────────────────┘        └──────────────────────────────┘
+        port: 2 × Ø40 bores, 46 apart, 4 × M3 on a 70 mm square
 ```
 
-**Port spec v1** — the only thing an enclosure has to provide:
+**Port spec** — the only thing an enclosure has to provide:
 
 | | |
 |---|---|
-| Bore | **Ø62 mm** (a 60 mm fan's throat, plus clearance) |
+| Bores | **2 × Ø40 mm**, 46 mm apart — **intake low, exhaust high** |
 | Bolt pattern | **4× M3 on a 70 × 70 mm square**, symmetric, so orientation never matters |
-| Panel thickness | **2–25 mm**, taken up by the clamp, not by the module |
-| Seal | gasket ring on the module face; the clamp plate pulls it against the wall |
+| Panel thickness | **2–25 mm**, taken up by screw length, not by the module |
+| Seal | one gasket **encircling both bores**; the clamp plate pulls it against the wall |
+
+⚠️ **Two bores, not one — decided 16 Sep 2026, and it is a change to the standard.** A purge has to
+take room air **in** and push it **out** while the filament area is sealed. Through a single bore the
+module breathes in and out of the same hole and **re-inhales its own damp exhaust**, which is slower
+and never finishes cleanly. Two bores make the purge once-through.
+
+Settled before anything was cut, which is the only cheap moment: the bores are four numbers in one
+params file, and a hole already sawn in a cabinet is not.
 
 Two adapters share that pattern, so the **module body never changes**:
 
@@ -42,8 +51,8 @@ Two adapters share that pattern, so the **module body never changes**:
 now needs *two* ways out: the port into the filament area, and a **vent to the room** that only opens
 during a purge. Without the second one there is nowhere for the water to go.
 
-- **Bulkhead adapter** — needs a Ø62 hole cut, and is now the **standard** fitting rather than one of
-  two options: it is what carries the vent through the wall.
+- **Bulkhead adapter** — needs the two Ø40 bores cut, and is now the **standard** fitting rather than
+  one of two options: it is what carries the purge through the wall.
 - **No-cut adapter** — the module sits fully inside on pads or magnets. ⛔ **It cannot purge in
   place**, because a module that exhausts into the box it is drying is a machine for moving water in
   a circle. An internally mounted module is therefore either **absorb-only** — pulled out to be baked,
@@ -55,8 +64,14 @@ inlet lid, one bay section per cartridge, fan section — plus the port hardware
 louvre plate that serves as the filament-side return grille). The stack is why capacity is additive:
 a second cartridge is a second bay section and four longer screws.
 
-📋 **The model does not yet carry the damper, the vent port, the servo mount or the heater pocket** —
-those are the next revision, and the parts above are the v1 absorb-only stack until then.
+✅ **The model is cut and verified.** Eight parts — bay, fan, **valve**, lid, **gate**, flange, clamp
+and louvre — all render manifold and single-part, and the default passes `scad-check.sh` end to end.
+The valve section carries both gates, both cabinet grilles, both room bores, and the servo and
+microswitch pockets.
+
+⚠️ **Still `<<CONFIRM>>`:** the servo, microswitch and fan envelopes are typical figures rather than
+measurements off parts in hand, and **no heater pocket is cut yet** — the element's mounting is the
+one piece of the regenerating design the model does not yet carry.
 
 ## Capacity scales by adding modules, not by redesigning
 
@@ -90,11 +105,16 @@ cross-section, so the deeper cartridge is the one the fan cannot pull through.
 and falls with cross-section. A 45 mm bed across a 120 mm face is something a 60 mm fan can pull
 through; the same volume as a Ø50 × 320 mm tube is not.
 
-## 🔑 The sensor goes on the INLET
+## 🔑 The sensor goes at the CABINET INTAKE
 
 Put it in the module's return path and it reads the air that has just left the desiccant — the
 driest air in the system, and a reading that says the box is fine while the box is not. **The
-sensor's job is to measure the enclosure**, so it sits at the inlet, in box air.
+sensor's job is to measure the enclosure**, so it sits where box air enters: the cabinet intake
+grille in the valve section.
+
+⚠️ **That opening is shut during a purge**, so a reading taken then describes the inside of a sealed
+module rather than the cabinet. The firmware ignores its own humidity reading outside the absorbing
+phase, and the purge trigger is gated on the same condition.
 
 That also makes the module self-describing: each one reports the RH of the box it is plugged into,
 so a box with two modules gives two independent readings of the same air — a free cross-check.
@@ -200,6 +220,75 @@ change of design rather than a change of fill.
 [3Dnatives](https://www.3dnatives.com/en/sunlu-inslogic-filadc-i10-dehumidifying-cabinet-01092026/) ·
 [VoxelMatters](https://www.voxelmatters.com/inslogic-and-sunlu-launch-filadc-i10-filament-dehumidifying-storage-cabinet/) ·
 [vendor page](https://store.sunlu.com/products/filament-dehumidifying-cabinet-filadc-i10)
+
+### ⭐ The duct is a U, and that is what makes one valve enough
+
+The fan pulls from the lid end downward, so room air entering at the bottom has to **climb before it
+can cross the bed**. The riser and the bed are the two legs of a U, and **both ends of the duct
+therefore arrive at the bottom section**.
+
+```
+          lid              a plain cap - it turns the flow over
+           ^   |
+    riser  |   v  bed (cartridges)
+           |   |
+       valve section       <- all four paths meet here
+        |     |     |     |
+     cabinet cabinet room room
+     intake  return  in   out
+```
+
+That collapses the hard part. The lid stops being a valve and becomes a cap, and every switching
+decision happens in one section instead of at both ends of a 140 mm stack.
+
+**Three states from one moving part.** Each leg gets a **barrel valve** — a drum in a round chamber
+whose two ports sit 90° apart: the room bore below it, the cabinet grille beside it. One window in
+the drum reaches the cabinet, or the room, or **neither**, when the blank faces both.
+
+| Shaft | Cabinet grilles | Room bores | = |
+|---|---|---|---|
+| one end | open | shut | **absorbing** |
+| **midpoint** | **shut** | **shut** | **cooling** |
+| other end | shut | open | **exhausting** |
+
+⛔ **A flap valve cannot produce the middle row**, and the middle row is the cooling phase.
+
+### 📛 The barrel drum was tried and the model refused it
+
+A first cut used a **barrel valve** — a drum in a round chamber, window to one port or the other,
+blank facing both. The geometry guard rejected it on its own defaults, and the arithmetic is worth
+keeping because it is not obvious from a sketch:
+
+```
+drum Ø44, window 34  ->  blank = (44 - 34) / 2 = 5 mm
+room bore as cut     ->  40.3 mm
+```
+
+**5 mm of blank cannot shut a 40 mm port.** Cutting the window as a slot straight through the drum
+leaves *two* openings 180° apart and two narrow blanks between them, so no angle closes anything. A
+single-window drum fixes that only if its duct connects **axially**, along the shaft — and in a U
+duct the duct arrives *radially*, so a rigid drum cannot hold the duct open while the selector turns.
+
+⭐ **The mechanism was wrong, not the dimensions**, and no amount of adjusting Ø44 would have found
+that. The guard asked whether a blank could cover a bore; the answer was structural.
+
+### ✅ A sliding gate gives all three states
+
+Each leg's two ports sit **side by side** in the floor, and a plate slides across them:
+
+| Gate position | Room bore | Cabinet port | = |
+|---|---|---|---|
+| one end | **shut** | open | absorbing |
+| **middle** | **shut** | **shut** | cooling |
+| other end | open | **shut** | exhausting |
+
+The middle state comes free, because a gate long enough to reach either port is also long enough to
+span both. Both legs' gates ride **one push-rod** driven by a single servo crank, and the
+microswitches sense the rod's travel rather than the servo's commanded angle.
+
+Two drums ride **one horizontal shaft** — a 5 mm steel rod rather than a printed one, since it spans
+both drums and takes the servo's torque — driven by one servo, with the microswitches sensing **the
+shaft**.
 
 ### ⚠️ What the servo adds to the safety case
 
