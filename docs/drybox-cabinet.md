@@ -83,6 +83,11 @@ chamber took the AHT20+BMP280.
 | Reed or micro switch | Door state — logs openings and inhibits heating with the door open | ₪5 |
 | Bentonite, 2–4 kg total | Scales with volume and ingress, not only with spool mass | ₪20–40 |
 | Mesh trays or sachets | ⛔ Never loose clay in the airstream — it is a fan pointed at a room, and clay carries respirable silica | ₪10 |
+
+⭐ **The desiccant half is no longer part of this build.** It is a bolt-on module with a standard
+port, specified in [desiccant-module](desiccant-module.md), so the cabinet provides a Ø62 bore on a
+70 mm square of M3 and nothing else. Capacity then scales by adding modules — four to eight
+cartridges for a cabinet this size — instead of by designing a desiccant tray into the carcass.
 | PC4-M10 bulkhead couplings, one per feeding spool | Dry feeding to the printer — the capability a sealed box cannot have | ₪1.5 ea |
 | Cable gland, M12/M16 | The sensor tail through the wall without a leak | ₪5 |
 
