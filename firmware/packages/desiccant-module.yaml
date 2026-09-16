@@ -1,35 +1,51 @@
-# desiccant-module — shared firmware for ONE desiccant module, wherever it is plugged in.
+# desiccant-module — shared firmware for ONE self-regenerating desiccant module.
 #
-# ⚠️ BRING-UP DRAFT: validated with `esphome config`, not yet wired or flashed.
+# ⚠️ BRING-UP DRAFT: validated with `esphome config`, not wired, not flashed. Nothing here has
+# switched a real heater or driven a real servo.
 #
 # This file is a PACKAGE and renders nothing on its own. A per-module file sets the substitutions
-# and includes it (see firmware/desiccant-module-a.yaml). A second module is then a few lines, and
-# a fix to the logic here reaches every module at its next flash.
+# and includes it (firmware/desiccant-module-a.yaml). A second module is then a few lines, and a
+# fix to the logic here reaches every module at its next flash.
 #
-# Substitutions a module file must set:
-#   node_name        ESPHome node name, e.g. desiccant-module-a
-#   subject          what the entities are named after - THE ENCLOSURE, never the board
-#   sda_pin scl_pin  I2C pins (house pair on a C3 SuperMini is GPIO5 / GPIO6)
-#   fan_pin          PWM pin for the module fan (GPIO10 is the house fan pin)
-#   sensor_address   0x44 or 0x45 for an SHT31
-#   spent_rh         inlet RH that means the clay is no longer holding the box
-#   spent_delay      how long it must stay there before saying so
-#   fan_period       how often to circulate
-#   fan_run_time     how long each circulation lasts
+# ------------------------------------------------------------------ THE CYCLE
 #
-# ⭐ ENTITIES ARE NAMED AFTER THE ENCLOSURE. An id that lives on the instrument cannot outlive the
-# instrument, and a module is explicitly meant to move between boxes. Name it for the box it is in,
-# and moving it is a rename rather than a lost history.
+#   ABSORBING   damper to the filament area, vent closed, heater off. The default state.
+#   EXHAUSTING  damper closes the filament area and OPENS THE VENT, heater on, fan on. Moisture
+#               leaves the building rather than the box.
+#   COOLING     both closed, heater off, fan stirring. Hot clay RELEASES; reopening a hot module
+#               would hand its water straight to the spools.
 #
-# 🔑 THE SENSOR IS ON THE INLET, in box air. In the return path it would read the driest air in the
-# system - the air that has just left the desiccant - and report a healthy box while the box is wet.
+# ⛔ COOLING IS CLOSED ON BOTH SIDES ON PURPOSE. Cooling with the vent open would be faster, and
+# wrong: a cooling bed adsorbs, and it should adsorb from the CABINET on the next phase rather than
+# pull room humidity in while it cools.
+#
+# 🔑 The sensor reads the FILAMENT AREA, so its reading is what triggers a purge - and during a
+# purge that same inlet is connected to the room instead. Readings taken while not ABSORBING
+# therefore describe the room, not the cabinet, and nothing may act on them.
+#
+# ------------------------------------------------------------------ SAFETY
+#
+# Safety runs here, not in Home Assistant (docs/chamber-sensor.md §7), and the heater has two ways
+# to do harm that the v1 fan-and-sensor module did not:
+#
+#   * heat with no way out - the vent must be PROVEN open, by a switch, not by having commanded a
+#     servo there. A servo has no feedback; an unknown position means HEATER OFF.
+#   * heat into the filament area - the same interlock, opposite consequence.
+#
+# None of it replaces the hardware ladder: thermal cutout in series with the element, a one-shot
+# thermal fuse above it, and a fused supply.
 
 esphome:
   name: ${node_name}
   on_boot:
     priority: 600
     then:
-      - output.turn_off: module_fan_pwm
+      - output.turn_off: heater_pwm
+      - output.turn_off: fan_pwm
+      # Position is unknown at boot. Command the safe one and let the switches confirm it.
+      - servo.write:
+          id: damper
+          level: ${servo_absorb}
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -38,8 +54,6 @@ esp32:
     type: esp-idf
 
 logger:
-  # The SuperMini's USB-C port IS the USB_SERIAL_JTAG peripheral. The C3 mini in chamber-c3.yaml is
-  # the opposite case and needs UART0; copying either setting to the other board silences the console.
   hardware_uart: USB_SERIAL_JTAG
 
 wifi:
@@ -56,8 +70,6 @@ ota:
   - platform: esphome
     password: !secret ota_password
 
-# ⛔ Deliberately no `api:` block - MQTT discovery only, matching every other node in this repo, so
-# the ESPHome integration cannot discover the same device a second time and duplicate its entities.
 mqtt:
   broker: !secret mqtt_host
   username: !secret mqtt_username
@@ -69,17 +81,90 @@ i2c:
   scl: ${scl_pin}
   scan: true
 
+one_wire:
+  - platform: gpio
+    pin: ${bed_pin}
+
+globals:
+  # 0 absorbing, 1 exhausting, 2 cooling. The text sensor below is the readable half.
+  - id: phase
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: last_good_bed
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
 output:
   - platform: ledc
-    id: module_fan_pwm
+    id: fan_pwm
     pin: ${fan_pin}
     frequency: 25000Hz
+  # PWM, not a relay: a cold PTC's inrush is thermal and lasts until the element self-heats, so
+  # only limiting current during the ramp helps.
+  - platform: ledc
+    id: heater_pwm
+    pin: ${heater_pin}
+    frequency: 200Hz
+  - platform: ledc
+    id: servo_pwm
+    pin: ${servo_pin}
+    frequency: 50Hz
+
+servo:
+  - id: damper
+    output: servo_pwm
+    auto_detach_time: 3s      # stop holding against the end stops once it has arrived
+    restore: false
 
 fan:
   - platform: speed
     id: module_fan
-    output: module_fan_pwm
-    name: ${subject} circulation
+    output: fan_pwm
+    name: ${subject} module fan
+
+binary_sensor:
+  # THE POSITION PROOF. Commanding a servo is not knowing where it is.
+  - platform: gpio
+    id: at_absorb
+    name: ${subject} damper at filament side
+    device_class: opening
+    pin:
+      number: ${sw_absorb_pin}
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on_off: 100ms
+
+  - platform: gpio
+    id: at_vent
+    name: ${subject} damper at vent
+    device_class: opening
+    pin:
+      number: ${sw_vent_pin}
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on_off: 100ms
+
+  # The trigger, and the alarm. Only meaningful while ABSORBING - see the note at the top.
+  - platform: template
+    id: desiccant_spent
+    name: ${subject} desiccant spent
+    device_class: problem
+    lambda: |-
+      if (id(phase) != 0) return {};              // not looking at cabinet air right now
+      if (isnan(id(inlet_rh).state)) return {};   // no reading is not a verdict
+      return id(inlet_rh).state > ${purge_rh};
+    filters:
+      - delayed_on: ${purge_delay}
+    on_press:
+      - script.execute: run_purge
 
 sensor:
   - platform: sht3xd
@@ -88,7 +173,7 @@ sensor:
       id: inlet_temp
       name: ${subject} temperature
       device_class: temperature
-      state_class: measurement          # ⛔ NOT OPTIONAL - no state_class, no long-term statistics.
+      state_class: measurement
       accuracy_decimals: 1
     humidity:
       id: inlet_rh
@@ -98,9 +183,18 @@ sensor:
       accuracy_decimals: 1
     update_interval: 60s
 
-  # ⛔ NEVER COMPARE TWO RH READINGS TAKEN AT DIFFERENT TEMPERATURES. Cooler air at the same moisture
-  # content simply reads a higher RH. Dew point is the quantity that can be compared between this box,
-  # the room, and this box last month.
+  # The bed. Independent of the climate sensor and on a different bus, so one failure cannot blind
+  # both the controller and its guard.
+  - platform: dallas_temp
+    id: bed_temp
+    name: ${subject} desiccant bed temperature
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: 10s
+    on_value:
+      - lambda: 'id(last_good_bed) = millis();'
+
   - platform: template
     name: ${subject} dew point
     device_class: temperature
@@ -128,29 +222,176 @@ sensor:
     entity_category: diagnostic
     update_interval: 60s
 
-binary_sensor:
-  # THE ALARM THIS MODULE EXISTS FOR. A passive box fails silently: the clay saturates and nothing
-  # says so. Sustained inlet RH above the threshold is that signal.
-  #
-  # `delayed_on` is what makes it a finding rather than a twitch - opening the door spikes RH for
-  # minutes, and a spent cartridge holds it for hours.
+text_sensor:
   - platform: template
-    name: ${subject} desiccant spent
-    device_class: problem
+    name: ${subject} phase
     lambda: |-
-      if (isnan(id(inlet_rh).state)) return {};   // no reading is not a verdict
-      return id(inlet_rh).state > ${spent_rh};
-    filters:
-      - delayed_on: ${spent_delay}
+      switch (id(phase)) {
+        case 1: return {"exhausting"};
+        case 2: return {"cooling"};
+        default: return {"absorbing"};
+      }
+    update_interval: 10s
 
-interval:
-  # Duty-cycled, not continuous. A sealed store needs the air mixed often enough to keep the reading
-  # honest; between cycles there is nothing for a fan to do but wear out. Circulation also stops the
-  # module reporting its own microclimate instead of the box's.
-  - interval: ${fan_period}
+switch:
+  # Nothing else may drive heater_pwm. Every turn-on passes the interlock and the ramp.
+  - platform: template
+    id: heater
+    name: ${subject} regeneration heater
+    icon: mdi:radiator
+    optimistic: false
+    restore_mode: ALWAYS_OFF
+    lambda: 'return id(heater_pwm).get_level() > 0.0f;'
+    turn_on_action:
+      - if:
+          condition:
+            and:
+              - binary_sensor.is_on: at_vent          # PROVEN open to the room
+              - binary_sensor.is_off: at_absorb       # and shut to the filament
+              - lambda: 'return id(module_fan).state;'
+          then:
+            - output.set_level:
+                id: heater_pwm
+                level: 25%
+            - delay: 3s
+            - output.set_level:
+                id: heater_pwm
+                level: 60%
+            - delay: 3s
+            - output.set_level:
+                id: heater_pwm
+                level: 100%
+          else:
+            - logger.log: "heater refused: vent not proven open, or fan stopped"
+    turn_off_action:
+      - output.turn_off: heater_pwm
+
+script:
+  # ---------------------------------------------------------------- EXHAUSTING
+  - id: run_purge
+    mode: single                      # a second trigger must not restart a running cycle
     then:
+      - lambda: 'id(phase) = 1;'
+      - servo.write:
+          id: damper
+          level: ${servo_vent}
+      - wait_until:
+          condition:
+            and:
+              - binary_sensor.is_on: at_vent
+              - binary_sensor.is_off: at_absorb
+          timeout: 20s
+      - if:
+          condition:
+            binary_sensor.is_off: at_vent
+          then:
+            # The damper did not arrive. Do not heat; go back to a known-safe state.
+            - logger.log: "purge aborted: damper never reached the vent"
+            - script.execute: run_cool
+          else:
+            - fan.turn_on:
+                id: module_fan
+                speed: 100
+            - delay: 3s
+            - switch.turn_on: heater
+            # END ON THE BED, NOT ON A TIMER. While water is leaving, evaporation holds the bed
+            # temperature down; when it stops, the bed climbs to setpoint and stays there. That
+            # plateau ending IS the measurement that the clay has given up what it is going to.
+            - wait_until:
+                condition:
+                  for:
+                    time: ${purge_settle}
+                    condition:
+                      lambda: 'return !isnan(id(bed_temp).state) && id(bed_temp).state >= ${regen_c} - 2;'
+                timeout: ${purge_max}
+            - script.execute: run_cool
+
+  # ---------------------------------------------------------------- COOLING
+  - id: run_cool
+    mode: restart
+    then:
+      - switch.turn_off: heater
+      - lambda: 'id(phase) = 2;'
+      - servo.write:
+          id: damper
+          level: ${servo_closed}
       - fan.turn_on:
           id: module_fan
           speed: 100
-      - delay: ${fan_run_time}
+      - wait_until:
+          condition:
+            lambda: 'return !isnan(id(bed_temp).state) && id(bed_temp).state < ${cool_below_c};'
+          timeout: ${cool_max}
+      - script.execute: run_absorb
+
+  # ---------------------------------------------------------------- ABSORBING
+  - id: run_absorb
+    mode: restart
+    then:
+      - switch.turn_off: heater
+      - servo.write:
+          id: damper
+          level: ${servo_absorb}
+      - wait_until:
+          condition:
+            binary_sensor.is_on: at_absorb
+          timeout: 20s
       - fan.turn_off: module_fan
+      - lambda: 'id(phase) = 0;'
+
+button:
+  - platform: template
+    name: ${subject} run regeneration
+    on_press:
+      - script.execute: run_purge
+  - platform: template
+    name: ${subject} back to absorbing
+    on_press:
+      - script.execute: run_absorb
+
+interval:
+  # THE SAFETY LOOP. Independent of WiFi, MQTT and Home Assistant.
+  - interval: 5s
+    then:
+      - lambda: |-
+          const bool stale = (id(last_good_bed) == 0) || (millis() - id(last_good_bed) > 60000);
+          const float bed = id(bed_temp).state;
+          const bool vent_open = id(at_vent).state && !id(at_absorb).state;
+          if (id(heater_pwm).get_level() > 0.0f) {
+            if (stale || isnan(bed) || bed > ${regen_ceiling_c} || !vent_open || !id(module_fan).state) {
+              ESP_LOGW("safety", "heater cut: stale=%d bed=%.1f vent_open=%d fan=%d",
+                       stale, bed, vent_open, id(module_fan).state);
+              id(heater).turn_off();
+            }
+          }
+      # Bang-bang against the bed while exhausting: the element self-limits and the mass is slow,
+      # so hysteresis beats an untuned PID on a heater.
+      - if:
+          condition:
+            lambda: 'return id(phase) == 1 && !isnan(id(bed_temp).state);'
+          then:
+            - if:
+                condition:
+                  lambda: 'return id(bed_temp).state > ${regen_c};'
+                then:
+                  - switch.turn_off: heater
+                else:
+                  - if:
+                      condition:
+                        lambda: 'return id(bed_temp).state < ${regen_c} - 3;'
+                      then:
+                        - switch.turn_on: heater
+
+  # Circulation while ABSORBING. Duty-cycled: a sealed store needs the air mixed often enough to
+  # keep the reading honest, not constantly, and between cycles a fan only wears out.
+  - interval: ${fan_period}
+    then:
+      - if:
+          condition:
+            lambda: 'return id(phase) == 0;'
+          then:
+            - fan.turn_on:
+                id: module_fan
+                speed: 100
+            - delay: ${fan_run_time}
+            - fan.turn_off: module_fan

@@ -1,21 +1,53 @@
-# desiccant-module-a — the first physical module. Everything it does lives in the shared package;
-# this file is only what makes this module THIS module.
+# desiccant-module-a — the first physical module. All the logic lives in the shared package; this
+# file is only what makes this module THIS module.
 #
-# A second module is a copy of this file with a different node_name, subject and sensor_address -
-# not a copy of the logic.
+# A second module is a copy with a different node_name, subject and sensor_address - not a copy of
+# the logic.
 #
 # ⭐ `subject` names the ENCLOSURE, not the board. Move this module to the cabinet and the honest
 # edit is `subject`, because the history belongs to the box being measured.
+#
+# C3 SuperMini pin map, chosen against the board's real constraints: GPIO2/8/9 are strapping,
+# GPIO18/19 are USB-Serial-JTAG, and GPIO0/1 are XTAL_32K and free only if no crystal is fitted -
+# which ESPHome cannot know and therefore cannot warn about.
 
 substitutions:
   node_name: desiccant-module-a
-  subject: Drybox A            # the SAMLA 22 L box - change when the module moves
-  sda_pin: GPIO5
+  subject: Drybox A                # the SAMLA 22 L box - change when the module moves
+
+  # --- pins
+  sda_pin: GPIO5                   # house I2C pair
   scl_pin: GPIO6
-  fan_pin: GPIO10
-  sensor_address: "0x44"       # SHT31. The second module on a shared bus would need 0x45.
-  spent_rh: "25"               # a working box sits far below this; see docs/moisture-isotherms.md
-  spent_delay: 6h              # long enough that opening the door is not a verdict
+  bed_pin: GPIO7                   # 1-Wire, DS18B20 in the desiccant bed
+  fan_pin: GPIO10                  # house fan pin
+  heater_pin: GPIO4                # MOSFET gate, through the cutout and the one-shot fuse
+  servo_pin: GPIO3                 # damper servo
+  sw_absorb_pin: GPIO20            # microswitch: damper proven at the filament side
+  sw_vent_pin: GPIO21              # microswitch: damper proven at the vent
+
+  sensor_address: "0x44"           # SHT31. A second module on a shared bus would need 0x45.
+
+  # --- damper travel, in servo units (-1.0 .. 1.0). SET THESE ON THE BENCH, against the switches,
+  # before the heater is ever connected: a servo that thinks it is at the vent and is not is the
+  # one failure this whole interlock exists to catch.
+  servo_absorb: "-1.0"             # open to the filament area, vent shut
+  servo_closed: "0.0"              # both shut - the cooling position
+  servo_vent: "1.0"                # open to the room, filament area shut
+
+  # --- when to regenerate
+  purge_rh: "30"                   # clay holds 25-35%; above this it is no longer doing its job
+  purge_delay: 30min               # sustained, so opening the door is not a trigger
+
+  # --- the regeneration itself
+  regen_c: "80"                    # clay releases above ~50 C; 80 keeps every printed part under
+                                   # ASA's 108 C glass transition. Bake LONGER, never hotter.
+  regen_ceiling_c: "95"            # hard cut in the safety loop, well under the plastic
+  purge_settle: 10min              # bed held at setpoint this long = the water has stopped leaving
+  purge_max: 120min                # backstop if that never happens
+  cool_below_c: "35"               # hot clay releases; reopen only when it will adsorb
+  cool_max: 60min
+
+  # --- circulation while absorbing
   fan_period: 30min
   fan_run_time: 3min
 
