@@ -43,6 +43,12 @@ Two adapters share that pattern, so the **module body never changes**:
 - **No-cut adapter** — the module sits fully inside, on VHB pads or magnets, and the port is blanked.
   For boxes nobody wants to drill. Storage only.
 
+Both are modelled, along with the module itself, in
+[`models/desiccant-module`](../models/desiccant-module/): a **bolted stack** of printed sections —
+inlet lid, one bay section per cartridge, fan section — plus the port hardware (flange, clamp, and
+the louvre plate that blanks the port and recirculates, which is what v1 runs). The stack is why
+capacity is additive: a second cartridge is a second bay section and four longer screws.
+
 ## Capacity scales by adding modules, not by redesigning
 
 From the arithmetic in [moisture-isotherms](moisture-isotherms.md): a 4 kg PETG load moving
