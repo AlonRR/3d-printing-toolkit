@@ -5,6 +5,11 @@ The **12 V 50 W PTC element is reallocated to this build from the printer-enclos
 has not been started and is explicitly deferred behind two measurements that cost nothing
 (see [chamber-sensor](chamber-sensor.md), build order step 6).
 
+⭐ **A cabinet version is designed in [drybox-cabinet](drybox-cabinet.md)** (16 Sep 2026), and the
+split there is the useful part: **this page is the DRYER** — element, airflow, safety ladder — while
+that one is the **STORE**. Keeping the heated volume small is the lowest-risk way to have both, so
+this box does not necessarily retire when a cabinet is built.
+
 ## Why this, and why now
 
 A 10 kg PETG bundle landed on 29 Aug — the largest single filament holding in the lab — and PETG is
