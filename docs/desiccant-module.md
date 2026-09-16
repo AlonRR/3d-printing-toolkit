@@ -56,8 +56,20 @@ real sizing wants 3–5× the bare minimum.
 | 4–8 cartridges | 2–4 kg | | a 120–180 L cabinet |
 
 **500 g is the cartridge unit** because it is what one printed carrier can hold without the bed
-becoming deep enough to choke the fan. Bulk density of clay granules is ~0.8 g/cm³, so 500 g is
-~625 cm³ — a **120 × 120 × 45 mm** slab rather than a tube.
+becoming deep enough to choke the fan. The envelope that actually holds it is
+**130 × 130 × 45 mm**, and the model reports the figure rather than leaving it to be assumed:
+[`models/desiccant-cartridge`](../models/desiccant-cartridge/) echoes **499 g** of clay at
+0.8 g/cm³ and a 90 % fill.
+
+⚠️ **This page first said 120 × 120 × 45, and that was wrong by 78 g.** The number came from
+500 g ÷ 0.8 g/cm³ = 625 cm³ done by hand here — but **625 cm³ of clay needs more than 625 cm³ of
+box**, because the walls, the four lid bosses and the 10 % of headroom the granules need all come
+out of it first. The model's capacity echo caught it; the arithmetic in this paragraph did not.
+Kept rather than quietly corrected, because the lesson is the reason the model echoes grams at all.
+
+⭐ **When it has to grow, grow it sideways.** Reaching 500 g by deepening the bed to 53 mm works
+arithmetically and is the wrong direction: pressure drop rises with depth and falls with
+cross-section, so the deeper cartridge is the one the fan cannot pull through.
 
 ⚠️ **Shallow and wide, never long and thin.** Pressure drop through a packed bed rises with depth
 and falls with cross-section. A 45 mm bed across a 120 mm face is something a 60 mm fan can pull
