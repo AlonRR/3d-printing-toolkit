@@ -200,6 +200,40 @@ sizing wants **3–5×** that, so **0.5–1.5 kg of bentonite** for this box. At
 trivially affordable, and over-sizing costs nothing but volume — it directly extends the interval
 between regeneration bakes.
 
+### Bulk density — the mass-to-volume step, and where it lives
+
+Everything above sizes the desiccant by **mass**. A container is built to a **volume**. Bulk density
+is the only bridge between the two, so it belongs here with the rest of the physics rather than
+buried in a model.
+
+| | |
+|---|---|
+| **Bentonite, granular, as poured** | **0.80 g/cm³** `<<CONFIRM>>` |
+| Usual range for cat-litter clay | 0.7 – 0.9 g/cm³ |
+
+⚠️ **This is an assumed typical figure, not a measurement, and the marker stays until it is one.**
+It is carried here with its `<<CONFIRM>>` intact deliberately: a value tends to shed its caveat when
+it moves into a document that reads as authoritative, and this one feeds a capacity number that
+looks precise.
+
+✅ **It does not have to stay assumed.** There is roughly **20 kg of the actual clay on hand**, so one
+measurement settles it: fill a 1 L container as poured, level it off, weigh it. When that figure
+exists it replaces the table above as **MEASURED, with the date** — not as a typical value.
+
+**What depends on it.** `models/desiccant-cartridge/` computes
+`capacity_g = cavity_cm3 × bulk_density × fill_factor`, which is where the cartridge's **499 g**
+comes from, and it carries a WARN guard if the density falls outside 0.7–0.9.
+
+⛔ **This page is the single source for the VALUE; the model necessarily holds a copy of the
+NUMBER.** OpenSCAD cannot read Markdown, so `desiccant-cartridge.params.scad` keeps a literal that
+is explicitly marked as derived from here. Change it in this table first, then update the params
+file to match. Anything else — cabinet specs, firmware, notes — links here and holds no copy at all.
+
+⚠️ **Do not re-derive capacity by hand from this number.** The first attempt at the cartridge sized
+a 120 × 120 × 45 box from 500 g ÷ 0.8 = 625 cm³ and got **422 g**, because 625 cm³ of *clay* needs
+more than a 625 cm³ *box* once walls, bosses and a 90 % fill factor are taken out. Take capacity from
+the model's echo, which accounts for all three.
+
 ## Sources
 
 - [Moisture Sorption and Degradation of Polymer Filaments Used in 3D Printing](https://pmc.ncbi.nlm.nih.gov/articles/PMC10304609/) — the isotherm coefficients, Δw values and equilibration times

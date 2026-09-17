@@ -45,7 +45,8 @@ screw_inset = 7.0;  /* Screw centre, in from each outer corner along both axes. 
 
 /* [What goes in it] */
 /* MEASURED on the bentonite on hand would be better than either of these. Both feed the capacity echo, so they are tagged rather than buried. */
-bulk_density = 0.80;    /* <<CONFIRM>> g/cm3, granular bentonite as poured. Cat-litter clay is usually 0.7-0.9. */
+/* ⛔ bulk_density is OWNED BY docs/moisture-isotherms.md, "Bulk density" under Sizing the desiccant. That page is the single source for the value and its provenance; this line is a DERIVED COPY, and it exists only because OpenSCAD cannot read Markdown. Change the doc first, then match it here. Everything else in the repo links to the doc and holds no copy. */
+bulk_density = 0.80;    /* <<CONFIRM>> g/cm3, granular bentonite as poured. Cat-litter clay is usually 0.7-0.9. ~20 kg of the real clay is on hand, so one measurement retires this marker: 1 L container, filled as poured, levelled, weighed. */
 fill_factor = 0.90;     /* How full it actually gets. Filling to the brim stops the lid seating and gives the granules nowhere to settle. */
 granule_min = 2.0;      /* <<CONFIRM>> mm, the smallest granule that must not fall through a slot. */
 target_mass = 500;      /* g. The design point. The echo reports what this geometry really holds, and warns if it is short. */
