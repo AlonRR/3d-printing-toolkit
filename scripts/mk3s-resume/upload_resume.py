@@ -13,9 +13,12 @@ from pathlib import Path
 f = Path(sys.argv[1])
 # The PrusaLink host and API key come from a PrusaSlicer physical-printer profile, which is
 # gitignored because it holds the key in plaintext. Override the path with PRUSA_PRINTER_INI.
-ini = Path(os.environ.get(
-    "PRUSA_PRINTER_INI",
-    Path(os.environ["APPDATA"]) / "PrusaSlicer" / "physical_printer" / "Prusa mk3S+.ini"))
+# ⚠️ Resolved lazily on purpose. The obvious one-liner puts the APPDATA lookup in os.environ.get()'s
+# DEFAULT argument, which Python evaluates EAGERLY - so it raises on any host without APPDATA even
+# when the override is set, which is precisely when someone is pointing this at a stub or a Linux box.
+_override = os.environ.get("PRUSA_PRINTER_INI")
+ini = Path(_override) if _override else (
+    Path(os.environ["APPDATA"]) / "PrusaSlicer" / "physical_printer" / "Prusa mk3S+.ini")
 cfg = dict(l.split(" = ", 1) for l in ini.read_text(encoding="utf-8").splitlines() if " = " in l)
 host = cfg["print_host"].strip()
 base = host if host.startswith("http") else "http://" + host

@@ -124,6 +124,41 @@ is gitignored because it stores the key in plaintext. Point them elsewhere with 
   0.4 mm step for the layer above to bridge.
 - **The original fault.** A resume buys the hours back; it does not diagnose why the print stopped.
 
+### ✅ The bed probe was repaired — 17 Sep 2026
+
+Alon repaired the heatbed thermistor, the fault behind the `MINTEMP BED` stop that this whole page
+exists for. Verified from outside over PrusaLink, passively:
+
+| | |
+|---|---|
+| ~50 samples over two runs | **26.2 – 26.4 °C**, spread 0.20, sd 0.07 |
+| Readings under 15 °C | **none** — MINTEMP fires below 10 |
+| Jumps over 1 °C between consecutive samples | **none** |
+| Failed reads | none |
+
+⚠️ **That is a COLD, STATIONARY test, and the fault was neither.** It appeared with the bed at 70 °C
+and the gantry moving, and an intermittent break at a cable clamp is exactly the kind that hides when
+nothing is hot and nothing moves. **The test that settles it is the wiggle test under load** — bed
+preheated to 70 °C, flex the harness at the bed end, watch the reading. Until that is done, "repaired"
+means "no longer faulting at room temperature".
+
+📋 **`scripts/mk3s-resume/print_monitor.py` is the instrument for the next long print**: it counts bed
+readings more than 5 °C below target, which is the shape this fault would take before it trips.
+
+✅ **It is hardened against the reduced object**, which it had to be: a restart mid-print would
+otherwise log a few empty samples and then stop counting dips — the one job it has, during exactly
+the window a thermistor fault would show. It now treats a status with no temperatures as a **blind
+sample**, counts those separately, and reports them alongside the dip count, so a quiet run and a
+run where the daemon was restarting are no longer the same output.
+
+⛔ **Do not read a PrusaLink `ERROR` state as a printer fault.** While sampling the above, the printer
+showed `ERROR`, then PrusaLink returned 502, then 503 *"not finished initializing"*, then served a
+**reduced status object with no temperature fields** for about 20 seconds before recovering. That is
+the daemon restarting, not the machine — the printer stayed `IDLE` throughout. Two consequences:
+anything polling this API must use `.get()` rather than indexing `temp_bed`, because the reduced
+object is a real state; and when the print host sits behind a reverse proxy, a 502 is **the proxy**
+answering rather than the printer — check which `Server` header came back before blaming the Pi.
+
 ⚠️ **Prefer the printer's SD card over streaming** when the print host is unreliable — a long resume
 run through a print server whose storage is failing simply adds a second way to lose the part.
 Everything in the generated file behaves the same from SD, and Live adjust Z is easier to reach.

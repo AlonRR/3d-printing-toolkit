@@ -12,6 +12,7 @@ The API key comes from the PrusaSlicer physical-printer profile and is never pri
 """
 import datetime
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -24,9 +25,13 @@ log_dir.mkdir(parents=True, exist_ok=True)
 
 # The PrusaLink host and API key come from a PrusaSlicer physical-printer profile, which is
 # gitignored because it holds the key in plaintext. Override the path with PRUSA_PRINTER_INI.
-ini = Path(os.environ.get(
-    "PRUSA_PRINTER_INI",
-    Path(os.environ["APPDATA"]) / "PrusaSlicer" / "physical_printer" / "Prusa mk3S+.ini"))
+#
+# ⚠️ Resolved lazily on purpose. The obvious one-liner puts the APPDATA lookup in os.environ.get()'s
+# DEFAULT argument, which Python evaluates EAGERLY - so it raises on any host without APPDATA even
+# when the override is set, which is precisely when someone is pointing this at a stub or a Linux box.
+_override = os.environ.get("PRUSA_PRINTER_INI")
+ini = Path(_override) if _override else (
+    Path(os.environ["APPDATA"]) / "PrusaSlicer" / "physical_printer" / "Prusa mk3S+.ini")
 cfg = dict(l.split(" = ", 1) for l in ini.read_text(encoding="utf-8").splitlines() if " = " in l)
 host = cfg["print_host"].strip()
 base = host if host.startswith("http") else "http://" + host
@@ -43,13 +48,16 @@ def get(path):
 t0 = time.monotonic()
 seen_printing = False
 dips = 0
+blind = 0          # samples where the daemon served no temperatures at all
 min_bed = None
 last = None
 errors = 0
 while time.monotonic() - t0 < max_s:
     now = datetime.datetime.now().astimezone()
     try:
-        p = get("/api/v1/status")["printer"]
+        # PrusaLink serves 200 with a REDUCED object while the daemon restarts - no temperature
+        # or axis fields at all. Measured 17 Sep: ~20 s of it, then the full object returns.
+        p = (get("/api/v1/status") or {}).get("printer") or {}
         job = get("/api/v1/job") or {}
         errors = 0
     except Exception as e:                       # PrusaLink or network hiccup: log and keep going
@@ -73,15 +81,21 @@ while time.monotonic() - t0 < max_s:
     last = rec
     if rec["state"] == "PRINTING":
         seen_printing = True
-        if rec["bed"] is not None:
+        # Both halves must be present: a reduced object gives bed=None, and comparing that against a
+        # target raises - which would silently stop the dip count, the one thing this is here for.
+        if rec["bed"] is not None and rec["bed_target"]:
             min_bed = rec["bed"] if min_bed is None else min(min_bed, rec["bed"])
-            if rec["bed_target"] and rec["bed"] < rec["bed_target"] - 5 and rec["progress"] not in (None, 0):
+            if rec["bed"] < rec["bed_target"] - 5 and rec["progress"] not in (None, 0):
                 dips += 1
+        elif rec["bed"] is None:
+            blind += 1
     elif seen_printing:
         print(f"{now:%H:%M:%S} printer left PRINTING -> {rec['state']}; last Z {rec['z']}, "
-              f"bed {rec['bed']}/{rec['bed_target']}, dips {dips}, min bed while printing {min_bed}")
+              f"bed {rec['bed']}/{rec['bed_target']}, dips {dips}, min bed while printing {min_bed}"
+              + (f", {blind} blind samples (daemon restarting)" if blind else ""))
         sys.exit(0)
     time.sleep(interval)
 
 print(f"window over: state {last and last['state']}, Z {last and last['z']}, progress "
-      f"{last and last['progress']}%, bed dips {dips}, min bed while printing {min_bed} - re-arm")
+      f"{last and last['progress']}%, bed dips {dips}, min bed while printing {min_bed}"
+      + (f", {blind} blind samples (daemon restarting)" if blind else "") + " - re-arm")
