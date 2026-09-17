@@ -129,14 +129,21 @@ documents, which said ~110 °C here and ~125 °C in the HomeBox record. **Both w
 | **Molecular sieve** | ~200 °C | — | **400–550 °C** |
 
 ⛔ **THE CLAY AND SILICA ROWS ABOVE ARE UNSOURCED — do not design to them.** Flagged 17 Sep 2026 by
-the session that took over the module work, and confirmed here. Three things are wrong with them:
+the session that took over the module work, and confirmed here. **Three** things are wrong with them
+— the struck-through fourth was an argument of mine that turned out not to hold, kept visible rather
+than quietly deleted, because a retracted reason is itself worth knowing about:
 
 - **They are not in this page's Sources, or anywhere in this repo.** The figures are reported to come
   from a vendor FAQ (Tropack) that was never cited. *I have not read that page myself* — the
   provenance is theirs; what I verified is that nothing in this repo cites it.
-- ⭐ **Clay and silica gel carry the IDENTICAL pair, ~90 and ~150 °C.** Two materials with different
-  binding energies cannot share regeneration temperatures. That is the fingerprint of one sentence
-  reused for both — which is exactly how the source is described.
+- ~~⭐ **Clay and silica gel carry the IDENTICAL pair, ~90 and ~150 °C.** Two materials with different
+  binding energies cannot share regeneration temperatures.~~ ⛔ **RETRACTED 17 Sep 2026 — this
+  argument is wrong, and it was mine.** Identical figures for the two materials are *normal* in
+  primary sources: the maker's own MIL-D-3464 procedure assigns the **same** temperatures, 118.3 °C
+  and 104.4 °C, to silica gel and bentonite clay alike. The physics was sloppy — binding energy
+  governs how *much* water comes off at a given temperature, not what temperature a procedure tells
+  an operator to set. A shared figure is evidence of nothing either way. **The conclusion stands on
+  the other three points below; this one never supported it.**
 - **The paragraph below contradicts the table four lines above it.** Süd-Chemie's own sheet says only
   *"Desi Pak products can be reactivated for multiple uses"* — no temperature at all. Read from the
   PDF directly, 17 Sep. So this page tabulated three regeneration figures and then stated that the
