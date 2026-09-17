@@ -152,7 +152,7 @@ than quietly deleted, because a retracted reason is itself worth knowing about:
   the session that chased it reports it appears in neither.
 
 ✅ **Use the sourced figures instead — they are already below:** Clariant's own Desi Pak procedure,
-**118 °C for 16–24 h**, or **104 °C** non-MIL, and a peer-reviewed **150 °C through five cycles**.
+**118.3 °C for 24 h**, or **104.4 °C** non-MIL, and a peer-reviewed **150 °C through five cycles**.
 
 ⚠️ **This triplet has propagated.** `drybox-active.md` carries the same numbers. That file is owned
 by the drybox session as of 17 Sep and has been told.
@@ -189,15 +189,37 @@ does not merely dry out — it stops being a desiccant.
 | natural → **300 °C** | capacity **rises** |
 | **500 °C** | capacity **reduced**; *"dehydroxylation and irreversible modification of the expandable sheet structure were initiated"* |
 
-⭐ **So the rule is BAKE LONGER, NEVER HOTTER.** Clariant's own Desi Pak procedure is **118 °C for
-16–24 h**, or **104 °C** for non-MIL reactivation; a peer-reviewed study used **150 °C through five
+⭐ **So the rule is BAKE LONGER, NEVER HOTTER.** Clariant's own Desi Pak procedure is **118.3 °C for
+24 h**, or **104.4 °C** for non-MIL reactivation; a peer-reviewed study used **150 °C through five
 cycles with no structural degradation**. Above ~300 °C you trade capacity away permanently and gain
 nothing, because the water is long gone by then.
 
-⚠️ **The trap that produced my error:** MIL-D-3464's regeneration sheet is full of temperature
-warnings — but they are about the **Tyvek bag melting at ~121–127 °C**, not about the clay. Reading
-a packaging limit as a material limit is what made 400–600 °C look like the only ceiling that
-existed.
+⛔ **CORRECTED 17 Sep 2026 — this page said "16–24 h", and the "16–" was invented downstream.** The
+source is the MIL-D-3464 procedure reproduced in Sea-Bird Application Note 71, verified here by
+decrypting the PDF and reading it, not on report. Step 4 is unambiguous: *"Desiccant bags should be
+allowed to remain in the oven at the assigned temperature for **24 hours**."* Step 3 is *"Set the
+temperature of the oven to **118.3 °C**"*. Searched the whole document: **`16` never appears as a
+duration** — only in model numbers and one `40.6 cm (16 inches)` clearance — and `16-24`, `16 to 24`
+and `sixteen` are all absent. A range that is not in the source is a range someone added.
+
+⚠️ **Why my first attempt to check this failed, worth knowing before trusting a null result.** The
+PDF is **encrypted** (owner-password AES, no user password), so its text sits in encrypted object
+streams. Decompressing by hand recovers ~750 characters and looks exactly like a scanned document —
+I wrote it off as "pages are images", which was wrong. `pypdf` with the `cryptography` backend reads
+it fine: 7 pages, 14,499 characters. **"No text layer" and "I could not decrypt it" are different
+findings and they look identical from the outside.**
+
+✅ **The same step settles the retracted argument above, first-hand.** The non-MIL line reads
+*"activation or reactivation of **both silica gel and Bentonite clay** … at 104.4 °C"* — one
+temperature, two materials, in a primary source. That is the counterexample, and it is now read
+rather than relayed.
+
+⚠️ **The trap that produced an earlier error on this page, now visible in the source sentence.** The
+118.3 °C setpoint is immediately followed by *"WARNING: Tyvek has a melt temperature of
+121.1 – 126.7 °C"* — a limit on the **bag**, not on the clay, sitting a bare 3 °C above the process
+temperature. That proximity is exactly how a packaging limit gets read as a material limit, and it
+is what once made 400–600 °C look like the only ceiling that existed. The regeneration sheet is full
+of such warnings; none of them are about the desiccant.
 
 ### Temperature: clay holds where silica gel fades
 
