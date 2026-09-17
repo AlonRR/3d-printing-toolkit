@@ -93,6 +93,50 @@ PrusaSlicer, and the key is **not** the PrusaLink one.
 verified here: sending the stored Connect key as `X-Api-Key` to `connect.prusa3d.com` returns
 exactly the same `401` as sending nothing.
 
+### ⚠️ There are THREE key classes, not two — corrected 17 Sep 2026
+
+The paragraph above says "two keys", and that was the shape of the problem it was written about
+(PrusaSlicer uploading). **It is incomplete, and the omission has already cost someone a
+diagnosis**: a session chasing a Connect `401` on the print host read it, reasonably, and went
+looking in the wrong slot. Read from source — Prusa-Link `config.py` and
+Prusa-Connect-SDK-Printer `__init__.py` — rather than recalled:
+
+| | Where it lives | How it travels | Who issues it |
+|---|---|---|---|
+| **1. PrusaLink local API key** | `[service::local]` → `api_key` | `X-Api-Key:` to the Pi | PrusaLink, shown in its own Settings |
+| **2. PrusaConnect user API key** | PrusaSlicer's physical-printer entry | Connect's own auth, **account**-scoped | Connect web UI → Settings → API keys |
+| **3. PrusaLink→Connect printer token** | `[service::connect]` → `token` | `Token:` **+ `Fingerprint:`** to `connect.prusa3d.com` | **Connect, by handshake — never pasted** |
+
+Class 3 is the one this page previously did not mention. Alongside `token`, that section holds
+only `hostname` (default `connect.prusa3d.com`), `tls` and `port`. There is **no `printer_uuid` or
+`fingerprint` in the config** — the fingerprint is computed and sent as a header, not stored.
+
+⭐ **`use_connect()` is literally `bool(token)`.** A non-empty token is the only thing that turns
+Connect on, which has a consequence worth stating outright: **with the token cleared, a zero
+`UNAUTHORIZED` count means zero *attempts*, not zero rejections.** A counter reading zero because
+the feature is switched off is not the feature working — and it is an easy thing to mistake for a
+fix.
+
+### The handshake never accepts a pasted key
+
+`register()` POSTs to `/p/register`; Connect replies with a **`Code`** header; the SDK re-queues
+that `Register` item and polls — `202` means not ready, one-second sleep — until Connect answers
+`200` with a **`Token`** header, and *that* is what lands in the slot.
+
+Two consequences:
+
+- **Re-registering cannot introduce a wrong-class token**, because the slot is written from
+  Connect's response. A wrong-class value can only arrive by hand-editing the ini or restoring one
+  that was — so a restored backup is the vector to suspect, not the registration.
+- A stale `401` has two causes that look identical and share one fix: a wrong-class value, or a
+  **genuine token Connect has since invalidated** (printer re-added or rotated on Connect's side).
+  Comparing `[service::connect] token` against `[service::local] api_key` in the backup tells the
+  two apart for the record; it does not change what you do about it.
+
+⛔ **No string-format discriminator is given here on purpose.** The source does not state one and a
+recalled "keys of this class look like…" would be a guess presented as a fact. The three axes above
+— header, ini section, provenance — are what the source actually supports.
+
 - **Get it from:** Connect web UI → **Settings** → scroll to **API keys**.
 - **Physical Printer dialog:** host type `PrusaConnect`, hostname `https://connect.prusa3d.com`,
   authorization type **API Key** (not Digest — Connect does not support Digest through
