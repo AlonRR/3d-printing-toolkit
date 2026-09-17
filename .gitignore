@@ -46,3 +46,19 @@ firmware/prusa-cam-c/dependencies.lock
 # firmware/prusa-cam-c`, which would otherwise sweep it in. Git history is the
 # one thing in this project that is not reversible.
 firmware/prusa-cam-c/main/wifi_secrets.h
+
+# Vendor datasheets and any other third-party document. This is COPYRIGHT, not
+# privacy, which is why it is handled differently from a secret: dropping the
+# file from HEAD achieves nothing, because the problem is distributing someone
+# else's document at all. A history rewrite already purged this exact set once.
+# Extract the DATA into Markdown instead and link where the original came from —
+# facts are free to use. That is also a size argument: 2.6 MB of Inslogic PDF
+# became 7.8 KB of slicer/reference/inslogic-filament-data.md, which is greppable
+# and diffable where the PDFs are neither.
+# Deliberately repo-wide and by extension rather than naming the four files: the
+# four are not special, and a rule that lists them protects against those four
+# and nothing else. Nothing in this repo should ever track a PDF (verified: zero
+# tracked, zero anywhere in history). Both cases are spelled out rather than
+# relying on core.ignorecase, which is a per-host setting.
+*.pdf
+*.PDF
