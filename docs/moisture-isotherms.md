@@ -128,10 +128,49 @@ documents, which said ~110 °C here and ~125 °C in the HomeBox record. **Both w
 | Silica gel | ~90 °C | — | ~150 °C |
 | **Molecular sieve** | ~200 °C | — | **400–550 °C** |
 
+⛔ **THE CLAY AND SILICA ROWS ABOVE ARE UNSOURCED — do not design to them.** Flagged 17 Sep 2026 by
+the session that took over the module work, and confirmed here. Three things are wrong with them:
+
+- **They are not in this page's Sources, or anywhere in this repo.** The figures are reported to come
+  from a vendor FAQ (Tropack) that was never cited. *I have not read that page myself* — the
+  provenance is theirs; what I verified is that nothing in this repo cites it.
+- ⭐ **Clay and silica gel carry the IDENTICAL pair, ~90 and ~150 °C.** Two materials with different
+  binding energies cannot share regeneration temperatures. That is the fingerprint of one sentence
+  reused for both — which is exactly how the source is described.
+- **The paragraph below contradicts the table four lines above it.** Süd-Chemie's own sheet says only
+  *"Desi Pak products can be reactivated for multiple uses"* — no temperature at all. Read from the
+  PDF directly, 17 Sep. So this page tabulated three regeneration figures and then stated that the
+  manufacturer publishes none.
+- **"~80 % at 120 °C" has no primary source at all.** Attributed by a search snippet to Gore patents;
+  the session that chased it reports it appears in neither.
+
+✅ **Use the sourced figures instead — they are already below:** Clariant's own Desi Pak procedure,
+**118 °C for 16–24 h**, or **104 °C** non-MIL, and a peer-reviewed **150 °C through five cycles**.
+
+⚠️ **This triplet has propagated.** `drybox-active.md` carries the same numbers. That file is owned
+by the drybox session as of 17 Sep and has been told.
+
 ⭐ **Süd-Chemie, who make the clay, publish no regeneration temperature at all** — only *"can be
 reactivated for multiple uses"*. That is precisely why every downstream figure differs. **So the
 recorded dry MASS is the done-indicator, not the thermostat**: temperature alone cannot say how far
 along the curve a bake got.
+
+### ⚠️ Regeneration by BAKING and regeneration by a low-RH AIR SWEEP are different mechanisms
+
+The table above — whatever its numbers turn out to be — is about **putting clay in an oven**. It is
+**not** evidence about what an 80 °C air sweep does, and reading it that way is a category error the
+cabinet design nearly inherited.
+
+A sweep works on **relative** humidity, not temperature. Heat room air and its RH collapses: 25 °C at
+55 %RH is roughly **4 %RH at 80 °C**. The clay then equilibrates toward that very low RH and gives up
+water, at a temperature far below any bake figure. **That mechanism is already described on this
+page** — see the drybox setpoint discussion below, where the same effect at 50 °C in ~17 %RH air
+partially self-regenerates the bed during a drying cycle. The two sections had simply never been
+connected.
+
+⚠️ **One caveat that blocks borrowing Süd-Chemie's capacity curves number-for-number.** Their sheet
+describes Desi Pak as *"a calcium-rich montmorillonite"* — verified from the PDF, 17 Sep. The clay on
+hand is **sodium** bentonite, which binds water less strongly. The shapes transfer; the values do not.
 
 ⛔ **CORRECTED 12 Sep 2026 — "hotter is safe" was WRONG, and Alon caught the mechanism.** The
 ceiling is about **degradation, not desorption**: heating immobilises the interlayer cations, and
