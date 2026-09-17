@@ -137,7 +137,7 @@ head = f"""; ==== RESUME of {src.name}
 ; part top at layer Z {top_z:g}, touch-off wall at Z {wall_z:g}; resumes at layer Z {resume_z:g}
 ; (original line {start + 1}; original G-code is unmodified from line {splice + 1}).
 ; Needs someone AT the printer: three M0 prompts and one Live adjust Z touch-off.
-; PRECONDITION: the nozzle tip was measured {gap:g} mm above the left wall's top, and nothing has
+; PRECONDITION: the nozzle tip was measured {gap:g} mm above the touch point below, and nothing has
 ; moved Z since. Otherwise press RESET now.
 G21
 G90
@@ -152,7 +152,7 @@ M140 S{bed}
 M104 S{TOUCH_NOZZLE}
 M190 S{bed}
 M109 S{TOUCH_NOZZLE}
-G1 X{tx:g} Y{ty:g} F6000 ; over the left wall
+G1 X{tx:g} Y{ty:g} F6000 ; over the touch point
 G1 Z{approach_z:g} F300 ; nominally {APPROACH:g} mm above the wall top
 G92 Z1 ; temporary low Z: Live adjust Z is hidden at Z >= 2 mm
 M117 Live adjust Z: paper

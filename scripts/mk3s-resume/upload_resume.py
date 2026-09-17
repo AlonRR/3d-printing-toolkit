@@ -6,6 +6,7 @@ The API key is read from the PrusaSlicer physical-printer profile and never prin
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -27,19 +28,41 @@ key = cfg["printhost_apikey"].strip()
 data = f.read_bytes()
 # /api/v1/status lists the writable storage as /local (the SD card is read-only)
 url = f"{base}/api/v1/files/local/{urllib.parse.quote(f.name)}"
-req = urllib.request.Request(url, data=data, method="PUT", headers={
-    "X-Api-Key": key,
-    "Content-Type": "text/x.gcode",
-    "Content-Length": str(len(data)),
-    "Print-After-Upload": "?0",
-    "Overwrite": "?0",
-})
-try:
-    with urllib.request.urlopen(req, timeout=600) as r:
-        print("PUT", r.status, len(data), "bytes")
-except urllib.error.HTTPError as e:
-    print("PUT failed", e.code, e.read().decode("utf-8", "replace")[:300])
+def put(url, data, key, hops=2):
+    """PUT, following a redirect by hand.
+
+    urllib will NOT auto-follow a redirect for PUT: HTTPRedirectHandler only re-issues GET and
+    HEAD (plus POST on 301/302/303) and raises HTTPError for anything else. When PrusaLink sits
+    behind a reverse proxy that upgrades http to https, EVERY request answers 308 - so GETs follow
+    silently and look healthy while the upload dies on a redirect it was never going to follow.
+    Measured 17 Sep: status, file listings and the upload all returned 308 to the https form.
+    """
+    for hop in range(hops):
+        req = urllib.request.Request(url, data=data, method="PUT", headers={
+            "X-Api-Key": key,
+            "Content-Type": "text/x.gcode",
+            "Content-Length": str(len(data)),
+            "Print-After-Upload": "?0",
+            "Overwrite": "?0",
+        })
+        try:
+            with urllib.request.urlopen(req, timeout=600) as r:
+                return r.status, url
+        except urllib.error.HTTPError as e:
+            loc = e.headers.get("Location") if e.headers else None
+            if e.code in (301, 302, 307, 308) and loc and hop < hops - 1:
+                url = urllib.parse.urljoin(url, loc)   # absolute or relative Location
+                continue
+            body = e.read().decode("utf-8", "replace")[:300]
+            print(f"PUT failed {e.code} {body}")
+            sys.exit(1)
+    print(f"PUT failed: more than {hops} redirects")
     sys.exit(1)
+
+
+status, final = put(url, data, key)
+# Report the scheme actually used, never the host - this output can end up in a transcript.
+print("PUT", status, len(data), "bytes", f"(via {urllib.parse.urlparse(final).scheme})")
 
 # read back: the file must be listed and the printer must NOT be printing
 st = urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key})

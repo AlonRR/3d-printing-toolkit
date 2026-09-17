@@ -43,6 +43,10 @@ height with `G92` and carrying on.
 
 **A caliper gap, then paper.**
 
+⛔ **The caliper half of this DID NOT WORK on the real recovery — see §9.** The extruder body and the
+caliper jaws foul each other, so the gap cannot be reached at all. §9 has the method that replaced
+it. The paper touch-off below is unchanged and is still what sets the final gap.
+
 1. Push the head by hand over a flat, solid part of the print — idle steppers release, so it moves.
 2. Measure the gap between the nozzle tip and the top surface directly below it, with the calipers'
    inside jaws. Raise Z a few mm first if the gap is too tight to measure.
@@ -162,3 +166,82 @@ answering rather than the printer — check which `Server` header came back befo
 ⚠️ **Prefer the printer's SD card over streaming** when the print host is unreliable — a long resume
 run through a print server whose storage is failing simply adds a second way to lose the part.
 Everything in the generated file behaves the same from SD, and Live adjust Z is easier to reach.
+
+---
+
+## 9. What the real recovery changed — 17 Sep 2026
+
+The resume above was finally run. It worked: the spliced layer bonded, Z advanced normally, and the
+job resumed with ~9 h 35 m remaining, matching the estimate derived from the original file's own
+`M73` markers. Five things in this page were wrong or missing, and the recovery found all five.
+
+### ⛔ The caliper gap is not measurable — the coarse reference had to be replaced
+
+§4 said to measure nozzle-to-part with the calipers' inside jaws. **On this machine that is
+physically impossible**: the extruder body and the jaws foul. No amount of technique fixes it.
+
+What replaced it, and it is better:
+
+1. **Jog Z down to contact in 0.1 mm steps from the print host's web UI.** The LCD's Move Z is
+   **1 mm** steps, which brackets contact to 1 mm and is useless here; the web UI jogs 0.1 mm.
+2. **Reset is safe and does not move Z** — boot clamps the *coordinate* to `Z_MIN_POS` 0.15 while the
+   nozzle stays physically where it was.
+3. **Jog back up a known amount** and that is the gap, measured by the machine's own leadscrew
+   instead of by eye. Relative motion is exact even though the absolute frame is meaningless.
+4. Heat the nozzle to the same temperature the touch-off uses (170) and **wipe it first** — a cold
+   blob reads as early contact, and the hotend's thermal expansion should match the later touch-off.
+
+⚠️ **Contact judged by eye reads EARLY.** Measured here: contact reported at 10.83, actual 10.40 —
+**0.43 mm early**, so the true gap was 5.43 mm where 5.00 was declared. The coarse reference is
+allowed to be wrong by a few tenths; absorbing exactly that is what the paper touch-off is for.
+⚠️ Declaring a gap **larger** than the truth is the dangerous direction — it drives the approach
+*below* the part. Smaller is safe and merely costs knob-turning.
+
+### ✅ Live adjust Z reaches past −2.0
+
+This page assumed roughly 0.46 mm of downward room from a sheet at −1.535. **Wrong** — the touch-off
+ran to **−2.267** without complaint. Lucky, because the 0.43 mm coarse error needed 0.732 mm of
+travel where 0.3 mm had been budgeted.
+
+### ✅ `M850` mid-print does not disturb the established Z
+
+The restore step was a live worry: if `M850 Z<v>` re-applied the sheet offset as a physical shift, it
+would undo the touch-off and print the resumed layer in the air. **It does not.** Verified by the
+print itself — the layer bonded and Z advanced. Consistent with babystep applying through
+`babystepsTodo` as motion already spent, which an EEPROM write cannot retract. *(Prusa's own G-code
+reference describes M850 as setting/reporting sheet values. The handler was NOT read in source —
+`Marlin_main.cpp` is too large to fetch whole and GitHub code search needs auth.)*
+
+### ⭐ The original G-code can survive in the OS temp directory
+
+The print host lost the file completely — PrusaLink storage empty, job history gone, not on the SD
+card. It survived as **PrusaSlicer's upload temp file**, `%TEMP%\.<pid>_0.gcode`: "Send to printer"
+slices to a temp file and uploads *that*, and the temp copy stays behind on the workstation.
+
+**Check there before concluding a lost print is unrecoverable**, and identify the candidate on
+several independent signatures rather than one. Here: layer count × layer height gave the exact
+height, the duration matched, the slice timestamp matched the slicer's own config mtime, and the
+`M73` remaining-time at the stop height agreed with the elapsed clock to 2.2 %.
+
+⚠️ **Do not identify it by `max Z` from the `G1 Z` moves** — that catches the end-of-print lift, not
+the print height, and it wrongly cleared a saved project and wrongly indicted the right file. Use
+`;LAYER_CHANGE` count × layer height.
+
+### 🐛 `urllib` will not follow a 308 on PUT
+
+With the print host behind a reverse proxy that upgrades http to https, **every** request answers
+`308`. `HTTPRedirectHandler` re-issues only GET and HEAD, so status polling follows silently and
+looks perfectly healthy while the upload dies on a redirect it was never going to follow.
+`upload_resume.py` now follows one redirect by hand. The same trap hides any PUT/DELETE behind a
+proxy while GETs suggest all is well.
+
+### Touch point: put the coarse reference and the touch-off at the SAME place
+
+If the heatbed has been off the machine, the part's height varies across the bed. Taking the coarse
+reference at one spot and touching off at another feeds that difference straight into Z. Use
+`RESUME_TOUCH_XY` so both happen at one point, and the tilt cancels.
+
+⚠️ **Pick that point from the geometry, not by eye.** A first guess at mid-span landed in a recess
+and was correctly refused. `scripts/mk3s-resume/probe_touch.py` replicates the generator's own
+`covered()` test and reports which points qualify in both layers; prefer the one with the widest
+margin, so hand-positioning error and any X/Y registration residual are absorbed.
