@@ -6,7 +6,7 @@ regenerates itself by sealing the filament area and baking the bed out to the ro
         bay section      one cartridge; ADD A SECTION PER CARTRIDGE
         [filter sheet]   HEPA paper, clamped between sections - not printed
         fan section      plenum and fan pocket
-        valve section    both barrel valves, both cabinet grilles, both room bores
+        valve section    both sliding gates, both cabinet grilles, both room bores
         ---- port ----   flange + clamp through the enclosure wall
 
 THE DUCT IS A U. Air goes UP the riser, over at the lid, DOWN through the bed, and out at the bottom,

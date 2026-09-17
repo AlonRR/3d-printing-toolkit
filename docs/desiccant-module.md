@@ -250,7 +250,11 @@ therefore arrive at the bottom section**.
 That collapses the hard part. The lid stops being a valve and becomes a cap, and every switching
 decision happens in one section instead of at both ends of a 140 mm stack.
 
-**Three states from one moving part.** Each leg gets a **barrel valve** — a drum in a round chamber
+**Three states from one moving part.** ⛔ **The mechanism below is the REJECTED first attempt — read
+the next two headings before building anything from it.** It is kept because the requirement it
+states is still the requirement, and because the reason it failed is not visible from a sketch.
+
+~~Each leg gets a **barrel valve**~~ — a drum in a round chamber
 whose two ports sit 90° apart: the room bore below it, the cabinet grille beside it. One window in
 the drum reaches the cabinet, or the room, or **neither**, when the blank faces both.
 
@@ -295,9 +299,8 @@ The middle state comes free, because a gate long enough to reach either port is 
 span both. Both legs' gates ride **one push-rod** driven by a single servo crank, and the
 microswitches sense the rod's travel rather than the servo's commanded angle.
 
-Two drums ride **one horizontal shaft** — a 5 mm steel rod rather than a printed one, since it spans
-both drums and takes the servo's torque — driven by one servo, with the microswitches sensing **the
-shaft**.
+The push-rod is a **Ø4 mm steel rod** rather than a printed one: it spans both gates and takes the
+servo's torque. That is `rod_d = 4` in the params, and this page and the model have to agree on it.
 
 ### ⚠️ What the servo adds to the safety case
 
@@ -306,7 +309,7 @@ two new failure modes exist and both are interlocks rather than warnings:
 
 - **Heat with no way out.** The heater may run **only** when the damper is proven in the purge
   position *and* the fan is running. A servo has no feedback, so the position must be **sensed** — a
-  microswitch at each end of the drum's travel — and *unknown position means heater off*.
+  microswitch at each end of the push-rod's travel — and *unknown position means heater off*.
 - **Heat into the filament area.** Same interlock, opposite consequence: if the filament side is
   open while the heater runs, the module bakes its water into the cabinet.
 

@@ -11,7 +11,7 @@ WHAT THIS IS. The module that carries desiccant cartridges, pulls box air throug
         bay section      one cartridge; ADD A SECTION PER CARTRIDGE
         [filter sheet]   HEPA paper, clamped between sections - not printed
         fan section      plenum and fan pocket
-        valve section    both barrel valves, both cabinet grilles, both room bores, the sensor
+        valve section    both sliding gates, both cabinet grilles, both room bores, the sensor
         ---- port ----   flange + clamp through the enclosure wall
 
 The duct is a U: air goes UP the riser, over at the lid, DOWN through the bed, and out at the bottom - so both ends arrive in the valve section and one valve assembly serves all four paths.
@@ -30,7 +30,7 @@ Comment style: prose is one long line per paragraph inside a block comment. Open
 
 /* [Which part to render] */
 /* One solid per render: scad-check.sh asserts a single-part STL. "stack" is a preview and must not be exported. */
-draw_part = "bay";  /* "bay" | "fan" | "valve" | "lid" | "flange" | "clamp" | "louvre" | "drum" | "stack" */
+draw_part = "bay";  /* "bay" | "fan" | "valve" | "lid" | "gate" | "flange" | "clamp" | "louvre" | "stack" */
 
 /* [THE PORT — the interface every enclosure must provide] */
 /*
