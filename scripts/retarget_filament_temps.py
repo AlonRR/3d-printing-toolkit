@@ -1,6 +1,13 @@
 """Retarget a sliced G-code's temperatures to a different filament profile, and prove it.
 
-usage: retarget_filament_temps.py <filament.ini> <out_dir> <file.gcode> [more.gcode ...]
+usage: retarget_filament_temps.py [--no-header] <filament.ini> <out_dir> <file.gcode> [more.gcode ...]
+
+--no-header suppresses the four-line provenance header, so the output differs from its source on
+temperature lines and NOTHING else. Use it whenever the result will be diffed against the pristine
+original, or when "only the temperatures changed" has to be literally true rather than nearly true.
+The header is good provenance for a file read later out of context, but it is still four added
+lines, and on a calibration set that gets compared byte-for-byte those four lines are the entire
+difference between a clean diff and a suspicious one.
 
 Written for the Live adjust Z calibration set, which was sliced in Dec 2023 against "Generic PETG"
 at 230/85 while the filament actually in the machine wants 240/70. Calibrating the first layer at
@@ -30,9 +37,17 @@ from pathlib import Path
 KEYS = ("first_layer_temperature", "temperature",
         "first_layer_bed_temperature", "bed_temperature")
 
-ini = Path(sys.argv[1])
-out_dir = Path(sys.argv[2])
-sources = [Path(p) for p in sys.argv[3:]]
+# Flags are pulled out BEFORE positional parsing, so adding one can never shift the file arguments
+# out from under an existing call. An unknown flag is rejected rather than silently treated as a
+# path, which is how a typo becomes "no G-code files given" three lines later.
+flags = {a for a in sys.argv[1:] if a.startswith("--")}
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+assert flags <= {"--no-header"}, f"unknown flag(s): {sorted(flags - {'--no-header'})}"
+NO_HEADER = "--no-header" in flags
+
+ini = Path(args[0])
+out_dir = Path(args[1])
+sources = [Path(p) for p in args[2:]]
 assert sources, "no G-code files given"
 out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -80,7 +95,9 @@ for src in sources:
                             new.split(";")[0].strip() or new.strip()))
         out.append(new)
 
-    header = [
+    # Empty under --no-header. Every check below is written against len(header), so suppressing it
+    # weakens nothing: the line-count assertion, the body slice and the diff all still hold.
+    header = [] if NO_HEADER else [
         f"; Temperatures retargeted to {ini.stem} ({NOZ1}/{NOZ} nozzle, {BED1}/{BED} bed).",
         f"; Source: {src.name}, sliced against its own profile - geometry is UNCHANGED.",
         "; Only M104/M109/M140/M190 with S>0 and the matching config comments were rewritten;",
