@@ -24,6 +24,11 @@ nominal first layer is 0.200, the nozzle is sitting 0.300 too high and Live Z mo
 The ladder deliberately starts ABOVE nominal and climbs: you approach from too-high, so no setting
 on the plate can drive the nozzle into the sheet.
 
+LABELS. Each tag has its Z drawn beside it in a seven-segment stroke font sized from the bead, not
+from a typed point size - see the block above the font for the measurements behind that. The
+reference sets void their labels out of the pad instead, which is what a slicer produces from
+debossed text and what stops working once the bead is wide enough to bridge the gap.
+
 FLOW. area = h*(w - h) + pi*(h/2)^2 - a flat bead with semicircular edges, PrusaSlicer's model.
 Checked against the 0.4 reference at its first-layer width: predicted 0.03135 E/mm against a
 measured 0.03168, 1.0% low. The 0.6 reference reads 3.3% off the same formula because it MIXES
@@ -46,7 +51,7 @@ N_TAGS = int(sys.argv[7]) if len(sys.argv) > 7 else 11
 # Geometry copied from the reference set rather than invented - a proven, readable layout.
 TAG_W, TAG_D, PITCH = 39.0, 9.0, 12.0
 X0, Y0 = 105.5, 40.0
-TICK_LEN, TICK_GAP, TICK_X_END = 5.0, 1.6, 103.0
+LABEL_X_END = 103.0                # labels are right-aligned to end here, just left of the pad
 FIL_AREA = math.pi * (1.75 / 2) ** 2
 BED_X, BED_Y = 250.0, 210.0
 
@@ -93,7 +98,8 @@ a(f"; Live adjust Z calibration tags - {NOZZLE:g} mm nozzle, {N_TAGS} tags")
 a(f"; Ladder Z {zs[0]:g}..{zs[-1]:g} step {Z_STEP:g}; nominal first layer {LAYER_H:g}, width {WIDTH:g}")
 a(f"; Flow {E_PER_MM:.5f} E/mm (bead {bead:.4f} mm2). One width throughout - no perimeter/infill mix.")
 a("; READ IT LIKE THIS: find the tag that looks right, subtract the nominal first layer height")
-a(f"; from its Z, and move Live adjust Z by MINUS that much. Tag Z {zs[0]:g} is tick 1, at the FRONT.")
+a(f"; from its Z, and move Live adjust Z by MINUS that much. Each tag has its own Z printed beside")
+a(f"; it, so there is nothing to count; Z {zs[0]:g} is the FRONT row.")
 a("; The ladder only ever sits ABOVE nominal, so nothing here can drive the nozzle into the sheet.")
 a("M201 X1000 Y1000 Z200 E5000")
 a("M203 X200 Y200 Z12 E120")
@@ -130,6 +136,61 @@ def seg(x0, y0, x1, y1, feed=None):
     a(f"G1 X{x1:.3f} Y{y1:.3f} E{d * E_PER_MM:.5f}")
     return d
 
+
+# ---- the label font ---------------------------------------------------------------------------
+# WHY STROKES AND NOT VOIDS. The published 0.4 and 0.6 sets carry their labels as voids knocked out
+# of a solid pad - measured, by rasterising them: the plastic is the background and the characters
+# are the gaps. That is what a slicer emits for debossed text on a model, not a legibility decision,
+# and it does not survive a big nozzle. A void only reads as a character if it stays open, and the
+# printed void is the centreline gap MINUS one bead width. The 0.4 set's narrowest glyph void is
+# 0.70 mm against a 0.45 bead; at a 0.85 bead the same void prints at -0.15 mm, i.e. the two beads
+# touch and the character fills in. Generating G-code directly carries no such constraint, so the
+# label is DRAWN, one bead wide, in clear space beside the pad - which cannot close up at any bead.
+#
+# SIZING IS DERIVED FROM THE BEAD, not typed. A stroke needs length >= 4 x bead to read, and two
+# parallel strokes need >= 2 x bead between them or they merge. Check on that rule: at the 0.4
+# reference's own width of 0.42, 8 x WIDTH predicts a 3.36 mm glyph and the measured reference glyph
+# box is 3.2 mm. The formula lands on the reference's size without being fitted to it.
+SEG = 4.0 * WIDTH                  # one segment: half the glyph height, the full glyph width
+GLYPH_W, GLYPH_H = SEG, 2.0 * SEG
+GLYPH_GAP = 2.0 * WIDTH            # between adjacent characters, so they cannot merge
+DOT_W = 2.0 * WIDTH
+
+# Seven segments on a unit grid of (SEG, SEG); y=0 is the baseline, y=2 the cap height.
+SEGMENTS = {"a": (0, 2, 1, 2), "b": (1, 2, 1, 1), "c": (1, 1, 1, 0), "d": (0, 0, 1, 0),
+            "e": (0, 0, 0, 1), "f": (0, 1, 0, 2), "g": (0, 1, 1, 1)}
+DIGITS = {"0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc",
+          "5": "afgcd", "6": "afgedc", "7": "abc", "8": "abcdefg", "9": "abcdfg"}
+
+
+def glyph(ch, x, y):
+    """Draw one character with its bottom-left at (x, y). Returns (advance, path drawn)."""
+    if ch == ".":
+        a(f"G1 X{x:.3f} Y{y:.3f} F10800")
+        return DOT_W, seg(x, y, x + DOT_W, y, 1200)
+    drawn = 0.0
+    for s in DIGITS[ch]:
+        sx0, sy0, sx1, sy1 = SEGMENTS[s]
+        ax, ay = x + sx0 * SEG, y + sy0 * SEG
+        bx, by = x + sx1 * SEG, y + sy1 * SEG
+        a(f"G1 X{ax:.3f} Y{ay:.3f} F10800")   # travel to the stroke start, no extrusion
+        drawn += seg(ax, ay, bx, by, 1200)
+    return GLYPH_W, drawn
+
+
+def label(text, x_end, y):
+    """Right-align `text` so it ends at x_end. Returns the path drawn."""
+    widths = [DOT_W if c == "." else GLYPH_W for c in text]
+    x = x_end - (sum(widths) + GLYPH_GAP * (len(text) - 1))
+    assert x > 0, f"label {text!r} does not fit left of {x_end}: would start at {x:.1f}"
+    drawn = 0.0
+    for c, w in zip(text, widths):
+        _, d = glyph(c, x, y)
+        drawn += d
+        x += w + GLYPH_GAP
+    return drawn
+
+
 total_path = 0.0
 for i, z in enumerate(zs):
     y_bot = Y0 + i * PITCH
@@ -146,12 +207,10 @@ for i, z in enumerate(zs):
         x_to = X0 + TAG_W if x_at == X0 else X0
         total_path += seg(x_at, y, x_to, y, 1200 if p == 0 else None)
         x_at = x_to
-    # ticks: i+1 dashes to the LEFT of the tag, so the row is identifiable without reading numbers
-    y_mid = y_bot + TAG_D / 2
-    for t in range(i + 1):
-        xe = TICK_X_END - t * (TICK_LEN + TICK_GAP)
-        a(f"G1 X{xe:.3f} Y{y_mid:.3f} F10800")
-        total_path += seg(xe, y_mid, xe - TICK_LEN, y_mid, 1200)
+    # The tag's own Z, drawn to the LEFT of the pad. This replaces a row of i+1 tick dashes: both
+    # identify the row, but a number is read at a glance where eleven dashes have to be counted,
+    # and miscounting them puts Live Z out by one whole step of the ladder.
+    total_path += label(f"{z:.2f}", LABEL_X_END, y_bot + (TAG_D - GLYPH_H) / 2)
 
 a("G1 E-2 F2100 ; retract")
 a(f"G1 Z{zs[-1] + 10:.3f} F720")
@@ -181,8 +240,16 @@ _e = re.compile(r"\bE(-?[\d.]+)")
 tag_moves = [c for c in code if c.startswith("G1 X") and " Y" in c and _e.search(c)]
 es = [float(_e.search(c).group(1)) for c in tag_moves]
 assert es and all(e > 0 for e in es), "a non-positive extrusion was written"
-assert abs(sum(es) - total_path * E_PER_MM) < 1e-3, \
-    f"E total {sum(es):.4f} does not match path length {total_path * E_PER_MM:.4f}"
+# The tolerance tracks the QUANTISATION rather than being a round number. E is written with five
+# decimals, so every move carries up to 5e-6 of rounding and N moves accumulate N x 5e-6. A flat
+# 1e-3 held at 275 extrusions and failed at 403 the moment labels were added - not because anything
+# was wrong, but because the bound had been picked by eye instead of derived from the write format.
+# A genuine fault (a dropped stroke, a mis-scaled glyph, a label drawn twice) is orders of magnitude
+# larger than this bound, so deriving it keeps the check strict at any tag count instead of turning
+# it into a threshold that gets relaxed whenever it complains.
+E_TOL = len(es) * 5e-6 + 1e-9
+assert abs(sum(es) - total_path * E_PER_MM) <= E_TOL, \
+    f"E total {sum(es):.5f} does not match path {total_path * E_PER_MM:.5f} (tolerance {E_TOL:.5f})"
 intro = [c for c in code if c.startswith("G1 X") and " Y" not in c and _e.search(c)]
 assert len(intro) == 2, f"expected exactly 2 intro-line extrusions, found {len(intro)}"
 # Bounds are checked on EVERY point, and the limits are inclusive. The first version of this guard
