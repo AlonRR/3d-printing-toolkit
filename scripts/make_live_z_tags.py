@@ -1,7 +1,7 @@
 """Generate a Live adjust Z calibration tag plate for any nozzle, as G-code.
 
-usage: make_live_z_tags.py <out.gcode> [nozzle] [first_layer_h] [extrusion_w] [z_start] [z_step] [n_tags]
-       defaults: 0.8  0.3  0.85  0.40  0.05  11
+usage: make_live_z_tags.py <out.gcode> [nozzle] [first_layer_h] [extrusion_w] [z_start] [z_step] [n_tags] [filament.ini]
+       defaults: 0.8  0.3  0.85  0.40  0.05  11  (profile chosen by nozzle - see below)
 
 WHY THIS EXISTS. The published "PETG Live-Z Calibration Tags" set ships 0.4 and 0.6 variants and no
 0.8, and the source model (intermediate.scad.stl) is not distributed - both folders hold G-code
@@ -47,9 +47,27 @@ N_TAGS = int(sys.argv[7]) if len(sys.argv) > 7 else 11
 TAG_W, TAG_D, PITCH = 39.0, 9.0, 12.0
 X0, Y0 = 105.5, 40.0
 TICK_LEN, TICK_GAP, TICK_X_END = 5.0, 1.6, 103.0
-NOZZLE_T, BED_T = 240, 70          # PETG Basic NPETG087-ZX @0.8 nozzle, first layer
 FIL_AREA = math.pi * (1.75 / 2) ** 2
 BED_X, BED_Y = 250.0, 210.0
+
+# Temps are READ FROM THE PROFILE, never typed here, so the profile stays the one source - the same
+# rule retarget_filament_temps.py follows. Hardcoding them is how a plate silently keeps printing at
+# last month's bed temp after the profile moves. This plate is ENTIRELY first layer, so it is the
+# first-layer pair that applies, not the subsequent-layer one. The profile follows the nozzle: the
+# base preset's compatible_printers_condition excludes 0.8, so an 0.8 run needs the @0.8 sibling.
+T_KEYS = ("first_layer_temperature", "first_layer_bed_temperature")
+DEFAULT_INI = Path(__file__).resolve().parents[1] / "slicer" / "filament" / "unbranded" / (
+    "PETG Basic NPETG087-ZX @0.8 nozzle.ini" if NOZZLE == 0.8 else "PETG Basic NPETG087-ZX.ini")
+INI = Path(sys.argv[8]) if len(sys.argv) > 8 else DEFAULT_INI
+cfg = {}
+for line in INI.read_text(encoding="utf-8").splitlines():
+    if " = " in line:
+        k, v = line.split(" = ", 1)
+        if k.strip() in T_KEYS:
+            cfg[k.strip()] = int(float(v.split(",")[0].strip()))
+assert all(k in cfg for k in T_KEYS), f"{INI.name} lacks {[k for k in T_KEYS if k not in cfg]}"
+NOZZLE_T, BED_T = cfg["first_layer_temperature"], cfg["first_layer_bed_temperature"]
+print(f"temps from {INI.name}: nozzle {NOZZLE_T} C, bed {BED_T} C")
 
 assert 0.1 <= NOZZLE <= 1.2 and 0.05 <= LAYER_H <= 0.6, "implausible nozzle or layer height"
 assert WIDTH >= NOZZLE, "extrusion width below nozzle diameter"
