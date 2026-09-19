@@ -14,8 +14,8 @@ with a different SKU, the mismatch shows up in the file listing rather than in a
 
 | Profile | Parent | Nozzle °C | Bed °C | Fan | ₪/kg | Added |
 |---|---|---|---|---|---|---|
-| `PETG Basic NPETG087-ZX` | `Generic PETG` | 240 | 70 | 30–50 % | 36 | 3 Sep 2026 |
-| `PETG Basic NPETG087-ZX @0.8 nozzle` | `Generic PETG @0.8 nozzle` | 240 | 70 | 30–50 % | 36 | 3 Sep 2026 |
+| `PETG Basic NPETG087-ZX` | `Generic PETG` | 240 | 75 | 30–50 % | 36 | 3 Sep 2026 |
+| `PETG Basic NPETG087-ZX @0.8 nozzle` | `Generic PETG @0.8 nozzle` | 240 | 75 | 30–50 % | 36 | 3 Sep 2026 |
 
 Derived from [`Inslogic PETG Pro`](../inslogic/README.md) — same material, same `Generic PETG`
 parent, same printer — with only the values this spool actually differs on changed. Deriving from a
@@ -102,14 +102,18 @@ PSU sit in that frame, and there is no print here to justify cooking them for si
 `filament_density = 1.27` is the generic figure for PETG, **not a spec**. It feeds cost-per-volume
 and the filament-used estimate, so if either matters, weigh a known length and correct it.
 
-### The bed temperature is the one real judgement call
+### The bed temperature is the one number backed by a print
 
 The label permits **90 °C**, and that is more tempting than the Inslogic case precisely because it
 is *inside* vendor spec. Being inside spec changes nothing about the sheet: PETG at that
 temperature bonds to a smooth PEI sheet strongly enough to **tear PEI off it on removal**.
 
-These profiles start at **70/70 °C**, the bottom of the label's range and the same number the
-Inslogic PETG profile settled on. If the first layer will not stick, raise toward 85/90 — and put
+These profiles run **75/75 °C**, 5 °C above the bottom of the label's range. That number is
+measured on this printer rather than inherited: the schubox warped at 70/70, and the lid printed at
+75/75 with no warping — same filament, same sheet, same large flat-bottomed geometry, so the bed
+temperature is the variable that changed. It is the one setpoint in these profiles backed by a
+print instead of by a data sheet; the Inslogic PETG profile settled on 70/70, and this is where the
+two deliberately part company. If the first layer will not stick, raise toward 85/90 — and put
 down a thin glue-stick release layer first, which is what makes the higher bed *safe* rather than
 what makes it *work*.
 
