@@ -1,0 +1,22 @@
+# The projects this repo holds. Schema: alon/tasks SCHEMA.md
+projects:
+  - name:     Desiccant module
+    kind:     build
+    state:    active
+    next:     "the heater bench test - the measurement four decisions wait on"
+    trackers: [docs/heater-bench-test.md, docs/desiccant-module.md, docs/desiccant-module-bom.md]
+    review:   2026-09-20
+
+  - name:     Chamber family
+    kind:     build
+    state:    active
+    next:     "prove one ESP32 can carry fan PWM + tach + I2C, then build it"
+    trackers: [docs/chamber-sensor.md, docs/chamber-airflow.md, firmware/air-quality-c3.yaml]
+    review:   2026-09-20
+
+  - name:     Prusa MK3S+ operations and ASA quality
+    kind:     build
+    state:    active
+    next:     "ASA items 3-6; item 5 is the chamber family"
+    trackers: [docs/asa-print-quality.md, docs/mk3s-resume.md]
+    review:   2026-09-20
