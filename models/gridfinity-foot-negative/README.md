@@ -9,10 +9,21 @@ In PrusaSlicer: right-click the model → **Add negative volume** → **Load…*
 its Z to the bottom of the part. The mesh is centred on X/Y and sits on Z0. Anything of the model
 outside the footprint keeps a flat skirt, which is usually what you want.
 
-| file | footprint |
-|---|---|
-| `gridfinity-foot-negative-1x1.stl` | 42 × 42 × 4.65 mm |
-| `gridfinity-foot-negative-4x4.stl` | 168 × 168 × 4.65 mm |
+**The STLs are not in this repo.** `*.stl` is gitignored here by design — the `.scad` is the
+source and meshes are generated artefacts. Regenerate them with:
+
+```
+openscad -D GridX=1 -D GridY=1 -o gridfinity-foot-negative-1x1.stl gridfinity-foot-negative.scad
+openscad -D GridX=4 -D GridY=4 -o gridfinity-foot-negative-4x4.stl gridfinity-foot-negative.scad
+```
+
+| variant | footprint | render time |
+|---|---|---|
+| 1x1 | 42 × 42 × 4.65 mm | ~4 s |
+| 4x4 | 168 × 168 × 4.65 mm | ~42 s |
+
+Ready-to-load copies of both live in the OneDrive `Gridfinity` folder alongside the other
+gridfinity assets, which is where they are actually loaded from.
 
 `GridX`/`GridY` regenerate any size; `Clearance` defaults to 0 (nominal 42 mm pitch). Raise it to
 0.1–0.25 only if prints seat too tightly — this is a negative, so **more clearance removes more
