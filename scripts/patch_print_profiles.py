@@ -1,6 +1,13 @@
 """Apply the house print-profile delta to PrusaSlicer print presets, minimally and verifiably.
 
-usage: patch_print_profiles.py [--apply]     (default is a dry run)
+usage: patch_print_profiles.py [--apply] [--dir=<path>]   (default is a dry run)
+
+--dir points the script at a directory other than the live PrusaSlicer presets, so the
+same delta can be applied to the repo masters under slicer/print/. Hardcoding the live
+path is what let those masters go stale: the delta reached the presets PrusaSlicer reads
+and never the copies under version control, so the repo described a configuration that
+had not been true for weeks. A tool that can only write to one of two copies guarantees
+they diverge.
 
 WHY MINIMAL EDITS AND NOT A RE-DERIVE. The obvious approach - rebuild each preset from the vendor
 bundle's resolved chain plus the delta - is actively harmful here. A user preset written by
@@ -46,7 +53,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
-PRINT_DIR = Path.home() / "AppData/Roaming/PrusaSlicer/print"
+LIVE_DIR = Path.home() / "AppData/Roaming/PrusaSlicer/print"
+_dir = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--dir=")]
+PRINT_DIR = Path(_dir[0]) if _dir else LIVE_DIR
+assert PRINT_DIR.is_dir(), f"not a directory: {PRINT_DIR}"
 
 HOUSE = {
     "skirts": "0",
@@ -82,13 +92,19 @@ JOBS = {
 KV = re.compile(r"^([a-z_0-9]+) = (.*)$")
 apply = "--apply" in sys.argv
 
-# A running PrusaSlicer rewrites its preset files on exit, silently reverting everything here.
-try:
-    running = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=30).stdout
-    assert "prusa-slicer" not in running.lower(), \
-        "PrusaSlicer is RUNNING - close it first or it will overwrite these files on exit"
-except FileNotFoundError:
-    print("  (could not check for a running PrusaSlicer - close it before applying)")
+# A running PrusaSlicer rewrites ITS OWN preset files on exit, silently reverting everything
+# here. That cannot happen to the repo masters, so the guard applies only to the live
+# directory - refusing to patch version-controlled files because an unrelated application
+# is open would be a restriction with no mechanism behind it.
+if PRINT_DIR == LIVE_DIR:
+    try:
+        running = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=30).stdout
+        assert "prusa-slicer" not in running.lower(), \
+            "PrusaSlicer is RUNNING - close it first or it will overwrite these files on exit"
+    except FileNotFoundError:
+        print("  (could not check for a running PrusaSlicer - close it before applying)")
+else:
+    print(f"  (target is {PRINT_DIR} - not PrusaSlicer's own directory, so no running-app check)")
 
 missing = [n for n in JOBS if not (PRINT_DIR / f"{n}.ini").exists()]
 assert not missing, f"preset file(s) not found: {missing}"
