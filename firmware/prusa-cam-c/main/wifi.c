@@ -49,7 +49,7 @@ static volatile bool s_have_ip = false;
  * running sum, which silently inflates the long-term total by disconnects that
  * never happened.
  *
- * Measured by the homelab session: the series ran 0 -> 15 -> 16 -> 17 -> 15,
+ * Measured on the server side: the series ran 0 -> 15 -> 16 -> 17 -> 15,
  * and every one of those steps is explicable - the jumps are a genuine
  * reconnect storm (FAST_RETRIES is 8, so a burst increments this many times in
  * seconds) and the drop is a reboot. Nothing was wrong with the values; the

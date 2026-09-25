@@ -31,7 +31,7 @@ is the user-level **`openscad-printed-part`** skill.
 - **Models and G-code** — STL/3MF/gcode stay in `OneDrive\3D printing\`; they're large binaries
   and git is the wrong tool. `.gitignore` enforces it.
 - **`physical_printer/` configs** — they hold PrusaLink API keys in plaintext. Also gitignored.
-- **The parametric CAD library** — its own repo, `alon/print_scripts_tree_d`.
+- **The parametric CAD library** — a separate repo.
 - **Print-station / homelab infrastructure** — lives in `alon/homelab`
   (`docs/manual/print-station.md`, `fume-fan-esp32.md`).
 
@@ -212,7 +212,7 @@ Supporting evidence: the challenge arrives byte-identical to the direct one (sam
 `algorithm`, `nonce`, `opaque`), and the Caddyfile carries a bare `reverse_proxy` with no path
 manipulation.
 
-*(Chrome trusts the Caddy internal CA via the Windows store; `curl` in git-bash does not and needs
+*(A browser that trusts the internal CA will accept the vhost while `curl` does not and needs
 `-k`. That is a CA-bundle difference, not a problem with the vhost.)*
 
 
@@ -221,24 +221,21 @@ manipulation.
 PrusaLink is beta software whose entire purpose is to **move the axes and drive the heaters**. A
 compromise is not data loss; it is a physical event next to an ASA enclosure in a flat. TLS at the
 proxy protects the transport, but the exposed thing would be the *application*, and that does not
-improve. It sits with **pve** and **rc-panel** on the permanent exclusion list and stays off the
-remote proxy's upstream allow-list. Reaching the printer from outside means **VPN in first**.
+improve. It stays on the permanent exclusion list and off any externally reachable proxy.
+Reaching the printer from outside means **VPN in first**.
 
-For context on the wider plan: external access is going to a **real domain with split-horizon
-DNS** — same names inside and out, because apps like Jellyfin's store a single server URL.
-`.internal.example` stays for LAN-only services. There is deliberately **no external wildcard**; the
-remote proxy gets an explicit allow-list so it fails closed.
+The general rule this follows: give an external proxy an explicit allow-list rather than a
+wildcard, so that adding a service does not silently publish it.
 
 ---
 
-## 3. Parametric CAD library — `Code\print_scripts_tree_d\`
+## 3. Parametric CAD library — a separate project
 
-A genuinely developed Python project, not a scratch folder. **This is the most valuable 3D-printing asset on the machine.**
+Parts that are easier to describe in code than to draw live in their own Python project rather than
+in this repo.
 
 - **Stack:** [build123d](https://github.com/gumyr/build123d) (OpenCASCADE) · Python 3.13 · **uv** · pytest + ruff + mypy strict
-- **Remotes:** a private Git remote, plus GitHub
-- **HEAD:** `b1d94d0 chore: track repo-specific Claude skills`
-- **Docs:** `CLAUDE.md` (274 lines — design principles), `ARCHITECTURE.md`, `README.md`
+- **Docs:** design principles, an architecture note and a README of its own
 - **Shapes:** `boxes.py` (rounded box) · `clips.py` (cylinder clip, magnet attachment) · `panels.py` (hex mesh, magnet ring) · `furniture.py` (column, table) · `primitives.py` (washer, magnet, screw/thread)
 - **Iteration workflow:** `scratch/try_<name>.py` with `%autoreload` in VS Code Interactive, plus `sandbox.ipynb`
 - **Gate:** `save_stl()` asserts watertight + positive volume before anything is written
@@ -247,7 +244,7 @@ The `CLAUDE.md` encodes hard-won OCC fillet knowledge worth not relosing — bak
 
 Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
 
-**Uncommitted right now:** `.claude/settings.json`, `export.py`, `params.py`, `shapes/` show as untracked at the repo root — worth a look, since tracked copies also exist under `print_scripts_tree_d/`.
+**A note on its working state:** untracked files at its root are worth a look, since tracked copies also exist under `print_scripts_tree_d/`.
 
 ---
 

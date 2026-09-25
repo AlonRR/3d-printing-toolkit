@@ -140,7 +140,7 @@ That is also the order the hardware enforces, so software and wiring agree rathe
 | **ESP32-C3 ×10** | Controller — with a caveat, below |
 | Dupont crimp kit, resistor kit | Wiring and I²C pull-ups |
 
-### ✅ RESOLVED 9 Sep 2026 — five in the cart, two already owned
+### ✅ RESOLVED 9 Sep 2026 — five to source, two already owned
 
 ⚠️ **This was a live buy list until 9 Sep and is no longer one.** It had gone stale in a specific
 way worth naming: the resolution was written into the **inventory** repo
@@ -171,7 +171,7 @@ which would have bought exactly the wrong thing and only revealed itself at wiri
 **The heater and its fan must switch independently**, so that is **two single-channel boards**, not
 one dual. Bought as 2 × single-channel 15 A.
 
-*(A 2-channel **relay** module was in the cart and has been removed — a relay cannot PWM, so it
+*(A 2-channel **relay** module was considered and rejected — a relay cannot PWM, so it
 cannot soft-start.)*
 
 **2. 📏 MEASURE THE BARREL PLUG BEFORE WIRING.** The owned socket is **2.1 mm ID**. Cheap 12 V
@@ -181,7 +181,7 @@ connection, not merely a loose one. If it turns out to be 2.5, the fix is a ₪3
 redesign. This is not a purchase; it is a thirty-second check that has to happen before the first
 power-up.
 
-### Also in the cart, for other pages
+### Also to source, for other pages
 
 **DS18B20 ×2**, about ₪6 each, the 1 m cabled module — the [chamber-sensor](chamber-sensor.md) bay
 probe. ⚠️ **That listing defaults to `TO-92`**, the bare chip with no cable, despite advertising the

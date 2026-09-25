@@ -1375,7 +1375,7 @@ describes a moment, not a property of the world, and re-running it costs seconds
 that *a match proves presence and nothing proves absence* already implies this; this is what it looks
 like in practice.
 
-*(What led here was `homebox-add-hookup-wire.py` in `Tools/inventory/scripts/` — **a script named
+*(What led here was an inventory helper script — **one named
 for a part is evidence the part exists, even when the record does not yet.**)*
 
 ### If the 1.37 mm is used after all — strain relief is mandatory

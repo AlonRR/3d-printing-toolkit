@@ -369,7 +369,7 @@ HEPA stack actually consumes. So:
 
 ✅ **MOOT for the fans actually ordered.** The Delta EFB0412VHD is a **4020** — the same
 40 × 40 × 20 mm depth as the Gdstime units the tray was designed around — so the static-pressure
-trade above applies to the 4010s that were in the cart, not to what was bought.
+trade above applies to the 4010s that were shortlisted, not to what was chosen.
 
 **Why the tach fan is scarce at all — the same heuristic that read the INA226's shunt.** Fans compete
 on airflow and price, and a tach wire adds cost while improving no headline number. So the 3-wire
@@ -391,7 +391,7 @@ swinging to 12 V → divide it.
 ### ✅ THE TERMINATION IS BEING PRINTED — Alon, 9 Sep 2026. Do not buy one.
 
 The ₪17.94 stainless grille is **dropped from the cart**. Nothing else changes: the duct is still
-100 mm, still 2 m, still in the cart.
+100 mm, still 2 m, still to source.
 
 **No vent model exists on disk** — searched `vent` / `louv` / `grille` / `damper` / `flap` / `duct`
 across the whole model library and the only hit is `ventobox/`. So this is a design-or-download job,
@@ -421,7 +421,7 @@ enclosure this project is built around is the thing that fixes that. Print it cl
 **📋 What still gates it:** where the duct terminates. That decides the **flange shape** (wall plate
 vs window panel) — not the bore, which is settled at 100 mm.
 
-**📋 The superseded note, kept because it explains why a grille was ever in the cart:**
+**📋 The superseded note, kept because it explains why a grille was ever considered:**
 The bought termination assumed a permanent 100 mm penetration (an exterior wall, or a cut window
 panel). If the plan is to hang the duct out of an open window, the grille is unnecessary — it is a
 separate cart line precisely so it can be dropped without touching the duct.
@@ -443,7 +443,7 @@ design space and it is already modelled.
 ## What is still open
 
 - 📋 **The fan's real static-pressure figure**, from the listing rather than inferred from RPM.
-- 📋 **Where the duct terminates.** A physical decision about the room that gates step 4. ⚠️ **Narrowed, not closed, 9 Sep 2026:** the *diameter* is settled at 100 mm by the adapter model on disk, and 2 m of flex is in the cart. What is still undecided is **wall vs window vs open window**, which decides only whether the ₪17.94 grille is used and whether 2 m is enough. **If the run is longer than 2 m**, a second length plus a coupler is needed — buy that with the termination once the room is chosen, not before.
+- 📋 **Where the duct terminates.** A physical decision about the room that gates step 4. ⚠️ **Narrowed, not closed, 9 Sep 2026:** the *diameter* is settled at 100 mm by the adapter model on disk, and 2 m of flex is to source. What is still undecided is **wall vs window vs open window**, which decides only whether the grille is used and whether 2 m is enough. **If the run is longer than 2 m**, a second length plus a coupler is needed — buy that with the termination once the room is chosen, not before.
 - 📋 **Whether the Einsy tolerates a closed chamber.** The stepper drivers throttle when hot, so step 2
   measures the chamber and **the Einsy needs watching in the same run** — closing the box is what puts
   it at risk. ✅ **The PSU is already outside** (moved when the enclosure was built), which removes the
