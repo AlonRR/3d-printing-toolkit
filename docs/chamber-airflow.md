@@ -174,7 +174,7 @@ so the part number itself says 12 V. Checked against the inventory order record,
 by the session that reported it. The owned 24 V Gdstime units are no longer the scrubber's fans.
 
 ⛔ **AND THE COUNT WAS WRONG TOO — TWO WERE BOUGHT, NOT THREE (16 Sep 2026).** Measured from the
-order detail pages by the inventory session, not relayed: order `…147484` holds **one line,
+the order detail pages directly, not relayed: order `…147484` holds **one line,
 `21.54 × 2`**, subtotal **43.08**. Three at 21.54 would be 64.62, so the subtotal alone rules three
 out. The **3 came from the confirm page on the day and was never an order line** — the same failure
 mode as the 24 V entry below it, one page later in the same checkout.

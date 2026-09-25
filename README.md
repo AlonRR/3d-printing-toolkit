@@ -168,7 +168,7 @@ link-local v6). Pure DNS cannot resolve it; the system resolver can.
 
 ### The printer's name, and why it is LAN-only on purpose
 
-Answered and then built by the homelab session, 1 Sep 2026 (`f89f4a2`).
+Answered and then built on the server side, 1 Sep 2026.
 
 ```
 prusalink.internal.example  ->  reverse proxy  ->  the Pi
@@ -199,7 +199,7 @@ preserving Host and path by default is the only reason this works.
 
 ### ✅ Verification status — complete
 
-Both acceptance criteria agreed with the homelab session are met, 1 Sep 2026:
+Both agreed acceptance criteria are met, 1 Sep 2026:
 
 1. **A complete authenticated Digest login through the vhost** — the PrusaLink Settings page
    renders fully at `https://prusalink.internal.example/#settings`. This is what proves the URI hashing

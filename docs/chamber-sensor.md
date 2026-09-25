@@ -1754,7 +1754,7 @@ the hardware is wired* — unlike a wrong `board:`, which fails loudly at build 
 This is not hypothetical. `alon/homelab` → `docs/manual/fume-fan-esp32.md` still specifies
 `GPIO18` for fan PWM and `GPIO19` for tach: its `board:` was corrected from `esp32dev` to
 `esp32-c3-devkitm-1` on 21 Aug 2026 and **the pin numbers underneath were never revisited**.
-Reported by the homelab session, 30 Aug 2026. The GPIO10/GPIO3 below is the correction, not a
+Reported 30 Aug 2026. The GPIO10/GPIO3 below is the correction, not a
 rival convention.
 
 `board-c3.yml` names LED, BOOT, UART0 and JTAG and stops — it does not mention 18/19 either, so
@@ -1999,7 +1999,7 @@ movable duct — decided now rather than reprinted later.
 
 ⚠️ **Every existing document says extraction, and none of them treats recirculation as an
 option.** The homelab page is titled *Fume extractor*; `CLAUDE.md` says *"Filter project (fume
-extractor)"*. Flagged by the homelab session on 30 Aug 2026, and they are right that it has to be
+extractor)"*. Flagged on 30 Aug 2026, and rightly so: it has to be
 settled before parts are printed. **This section argues for a change; it does not record a
 decision.** Until Alon rules on it, the documented plan is extraction, and the reason to consider
 recirculating at all is that an extractor removes the very chamber heat

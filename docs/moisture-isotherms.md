@@ -155,7 +155,7 @@ than quietly deleted, because a retracted reason is itself worth knowing about:
 **118.3 °C for 24 h**, or **104.4 °C** non-MIL, and a peer-reviewed **150 °C through five cycles**.
 
 ⚠️ **This triplet has propagated.** `drybox-active.md` carries the same numbers. That file is owned
-by the drybox session as of 17 Sep and has been told.
+by the drybox work as of 17 Sep.
 
 ⭐ **Süd-Chemie, who make the clay, publish no regeneration temperature at all** — only *"can be
 reactivated for multiple uses"*. That is precisely why every downstream figure differs. **So the
