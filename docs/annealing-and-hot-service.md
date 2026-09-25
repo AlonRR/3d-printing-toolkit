@@ -224,6 +224,23 @@ bake both assembled at 85 °C, measure both. The annealed/un-annealed difference
 residual-stress contribution, and the annealed part's retained preload is the number that predicts
 service [inferred].
 
+**Better still, run both arms in the SAME coupon** where the assembly has two insert positions —
+one annealed, one as printed, one oven, one set of cycles. That removes oven-to-oven and
+cycle-count variation between the arms, which the two-coupon version leaves in.
+
+⛔ **But that variant breaks an assumption, and the fix is not optional.** Annealing changes the
+part's dimensions — that is the whole point of §3 — so **the two arms do not start at the same
+preload**. The bumps impose a fixed displacement, and the annealed finger arrives at it from a
+different rest position, so its initial deflection is not 0.7 mm merely because the as-printed
+one's is. Measured against a nominal 0.7 mm, the comparison then folds shrinkage into what is
+supposed to be a relaxation result, and the 54 % criterion is being applied to a number one arm
+never had.
+
+**So measure each insert's own preload after fitting and before baking, and report retention as a
+fraction of that** — two numbers per arm, start and end, not one. The gap between the two arms'
+*starting* values is itself the dimensional result §3 predicts, and is worth recording separately
+[inferred].
+
 **Prediction, recorded so the test can falsify it:** annealed ASA will not hold 54 % of 0.7 mm
 through repeated multi-hour 85 °C cycles. 23 °C below Tg at ~9 MPa is inside the regime where glassy
 polymers relax measurably, and physical ageing slows that without stopping it [inferred]. If the
