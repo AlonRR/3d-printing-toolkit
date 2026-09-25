@@ -236,7 +236,7 @@ remote proxy gets an explicit allow-list so it fails closed.
 A genuinely developed Python project, not a scratch folder. **This is the most valuable 3D-printing asset on the machine.**
 
 - **Stack:** [build123d](https://github.com/gumyr/build123d) (OpenCASCADE) · Python 3.13 · **uv** · pytest + ruff + mypy strict
-- **Remotes:** `gitea` → `git@example:alon/print_scripts_tree_d.git` ✅ and `origin` → GitHub
+- **Remotes:** a private Git remote, plus GitHub
 - **HEAD:** `b1d94d0 chore: track repo-specific Claude skills`
 - **Docs:** `CLAUDE.md` (274 lines — design principles), `ARCHITECTURE.md`, `README.md`
 - **Shapes:** `boxes.py` (rounded box) · `clips.py` (cylinder clip, magnet attachment) · `panels.py` (hex mesh, magnet ring) · `furniture.py` (column, table) · `primitives.py` (washer, magnet, screw/thread)

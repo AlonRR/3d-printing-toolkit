@@ -226,10 +226,10 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
  * one outcome worse than an unreachable one.
  *
  * LIMIT WORTH KNOWING: mDNS is link-local multicast and does NOT cross a
- * subnet or a VLAN. It resolves today because the workstation and this board
- * sit on the same /24. Moving the IoT network behind a firewall onto its own
- * VLAN is a planned project, and that change would silently break name
- * resolution from the workstation. A DHCP reservation on the router is the
+ * subnet or a VLAN. It resolves only while the client and this board share a
+ * broadcast domain. Moving an IoT network onto its own VLAN - a common and
+ * sensible thing to do - silently breaks name resolution from outside it.
+ * A DHCP reservation on the router is the
  * belt to this braces: it survives segmentation, a flash erase, and this
  * firmware being replaced entirely.
  */

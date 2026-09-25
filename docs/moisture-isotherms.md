@@ -120,7 +120,7 @@ isotherm means 15→5 %RH recovers only ~3.4 g on a 4 kg load. See the parts tab
 
 *(Alon, 12 Sep 2026.)* This corrects a fixed-number framing used earlier on this page and in
 [drybox-active](drybox-active.md) step 6 — and it dissolves an apparent conflict between our own
-documents, which said ~110 °C here and ~125 °C in the HomeBox record. **Both were right.**
+documents, which said ~110 °C here and ~125 °C in the inventory record. **Both were right.**
 
 | | Release begins | Substantially off | Full |
 |---|---|---|---|

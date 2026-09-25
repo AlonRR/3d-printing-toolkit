@@ -1,11 +1,10 @@
 /* Over-the-air update, PUSH model: the board listens and the PC uploads.
  *
  * WHY PUSH RATHER THAN PULL. The usual OTA has the device fetch a binary from a
- * server. That needs a reachable HTTP server on the LAN, and this network does
- * not have one available: the host firewall blocks arbitrary inbound ports
- * and per-container firewalls are enabled, while the desktop has its own firewall on for
- * all profiles. Opening a hole on somebody's host to serve a file is a bigger
- * change than the feature is worth.
+ * server. That needs a reachable HTTP server on the LAN, which a hardened network
+ * may well not offer: host firewalls and per-container rules commonly block
+ * arbitrary inbound ports. Opening a hole on somebody's host to serve a file is a
+ * bigger change than the feature is worth.
  *
  * Inverting it removes the problem entirely - the same reasoning that made the
  * throughput benchmark listen instead of connect. The board is the server, the

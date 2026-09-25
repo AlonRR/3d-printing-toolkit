@@ -122,8 +122,7 @@ what makes it *work*.
 36 ₪/kg — at the assumed 1.27 g/cm³ that is **0.046 ₪/cm³, the cheapest filament in this repo by
 volume**, about 8 % under Yasin3D PETG which previously held that position.
 
-Bought as a 10 kg bundle: *"PETG Basic — Black & White"*, a bundle order, 29 Aug 2026,
-360 ₪ at a bundle rate. Five black spools and five white.
+Sold as a 10 kg bundle, *"PETG Basic — Black & White"* — five black spools and five white.
 
 ⚠️ **10 kg of PETG is now the largest single holding in the lab, and PETG is hygroscopic.** No
 drying schedule is published for it. Storage matters more than it did.

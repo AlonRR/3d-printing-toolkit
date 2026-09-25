@@ -149,7 +149,7 @@ say so:
 - It did not change across a **38 dB** signal difference (−27 → −65 dBm). If RF were the limit,
   that swing would dominate.
 - Raising the TCP window from 5760 to 65534 bytes changed nothing.
-- The workstation reaches the server at a much higher rate over the wire, and routing to the board goes out the
+- The wired link is far faster than the board's, and routing to the board goes out the
   LAN adapter, not the VPN — so the receiver and the PC's network stack are not the constraint.
 
 ### What the cap actually is — two hypotheses tested and refuted
@@ -243,10 +243,10 @@ moved lease would mean unscrewing it to recover. Hence a name, set three ways in
 | `mdns_hostname_set()` | `prusa-cam.local` resolves from the workstation |
 | `mdns_service_add(_http._tcp)` | discoverable by service when the name is not known |
 
-⚠️ **mDNS is link-local multicast and does NOT cross a subnet or a VLAN.** It resolves today only
-because the workstation and the board sit on the same `/24`. Putting the IoT network behind a
-firewall on its own VLAN is a planned project, and that change would silently break name
-resolution from the workstation. **A DHCP reservation on the router is the belt to this braces** —
+⚠️ **mDNS is link-local multicast and does NOT cross a subnet or a VLAN.** It resolves only while
+the client and the board share a broadcast domain. Segmenting an IoT network onto its own VLAN —
+a common and sensible thing to do — silently breaks name resolution from anywhere outside it.
+**A DHCP reservation on the router is the belt to this braces** —
 it survives segmentation, a flash erase, and this firmware being replaced entirely.
 
 The hostname is set *before* the interface starts, because it travels as DHCP option 12 in the lease

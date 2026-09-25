@@ -62,3 +62,6 @@ firmware/prusa-cam-c/main/wifi_secrets.h
 # relying on core.ignorecase, which is a per-host setting.
 *.pdf
 *.PDF
+
+# Superseded sparse preset snapshots - git holds the history
+*.sparse-bak

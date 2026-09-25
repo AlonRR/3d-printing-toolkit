@@ -55,14 +55,13 @@ is a signal no amount of ±2 °C can hide.
 
 ### What is actually owned — checked, 30 Aug 2026
 
-The homelab session ran this against HomeBox (209 entities) and the AliExpress, a second marketplace and
-Adafruit order histories rather than anyone's memory:
+Checked against the parts actually on hand rather than anyone's memory:
 
 | Part | Verdict |
 |---|---|
-| **DS18B20 ×2** | ❌ **Not owned — the only genuine gap.** Absent from HomeBox and from every order history. Needs buying |
-| Point A, chamber | ✅ **BME688, owned and free** (Adafruit PID 5046) — −40–85 °C ±1.0, RH ±3 %, plus pressure and gas. Its HomeBox record reads "THIS IS THE DRYBOX SENSOR", but **the drybox was never built** (Alon, 30 Aug 2026), so it is unallocated. Use it |
-| Point A, alternative | ⏳ An **AHT20 + BMP280 is inbound** (a ~₪5 part). No longer needed for this — keep it for the drybox if that project ever starts |
+| **DS18B20 ×2** | ❌ **Not owned — the only genuine gap.** Not on hand anywhere. Needs buying |
+| Point A, chamber | ✅ **BME688, owned and free** (Adafruit PID 5046) — −40–85 °C ±1.0, RH ±3 %, plus pressure and gas. Its inventory record reads "THIS IS THE DRYBOX SENSOR", but **the drybox was never built** (Alon, 30 Aug 2026), so it is unallocated. Use it |
+| Point A, alternative | An **AHT20 + BMP280** is on hand, a ~₪5 part. No longer needed for this — keep it for the drybox if that project ever starts |
 | Pull-up resistor | ✅ **Not a purchase.** The ELEGOO assortment on hand has no 4.7 k but does have **5K1 ×10**, and 5.1 kΩ is a fine 1-Wire pull-up. Count the compartment rather than trusting the label — an M3×12 box labelled 20 once held 2 |
 
 **So the whole design costs two DS18B20s.** Everything else — the board, the chamber sensor, the
@@ -504,7 +503,7 @@ QR labels off battery cells and has no other board that can. The chamber sensing
 mini** (an interim board, held until the C3 SuperMinis get their antenna fix) carrying the owned
 **AHT20+BMP280**.
 
-⚠️ **The inventory did not know this board was in use.** HomeBox recorded the S3 against
+⚠️ **The inventory did not know this board was in use.** It recorded the S3 against
 `cell-tester` and `edge-ai`, with three claimants, and **none of them was 3d-printing** — while the
 board was powered, on WiFi, publishing to Home Assistant and serving camera frames. The cell-tester
 session asked rather than assuming, which is the only reason it surfaced. *A record proves presence
@@ -634,7 +633,7 @@ is the part with no workaround.
 
 ### ⚠️ THE SAME CONTENTION IS ABOUT TO REPEAT — the AHT20 is the drybox's sensor
 
-**HomeBox records the AHT20+BMP280 against `project-x`, the DRYBOX sensor**, bought specifically
+**The AHT20+BMP280 is earmarked for the DRYBOX sensor**, chosen specifically
 because *"DHT11 floors at 20 %RH and a working drybox is 5–15 %RH"*. There is **one** of them.
 
 Allocating it to the chamber leaves the drybox without the part chosen for it — and the drybox is
@@ -1107,7 +1106,7 @@ listen well.**
 
 | Role | Board | Port | Firmware |
 |---|---|---|---|
-| Sender + DHT11 | ESP32-C3-**MINI-1** | `COM8` on the workstation | `firmware/chamber-sensor-mini1.yaml` |
+| Sender + DHT11 | ESP32-C3-**MINI-1** | a USB serial port | `firmware/chamber-sensor-mini1.yaml` |
 | Receiver / hub | C3 **SuperMini** | `/dev/ttyACM0` on the server | `firmware/chamber-hub-espnow.yaml` |
 
 The server's console, continuously:
@@ -1329,14 +1328,13 @@ calls for 18 AWG to carry 4.2 A continuous and where stiffness is a virtue. See
 
 ### ✅ IDENTIFIED: UL1007 22 AWG solid tinned copper, 5 × 10 m coils
 
-**`Hookup wire, UL1007 22AWG solid tinned copper - 5 colours, 10m each`** — HomeBox, parts storage.
+**`Hookup wire, UL1007 22AWG solid tinned copper - 5 colours, 10m each`**.
 
 | | |
 |---|---|
 | Conductor | **22 AWG solid tinned copper** — 0.644 mm nominal, measures 0.60 |
 | Insulation | PVC |
 | Quantity | **5 coils, 10 m each — 50 m total**, in black, red, blue, green, yellow |
-| Provenance | AliExpress ref `[order reference removed]`, a marketplace seller, 20 Apr 2026, ₪75.85 |
 | Model | `DXXAW22YL-10M` |
 
 **Every open question about this wire is closed, and all three answers are the good ones:**

@@ -36,9 +36,9 @@
 static const char *TAG = "main";
 
 /* The board LISTENS here and the PC connects in. Chosen over a sink on the
- * server because the host firewall blocks arbitrary inbound ports and every
- * container firewalls are enabled - and opening one would be a change to a host for
- * the sake of a measurement. */
+ * server because a hardened host commonly blocks arbitrary inbound ports and
+ * per-container firewalls are usual - and opening one would be a change to a
+ * host for the sake of a measurement. */
 #define BENCH_PORT 8099
 
 /* The benchmark is one-shot and blocks waiting for connections, so it must not

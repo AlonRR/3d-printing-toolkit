@@ -21,9 +21,9 @@
  * with itself is not evidence.
  *
  * THE BOARD LISTENS; THE PC CONNECTS. The obvious arrangement is the reverse -
- * a sink on the server - but the host firewall is enabled and blocks
- * arbitrary inbound ports, and per-container firewalls are enabled. Opening one
- * would be a change to someone else's host for the sake of a measurement.
+ * a sink on the server - but a hardened host commonly blocks arbitrary inbound
+ * ports, and per-container firewalls are usual. Opening one would be a change
+ * to someone else's host for the sake of a measurement.
  * Inverting the direction avoids that entirely, and it measures the direction
  * that actually matters: how fast this board can TRANSMIT.
  */

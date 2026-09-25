@@ -94,7 +94,7 @@ micro-electronics soldering** — not by cleverness.
 
 | # | Method | Parts | Verdict |
 |---|---|---|---|
-| **1** | **Buy 3-wire (tach) 40 mm fans** — ✅ **ORDERED, as 12 V Delta EFB0412VHD 4020 ×2, not 24 V** | about ₪17 each | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
+| **1** | **Buy 3-wire (tach) 40 mm fans** — ✅ **Chosen: 12 V Delta EFB0412VHD 4020, not 24 V** | about ₪17 each | ⭐ **The answer.** Deletes the problem instead of instrumenting around it. Same 40 mm frame, so the ventobox tray is unaffected. No analog design, no soldering past connectors |
 | **2** | **SPS30 particulate sensor** — measure the OUTCOME | **owned** | Best *engineering*, different question. See below |
 | **3** | **Self-heated NTC in the airstream** | 1 NTC owned | A real airflow sensor: moving air cools a self-heated thermistor. Direct measure of *flow*, not rotation. Cheap, but analog and needs calibrating |
 | **4** | **Acoustic** — MAX4466 mic + band-pass | **10 owned** | 7000 rpm × blade count ≈ a strong tone. Non-contact. But the printer is noisy, so it needs real signal processing to discriminate |
@@ -179,7 +179,7 @@ order detail pages by the inventory session, not relayed: order `…147484` hold
 out. The **3 came from the confirm page on the day and was never an order line** — the same failure
 mode as the 24 V entry below it, one page later in the same checkout.
 
-💰 **Listed is not paid.** The pair was charged **about ₪17 each**, against ₪21.54 listed.
+💰 **Listed is not what you pay.** The pair worked out near ₪17 each against ₪21.54 listed.
 Every order in that checkout was charged under its listed price.
 
 📐 **This is a build-time problem, not a documentation nit.** The tray is 54 × 122 mm, almost exactly
@@ -336,8 +336,8 @@ condition it exists for.
 
 | Item | Priority | Note |
 |---|---|---|
-| ~~**Ducting**~~ + ~~a termination~~ | **Required** | 🛒 **DUCT SHORTLISTED 9 Sep 2026** *(the offer was time-limited — the duct is −53%, ₪16.88 at risk)*. ✅ **THE TERMINATION IS BEING PRINTED** — Alon, 9 Sep. Grille dropped; print it in **ASA**, see below — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
-| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | 🛒 **SHORTLISTED 9 Sep 2026** — variant `24V 3PIN FG` + `Ball bearing`, **₪15.19 each = ₪45.57**. ⚠️ **Two of this row's own claims were wrong; corrections below.** ⛔ **And the cart is not what was bought: checkout ordered 12 V Delta EFB0412VHD 4020 ×2** — neither the voltage nor the count survived the checkout. See *The fans* |
+| ~~**Ducting**~~ + ~~a termination~~ | **Required** | **Duct selected, 9 Sep 2026.** ✅ **THE TERMINATION IS BEING PRINTED** — Alon, 9 Sep. Grille dropped; print it in **ASA**, see below — 100 mm × 2 m aluminium flex ₪14.96, plus a 100 mm stainless wall grille with insect mesh ₪17.94. **The diameter was not guessed** — see below |
+| ~~**3-wire (tach) 40 mm 24 V fans ×3**~~ | **Recommended** | **Shortlisted 9 Sep 2026** — 3-wire ball-bearing 24 V, about ₪15 each. ⚠️ **Two of this row's own claims were wrong; corrections below.** ⛔ **And the cart is not what was bought: checkout ordered 12 V Delta EFB0412VHD 4020 ×2** — neither the voltage nor the count survived the checkout. See *The fans* |
 | ~~**Activated carbon** media~~ | — | ✅ **REMOVED 8 Sep 2026 — ~20 kg is OWNED.** It was never in the order history, so no sweep could have found it; Alon reported it. The row is struck rather than deleted so the correction stays visible |
 | — | | **Both fans, HEPA paper, 20 kg of carbon, control board and PD trigger are all owned.** Nothing on this page is unpurchased. ~~Except the 24 V feed~~ — no 24 V feed is needed now that the ordered fans are 12 V |
 

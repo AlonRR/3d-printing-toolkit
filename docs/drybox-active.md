@@ -151,11 +151,11 @@ rather than deleted.
 
 | Part | Status | Why the spec is what it is |
 |---|---|---|
-| **12 V 6 A adapter** — ₪32.53 | 🛒 **in cart** | Sized for **inrush, not steady state**: 4.2 A running, and a cold PTC pulls 2–3× on startup |
-| **2× single-channel 15 A MOSFET** — ₪8.92 | 🛒 **in cart** | ⚠️ **Not a relay** — a relay cannot PWM, and PWM soft-start is what handles that inrush. See the "dual" trap below |
-| **KSD9700 cutout** — ₪8.94 | 🛒 **in cart** | In series with the element. Not optional |
-| **One-shot thermal fuse, 85 °C** — ₪4.45 | 🛒 **in cart** | The non-resettable backstop *above* the cutout, since a KSD9700 resets and a real fault would cycle and mask itself. The ladder has no 84 °C; 85 satisfies it |
-| **Inline fuse holder + 7.5 A fuse** — ₪4.08 | 🛒 **in cart** | 14 AWG holder. Protects the wiring, not just the supply's internal limit |
+| **12 V 6 A adapter** — ₪32.53 | planned | Sized for **inrush, not steady state**: 4.2 A running, and a cold PTC pulls 2–3× on startup |
+| **2× single-channel 15 A MOSFET** — ₪8.92 | planned | ⚠️ **Not a relay** — a relay cannot PWM, and PWM soft-start is what handles that inrush. See the "dual" trap below |
+| **KSD9700 cutout** — ₪8.94 | planned | In series with the element. Not optional |
+| **One-shot thermal fuse, 85 °C** — ₪4.45 | planned | The non-resettable backstop *above* the cutout, since a KSD9700 resets and a real fault would cycle and mask itself. The ladder has no 84 °C; 85 satisfies it |
+| **Inline fuse holder + 7.5 A fuse** — ₪4.08 | planned | 14 AWG holder. Protects the wiring, not just the supply's internal limit |
 | ~~Screw terminals / XT30~~ | ✅ **OWNED** | **A.R ESCO UC 03M lever connectors ×92**, 450 V / 24 A, 0.2–2.5 mm². Against 4.2 A that is **5.7× margin**. The original point stands — Dupont housings are 1–3 A and unusable here |
 | ~~DC barrel socket~~ | ✅ **OWNED** | Female DC adapter, 2.1 mm jack to screw terminal. ⚠️ **But measure the plug first — see below** |
 | ~~18 AWG silicone wire~~ | ✅ **OWNED** | The 4 m of 3-core is 1.37 mm = ~15.5 AWG, heavier than specified |
@@ -183,7 +183,7 @@ power-up.
 
 ### Also in the cart, for other pages
 
-**DS18B20 ×2**, ₪5.87 each, variant `1M and module` — the [chamber-sensor](chamber-sensor.md) bay
+**DS18B20 ×2**, about ₪6 each, the 1 m cabled module — the [chamber-sensor](chamber-sensor.md) bay
 probe. ⚠️ **That listing defaults to `TO-92`**, the bare chip with no cable, despite advertising the
 waterproof probe; `1M and module` is the stainless probe on 1 m of cable **plus the terminal board
 carrying the 4.7 kΩ 1-Wire pull-up**.

@@ -5,8 +5,8 @@
 # serial port, where the server reads /dev/ttyACM0 and appends to the CSV.
 #
 # WHY THE LOGGER LIVES ON THE SERVER NOW. The WiFi version was polled by a script
-# running in an interactive session on a desktop - it stopped when the session
-# stopped, which is not a plan for a three-hour print. Here the server owns the
+# running in an interactive session on a desktop machine - it stopped when that
+# session stopped, which is not a plan for a three-hour print. Here the server owns the
 # capture: it is already always-on, and a USB cable is not something an access
 # point can refuse.
 #
