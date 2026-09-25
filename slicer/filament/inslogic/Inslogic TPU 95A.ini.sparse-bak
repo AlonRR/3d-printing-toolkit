@@ -1,0 +1,26 @@
+# Inslogic TPU 95A — Prusa MK3S+, 0.4 / 0.6 nozzle
+# Built from Inslogic TPU 95A Technical Data Sheet (rev. 12.02.2024).
+#
+# Parent is Generic FLEX, NOT Ultrafuse TPU-95A. That matters — see README.md.
+# The Ultrafuse TPU-95A chain descends from Ultrafuse TPC-45D (a near-rigid
+# copolyester) and inherits a 15 mm3/s volumetric limit and a 40 C bed from it.
+# Generic FLEX is the soft-TPU chain: 1.2 mm3/s and a 50 C bed, which is exactly
+# the bed temperature Inslogic specifies.
+inherits = Generic FLEX
+filament_vendor = Inslogic
+filament_type = FLEX
+filament_diameter = 1.75
+filament_density = 1.23
+filament_cost = 79
+filament_spool_weight = 1000
+temperature = 210
+first_layer_temperature = 215
+bed_temperature = 50
+first_layer_bed_temperature = 50
+fan_always_on = 1
+min_fan_speed = 100
+max_fan_speed = 100
+bridge_fan_speed = 100
+disable_fan_first_layers = 3
+filament_max_volumetric_speed = 1.2
+filament_notes = "Inslogic TPU 95A — TDS rev. 12.02.2024.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.03 mm, 1 kg spool. Density 1.23 g/cm3.\nDrying: 50 C for 4 h.\nNozzle sizes: 0.4 / 0.6 mm.\nNozzle temp: 190-210 C at 50-80 mm/s; 210-230 C at 80-120 mm/s.\nBed: 50-60 C. Bed type: TEXTURED PEI sheet / cool plate.\nShore 95A. HDT(0.45 MPa) 53 C. Elongation at break 1050 %.\n\nWHY 210 C: the MK3S+ prints TPU slowly (well under 80 mm/s), so the TDS's\nlow-speed band applies. 210 C is the top of that band - highest layer\nadhesion without entering the high-speed range the printer never reaches.\nNote this is well BELOW the 225 C that the Ultrafuse TPU-95A profile uses;\nInslogic's stated maximum is 230 C at speeds this printer will not hit.\n\nBED SHEET: Inslogic specifies a TEXTURED PEI sheet. On a smooth PEI sheet\nTPU bonds hard enough to damage the sheet on removal. Use the textured one.\n\nFAN 100 % is straight from the TDS and is correct here - unlike ASA, TPU does\nnot warp, so full cooling is safe.\n\nFIRST TUNING KNOB: retraction is inherited from Generic FLEX, which sets it to\n0 (no retraction). If stringing is bad on the MK3S+'s direct drive, try ~0.8 mm\nat 25 mm/s before changing anything else.\n\nUNTESTED - no calibration print has been run with this profile yet."

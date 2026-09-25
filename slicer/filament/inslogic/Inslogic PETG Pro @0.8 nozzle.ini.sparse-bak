@@ -1,0 +1,15 @@
+# Inslogic PETG Pro — Prusa MK3S+, 0.8 nozzle
+# Built from the Inslogic PETG Pro Technical Data Sheet (rev. 12.02.2024),
+# archived at ../../reference/inslogic_petg_pro_tds.pdf.
+# The TDS lists no 0.8 mm nozzle; this profile exists because that is how this
+# printer is often run here.
+inherits = Generic PETG @0.8 nozzle
+filament_vendor = Inslogic
+filament_type = PETG
+filament_diameter = 1.75
+filament_density = 1.26
+filament_cost = 49
+filament_spool_weight = 1000
+bed_temperature = 70
+first_layer_bed_temperature = 70
+filament_notes = "Inslogic PETG Pro at 0.8 nozzle - TDS rev. 12.02.2024.\n\nGRADE: product 'PETG Pro Inslogic 1KG', 49 ILS at filamentcenter.co.il (checked 29 Aug 2026). Not PETG-CF10, which is a different, carbon-filled material.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.02 mm, 1 kg spool. Density 1.26 g/cm3.\nDrying: 50 C for 4 h.\nNozzle sizes: 0.2 / 0.4 / 0.6 mm - the TDS does NOT list 0.8.\nNozzle temp: 230-240 C at 50-100 mm/s; 240-255 C at 100-300 mm/s; 255-270 C at 300-600 mm/s.\nBed: 60-70 C. Bed type: smooth PEI sheet / high-temperature plate.\nCooling fan: 100 %.\n\nTHE BED IS THE ONE REAL CHANGE: 70/70 C, the top of the Inslogic range, against the parent's 85 C first layer / 90 C. Prusa's numbers are outside vendor spec and hot enough for PETG to bond to smooth PEI hard enough to damage the sheet. If the first layer lifts, raise toward 85/90 with a glue-stick release layer.\n\nDELIBERATE DEVIATION FROM TDS:\nFan stays at the parent's 30 % min / 50 % max rather than the sheet's 100 %. The same 100 % appears on all four Inslogic sheets read so far - ASA, TPU 95A, PLA Pro, PETG Pro - so it is boilerplate, and full cooling is how PETG layer adhesion gets destroyed.\n\nNOT OVERRIDDEN: temperature. A 0.8 nozzle moves about four times the material per second, which reads against the TDS's 240-255 C band, and the parent already sits at 250 C. Its first layer is 240 C - deliberately cooler, which is Prusa's own choice at 0.8 for PETG and is still the top of the vendor's slow band, so it is left alone.\n\nUNTESTED - no calibration print has been run with this profile yet."

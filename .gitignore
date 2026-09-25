@@ -63,5 +63,3 @@ firmware/prusa-cam-c/main/wifi_secrets.h
 *.pdf
 *.PDF
 
-# Superseded sparse preset snapshots - git holds the history
-*.sparse-bak

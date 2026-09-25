@@ -1,0 +1,18 @@
+# Inslogic PLA Pro — Prusa MK3S+, 0.4 / 0.6 nozzle
+# Built from the Inslogic PLA Pro Technical Data Sheet (rev. 12.02.2024),
+# archived at ../../reference/inslogic_pla_pro_tds.pdf.
+# This is the plain "PLA Pro" grade — not Matte, Silk, High-Speed, Nebulux,
+# LW-PLA or WoodFill, each of which is a separate product with its own TDS.
+# See README.md in this folder for the reasoning behind every number.
+inherits = Generic PLA
+filament_vendor = Inslogic
+filament_type = PLA
+filament_diameter = 1.75
+filament_density = 1.20
+filament_cost = 59
+filament_spool_weight = 1000
+temperature = 205
+first_layer_temperature = 210
+bed_temperature = 60
+first_layer_bed_temperature = 60
+filament_notes = "Inslogic PLA Pro - TDS rev. 12.02.2024.\n\nGRADE: this is the plain PLA Pro grade - product 'PLA Pro Inslogic 1KG', 59 ILS at filamentcenter.co.il (checked 29 Aug 2026). Inslogic also sells Matte PLA, Silk PLA+, Silk Dual/Tri/Four Color, High-Speed Marble, Nebulux, LW-PLA and WoodFill PLA. Each has its own data sheet and none of them is this profile.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.02 mm, 1 kg spool. Density 1.20 g/cm3.\nDrying: 50 C for 4 h.\nNozzle sizes: 0.2 / 0.4 / 0.6 mm.\nNozzle temp: 195-205 C at 50-100 mm/s; 205-220 C at 100-300 mm/s.\nBed: 50-60 C. Bed type: textured PEI sheet / cool plate.\nCooling fan: 100 %.\nTg 65.3 C, Tm 166 C, HDT(0.45 MPa) 55.0 C, Shore 83D.\nTensile 56.0 MPa, elongation at break 20.3 %, flexural 85.8 MPa / 2795 MPa, Izod notched 20.1 kJ/m2.\n\nTEMPERATURE:\n205 C is the top of the TDS band for the speeds this printer actually runs at 0.4 mm - perimeters 45 mm/s, infill 80 mm/s, so the 50-100 mm/s band. Prusa's Generic PLA parent runs 210 C, which is 5 C above anything Inslogic sanctions at that speed, so it is overridden down.\nFirst layer keeps the parent's +5 C, giving 210 C. That is still a temperature the TDS sanctions, just in its faster band.\nIf layers separate, going up is safe: 205-220 C is the vendor's own 100-300 mm/s band.\n\nNOT OVERRIDDEN, deliberately:\nFan - the parent already runs 100 %, which is exactly what the TDS asks for. This is the one Inslogic material where the sheet's blanket 100 % is right.\nBed 60 C - the top of the Inslogic range and the parent's value, so no change.\n\nUNTESTED - no calibration print has been run with this profile yet."

@@ -1,0 +1,27 @@
+# Inslogic TPU 95A — Prusa MK3S+, 0.8 nozzle
+# Built from Inslogic TPU 95A Technical Data Sheet (rev. 12.02.2024).
+#
+# NOTE: the TDS lists 0.4 / 0.6 mm nozzles only — 0.8 is outside vendor spec.
+#
+# Parent is Generic FLEX @0.8 nozzle. There is NO "Ultrafuse TPU-95A @0.8
+# nozzle" in the PrusaResearch bundle for the MK3 family — the 0.8 Ultrafuse
+# variants exist only for MK4 / MK4S / XL / COREONE. Generic FLEX @0.8 is the
+# only valid soft-TPU 0.8 parent on an MK3S+.
+inherits = Generic FLEX @0.8 nozzle
+filament_vendor = Inslogic
+filament_type = FLEX
+filament_diameter = 1.75
+filament_density = 1.23
+filament_cost = 79
+filament_spool_weight = 1000
+temperature = 215
+first_layer_temperature = 220
+bed_temperature = 50
+first_layer_bed_temperature = 50
+fan_always_on = 1
+min_fan_speed = 100
+max_fan_speed = 100
+bridge_fan_speed = 100
+disable_fan_first_layers = 3
+filament_max_volumetric_speed = 4.3
+filament_notes = "Inslogic TPU 95A @0.8 nozzle — TDS rev. 12.02.2024.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.03 mm, 1 kg spool. Density 1.23 g/cm3.\nDrying: 50 C for 4 h.\nNozzle sizes: 0.4 / 0.6 mm — 0.8 IS NOT LISTED by Inslogic.\nNozzle temp: 190-210 C at 50-80 mm/s; 210-230 C at 80-120 mm/s.\nBed: 50-60 C. Bed type: TEXTURED PEI sheet / cool plate.\nShore 95A. HDT(0.45 MPa) 53 C.\n\n215 C (vs 210 C on the 0.4 profile) because a 0.8 nozzle moves more material\nper second, putting it near the boundary of the TDS's two speed bands.\n\nBED SHEET: use the TEXTURED PEI sheet, not the smooth one.\n\nWORTH KNOWING: soft 95A TPU through a 0.8 nozzle on a Bondtech direct drive is\nworkable but not a well-trodden path - the filament path is the limit, not the\nnozzle. If it grinds or under-extrudes, drop to the 0.4/0.6 profile rather than\npushing flow up. 4.3 mm3/s is inherited from Generic FLEX @0.8; treat it as a\nceiling, not a target.\n\nUNTESTED - no calibration print has been run with this profile yet."

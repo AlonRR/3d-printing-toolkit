@@ -1,0 +1,23 @@
+# Inslogic ASA — Prusa MK3S+, 0.4 / 0.6 nozzle
+# Built from Inslogic ASA Technical Data Sheet (rev. 12.02.2024).
+# See README.md in this folder for what was taken from the TDS and what was
+# deliberately overridden.
+inherits = Prusament ASA
+filament_vendor = Inslogic
+filament_type = ASA
+filament_diameter = 1.75
+filament_density = 1.05
+filament_cost = 69
+filament_spool_weight = 1000
+filament_colour = #FFF2EC
+temperature = 255
+first_layer_temperature = 260
+bed_temperature = 110
+first_layer_bed_temperature = 105
+fan_always_on = 1
+min_fan_speed = 20
+max_fan_speed = 20
+bridge_fan_speed = 30
+disable_fan_first_layers = 4
+min_print_speed = 5
+filament_notes = "Inslogic ASA — TDS rev. 12.02.2024.\n\nVENDOR SPEC:\nDiameter 1.75 +/- 0.02 mm, 1 kg spool. Density 1.05 g/cm3.\nDrying: 80 C for 4 h.\nNozzle sizes: 0.2 / 0.4 / 0.6 mm.\nNozzle temp: 250-260 C at 50-100 mm/s; 260-280 C at 100-200 mm/s.\nBed: 80-100 C. Bed type: smooth PEI / high-temp plate.\nShrinkage at 23 C: 0.4-0.9 %. Tg 108 C, HDT(0.45 MPa) 98 C.\n\nDELIBERATE DEVIATION FROM TDS:\nThe TDS says 100 % cooling fan. That is not applied here. 100 % part\ncooling on ASA causes warping and layer splitting on an open-frame MK3S+.\nFan is kept at the Prusament ASA values (20 %, off for the first 4 layers),\nwhich is what the working YASIN ASA profile on this machine already uses.\n\nBED IS 105 C FIRST LAYER / 110 C, DELIBERATELY OUTSIDE VENDOR SPEC.\nInslogic sanctions 80-100 C. These are Prusa's own tested ASA numbers, taken\non 30 Aug 2026 because a hotter bed keeps the lower layers soft longer, so\nthe part relieves stress instead of curling its corners up.\nThis is only safe because a glue stick goes down for every print on this\nmachine. ASA on BARE smooth PEI at 110 C bonds hard enough to tear PEI off\nthe sheet on removal. No glue, no 110 - drop back to 100/100.\nIf a part still lifts at 105/110, the bed is no longer the problem: look at\nthe chamber, a brim, and a draft shield. See docs/asa-print-quality.md.\n\nUNTESTED - no calibration print has been run with this profile yet."
