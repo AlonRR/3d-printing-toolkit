@@ -59,6 +59,25 @@ undersize on a 0.4 nozzle.
 - A horizontal hole (axis parallel to the bed) prints as an oval and needs a
   **teardrop** profile to avoid the unsupported top arc.
 
+### Clearance between parts that have to fit together
+
+⚠️ **There is no house default, and that is a gap rather than a decision.** Every model here picks
+its own, and the two that exist do not agree:
+
+| model | clearance | on what |
+|---|---|---|
+| `usbc-panel-plate` | **0.25 mm/side** | a pocket over a boss |
+| `gridfinity-foot-negative` | **0** nominal, 0.1–0.25 suggested only if it seats tightly | a foot in a baseplate |
+
+Both are values that happened to work, not measurements. The generic figure quoted online is around
+0.3 mm/side; it is **not** a number from this printer and is not adopted here.
+
+⭐ **Settle it with a test print rather than by picking one.** A clearance ladder — the same pin
+through a row of holes stepping 0.05 mm — gives the answer in a single print. Record the result
+**against the profile it was measured on**, exactly as §1 does for extrusion width: fit tolerance
+moves with extrusion width and with material shrinkage, so a bare number with no profile attached
+is the same trap §1 exists to prevent.
+
 ## 3. Overhangs — the 45° rule is not the real rule
 
 45° is a *consequence*, not a law. The actual constraint is that **each new
@@ -272,6 +291,17 @@ G-code confirms `support_material = 0`.
 - Screws threading *into* plastic want a pilot around **0.8 × the thread
   diameter**, not a clearance hole. Clearance is for screws passing *through*.
 
+
+Two named features, in the §3c style, so a design conversation can point at one:
+
+- **Pinch clamp** — a slit through a boss, closed by a bolt through a captive nut, tightening a
+  bore around a rod. Converts a sliding fit into a locked one without a grub screw biting into
+  the rod, and it is permanent geometry rather than an added part.
+- **Compliant feature** — a deliberately thinned or slotted section that flexes so two parts
+  push together and stay. §3b prefers this to a sacrificial alignment aid. ⚠️ It is a flexure,
+  so if it is both preloaded *and* hot, the stress-relaxation caution in
+  [annealing-and-hot-service.md](annealing-and-hot-service.md) applies to it.
+
 ## 5. Corners
 
 Round or chamfer everything you can. Sharp internal corners are stress
@@ -293,6 +323,37 @@ suffix). Worth grepping the sliced G-code rather than trusting the dropdown:
 ```sh
 grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 ```
+
+### 5b. Shapes that resist warping — round the plan view first
+
+⚠️ **Untested here.** Reasoning plus one measured fact from this repo, not a result from this
+printer.
+
+§6 records that ASA's *small thin features lift at the corners*, and the answer so far has been
+process: the `ASA brim + draft shield` profile, `brim_width = 5`. There is a geometry answer too,
+and §3b says to prefer it.
+
+- ⭐ **Round the corners as seen from above.** Lifting starts at a sharp corner in the plan view,
+  where the largest contraction meets the smallest bonded area. A radius there is permanent, costs
+  nothing per copy, and stays on the part.
+- **Mouse ears** — small thin discs at the corners, trimmed off afterwards. ⛔ **Sacrificial, so
+  §3b applies.** They are the same class of answer as the 5 mm brim already in use, just with less
+  cleanup. Recognise them; reach for the radius first.
+- Concentric slits cut into the underside of a large flat part are sometimes offered as stress
+  relief. Not tested here, and it trades a sealed base for a slotted one — recorded for
+  completeness, not recommended.
+
+### 5c. Which way round to put text — measured here
+
+A two-way rule. Both halves come from `models/petg-temp-tower`, which does each deliberately:
+
+| face | do this | why |
+|---|---|---|
+| **Vertical** | **raise** the text | engraved text at this size *fills in* — the band numbers are embossed outward for exactly this reason |
+| **Horizontal** | **engrave** it | raised text on a top face is fragile and collects stringing — the base label is engraved for exactly this reason |
+
+Under about **5 mm digit height** the digits close up either way at a 0.4 nozzle, which is why that
+model uses 6.0 mm.
 
 ## 6. Material notes for what's on the shelf
 
@@ -488,6 +549,24 @@ of this span is well within the machine, on a face hidden against the connector.
 
 ---
 
+## Claims deliberately NOT imported
+
+A design-tips poster (in Sources) was compared tip by tip against this document. Most of its advice
+is already here and more precisely, because these numbers come from this printer's own sliced
+output. Three of its claims **conflict** with what this machine does, and are recorded so nobody
+imports them later by accident:
+
+| the poster says | this repo measures | why they differ |
+|---|---|---|
+| wall steps 0.8 / 1.2 / 1.6 mm | **0.90 / 1.35 / 1.80** | it assumes a 0.4 mm extrusion width; §1 uses the width the slicer actually emits, **0.45** |
+| bridges of "2 cm+" | **~10 mm** | asserted in `usbc-panel-plate.scad` against the ceiling this machine was measured at |
+| engrave text into vertical faces | **raise** it on vertical faces | §5c — engraved text at readable sizes fills in here |
+
+⭐ **The pattern is worth more than the three corrections.** Every conflict is a generic figure
+meeting a measured one, and in each case the generic figure is not wrong in general — it is wrong
+*for this extrusion width, this cooling, this nozzle*. That is the same reason §1 tells you to read
+the width out of the profile instead of trusting a table.
+
 ## Sources
 
 - [Protolabs Network — How to design parts for FDM 3D printing](https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/)
@@ -495,6 +574,7 @@ of this span is well within the machine, on a face hidden against the connector.
 - [SGD3D — FDM 3D printing design guide: strength & accuracy](https://sgd3d.co.uk/3d-printing/fdm-3d-printing-design-guide/)
 - [Mandarin3D — Wall thickness guide](https://mandarin3d.com/blog/wall-thickness-guide-minimum-and-optimal-measurements)
 - [Simple Machining — DFM for 3D printing](https://www.simplemachining.com/blogs/dfm-for-3d-printing-a-practical-design-guide)
+- Billie Ruben, *CAD Design Tips for 3D Printing* — [infographic poster](https://imgur.com/gallery/i-made-another-infographic-poster-3d-printing-SqIdFwB). Someone else's work, so linked rather than reproduced. Compared tip by tip against this document; see *Claims deliberately NOT imported* above.
 
 The extrusion-width, layer-height and bridge figures are read from this repo's
 own sliced output, not from those pages.
