@@ -241,6 +241,16 @@ fraction of that** — two numbers per arm, start and end, not one. The gap betw
 *starting* values is itself the dimensional result §3 predicts, and is worth recording separately
 [inferred].
 
+⚠️ **Measure the fixture at each position too, not only the part.** Two insert positions in one
+coupon are not identical — they are two printed features with their own tolerance. If the preload
+is computed from *nominal* fixture dimensions and only the insert is measured, position-to-position
+variation lands on the anneal's account. The sizes are comparable, which is what makes this matter
+rather than a quibble: a 0.5 % anneal shrink on a 23 mm height is ~0.12 mm, and print variation
+between two positions is easily 0.05–0.10 mm — against a 0.7 mm preload, both are a large fraction
+of the quantity being compared. Measure each position's own fixture dimensions once before fitting,
+or swap the inserts between positions on a repeat run and see whether the difference follows the
+insert or the slot [inferred].
+
 **Prediction, recorded so the test can falsify it:** annealed ASA will not hold 54 % of 0.7 mm
 through repeated multi-hour 85 °C cycles. 23 °C below Tg at ~9 MPa is inside the regime where glassy
 polymers relax measurably, and physical ageing slows that without stopping it [inferred]. If the
