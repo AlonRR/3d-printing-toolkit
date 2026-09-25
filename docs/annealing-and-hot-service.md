@@ -251,6 +251,13 @@ of the quantity being compared. Measure each position's own fixture dimensions o
 or swap the inserts between positions on a repeat run and see whether the difference follows the
 insert or the slot [inferred].
 
+⭐ **Measure at the granularity of the independent load path, not of the part.** Each finger is its
+own flexure with its own contact, so the fixture dimensions belong *per bump*, not per insert or
+per pocket — two fingers on one insert can start at different deflections, and averaging them
+throws away the fact. The drybox coupon ended up taking four readings for two inserts on exactly
+this reasoning, which is finer than the per-position advice above and is the better rule
+[inferred].
+
 **Prediction, recorded so the test can falsify it:** annealed ASA will not hold 54 % of 0.7 mm
 through repeated multi-hour 85 °C cycles. 23 °C below Tg at ~9 MPa is inside the regime where glassy
 polymers relax measurably, and physical ageing slows that without stopping it [inferred]. If the
