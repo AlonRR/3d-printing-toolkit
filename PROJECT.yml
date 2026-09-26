@@ -2,13 +2,6 @@
 # schema version: set by `ledger migrate` or `ledger init` -- do not edit by hand
 schema: 1
 projects:
-  - name:     Desiccant module
-    kind:     build
-    state:    active
-    next:     "the heater bench test - the measurement four decisions wait on"
-    trackers: [docs/heater-bench-test.md, docs/desiccant-module.md, docs/desiccant-module-bom.md]
-    review:   2026-09-20
-
   - name:     Chamber family
     kind:     build
     state:    active

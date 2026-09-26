@@ -1,9 +1,9 @@
 # Annealing, and plastic parts that carry load while hot
 
-Written 25 Sep 2026 to answer a question from the drybox work: the `spring` insert in
-`models/desiccant-module` is ASA, holds a 0.7 mm preload through two 0.9 mm cantilever fingers, and
-sits in ~85 °C purge air for hours at a time, repeatedly. Root stress ~9 MPa cold. Should it be
-annealed first, and does annealing help?
+Written 25 Sep 2026 to answer a question from the drybox work — a build that now lives in its own
+repository. The `spring` insert there is ASA, holds a 0.7 mm preload through two 0.9 mm cantilever
+fingers, and sits in ~85 °C purge air for hours at a time, repeatedly. Root stress ~9 MPa cold.
+Should it be annealed first, and does annealing help?
 
 **Short answer: anneal it, but not for the reason usually given, and do not expect annealing to fix
 the load problem. If the preload genuinely has to survive, the spring should not be ASA — and
@@ -17,7 +17,7 @@ from this repo rather than from a source.
 
 ## 1. ⛔ HDT is not a service temperature, and the margin here is smaller than it looks
 
-This repo records ASA at **Tg 108 °C, HDT 98 °C** ([drybox-active.md](drybox-active.md)), and that
+This repo records ASA at **Tg 108 °C, HDT 98 °C** ([fdm-design-rules](fdm-design-rules.md) §6), and that
 has been read as "85 °C leaves comfortable margin". It does not, for three reasons.
 
 **HDT is quoted at a specified load, and the number moves a long way with it.** Polycarbonate is

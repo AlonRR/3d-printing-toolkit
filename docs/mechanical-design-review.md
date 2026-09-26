@@ -18,6 +18,11 @@ Printing rules (quantised walls, holes, overhang angles, bridging tricks, materi
 
 `S#` refers to the source list at the end.
 
+`§5.x` refers to a numbered finding in the desiccant module's own facts document. That build moved to
+its own repository in September 2026 and is not public, so those sections cannot be opened from here;
+the citation is kept only to mark where a claim came from. Every claim below is stated in full, so
+nothing depends on following one.
+
 ---
 
 ## 0. The pattern

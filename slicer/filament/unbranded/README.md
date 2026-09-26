@@ -63,7 +63,8 @@ are a defensible starting point and nothing more. `filament_notes` says so, and 
 `models/petg-temp-tower/petg-temp-tower.gcode` is sliced and ready — 2 h 41 m, 31.3 g, bands
 220/230/240/250/260 baked in, base plate laid at 240 °C so adhesion is not the variable.
 
-**Alon's decision, 3 Sep 2026: it waits for the active drybox** ([drybox-active](../../../docs/drybox-active.md)).
+**Alon's decision, 3 Sep 2026: it waits for the active drybox** — a build that now lives in its own
+repository.
 This is a sequencing choice, not a delay to work around:
 
 - **Calibrating on wet filament measures the water, not the temperature.** Wet PETG strings and

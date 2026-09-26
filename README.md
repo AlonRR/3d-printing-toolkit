@@ -8,7 +8,7 @@ than a hobby printer. Four things live here:
 | **Tuned slicer profiles** | 20 filament + 10 print + 1 printer preset, every number traced to a vendor datasheet or to a measurement on this machine |
 | **Design rules** | FDM constraints calibrated to *this* machine's measured extrusion width, not its nozzle diameter |
 | **Part verification** | A pipeline that renders, asserts, checks manifold, slices, and cross-checks a model against the profile it was actually sliced with |
-| **Firmware** | An ESP32-S3 camera node in plain C on ESP-IDF, plus ESPHome chamber and drybox sensor configuration |
+| **Firmware** | An ESP32-S3 camera node in plain C on ESP-IDF, plus ESPHome chamber sensor configuration |
 
 Every figure here is either read out of this repo's own sliced output or measured on the machine.
 Where a number is inherited or assumed rather than measured, it says so — that distinction is the
@@ -57,6 +57,11 @@ Two more from the same day, each of which cost a round trip:
   `.gitignore` enforces it.
 - **Physical-printer configs.** They hold PrusaLink API keys in plaintext. Also gitignored.
 - **The parametric CAD library** — a separate project.
+- **The heated drybox and desiccant module.** Their documents, firmware and models moved to a
+  repository of their own in September 2026, once that work had grown into a project rather than a
+  corner of this one. It is not public, so there is no link to give. What stayed here is the material
+  the two share: the annealing page, the mechanical-design-review checklist, `scad-check.sh` and
+  `scad-controls.sh`.
 - **Procurement.** Prices that carry an argument stay; order references, vendors and what was paid
   belong in an inventory system, not a code repo.
 
@@ -115,7 +120,7 @@ with an active differential pair whenever a data-capable cable is attached — s
 you debug* and recovers when you unplug, which reads as a flaky sensor rather than a pin conflict.
 `firmware/prusa-cam-c/main/board_pins.h` records every claimed pin with its reason.
 
-**ESPHome configuration** for the chamber and drybox sensors is also here. The chamber node has been
+**ESPHome configuration** for the chamber sensors is also here. The chamber node has been
 built and run in the enclosure during live prints; the measurements and the reasoning behind the
 sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md).
 
@@ -129,10 +134,6 @@ sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md).
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
 | [`chamber-sensor.md`](docs/chamber-sensor.md) | Enclosure temperature sensing — three measurement points, and why each sensor was chosen |
 | [`chamber-airflow.md`](docs/chamber-airflow.md) | Fume extraction and chamber airflow |
-| [`moisture-isotherms.md`](docs/moisture-isotherms.md) | Desiccant physics, with sourced figures and the unsourced ones marked |
-| [`dehumidify-energy.md`](docs/dehumidify-energy.md) | What drying actually costs to run |
-| [`drybox-active.md`](docs/drybox-active.md) · [`drybox-cabinet.md`](docs/drybox-cabinet.md) | Heated drybox design |
-| [`desiccant-module.md`](docs/desiccant-module.md) | The desiccant cartridge and module |
 | [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
 ---

@@ -1323,8 +1323,8 @@ going thinner is negligible: the element length moves by 0.6 mm, and the higher 
 **Cut 31 mm, trim toward ~29 mm**, measuring far-end RSSI against an unmodified control.
 
 ✅ **The inventory record agrees independently**, noting 22 AWG is *"NOT the gauge for the drybox PTC heater at ~4.2 A"*. ⚠️ **So the 1.37 mm is not waste — it is the right wire for that heater**, where the buy list
-calls for 18 AWG to carry 4.2 A continuous and where stiffness is a virtue. See
-[drybox-active](drybox-active.md).
+calls for 18 AWG to carry 4.2 A continuous and where stiffness is a virtue. That heater belongs to
+the drybox build, which moved to its own repository.
 
 ### ✅ IDENTIFIED: UL1007 22 AWG solid tinned copper, 5 × 10 m coils
 
@@ -2177,9 +2177,10 @@ error rather than a clear one, so do not copy it from an older tutorial.
    logging to Grafana.
 6. **Then** revisit chamber heating — and note the element is **no longer here**. The 12 V 50 W
    PTC was **reallocated to the active drybox on 3 Sep 2026** by Alon's decision, precisely because
-   this step is deferred behind steps 1-5 while 10 kg of PETG absorbs humidity now. See
-   [drybox-active.md](drybox-active.md). Reviving chamber heating therefore starts with buying a
-   second element (₪39), which is cheap and was judged better than cannibalising a working build.
+   this step is deferred behind steps 1-5 while 10 kg of PETG absorbs humidity now. That build and
+   its documents moved to their own repository. Reviving chamber heating therefore starts with
+   buying a second element (₪39), which is cheap and was judged better than cannibalising a
+   working build.
    The rest of the objection stands regardless: 50 W is modest for a Lack-sized volume, it needs
    **> 4 A at 12 V** which the PD trigger board cannot supply, and it needs a hardware thermal
    cutout. That is a separate power design, not a bolt-on.

@@ -214,7 +214,7 @@ There is no dryer in this lab. The options, cheapest first:
 - A kitchen oven at its lowest setting, if it will hold 80 °C — many will not go that low
   accurately, and ASA's Tg is 108 °C so there is margin, but an oven that overshoots to 120 °C
   will fuse the spool.
-- The **12 V 50 W PTC heater** — ⚠️ **no longer available to this build.** Reallocated to the active drybox on 3 Sep 2026 ([drybox-active.md](drybox-active.md)); reviving this needs a second element at ₪39. In a sealed box, 50 W
+- The **12 V 50 W PTC heater** — ⚠️ **no longer available to this build.** Reallocated to the active drybox on 3 Sep 2026 — that build moved to its own repository; reviving this needs a second element at ₪39. In a sealed box, 50 W
   is modest but a small insulated box is a small volume. Needs a >4 A 12 V supply, which the
   PD trigger board is not.
 - Desiccant storage to stop the problem recurring: filamentcenter sells 2 kg alumina at ₪89 and
