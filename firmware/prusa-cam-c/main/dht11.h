@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Bit-banged DHT11 / DHT22 reader.
  *
  * Written rather than pulled from a component because the protocol is ~80 lines

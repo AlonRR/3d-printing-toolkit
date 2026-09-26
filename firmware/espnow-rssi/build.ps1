@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 param([Parameter(Mandatory)][ValidateSet('esp32s3','esp32c3')][string]$Target,
       [string]$Root = $PSScriptRoot)
 # Builds this project with the ESP-IDF that ESPHome already cached, mirroring the

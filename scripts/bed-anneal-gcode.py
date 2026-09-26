@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # /// script
 # requires-python = ">=3.11"
 # ///

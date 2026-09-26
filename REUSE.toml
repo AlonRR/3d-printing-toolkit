@@ -1,0 +1,34 @@
+version = 1
+
+# Documentation, profile data, figures and repository metadata: the files that cannot carry a header
+# of their own, or where a comment line would be read as content. The .scad sources, the scripts and
+# the firmware carry SPDX headers instead.
+#
+# The slicer profiles are the reason this block exists. PrusaSlicer rewrites a preset when it saves
+# one, and it does not preserve comments, so a header added here would silently disappear the first
+# time a profile were edited in the UI.
+[[annotations]]
+path = [
+  "README.md",
+  "**/README.md",
+  "docs/**",
+  "slicer/**",
+  "models/**/*.png",
+  "data/**",
+  "PROJECT.yml",
+  ".gitignore",
+  ".gitattributes",
+  "firmware/.gitignore",
+  "firmware/espnow-rssi/.gitignore",
+  ".o.txt",
+  "REUSE.toml",
+]
+SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Firmware build configuration, so MPL-2.0 with the rest of firmware/. The ESP-IDF partition table
+# is parsed by column position; it accepts comments, but it is not a file worth adding one to.
+[[annotations]]
+path = ["firmware/prusa-cam-c/partitions.csv"]
+SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
+SPDX-License-Identifier = "MPL-2.0"

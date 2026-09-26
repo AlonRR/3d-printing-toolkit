@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* ESP-NOW RSSI test - firmware/espnow-c with per-packet RSSI added.
  *
  * Same symmetric design as espnow-c: one source, flashed to both boards, each

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Retarget a sliced G-code's temperatures to a different filament profile, and prove it.
 
 usage: retarget_filament_temps.py [--no-header] <filament.ini> <out_dir> <file.gcode> [more.gcode ...]

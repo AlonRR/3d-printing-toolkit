@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Add mouse-ear brim tabs to the corners of a binary STL, in place of a full brim.
 
 PrusaSlicer has no per-area brim: brim_type/brim_width are object-level, and no

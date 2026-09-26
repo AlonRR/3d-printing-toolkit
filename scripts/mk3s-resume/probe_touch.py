@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Find touch-off points that make_resume.py will actually accept, instead of guessing them.
 
 Replicates make_resume.covered() EXACTLY - same segment construction, same 0.3 mm tolerance - but

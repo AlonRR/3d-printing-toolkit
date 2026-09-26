@@ -136,6 +136,30 @@ sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md).
 | [`chamber-airflow.md`](docs/chamber-airflow.md) | Fume extraction and chamber airflow |
 | [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
+## Licence
+
+Two licences, because this repository holds two different kinds of work:
+
+| | |
+|---|---|
+| **Code** — `firmware/`, `scripts/` | **MPL-2.0** |
+| **Everything else** — `docs/`, `slicer/`, `models/`, this README and the figures | **CC-BY-4.0** |
+
+The split is deliberate. Creative Commons advises against using a CC licence for software: it carries
+no patent grant and says nothing about source availability, and a firmware or script consumer needs
+both. The rest is documentation, measured profile data and small printable parts, where CC-BY fits and
+matches the norm for shared models.
+
+Every file states its own licence, following the [REUSE](https://reuse.software/) specification —
+either as an `SPDX-License-Identifier` header or through `REUSE.toml` for files that cannot carry one.
+The slicer profiles are in the second group for a concrete reason: PrusaSlicer rewrites a preset when
+it saves one and does not preserve comments, so a header written into a profile would vanish the first
+time it was edited in the UI. Full licence texts are in [`LICENSES/`](LICENSES/).
+
+⚠️ **Versions published before this change stay CC-BY-4.0.** Everything here was CC-BY-4.0 until
+September 2026, and anyone who already has a copy keeps those terms for it. The split applies from
+here onward.
+
 ---
 
 *Hostnames, addresses and credentials in this repository are placeholders. Machine-specific values

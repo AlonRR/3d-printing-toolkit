@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 cmake_minimum_required(VERSION 3.16)
 # Build only what main needs. Without this every IDF component is compiled -
 # including esp_lcd, which crashed the compiler on the first attempt.

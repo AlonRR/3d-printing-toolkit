@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # Render previews, cross-sections and thin slices of an OpenSCAD model.
 #
 #   scad-preview.sh MODEL.scad [OUTDIR] [SLICE_Z ...]

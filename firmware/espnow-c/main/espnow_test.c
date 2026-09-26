@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Minimal ESP-NOW peer test, plain ESP-IDF.
  *
  * WHY THIS EXISTS. ESPHome 2026.8.1's espnow component would not pass a single

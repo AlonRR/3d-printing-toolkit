@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Milestone 1: prove the hardware before building anything on it.
  *
  * WHY THIS SHAPE. The chamber-sensor work in this repo lost several days to a

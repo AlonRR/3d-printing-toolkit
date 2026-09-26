@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Publishes the chamber reading to the broker, with Home Assistant discovery.
  *
  * WHY MQTT AND NOT THE ESPHOME/HA NATIVE API: Home Assistant already has the

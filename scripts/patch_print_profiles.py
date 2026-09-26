@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Apply the house print-profile delta to PrusaSlicer print presets, minimally and verifiably.
 
 usage: patch_print_profiles.py [--apply] [--dir=<path>]   (default is a dry run)

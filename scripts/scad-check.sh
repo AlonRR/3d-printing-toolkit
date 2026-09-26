@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # Verify an OpenSCAD part end to end: render -> STL -> manifold -> slice, and cross-check the model's fdm_* values against the profile it was actually sliced with.
 #
 #   scad-check.sh MODEL.scad [PRINT_PROFILE] [FILAMENT_PROFILE]

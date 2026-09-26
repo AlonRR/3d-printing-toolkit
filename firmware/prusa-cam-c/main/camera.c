@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* OV3660 bring-up, with a self-diagnosing configuration sweep.
  *
  * WHAT THE FIRST RUN TAUGHT US. The sensor PID read back as 0x3660 and PSRAM

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Watch the MK3S through PrusaLink and log every sample, for one Monitor window.
 
 usage: print_monitor.py <log_dir> [max_seconds=3500] [interval=10]

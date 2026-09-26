@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Station-mode WiFi, kept deliberately minimal - this exists to carry a
  * benchmark, not to be a resilient production supplicant.
  *

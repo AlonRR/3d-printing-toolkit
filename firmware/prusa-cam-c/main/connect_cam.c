@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Snapshot upload to Prusa Connect.
  *
  * THE CONTRACT, read from Prusa's published camera OpenAPI rather than assumed:

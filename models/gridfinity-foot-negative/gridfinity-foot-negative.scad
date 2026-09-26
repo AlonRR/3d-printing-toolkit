@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: CC-BY-4.0
+// Shared under the Creative Commons Attribution 4.0 International licence
+// (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
+
 // Gridfinity foot NEGATIVE - gives any model a gridfinity bin bottom.
 //
 // WHAT THIS IS. Not a bin, and not a baseplate: it is the material you REMOVE from a flat-bottomed

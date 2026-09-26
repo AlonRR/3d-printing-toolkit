@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* How fast can this board capture, and how fast can it ship the result?
  *
  * Four measurements, kept SEPARATE on purpose - the same discipline that made

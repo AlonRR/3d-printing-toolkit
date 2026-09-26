@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Log the ESP-NOW hub's serial output to CSV. Runs on the server, not here.
 
     python3 chamber-serial-log.py [--port /dev/ttyACM0] [--csv PATH] [--note TEXT]

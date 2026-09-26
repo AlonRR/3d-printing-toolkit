@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Upload a resume file to PrusaLink WITHOUT starting it (Print-After-Upload: ?0).
 
 usage: upload_resume.py <file.gcode>

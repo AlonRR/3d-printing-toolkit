@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 param([Parameter(Mandatory)][string]$Serial)
 # Print the COM port of the Espressif native-USB board whose USB serial (its MAC) is
 # $Serial; exit 1 if it is not present. A file, not an inline -Command: the inline

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # chamber-sensor-espnow — the DHT11 node, talking ESP-NOW instead of WiFi.
 #
 # WHY THIS EXISTS. The WiFi version of this node (chamber-baseline.yaml) works

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # chamber-hub-espnow — the receiver, on the C3 plugged into the server's USB.
 #
 # Pairs with firmware/chamber-sensor-espnow.yaml. The sensor node broadcasts

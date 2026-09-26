@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # Run every control in a model README's "Guards" block and say whether each one fired its guard.
 #
 #   scripts/scad-controls.sh models/usbc-panel-plate [PART]

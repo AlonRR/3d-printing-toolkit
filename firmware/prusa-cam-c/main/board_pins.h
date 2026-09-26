@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Pin map for the ESP32-S3-WROOM-1 dual-USB-C camera board.
  *
  * PROVENANCE, because this is the single most likely thing to be wrong. These

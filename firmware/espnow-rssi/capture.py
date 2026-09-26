@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Capture RXR lines from one or two boards at once and summarise RSSI per direction.
 
     python capture.py SECONDS PORT [PORT ...]

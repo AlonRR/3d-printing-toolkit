@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* Over-the-air update, PUSH model: the board listens and the PC uploads.
  *
  * WHY PUSH RATHER THAN PULL. The usual OTA has the device fetch a binary from a

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Build a resume file for a MK3S print stopped mid-print, part still on the bed.
 
 usage: make_resume.py <original.gcode> <wall_z> <top_z> <live_z> <gap_mm> <out.gcode>

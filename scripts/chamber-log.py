@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Log the chamber-baseline node to CSV over WiFi.
 
     python scripts/chamber-log.py [host] [--csv PATH] [--every SECONDS] [--note TEXT]

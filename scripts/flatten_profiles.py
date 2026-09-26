@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Flatten hand-written PrusaSlicer user filament presets.
 
 PrusaSlicer does NOT resolve `inherits` when loading a user preset — any key

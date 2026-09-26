@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: CC-BY-4.0
+// Shared under the Creative Commons Attribution 4.0 International licence
+// (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
+
 /*
 USB-C panel plate — a rectangle with three holes: a two-level opening in the centre (a thin lip sized to the PORT, opening out behind into a relief pocket for the connector's boss) and a screw hole either side.
 

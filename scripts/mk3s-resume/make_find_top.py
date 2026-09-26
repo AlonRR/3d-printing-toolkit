@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Generate find-top.gcode: locate the top of a part to 0.1 mm without calipers.
 
 usage: make_find_top.py <steps> <touch_x> <touch_y> <out.gcode>

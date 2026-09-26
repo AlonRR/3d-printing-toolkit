@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # Build (and optionally flash) the ESP32-S3 camera firmware.
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File build-cam.ps1 [COMport]

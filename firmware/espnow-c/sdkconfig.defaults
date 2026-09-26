@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 # ESP32-C3 Super Mini: the console is the chip's native USB-Serial/JTAG, not a
 # UART bridge. Without this the logs go to pins nothing is connected to and the
 # board looks dead over USB.

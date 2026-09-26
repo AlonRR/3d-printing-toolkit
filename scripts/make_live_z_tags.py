@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
 """Generate a Live adjust Z calibration tag plate for any nozzle, as G-code.
 
 usage: make_live_z_tags.py <out.gcode> [nozzle] [first_layer_h] [extrusion_w] [z_start] [z_step] [n_tags] [filament.ini]

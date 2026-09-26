@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: MPL-2.0
+
 /* DHT11 / DHT22 single-wire protocol.
  *
  * THE TIMING, since every bug in this driver is a timing bug. The host pulls

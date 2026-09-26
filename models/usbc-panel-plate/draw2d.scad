@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+// SPDX-License-Identifier: CC-BY-4.0
+// Shared under the Creative Commons Attribution 4.0 International licence
+// (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
+
 /*
 draw2d.scad — the drafting primitives, shared by every diagram in this folder.
 
