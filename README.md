@@ -1,7 +1,7 @@
-# Prusa MK3S+ toolkit — profiles, design rules, part verification, firmware
+# 3D printing toolkit — profiles, design rules, part verification, firmware
 
-Print-process engineering around one FDM machine, treated as production equipment rather than a
-hobby printer. Four things live here:
+Print-process engineering around a single **Prusa MK3S+**, treated as production equipment rather
+than a hobby printer. Four things live here:
 
 | | |
 |---|---|
