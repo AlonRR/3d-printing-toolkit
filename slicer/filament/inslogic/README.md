@@ -431,8 +431,8 @@ chain already lands on the vendor's numbers, and the only real change is the bed
 2. **TPU: fit the textured PEI sheet.** On smooth PEI, TPU can bond hard enough to damage
    the sheet on removal. PLA Pro's sheet asks for the textured sheet too, and **PETG on smooth
    PEI is the other case that damages sheets** — see Deviation 2 above.
-3. **ASA: use the enclosure**, and mind the fumes — this is exactly the case the
-   [fume-fan](../../../Tools/homelab/docs/manual/fume-fan-esp32.md) project is for.
+3. **ASA: use the enclosure**, and mind the fumes — this is exactly the case the fume extractor
+   project is for (`alon/homelab` → `docs/manual/fume-fan-esp32.md`).
 4. **Print a temperature tower or one of the filament sample swatches** in
    `..\..\usefull\` (`ASA_filament_sample.3mf`, `TPU_filament_sample.stl`) before committing
    to a long print. Note the ASA one is a **.3mf** — it carries its own embedded config, so
