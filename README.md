@@ -1,595 +1,143 @@
-# 3D printing
+# Prusa MK3S+ toolkit — profiles, design rules, part verification, firmware
 
-Documentation and slicer configuration for a **Prusa MK3S+**. Filament on hand: **Inslogic**
-(ASA, TPU 95A) and **Yasin3D**.
+Print-process engineering around one FDM machine, treated as production equipment rather than a
+hobby printer. Four things live here:
 
-Two things live here and nowhere else — the tuned filament profiles with the reasoning behind
-every number, and the hard-won gotchas that took a wasted print or a wasted round-trip to find.
+| | |
+|---|---|
+| **Tuned slicer profiles** | 20 filament + 10 print + 1 printer preset, every number traced to a vendor datasheet or to a measurement on this machine |
+| **Design rules** | FDM constraints calibrated to *this* machine's measured extrusion width, not its nozzle diameter |
+| **Part verification** | A pipeline that renders, asserts, checks manifold, slices, and cross-checks a model against the profile it was actually sliced with |
+| **Firmware** | An ESP32-S3 camera node in plain C on ESP-IDF, plus ESPHome chamber and drybox sensor configuration |
+
+Every figure here is either read out of this repo's own sliced output or measured on the machine.
+Where a number is inherited or assumed rather than measured, it says so — that distinction is the
+point of most of these documents.
+
+---
+
+## ⚠️ Read this first if you are about to write a profile
+
+**PrusaSlicer does not resolve `inherits` in a hand-written user preset.** Missing keys take the
+system *default*, not the parent's value — silently, while slicing still succeeds. A correct preset
+has about 85 keys. Full explanation and the fix:
+[`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md).
+
+Two more from the same day, each of which cost a round trip:
+
+- **A resolved chain drags `renamed_from` into the child**, so four PETG profiles each ended up
+  claiming to *be* the renamed `Generic PET`.
+- **`Prusament PETG` excludes 0.6 nozzles** in its compatibility condition, so anything inheriting
+  it vanishes from the filament list on a 0.6 — which is why every PETG profile here inherits
+  `Generic PETG` instead.
+
+---
 
 ## What's in the repo
 
 | Path | |
 |---|---|
-| [`slicer/filament/inslogic/`](slicer/filament/inslogic/) | The 11 Inslogic profiles (ASA, TPU 95A, PLA Pro, PETG Pro) + [their README](slicer/filament/inslogic/README.md) — build reasoning, what's print-validated, and the flattening trap |
-| [`slicer/filament/yasin3d/`](slicer/filament/yasin3d/) | The 6 Yasin3D profiles (PLA, PETG, ASA) + [their README](slicer/filament/yasin3d/README.md). **Yasin3D publishes no data sheet at all**, so these are Prusa's generic values with a vendor and a price attached — a starting point, not a calibration |
-| [`slicer/print/`](slicer/print/) | The 9 custom print profiles. **One of them, `…lightning`, has `spiral_vase = 1` baked in** — see §6 |
-| [`slicer/reference/`](slicer/reference/) | [Inslogic filament data](slicer/reference/inslogic-filament-data.md) — ASA, TPU 95A, PLA Pro, PETG Pro figures transcribed from the vendor TDS (the source for every temperature in those profiles) |
-| [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain. Needed because PrusaSlicer ignores `inherits` in hand-written presets |
-| [`docs/chamber-sensor.md`](docs/chamber-sensor.md) | Design for the enclosure temperature sensor — three measurement points not one, the C3 pin map, and why the safety interlock has to run on the ESP32 rather than in Home Assistant |
-| [`docs/asa-print-quality.md`](docs/asa-print-quality.md) | How to get better ASA prints on this machine, ordered by payoff. Leads with a real defect: the ASA profile asks for a 15 s minimum layer time and `min_print_speed` silently caps it at 5 |
-| [`docs/fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to **this** printer — the governing number is the 0.45 mm extrusion width, not the 0.4 mm nozzle, so walls quantise to multiples of 0.45 |
-| [`docs/mk3s-resume.md`](docs/mk3s-resume.md) + [`scripts/mk3s-resume/`](scripts/mk3s-resume/) | Restarting a print the printer stopped, with the part still on the bed. What the firmware's thermal stop actually does to the head, the three things that look like a Z reference and are not, and a generator that splices the remaining layers onto a paper touch-off |
-| [`models/`](models/) | Parametric OpenSCAD sources for one-off parts. STLs stay in OneDrive; the `.scad` is the artefact |
-| [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and **cross-check the model's `fdm_*` values against the profile it was actually sliced with**. Non-zero exit on any problem |
-| [`scripts/scad-preview.sh`](scripts/scad-preview.sh) | Previews, cross-sections and thin slices. Sections import the **exported STL**, so an export bug cannot hide behind a correct-looking render of the source |
-
-The workflow around these — sequencing, file conventions, the verification loop —
-is the user-level **`openscad-printed-part`** skill.
+| [`slicer/filament/inslogic/`](slicer/filament/inslogic/) | Profiles derived from real vendor datasheets — ASA, TPU 95A, PLA Pro, PETG Pro |
+| [`slicer/filament/yasin3d/`](slicer/filament/yasin3d/) | A vendor that publishes **no** datasheet. Labelled as a starting point, not a calibration |
+| [`slicer/filament/unbranded/`](slicer/filament/unbranded/) | Filament with **no manufacturer at all** — the SKU is its only identity, so the SKU is in the filename |
+| [`slicer/filament/ultrafuse/`](slicer/filament/ultrafuse/) | A user copy of a system preset, inherited and not validated here |
+| [`slicer/print/`](slicer/print/) | The custom print profiles. ⚠️ One, `…lightning`, has `spiral_vase = 1` baked in — deliberate and documented, but it will surprise you if selected blind |
+| [`slicer/printer/`](slicer/printer/) | The printer preset itself |
+| [`slicer/reference/`](slicer/reference/) | Vendor data transcribed to Markdown, with what was taken and what was overridden |
+| [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates filament profiles from the vendor chain, because of the `inherits` trap above |
+| [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and cross-check its declared parameters against the profile actually used |
+| [`scripts/scad-preview.sh`](scripts/scad-preview.sh) | Previews and cross-sections. Sections import the **exported STL**, so an export bug cannot hide behind a correct-looking render |
+| [`models/`](models/) | Parametric OpenSCAD sources. The `.scad` is the artefact; STLs are build output and are not tracked |
+| [`docs/`](docs/) | The written material — see *Documentation* below |
+| [`firmware/`](firmware/) | ESP-IDF camera node and ESPHome sensor configuration |
 
 ## What's deliberately *not* here
 
-- **Models and G-code** — STL/3MF/gcode stay in `OneDrive\3D printing\`; they're large binaries
-  and git is the wrong tool. `.gitignore` enforces it.
-- **`physical_printer/` configs** — they hold PrusaLink API keys in plaintext. Also gitignored.
-- **The parametric CAD library** — a separate repo.
-- **Print-station / homelab infrastructure** — lives in `alon/homelab`
-  (`docs/manual/print-station.md`, `fume-fan-esp32.md`).
-
-## Read this first if you're about to write a profile
-
-**PrusaSlicer does not resolve `inherits` in a hand-written user preset.** Missing keys take the
-system *default*, not the parent's value — silently, while slicing still succeeds. A correct
-preset has ~85 keys. Full explanation and the fix:
-[`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md).
-
-Two more that cost a round-trip each on 29 Aug 2026, documented in the same file: **a resolved
-chain drags `renamed_from` into the child** (four PETG profiles each claiming to be the renamed
-`Generic PET`), and **`Prusament PETG` excludes 0.6 nozzles** in its compatibility condition, so
-anything inheriting it vanishes from the filament list on a 0.6 — which is why every PETG
-profile here inherits `Generic PETG` instead.
+- **Models and G-code.** STL, 3MF and G-code are large binaries and git is the wrong tool for them.
+  `.gitignore` enforces it.
+- **Physical-printer configs.** They hold PrusaLink API keys in plaintext. Also gitignored.
+- **The parametric CAD library** — a separate project.
+- **Procurement.** Prices that carry an argument stay; order references, vendors and what was paid
+  belong in an inventory system, not a code repo.
 
 ---
 
-*Index below gathered 28 Jul 2026. Sections describing `OneDrive\3D printing\` are a map of
-what lives there, not a copy of it.*
+## Slicer profiles — `slicer/`
 
----
+**The difference between the vendors is the point.** Inslogic publishes real technical datasheets,
+so those profiles derive every temperature, flow and cooling figure from a documented source.
+Yasin3D publishes nothing, and one filament here has no manufacturer at all. Those profiles are
+generic values with a name attached, and each directory's README records which is which, so nobody
+mistakes an assumption for a measurement.
 
-## 1. Model library — `OneDrive\3D printing\`
+### A defect worth knowing about
 
-The main archive. 165 STL · 68 3MF · 36 G-code · 1 STEP · 1 SCAD.
+The ASA profile asks for a 15 second minimum layer time. **`min_print_speed` silently caps it at
+5 seconds** — the slicer does not warn you, and the symptom is poor small-layer cooling that reads
+as a temperature problem. [`docs/asa-print-quality.md`](docs/asa-print-quality.md) covers this and
+the rest of the ASA tuning, ordered by payoff.
 
-| Folder | What's in it |
+## Design rules — `docs/fdm-design-rules.md`
+
+The governing dimension on this machine is the **0.45 mm extrusion width, not the 0.4 mm nozzle**,
+so wall thicknesses quantise to multiples of 0.45. Designing to the nozzle diameter produces walls
+the slicer cannot fill cleanly.
+
+The document also records **claims deliberately not imported** from general design advice — wall
+steps that assume a 0.4 mm width, bridging figures well past this machine's measured ceiling, and
+text-orientation advice that is backwards here. Each is a generic figure meeting a measured one.
+
+## Part verification — `scripts/scad-check.sh`
+
+CI discipline applied to physical parts. For a given model it renders, runs the model's own asserts,
+checks the mesh is manifold, slices it, and **cross-checks the model's declared `fdm_*` parameters
+against the slicer profile it was actually sliced with** — then exits non-zero on any mismatch. A
+part whose design assumptions have drifted from the profile it gets sliced with fails the check
+instead of failing on the bed.
+
+## Firmware — `firmware/`
+
+**`prusa-cam-c/`** — an ESP32-S3 camera node in plain **ESP-IDF 5.5, no Arduino**, written as an
+alternative to the vendor's Arduino-based ESP32-Cam firmware.
+
+Bench milestone: 640×480 RGB565 captured and software-encoded to a valid JPEG in roughly 570 ms,
+with **byte-identical free heap across every cycle**. That last number is the one that matters in a
+camera loop — a leaked frame buffer exhausts a fixed pool and presents as a *hang* minutes later
+rather than as an error, so a stable heap is the check, not a nice statistic.
+
+⚠️ The board has **two USB-C ports and they are not interchangeable** — one is native USB, the other
+a CH343 UART bridge. Selecting the wrong console target sends every log line out the other
+connector, and the board looks dead while running perfectly. `sdkconfig.defaults` pins the console
+to UART0 for this reason.
+
+⛔ **GPIO19 and GPIO20 are the native USB pins on the ESP32-S3.** A sensor on either shares its line
+with an active differential pair whenever a data-capable cable is attached — so it misbehaves *while
+you debug* and recovers when you unplug, which reads as a flaky sensor rather than a pin conflict.
+`firmware/prusa-cam-c/main/board_pins.h` records every claimed pin with its reason.
+
+**ESPHome configuration** for the chamber and drybox sensors is also here. The chamber node has been
+built and run in the enclosure during live prints; the measurements and the reasoning behind the
+sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md).
+
+## Documentation — `docs/`
+
+| | |
 |---|---|
-| *(root)* | Loose working files — dry-box parts, filament-spool stands, Gridfinity contacts, breadboard bridges, PTFE tube guide |
-| `For the printer\` | **Printer's own upgrades/spares** — filament guide, spool holder, x-end-motor, screen cover, bowden connector, cable clips, plus the 4 Live-Z adjust G-codes (`1_initial` → `4_ultrafine`) |
-| `Gridfinity\` | Largest section. Full baseplate set (1x2…7x7, plain + weighted), ultralight bins, `sortfinity` small-part sorters, `sortfinity_minnie` (parametric, has the `.scad` source), drawer/shelf, hex-bit storage |
-| `Ikea lack printer encloser\` | Lack-table enclosure — hinges, bottom-corner passthroughs, 3mm corner parts. `printed\` = the ones already run |
-| `usefull\` | Calibration + shop tools — **PETG Live-Z calibration tags (0.4 and 0.6)**, filament sample swatches (PLA/PLA+/PETG/TPU/ASA), radius gauge, Bento box 120mm fan, hex-nut sorter, 3030 T-nuts |
-| `toys\` | Brio/Lego adapters, guinea pigs, disc shooter |
-| `Flower_vase_mode\` | Vase-mode roses + stem |
-| `gcode_works\` | Known-good sliced output |
-| `lack hinge with tightening\` | Enclosure hinge variant |
-| ~~`print_scripts_tree_d\`~~ | Removed 2 Aug 2026 — was a stale duplicate; see §5 |
-
-Also at root: `PrusaSlicer_config_bundle.ini` (84 KB) — an exported full config backup.
-
----
-
-## 2. Slicer configuration — `%APPDATA%\PrusaSlicer\`
-
-PrusaSlicer **2.9.4**. Default output path is already set to `OneDrive\3D printing`.
-
-**Currently selected:** printer `Original Prusa i3 MK3S & MK3S+` · print `0.2mm QUALITY @MK3 — no skirt, no brim, no crossing perimeter, lightning` · filament `Ultrafuse TPU-95A - Copy`.
-
-### Custom print profiles (9) — you run both a 0.4 and a 0.8 nozzle
-
-| 0.4 nozzle | 0.8 nozzle |
-|---|---|
-| `0.10mm DETAIL @MK3 - No skirt no brim no perimeter` | `0.30mm DETAIL @0.8 nozzle - NO SKIRT` |
-| `0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` | `0.40mm QUALITY @0.8 nozzle - NO Skirt` |
-| `0.20mm QUALITY @MK3 no skirt` | `0.40mm Uber strong @0.8 nozzle` |
-| `0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` | |
-| `0.2mm QUALITY @MK3 - …, lightning` | |
-| **`0.2mm QUALITY @MK3 - ASA brim + draft shield`** | |
-
-The through-line: you strip skirt/brim and avoid crossing perimeters on nearly everything —
-with one deliberate exception, the ASA profile added 30 Aug 2026, where a brim and a full-height
-draft shield are exactly what a warp-prone material in a half-open enclosure wants.
-⚠️ **A draft shield needs `skirts ≥ 1`**; with the `skirts = 0` these profiles all use, turning
-it on prints nothing and reports no error. Measured, see
-[asa-print-quality.md](docs/asa-print-quality.md).
-
-### Custom filament profiles (18)
-
-| Profile | Type | Nozzle / Bed | Inherits | Notes |
-|---|---|---|---|---|
-| `Yasin3D PLA @0.8 nozzle` | PLA | 220 / 60 °C | `Generic PLA @0.8 nozzle` | Cost 39, density 1.24. Renamed from `Yasi3D…` and vendor corrected from "Generic" (2 Aug) |
-| `Yasin3D ASA @0.8 nozzle` | ASA | 265 / 110 °C | `Prusament ASA @0.8 nozzle` | Cost 54, density 1.07. Fan pinned 20 %, off for first 4 layers. Renamed from `YASIN…` and vendor corrected from "Prusa Polymers" (2 Aug) |
-| `Ultrafuse TPU-95A - Copy` | FLEX | 225 (first layer 230) / 40 °C | `Ultrafuse TPU-95A` | Stock BASF notes retained. ⚠️ Inherits a 15 mm³/s flow ceiling from a rigid-copolyester ancestor — see §6 |
-| `Inslogic ASA` | ASA | 255 / **105–110** °C | `Prusament ASA` | Added 28 Jul 2026 from TDS. Bed raised to Prusa's 105/110 on 30 Aug — outside Inslogic's 80–100 spec, safe only because glue goes down every print. `min_print_speed` 15 → 5 the same week |
-| `Inslogic ASA @0.8 nozzle` | ASA | 265 / **105–110** °C | `Prusament ASA @0.8 nozzle` | Added 28 Jul 2026 from TDS. Same bed and `min_print_speed` changes |
-| `Inslogic TPU 95A` | FLEX | 210 / 50 °C | `Generic FLEX` | Added 28 Jul 2026 from TDS. Fan 100 % |
-| `Inslogic TPU 95A @0.8 nozzle` | FLEX | 215 / 50 °C | `Generic FLEX @0.8 nozzle` | Added 28 Jul 2026 from TDS. Fan 100 % |
-| **`Inslogic ASA - thin wall`** | ASA | 250 / 100 °C | `Prusament ASA` | **✅ Print-validated 29 Jul 2026.** Fan **70 %**, layer time forced to 10 s. Spiral-vase / single-wall only; 70 % fan would split layers on bulk ASA. Renamed from `- vase` (2 Aug) — it is not vase-mode-specific |
-| `Inslogic ASA - thin wall, flat base` | ASA | 250 / 100 °C | `Prusament ASA` | As above but `disable_fan_first_layers = 10`, so a wide flat base prints in still air. Renamed from `- leaves` (2 Aug) |
-| **`Inslogic TPU 95A - fast`** | FLEX | 225 / 50 °C | `NinjaTek Cheetah TPU` | **✅ Print-validated 30 Jul 2026** — 4.0 mm³/s and 1.5 mm retraction; 2h53m → 1h40m on the same model |
-| `Inslogic PLA Pro` | PLA | 205 (first 210) / 60 °C | `Generic PLA` | Added 29 Aug 2026 from TDS. ₪59/kg. 205 is the top of the vendor band for MK3S+ speeds — the parent's 210 is above it |
-| `Inslogic PLA Pro @0.8 nozzle` | PLA | 220 / 60 °C | `Generic PLA @0.8 nozzle` | Added 29 Aug 2026 from TDS. First layer clamped from the parent's 230, which the sheet never sanctions |
-| `Inslogic PETG Pro` | PETG | 240 / **70** °C | `Generic PETG` | Added 29 Aug 2026 from TDS. ₪49/kg. Bed is the only real change — vendor says 60–70, Prusa runs 85/90 |
-| `Inslogic PETG Pro @0.8 nozzle` | PETG | 250 (first 240) / **70** °C | `Generic PETG @0.8 nozzle` | Added 29 Aug 2026 from TDS. No temperature override at all — the parent already sits in the vendor's band |
-| `Yasin3D PLA` | PLA | 210 / 60 °C | `Generic PLA` | Added 29 Aug 2026. No vendor data exists; mirrors the @0.8 profile's first-layer edit |
-| `Yasin3D PETG` | PETG | 240 / 85–90 °C | `Generic PETG` | Added 29 Aug 2026. ₪39/kg — the one Yasin3D price that is a current listing |
-| `Yasin3D PETG @0.8 nozzle` | PETG | 250 (first 240) / 85–90 °C | `Generic PETG @0.8 nozzle` | Added 29 Aug 2026 |
-| `Yasin3D ASA` | ASA | 260 / 110 °C | `Prusament ASA` | Added 29 Aug 2026. Mirrors the @0.8 profile's first-layer bed edit |
-
-Full reasoning: [`slicer/filament/inslogic/README.md`](slicer/filament/inslogic/README.md) and
-[`slicer/filament/yasin3d/README.md`](slicer/filament/yasin3d/README.md). The split matters —
-the Inslogic numbers come from published data sheets, the Yasin3D ones come from Prusa's
-generic profiles because **Yasin3D publishes nothing at all**.
-
-### Physical printers (3) — all one machine, three entries
-
-| Entry | Host | Type | Bound preset |
-|---|---|---|---|
-| `Prusa mk3S+` | `prusalink.internal.example` | PrusaLink | `Original Prusa i3 MK3` ⚠️ |
-| `Mk` | `prusalink.internal.example` | PrusaLink | `Original Prusa i3 MK3S & MK3S+ 0.8 nozzle` |
-| `Prusa mk3` | `connect.prusa3d.com` | PrusaConnect | `Original Prusa i3 MK3` ⚠️ |
-
-Both PrusaLink entries now use **`prusalink.internal.example`** (updated 1 Sep 2026) — one entry per nozzle
-size, same Pi 4. API keys are stored in plaintext in these files (normal for PrusaSlicer; just
-don't commit them).
-
-⛔ **The third entry is PrusaConnect and holds a *different* token.** It is a 17-character key
-against `connect.prusa3d.com`, not the 14-character PrusaLink one. "Paste the key into all the
-printer entries" would overwrite a working uploader to fix a broken one — two of three, never
-three of three.
-
-⚠️ **PrusaSlicer rewrites these files when it exits.** Edit them in the GUI while it is open,
-or on disk while it is closed — never on disk underneath a running instance, or the change is
-silently discarded on quit.
-
-### ⚠️ Two DNS traps worth knowing before trusting any `.internal.example` name
-
-**1. `*.internal.example` is a wildcard pointing at the reverse proxy, so *every* name resolves.**
-Verified: `definitely-not-a-real-name.internal.example` resolves, and so do `mk3.internal.example`,
-`prusa.internal.example` and `printer.internal.example` — none of which exists. **Resolving is not serving.**
-Confirm a real *response* before depending on a name, rather than a successful lookup. Specific A
-records do override the wildcard — `mqtt.internal.example` is a real record and answers a genuine MQTT
-`CONNACK`.
-
-**2. Do not read `nslookup` output with "first `Address:` wins".** The first one is the *DNS
-server's* address, not the answer. That single mistake made every name here look like it pointed
-at the proxy and nearly put a wrong claim in this file. Use `getaddrinfo` (or read the whole
-`nslookup` block), which also picks up mDNS — the thing pure DNS cannot see.
-
-The printer is **not** behind the proxy at all: `prusalink.local` is mDNS straight to the Pi (plus a
-link-local v6). Pure DNS cannot resolve it; the system resolver can.
-
-### The printer's name, and why it is LAN-only on purpose
-
-Answered and then built on the server side, 1 Sep 2026.
-
-```
-prusalink.internal.example  ->  reverse proxy  ->  the Pi
-                     tls internal, access-logged
-```
-
-**Prefer `prusalink.internal.example`.** `prusalink.local` still works but is mDNS — link-local, invisible to pure
-DNS, useless from a container, another VLAN, or off-site. Do not build anything on it.
-
-The lab splits host-name from service-name everywhere (`git.` is the box, `gitea.` the web UI;
-`homeassistant.` the CT, `ha.` the UI), so the printer follows suit: `prusalink.internal.example` is the web
-UI. If SSH or a direct API path is ever needed, that becomes a separate `prusalink-host.internal.example`.
-
-A vhost rather than a plain DNS record, for a concrete reason: PrusaLink's Digest credentials and
-its `X-Api-Key` crossed the LAN **in cleartext** before this. Now they are inside TLS, and the
-printer appears in the Caddy access log with the true client IP.
-
-⚠️ **No DNS record was added, and that corrects an assumption both sessions made.** The
-`address=/internal.example/<proxy>` wildcard already routes every unclaimed name to the proxy, so
-adding the vhost was sufficient on its own. The explicit `address=` lines exist only for the
-**direct** names that must bypass the proxy — `git.`, `nas.`, `mqtt.`. `ha.`, `gitea.` and
-`grafana.` have no record either. The earlier note here that "a specific record beats the wildcard"
-is true in general and was the wrong tool for this job.
-
-**⛔ Never add `rewrite`, `handle_path`, or a stripped prefix to that vhost.** Digest hashes the
-request URI, so any of those breaks authentication *while leaving the site apparently up*. Caddy
-preserving Host and path by default is the only reason this works.
-
-### ✅ Verification status — complete
-
-Both agreed acceptance criteria are met, 1 Sep 2026:
-
-1. **A complete authenticated Digest login through the vhost** — the PrusaLink Settings page
-   renders fully at `https://prusalink.internal.example/#settings`. This is what proves the URI hashing
-   survives the proxy; the earlier challenge-only test could not, because **a URI-rewrite failure
-   and a bad password are indistinguishable — both return `401`.**
-2. **An `/api/*` call carrying `X-Api-Key`** — `GET /api/version` returns `200` through the vhost,
-   and a wrong key returns `403`, so the check discriminates.
-
-Supporting evidence: the challenge arrives byte-identical to the direct one (same `realm`, `qop`,
-`algorithm`, `nonce`, `opaque`), and the Caddyfile carries a bare `reverse_proxy` with no path
-manipulation.
-
-*(A browser that trusts the internal CA will accept the vhost while `curl` does not and needs
-`-k`. That is a CA-bundle difference, not a problem with the vhost.)*
-
-
-### ⛔ The printer is permanently LAN/VPN-only — a decision, not a caution
-
-PrusaLink is beta software whose entire purpose is to **move the axes and drive the heaters**. A
-compromise is not data loss; it is a physical event next to an ASA enclosure in a flat. TLS at the
-proxy protects the transport, but the exposed thing would be the *application*, and that does not
-improve. It stays on the permanent exclusion list and off any externally reachable proxy.
-Reaching the printer from outside means **VPN in first**.
-
-The general rule this follows: give an external proxy an explicit allow-list rather than a
-wildcard, so that adding a service does not silently publish it.
+| [`fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to this printer |
+| [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
+| [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
+| [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
+| [`chamber-sensor.md`](docs/chamber-sensor.md) | Enclosure temperature sensing — three measurement points, and why each sensor was chosen |
+| [`chamber-airflow.md`](docs/chamber-airflow.md) | Fume extraction and chamber airflow |
+| [`moisture-isotherms.md`](docs/moisture-isotherms.md) | Desiccant physics, with sourced figures and the unsourced ones marked |
+| [`dehumidify-energy.md`](docs/dehumidify-energy.md) | What drying actually costs to run |
+| [`drybox-active.md`](docs/drybox-active.md) · [`drybox-cabinet.md`](docs/drybox-cabinet.md) | Heated drybox design |
+| [`desiccant-module.md`](docs/desiccant-module.md) | The desiccant cartridge and module |
+| [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
 ---
 
-## 3. Parametric CAD library — a separate project
-
-Parts that are easier to describe in code than to draw live in their own Python project rather than
-in this repo.
-
-- **Stack:** [build123d](https://github.com/gumyr/build123d) (OpenCASCADE) · Python 3.13 · **uv** · pytest + ruff + mypy strict
-- **Docs:** design principles, an architecture note and a README of its own
-- **Shapes:** `boxes.py` (rounded box) · `clips.py` (cylinder clip, magnet attachment) · `panels.py` (hex mesh, magnet ring) · `furniture.py` (column, table) · `primitives.py` (washer, magnet, screw/thread)
-- **Iteration workflow:** `scratch/try_<name>.py` with `%autoreload` in VS Code Interactive, plus `sandbox.ipynb`
-- **Gate:** `save_stl()` asserts watertight + positive volume before anything is written
-
-The `CLAUDE.md` encodes hard-won OCC fillet knowledge worth not relosing — bake vertical corner rounding into the profile via `RectangleRounded`, skip arc edges and edges shorter than `2*r`, and never stage fillets that share a vertex.
-
-Two repo-local Claude skills exist: `new-shape` and `watertight-debug`.
-
-**A note on its working state:** untracked files at its root are worth a look, since tracked copies also exist under `print_scripts_tree_d/`.
-
----
-
-## 4. Homelab / print-station docs — `Tools\homelab\docs\manual\`
-
-- **`print-station.md`** — Pi 4 print server + planned Home Assistant link. ⚠️ Contains a factual error, see §6.
-- **`fume-fan-esp32.md`** — the ASA/ABS fume extractor: 12 V 4-pin PWM fan + USB-C PD trigger board + ESP32, driven over MQTT from HA. All three hardware parts owned; open unknown is whether the USB-C charger negotiates a 12 V PD profile.
-- Supporting: `home-assistant.md`, `mqtt-mosquitto.md`, `edge-ai-and-ml.md`
-- `CLAUDE.md` → "Print station (Prusa MK3 area)" is the top-level summary.
-
----
-
-## 5. Loose / unfiled
-
-- **`Downloads\`** — **213** STL/3MF/G-code files plus model folders: `bento-box-air-filter-for-120mm-fan-hepa-carbon-trays`, `Bentobox V2.0 Remix`, `double-filament-spool-roller`, `gridfinity-hss-hex-bit-storage`, `Radius_Gauge_STL`, and the PrusaSlicer 2.9.4 installer. Overlaps the curated library in places.
-- ~~**`OneDrive\3D printing\print_scripts_tree_d\`** — a stale copy with the live repo nested inside it.~~ **Resolved 2 Aug 2026.** `ods` was remapped from `3D printing\print_scripts_tree_d\print_scripts_tree_d` → **`Tools\print_scripts_tree_d`**, alongside every other repo, and reseeded (383 files). The stale outer copy (`11bf03b`, GitHub-only remote, untouched since 9 Jun) was verified to hold no unique commits, then deleted. Its uncommitted diff turned out to be sync bleed rather than human work — the live repo's own refactor showing as "modified" against a June-era HEAD — and is archived anyway at `OneDrive\Backups\print_scripts_tree_d-stale-copy-uncommitted-2026-08-02.patch`.
-
----
-
-## 6. Open items
-
-1. ~~**`print-station.md` documents the wrong software.**~~ **Fixed upstream in `alon/homelab` on 29 Jul 2026** — the doc now covers PrusaLink correctly, with a live-verified evidence section. Kept here for the reasoning: It says *OctoPrint* throughout, but every physical-printer entry in PrusaSlicer is `host_type = prusalink`, and the top-level `CLAUDE.md` says "confirmed running **PrusaLink** (not OctoPrint)". The doc's HA integration steps are OctoPrint-specific and won't work: port 5000, "Settings → API → Application Key", and entities like `binary_sensor.octoprint_printing`. PrusaLink needs the HA **PrusaLink** integration and different entity names. Everything downstream of that — including the fume-fan automation trigger — inherits the error.
-2. **Two physical-printer entries are bound to the plain `Original Prusa i3 MK3` preset**, not MK3S+. Worth correcting given the MK3S+ (SuperPINDA temperature compensation differs). Consistent with the mixed `_MK3_` / `_MK3S_` suffixes across sliced G-code.
-3. ~~**No Inslogic filament profile.**~~ **Built and installed 28 Jul 2026** — source in [`slicer/filament/inslogic/`](slicer/filament/inslogic/), live in `%APPDATA%\PrusaSlicer\filament\`. Four profiles (ASA and TPU 95A, each at 0.4 and 0.8 nozzle) derived from Inslogic's TDS PDFs, archived alongside them. Inslogic publishes data sheets only, no slicer profiles. Each verified by a real CLI slice. **Temperatures are TDS-derived, not yet confirmed by a printed part.**
-   - Related: the existing **`Ultrafuse TPU-95A - Copy`** profile inherits `filament_max_volumetric_speed = 15` and a 40 °C bed from `Ultrafuse TPC-45D`, a near-rigid copolyester four levels up its inheritance chain. Prusa's soft-TPU chain (`Generic FLEX`) uses 1.2 mm³/s and a 50 °C bed. Worth revisiting.
-4. ~~**Nested stale repo copy**~~ — **done 2 Aug 2026**, see §5.
-5. ~~**`OneDrive\3D printing\` is not version controlled.**~~ **Done 2 Aug 2026** — this repo, `alon/3d-printing`, synced back to `OneDrive\Tools\3d-printing` via `ods`. Documentation and slicer config are versioned; models and G-code deliberately stay in OneDrive as binaries. Still unversioned and remaining candidates: `PrusaSlicer_config_bundle.ini` and the `.scad` sources.
-6. **Every Yasin3D profile is still vendor-data-free.** Widened 29 Aug 2026 rather than closed.
-   The original complaint — `Yasin3D PLA @0.8 nozzle` is a bare clone of `Generic PLA @0.8 nozzle`
-   with no calibration of its own — turns out to be the general case, not an oversight: **Yasin3D
-   publishes no TDS, no SDS and no printing parameters anywhere**, and the retailer's product pages
-   carry none either (searched 29 Aug 2026). The four new profiles added that day are explicit about
-   it, and the ASA one is no better off than the PLA one — its "proper tuning" is Prusament ASA's,
-   inherited, not measured.
-   - What would actually close this: a temperature tower or a sample swatch per material. With no
-     data sheet behind the numbers, that test *is* the data sheet.
-   - Also unclosable by research: **Yasin3D PLA and ASA are no longer sold** by
-     [filamentcenter.co.il](https://filamentcenter.co.il/) — their whole Yasin3D range is now PETG
-     (₪39) and ABS (₪49). The ₪39 and ₪54 in those profiles are carried-over historical figures
-     that cannot be re-verified.
-7. ~~**The Inslogic ASA and TPU profiles carry their parent's price.**~~ **Fixed 29 Aug 2026** —
-   kept for the reasoning. Not one of the seven set `filament_cost` at all: the four ASA files
-   inherited Prusament ASA's ₪35.28 (about **half** the real price) and the three TPU files
-   inherited ₪82 from `Generic FLEX` and ₪85 from `NinjaTek Cheetah TPU`. The TPU ones were the
-   more dangerous pair — 82 and 85 against a real 79 look like deliberate figures, and the only
-   tell was that all three disagreed with each other. Now set explicitly from
-   [filamentcenter.co.il](https://filamentcenter.co.il/): **ASA ₪69, TPU 95A ₪79**, verified in
-   the sliced G-code. The lesson worth keeping: **a key you never set is not a key with no
-   value** — the flattener will hand it a parent's.
-8. ~~**The stored PrusaLink API key is stale — remote upload is broken**~~ (found 17 Aug 2026,
-   **FIXED 1 Sep 2026**). Both `physical_printer` entries held the *same* stale 14-character key
-   and both endpoints rejected it with `403 Bad X-Api-Key`.
-   - The diagnosis held up: not a CRLF artefact, and not an auth-*mode* problem. `GET /` returns
-     `WWW-Authenticate: Digest realm="Administrator"`, which is the **web UI** login and is easy to
-     misread as "PrusaLink switched to Digest". It hadn't — a `403 Bad X-Api-Key` on `/api/*`
-     proves the API-key path existed and was evaluated. The key was simply wrong.
-   - **Fixed by** reading the current key from `https://prusalink.internal.example` → Settings → API Key and
-     writing it into both PrusaLink entries, which were also repointed at `prusalink.internal.example`.
-     `printhost_authorization_type = key` was correct and unchanged.
-   - **Verified end to end**, not assumed:
-     ```
-     GET https://prusalink.internal.example/api/version   X-Api-Key: <new>   -> 200  {"api":"2.0.0",...}
-     GET http://<pi-address>/api/version       X-Api-Key: <new>   -> 200
-     GET https://prusalink.internal.example/api/version   X-Api-Key: <old>   -> 403
-     ```
-     The third line is the one that makes the first two mean anything: a check that cannot fail
-     proves nothing, so the old key was re-tested to confirm the endpoint still discriminates.
-
-9. ~~**THREE THINGS ARE PENDING A DECISION**~~ — ✅ **ALL THREE RESOLVED — 9a and 9b on 11 Sep 2026, 9c on 12 Sep.** Kept for
-   the reasoning, which outlived the tasks. Outcomes first:
-
-   | | Outcome |
-   |---|---|
-   | **9a** Gitea GC | ✅ **DONE.** Repo 17 M → 283 K. Both superseded SHAs now **REFUSED** on fetch, verified from a throwaway clone. SSID and PDFs: 0 in full history. |
-   | **9b** −50 statistics | ✅ **DONE.** Terminal sum corrected 68 → **18**, matching the node's own counter. |
-   | **9c** persisted counter | ✅ **ANSWERED 12 Sep 2026 — THE FIX WORKS.** `drops = 18`, complete write history, no post-reboot regression. Evidence below. |
-
-   ⛔ **THE GC DOES NOT MAKE THIS REPO PUBLISHABLE WITH HISTORY, and "9a done" must not be read
-   that way.** The rewrites and the GC cleaned the **identifier** class — network name, addresses,
-   device MACs, hostnames, and the copyright PDFs, all now 0 in full history. A second class, the
-   **deployed-infrastructure inventory**, is **still present in reachable history**: three hardware
-   product names, across eight commits, in file content rather than only commit messages.
-
-   ⚠️ **A garbage collection can never fix these.** They live in commits that are **ancestors of
-   `main`** — verified with `merge-base --is-ancestor`. Reachable objects are not garbage, so
-   pruning does not touch them. Only a `filter-repo --replace-text` pass would, and that decision
-   has not been taken.
-
-   📋 **The strings themselves are deliberately NOT listed here.** They are held in the
-   homelab repository, which is DO-NOT-PUBLISH. Ask there for the table.
-
-   ⭐ **AND THAT OMISSION IS THE LESSON, LEARNED THE EMBARRASSING WAY.** The first version of this
-   very section listed all three names in a table — and so *the commit documenting that the names
-   were in history put the names in history*. Its table was wrong the instant it was written: it
-   said one name appeared four times, and committing it made five. **A self-invalidating document**,
-   and not fixable by correcting the count, because any correction increments it again.
-
-   The rule generalises past redaction, which is where it was first noticed: **in a repository that
-   may be published, NAMING the value is the leak — whether you are removing it, documenting it, or
-   warning about it.** A removal commit concentrates the value in one labelled, greppable diff; a
-   warning commit does the same and advertises itself with the exact words someone would search for
-   when asking whether the repo is safe to publish. **Describe the class; never instantiate it.**
-
-   ✅ **9c IS ANSWERED, 12 Sep 2026: THE PERSISTED COUNTER WORKS.** Read from the S3's NVS
-   partition in ROM download mode before the board was reflashed — with about one reflash to spare.
-
-   ```
-   wifinet:drops = 18
-
-   058. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 0
-   061. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 1
-   091. Erased , Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 17
-   094. Written, Namespace Index: 004, Type: uint32_t, Span: 001 | drops: 18
-
-   Global  Written 42  Erased 52  Empty 200  Invalid 0  Total 294
-   ```
-
-   ⭐ **Why this is positive evidence and not merely an absence of failure.** The board was on WiFi
-   after its reboot, so an IP was acquired, and `drops_save()` runs on every IP acquisition — it
-   therefore certainly executed after the reboot. Had the load failed, it would have found
-   `s_disconnects = 0` against a stored 18, and `cur != s_disconnects` would have written a low value
-   and erased the 18. Had the load worked, it would have found 18 against 18 and written **nothing**.
-   The history ends `Written … 18` with nothing after it. **Only the working branch produces that
-   state.**
-
-   Supporting: `Invalid 0` everywhere, so the dump is trustworthy. `Empty` nowhere near zero, with a
-   whole page untouched, so no reclaim has run — meaning `0 → 1 → 17 → 18` is the *complete* history
-   of the key back to the first boot after the flash. And four writes for four outage episodes is
-   what `drops_save()`'s once-per-episode design predicts, so the steps match the mechanism rather
-   than merely rising.
-
-   📋 **What it cost to answer, and the margin.** This was the longest-running open question in
-   the repo. It was closed once as unprovable on a false premise, reopened, and nearly lost outright
-   when the board was reassigned — the answer lived only in flash that a reflash would have erased.
-   **A deployment is not a verification**, and the gap between the two was eight days and one read.
-
-   **It can only be read from flash, not from the running firmware.** No HTTP route exposes it, MQTT
-   publishes it only on a good DHT read, and — contrary to what an earlier version of this repo said —
-   it is **never printed to the serial console**: the disconnect warnings print a per-episode retry
-   count that resets on every connect, not the lifetime value. The answer is in the NVS partition
-   (namespace `wifinet`, key `drops`), read with `esptool read-flash` and parsed with ESP-IDF's
-   `nvs_tool.py`.
-
-   ⛔ **Download mode, not a reboot.** The ROM bootloader never runs the app, so NVS is untouched.
-   Rebooting into the app can change the value — boot-time association failures increment it and the
-   next IP acquisition saves it. So no serial terminal, no monitor, no power cycle before the read.
-
-   ⛔ **The dump is a credential.** ESP-IDF persists the WiFi station config to NVS by default, so the
-   same partition holds the network name and password in plaintext. Filter the parser output to
-   `wifinet`, never commit the dump, delete it after.
-
-   ⭐ **Read the WRITE HISTORY, not just the value.** NVS never overwrites in place: each save appends
-   a new entry and marks the old one `Erased`, and erased entries survive until their page is
-   reclaimed. This firmware writes far too few entries to fill a page. The history settles the
-   verdict *regardless of when the read happens*. That matters because the nightly midnight event
-   causes about 18 disconnects, so a counter that restarted from 0 could climb back to 18 in one
-   night and pass a value-only check.
-
-   The code narrows the failure modes: `nvs_flash_init()` runs before `drops_load()`, both use the
-   same namespace and key, and `drops_save()` runs on every IP acquisition. The board was on WiFi
-   after the reboot, so that boot reached one.
-
-   | `drops` history (written and erased entries, in order) | Verdict |
-   |---|---|
-   | never falls below 18 once it reaches 18 | **persistence works — the fix is proven** |
-   | a value below 18 appears **after** an 18 | **reading back failed** — a boot restarted from 0 and its reconnect overwrote the saved count |
-   | no `drops` entries at all | the save never committed |
-   | only `0` entries | saves work, but the 11 Sep `18` was never written |
-
-   ⚠️ **`0` is not "never saved".** An earlier version of this table said it was. If reading back
-   fails, the first reconnect overwrites the saved 18 with a fresh 0. So a current value of 0 is the
-   fingerprint of a failed load, and only a missing key means the save never worked.
-
-   📐 **Why a history exists at all — verified in ESP-IDF 5.5.5 source, not assumed.**
-   `Page::eraseEntryAndSpan()` only flips the entry-state bits via `alterEntryState()`; it never
-   overwrites the entry payload, so a superseded value stays physically present and parses as
-   `Erased`. The history is destroyed only when a page is reclaimed, and
-   `PageManager::requestNewPage()` reclaims one only when **fewer than two free pages remain in the
-   whole partition**, then takes the page with the most unused entries. That is whole-partition
-   space pressure, not "a page filled up".
-
-   ⚠️ **Correcting an earlier claim in this section.** It said the firmware "writes far too few
-   entries to fill a page". That ignored the WiFi stack, which writes NVS itself:
-   `CONFIG_ESP_WIFI_NVS_ENABLED` is on and the firmware calls `esp_wifi_set_config()` on every boot,
-   so the `sta.*` entries are the stack's, not ours. The conclusion survives for a better reason —
-   the two-free-pages bar across six pages — but the reasoning was wrong, and it is now checkable
-   rather than assumed.
-
-   ✅ **Check it rather than trusting it.** `-d storage_info` prints only counts — Written, Erased,
-   Empty and Invalid per page, plus page size and total pages. No keys, no values, so it is the one
-   mode safe to run unfiltered:
-
-   ```powershell
-   python $nt -d storage_info --color never s3_nvs.bin
-   ```
-
-   Counts-only output confirmed **both** by reading `storage_stats()` and by another session running
-   it on generated fixtures: no key names, no values, not even the string `drops`.
-
-   The partition is `0x6000`, so **6 pages**; at a 4096-byte page and 32-byte entries each page has
-   **126** slots once its header and entry-state bitmap are taken out, so the partition holds 756.
-
-   ⛔ **Do not expect the counts to add up to 756 — a healthy dump totals LESS.** A value longer than
-   32 bytes occupies a header slot plus continuation slots, and the tool counts the value as **one**
-   `Written` entry while placing its continuation slots in **no bucket at all**. The real partition
-   stores the WiFi credentials as strings and blobs, so its reported total *will* come in *well* under 756,
-   and that is normal.
-
-   **The general rule, measured:** hidden slots are the sum of `(span - 1)` over all entries, for
-   **any** multi-entry value — blobs as well as strings. Decomposition of a fixture holding a
-   realistic WiFi station record, which came up exactly 9 short:
-
-   | Entry | Type | Span | Hides |
-   |---|---|---|---|
-   | `sta.ssid` | string | 2 | 1 |
-   | `sta.apinfo` | blob | **6** | **5** |
-   | `sta.pmk` | blob | 2 | 1 |
-   | `sta.apsw` | blob | 2 | 1 |
-   | `sta.pswd` | string | 2 | 1 |
-   | | | | **9** |
-
-   Control from the same fixtures: single-slot values hide nothing — one namespace and two
-   namespaces both reported exactly 756 — so only payload spanning multiple slots is invisible.
-   Because the real partition carries `sta.apinfo` with a large span plus the other blobs, expect its
-   total to fall **well** short. **Do not anchor on any number.**
-
-   ⚠️ **An earlier version of this section said to expect 756**, which would have made a healthy dump
-   look anomalous. **The total is not a signal.** `Empty` and `Invalid` are. How to read the counts:
-
-   | Reading | Meaning |
-   |---|---|
-   | `Erased` **> 0** | ✅ the good case — superseded values are still present, so the history is readable |
-   | `Erased` = 0 | `drops` has only ever been written **once** — itself informative, and not in a good way |
-   | `Empty` near zero on every page | ⚠️ a reclaim may have run; the history may be partial, so fall back to the current value |
-   | `Invalid` **> 0** | ⛔ **STOP.** Invalid means entries whose CRC does not match — corruption. Withhold the verdict rather than record one |
-
-   ⛔ **`Invalid` is a fourth outcome the rule did not have.** "Works", "failed" and "inconclusive"
-   all assume the dump is trustworthy. If the CRCs do not check out, none of them applies and the
-   right answer is to record nothing.
-
-   ⛔ **The one case that yields a WRONG verdict rather than an unclear one:** a reclaim has run,
-   only a single `Written` `drops` entry survives, reading back had failed, and the counter climbed
-   back to 18 or more through midnight bursts. A value-only read then says "works" and is wrong.
-   `storage_info` is what flags that situation; in every other case the failure is inconclusive
-   rather than wrong, which is the right way round.
-
-   **Verified commands, PowerShell** (not Git Bash, which rewrites `findstr`'s `/B` into a path):
-
-   ```powershell
-   esptool --port COM9 --before default-reset --after no-reset read-flash 0x9000 0x6000 s3_nvs.bin
-   $nt = "$env:LOCALAPPDATA\esphome\Cache\idf\frameworks\5.5.5\components\nvs_flash\nvs_partition_tool\nvs_tool.py"
-   # current value - prints only drops, or a loud not-found listing namespace NAMES
-   $j = python $nt -d minimal -f json s3_nvs.bin | ConvertFrom-Json
-   $hit = $j | Where-Object { $_.namespace -eq 'wifinet' -and $_.key -eq 'drops' }
-   if ($hit) { "wifinet:drops = $($hit.data)" } else { "NOT FOUND: wifinet:drops absent. Namespaces present: " + (($j | Select-Object -ExpandProperty namespace -Unique) -join ', ') }
-   # write history - every drops entry, written and erased
-   $all = python $nt -d all --color never s3_nvs.bin
-   $h = $all | Select-String -SimpleMatch '| drops:'
-   if ($h) { $h | ForEach-Object { $_.Line.Trim() } } else { "(no drops entries in -d all)" }
-   Remove-Item s3_nvs.bin
-   ```
-
-   ⛔ **Never run `-d minimal` or `-d all` unfiltered.** `minimal` prints the WiFi password as
-   `key = value`. `all` prints it as a readable ASCII hex dump on a line that does not contain the key
-   name, so filtering on the key would not even catch it.
-
-   📋 **The first filter handed out for this was broken, and silently.** It was
-   `findstr /B "wifinet:"`, but every `minimal` line begins with a space, so it matched nothing, and
-   the empty output would have been recorded as "key absent". It was caught only by building a fake
-   partition (fake password, `drops=18`) and running the exact command on it. Both commands above
-   passed that test, including a missing-key run that failed loudly. **An untested filter on a
-   one-time read is a guess with a deadline.**
-
-   **A deployment is still not a verification** — and a closure is only as good as the premise it
-   rests on.
-
-   It became unanswerable remotely for a reason worth carrying elsewhere: `main.c`'s `log_dht()`
-   publishes the **entire** MQTT payload — counter, uptime and BSSID — only on a **good DHT read**.
-   Removing the sensor took the diagnostics with it. **Never gate diagnostic publishing on a sensor
-   read**: a failed probe is exactly when you want the device to still be talking.
-
-   *Original text follows, because the reasoning is the useful part.*
-
-   **9a. The Gitea garbage collection has NOT run, and the obvious commands do not work.**
-   Two superseded commits — the pre-rewrite tip (`3f6babb`) and the post-rewrite-1 tip
-   (`64e70dc`) — are **still fetchable from Gitea by full 40-char SHA**, and they carry the
-   content two deliberate rewrites removed: the network SSID, and the four copyright-encumbered
-   filament PDFs. Verified by fetching each into a throwaway repo.
-
-   ⛔ **`git gc --prune=now` is a NO-OP here, and so is the Gitea admin "Garbage collect all
-   repositories" button.** Both exit 0 and report success. The objects are unreferenced by any
-   branch but **pinned by the reflog**, and gc treats reflog-referenced objects as reachable.
-   Proof, on the bare repo: `git prune -n --expire=now` lists 510 objects and *neither SHA is
-   among them*. The admin button is weaker still — `GC_ARGS` is unset, so git falls back to
-   `gc.pruneExpire`, a 2-week default rather than "now".
-
-   **The working sequence, and the order is the whole point:**
-   ```
-   git reflog expire --expire=now --expire-unreachable=now --all
-   git gc --prune=now
-   ```
-   ⚠️ **Back up the bare repo as a DIRECTORY COPY first, not a bundle.** A bundle is built
-   from refs, so it would capture the current tip and miss precisely the two unreferenced commits
-   that are the entire reason for the operation. "Take a backup first" sounds complete, and the
-   obvious kind of backup would not be.
-   *Reassurance that makes this a smaller decision than it sounds:* the pre-rewrite history
-   already survives off-Gitea in two local fallbacks under `Backups\`, so expiring the server
-   reflog destroys the **server's** last copy, not the last copy.
-   **Verify by result, never by exit code:** success is the fetch of a full SHA being *refused*,
-   tested in a **throwaway** repo — never a working clone, because fetching an old SHA pulls those
-   objects into the local store where they sit unreferenced and invisible to `git log --all`.
-
-   **9b. The Home Assistant `wifi_disconnects` statistic is inflated by exactly +50.** Measured,
-   not inferred: compiled sum 68 against a node counter of 18, through a real disconnect event.
-   The cause is a per-boot counter published as `total_increasing`, since fixed in firmware. The
-   correction is Developer Tools → Statistics → *Adjust sum*, by −50. **It should wait on 9c**,
-   because if persistence turns out not to work the target moves again.
-
-   **9c. The persisted-counter firmware is deployed but NOT PROVEN.** `app_elf_sha256`
-   `ca8176f8b61bd346` is running (see [chamber-sensor](docs/chamber-sensor.md)). The counter has
-   since reached 18 across a real outage — but *that only proves it counts*, which it did before
-   the fix. The one thing the fix changed is that the value survives a reboot, and **the node has
-   not rebooted** (15+ h uptime, no decrease). `drops_save()` has written to NVS; nothing has read
-   it back.
-   **The only test is a reboot**, and the firmware exposes no reboot endpoint — it serves `/`,
-   `/ota` and `/raw` and nothing else — so it means a power cycle or re-flashing the same image.
-   Comes back **18** → the fix works and 9b can proceed. Comes back **0** → `drops_save()` is not
-   firing.
-
-
----
-
-## Quick paths
-
-```
-Models          %USERPROFILE%\OneDrive\3D printing\
-Slicer config   %USERPROFILE%\AppData\Roaming\PrusaSlicer\
-CAD library     %USERPROFILE%\Code\print_scripts_tree_d\
-Print station   %USERPROFILE%\Tools\homelab\docs\manual\print-station.md
-Fume fan        %USERPROFILE%\Tools\homelab\docs\manual\fume-fan-esp32.md
-PrusaLink       http://prusalink.local          (mDNS to the Pi)
-Home Assistant  https://ha.internal.example
-MQTT broker     mqtt.internal.example:1883
-```
-
----
+*Hostnames, addresses and credentials in this repository are placeholders. Machine-specific values
+are supplied through ESPHome secrets and are not published here.*
 
 _Parts of this repository were drafted with the help of an LLM agent; reviewed and verified locally._

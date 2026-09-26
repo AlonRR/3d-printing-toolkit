@@ -626,7 +626,7 @@ is the part with no workaround.
   timelapse work. The C3 has no camera interface and 4 MB of flash.
 - ✅ **Open item 9c went with the S3 — and was answered before it was reflashed.** The
   persisted-counter fix is **proven**: its NVS partition held `drops = 18` with the complete write
-  history and no post-reboot regression (README item 9c). The C3's ESPHome build has no equivalent
+  history and no post-reboot regression (§11). The C3's ESPHome build has no equivalent
   counter, so there was never anything to re-prove here — which is exactly why reading it off the S3
   first mattered.
 - **Pressure is gained**, which the chamber has never had.
@@ -701,8 +701,8 @@ I2C wants two ordinary pins clear of all of the above.
 7. ✅ **DONE, 12 Sep 2026 — and it was never re-provable on the C3**, whose ESPHome build has no
    persisted counter. The only copy of the answer was the S3's own NVS partition: not readable over
    serial (the firmware never prints the lifetime count), so it was read from flash in ROM download
-   mode before the board was reflashed. **Result: `drops = 18`, persistence proven.** See README
-   item 9c for the evidence and the reasoning.
+   mode before the board was reflashed. **Result: `drops = 18`, persistence proven.** The evidence
+   and the reasoning are in §11 below.
 
 8. ⛔ **Clear the retired node's RETAINED MQTT discovery configs — deleting the registry entries is
    not enough.** Measured 12 Sep 2026: six of the S3's discovery topics are still retained on the
@@ -744,7 +744,7 @@ I2C wants two ordinary pins clear of all of the above.
 
 ⚠️ **There is no disconnect counter on this node.** That was a feature of the S3's hand-written C
 firmware; the ESPHome build has no equivalent, which is deliberate — the question it existed to
-answer was closed first (README item 9c).
+answer was closed first (§11).
 
 ### Adding the SPS30 — electrically easy, thermally marginal
 
@@ -838,7 +838,7 @@ with no stable target to correct to.
 
 ✅ **The sum was corrected on 11 Sep, and persistence was proven on 12 Sep.** This note used to
 say "do not correct the sum yet" because `drops_save()` might not fire. It does: the counter survived
-a reboot with its history intact (README item 9c). The −50 adjustment was applied to the final hour,
+a reboot with its history intact (§11). The −50 adjustment was applied to the final hour,
 taking the terminal sum from 68 to 18.
 
 ### ✅ PROVEN, 12 Sep 2026 — and here is the prediction it was tested against
@@ -857,7 +857,7 @@ would have written a low value and erased the 18, and none exists.
 
 ⭐ **Step 3 was the only one that could prove the fix, and it nearly went unanswered.** The board was
 reassigned to another project while the question was still open; the answer existed only in flash
-that a reflash would have destroyed. Evidence and full reasoning: README item 9c.
+that a reflash would have destroyed. Evidence and full reasoning: §11.
 
 ### ✅ The `state_class` fix is verified in the field
 
@@ -2188,6 +2188,159 @@ Steps 1 and 2 need nothing bought and answer the question that decides whether t
 doing.
 
 ---
+
+## 11. Reading a persisted counter out of flash — the method
+
+Kept because the method generalises: a counter that only exists in NVS cannot be verified from the
+running firmware, and the obvious checks report success without proving anything. This is how
+`drops = 18` was actually established on the S3 before that board was reflashed and released.
+
+**A deployment is not a verification**, and the gap between the two was eight days and one read.
+
+**It can only be read from flash, not from the running firmware.** No HTTP route exposes it, MQTT
+publishes it only on a good DHT read, and — contrary to what an earlier version of this repo said —
+it is **never printed to the serial console**: the disconnect warnings print a per-episode retry
+count that resets on every connect, not the lifetime value. The answer is in the NVS partition
+(namespace `wifinet`, key `drops`), read with `esptool read-flash` and parsed with ESP-IDF's
+`nvs_tool.py`.
+
+⛔ **Download mode, not a reboot.** The ROM bootloader never runs the app, so NVS is untouched.
+Rebooting into the app can change the value — boot-time association failures increment it and the
+next IP acquisition saves it. So no serial terminal, no monitor, no power cycle before the read.
+
+⛔ **The dump is a credential.** ESP-IDF persists the WiFi station config to NVS by default, so the
+same partition holds the network name and password in plaintext. Filter the parser output to
+`wifinet`, never commit the dump, delete it after.
+
+⭐ **Read the WRITE HISTORY, not just the value.** NVS never overwrites in place: each save appends
+a new entry and marks the old one `Erased`, and erased entries survive until their page is
+reclaimed. This firmware writes far too few entries to fill a page. The history settles the
+verdict *regardless of when the read happens*. That matters because the nightly midnight event
+causes about 18 disconnects, so a counter that restarted from 0 could climb back to 18 in one
+night and pass a value-only check.
+
+The code narrows the failure modes: `nvs_flash_init()` runs before `drops_load()`, both use the
+same namespace and key, and `drops_save()` runs on every IP acquisition. The board was on WiFi
+after the reboot, so that boot reached one.
+
+| `drops` history (written and erased entries, in order) | Verdict |
+|---|---|
+| never falls below 18 once it reaches 18 | **persistence works — the fix is proven** |
+| a value below 18 appears **after** an 18 | **reading back failed** — a boot restarted from 0 and its reconnect overwrote the saved count |
+| no `drops` entries at all | the save never committed |
+| only `0` entries | saves work, but the 11 Sep `18` was never written |
+
+⚠️ **`0` is not "never saved".** An earlier version of this table said it was. If reading back
+fails, the first reconnect overwrites the saved 18 with a fresh 0. So a current value of 0 is the
+fingerprint of a failed load, and only a missing key means the save never worked.
+
+📐 **Why a history exists at all — verified in ESP-IDF 5.5.5 source, not assumed.**
+`Page::eraseEntryAndSpan()` only flips the entry-state bits via `alterEntryState()`; it never
+overwrites the entry payload, so a superseded value stays physically present and parses as
+`Erased`. The history is destroyed only when a page is reclaimed, and
+`PageManager::requestNewPage()` reclaims one only when **fewer than two free pages remain in the
+whole partition**, then takes the page with the most unused entries. That is whole-partition
+space pressure, not "a page filled up".
+
+⚠️ **Correcting an earlier claim in this section.** It said the firmware "writes far too few
+entries to fill a page". That ignored the WiFi stack, which writes NVS itself:
+`CONFIG_ESP_WIFI_NVS_ENABLED` is on and the firmware calls `esp_wifi_set_config()` on every boot,
+so the `sta.*` entries are the stack's, not ours. The conclusion survives for a better reason —
+the two-free-pages bar across six pages — but the reasoning was wrong, and it is now checkable
+rather than assumed.
+
+✅ **Check it rather than trusting it.** `-d storage_info` prints only counts — Written, Erased,
+Empty and Invalid per page, plus page size and total pages. No keys, no values, so it is the one
+mode safe to run unfiltered:
+
+```powershell
+python $nt -d storage_info --color never s3_nvs.bin
+```
+
+Counts-only output confirmed **both** by reading `storage_stats()` and by another session running
+it on generated fixtures: no key names, no values, not even the string `drops`.
+
+The partition is `0x6000`, so **6 pages**; at a 4096-byte page and 32-byte entries each page has
+**126** slots once its header and entry-state bitmap are taken out, so the partition holds 756.
+
+⛔ **Do not expect the counts to add up to 756 — a healthy dump totals LESS.** A value longer than
+32 bytes occupies a header slot plus continuation slots, and the tool counts the value as **one**
+`Written` entry while placing its continuation slots in **no bucket at all**. The real partition
+stores the WiFi credentials as strings and blobs, so its reported total *will* come in *well* under 756,
+and that is normal.
+
+**The general rule, measured:** hidden slots are the sum of `(span - 1)` over all entries, for
+**any** multi-entry value — blobs as well as strings. Decomposition of a fixture holding a
+realistic WiFi station record, which came up exactly 9 short:
+
+| Entry | Type | Span | Hides |
+|---|---|---|---|
+| `sta.ssid` | string | 2 | 1 |
+| `sta.apinfo` | blob | **6** | **5** |
+| `sta.pmk` | blob | 2 | 1 |
+| `sta.apsw` | blob | 2 | 1 |
+| `sta.pswd` | string | 2 | 1 |
+| | | | **9** |
+
+Control from the same fixtures: single-slot values hide nothing — one namespace and two
+namespaces both reported exactly 756 — so only payload spanning multiple slots is invisible.
+Because the real partition carries `sta.apinfo` with a large span plus the other blobs, expect its
+total to fall **well** short. **Do not anchor on any number.**
+
+⚠️ **An earlier version of this section said to expect 756**, which would have made a healthy dump
+look anomalous. **The total is not a signal.** `Empty` and `Invalid` are. How to read the counts:
+
+| Reading | Meaning |
+|---|---|
+| `Erased` **> 0** | ✅ the good case — superseded values are still present, so the history is readable |
+| `Erased` = 0 | `drops` has only ever been written **once** — itself informative, and not in a good way |
+| `Empty` near zero on every page | ⚠️ a reclaim may have run; the history may be partial, so fall back to the current value |
+| `Invalid` **> 0** | ⛔ **STOP.** Invalid means entries whose CRC does not match — corruption. Withhold the verdict rather than record one |
+
+⛔ **`Invalid` is a fourth outcome the rule did not have.** "Works", "failed" and "inconclusive"
+all assume the dump is trustworthy. If the CRCs do not check out, none of them applies and the
+right answer is to record nothing.
+
+⛔ **The one case that yields a WRONG verdict rather than an unclear one:** a reclaim has run,
+only a single `Written` `drops` entry survives, reading back had failed, and the counter climbed
+back to 18 or more through midnight bursts. A value-only read then says "works" and is wrong.
+`storage_info` is what flags that situation; in every other case the failure is inconclusive
+rather than wrong, which is the right way round.
+
+**Verified commands, PowerShell** (not Git Bash, which rewrites `findstr`'s `/B` into a path):
+
+```powershell
+esptool --port COM9 --before default-reset --after no-reset read-flash 0x9000 0x6000 s3_nvs.bin
+$nt = "$env:LOCALAPPDATA\esphome\Cache\idf\frameworks\5.5.5\components\nvs_flash\nvs_partition_tool\nvs_tool.py"
+# current value - prints only drops, or a loud not-found listing namespace NAMES
+$j = python $nt -d minimal -f json s3_nvs.bin | ConvertFrom-Json
+$hit = $j | Where-Object { $_.namespace -eq 'wifinet' -and $_.key -eq 'drops' }
+if ($hit) { "wifinet:drops = $($hit.data)" } else { "NOT FOUND: wifinet:drops absent. Namespaces present: " + (($j | Select-Object -ExpandProperty namespace -Unique) -join ', ') }
+# write history - every drops entry, written and erased
+$all = python $nt -d all --color never s3_nvs.bin
+$h = $all | Select-String -SimpleMatch '| drops:'
+if ($h) { $h | ForEach-Object { $_.Line.Trim() } } else { "(no drops entries in -d all)" }
+Remove-Item s3_nvs.bin
+```
+
+⛔ **Never run `-d minimal` or `-d all` unfiltered.** `minimal` prints the WiFi password as
+`key = value`. `all` prints it as a readable ASCII hex dump on a line that does not contain the key
+name, so filtering on the key would not even catch it.
+
+📋 **The first filter handed out for this was broken, and silently.** It was
+`findstr /B "wifinet:"`, but every `minimal` line begins with a space, so it matched nothing, and
+the empty output would have been recorded as "key absent". It was caught only by building a fake
+partition (fake password, `drops=18`) and running the exact command on it. Both commands above
+passed that test, including a missing-key run that failed loudly. **An untested filter on a
+one-time read is a guess with a deadline.**
+
+**A deployment is still not a verification** — and a closure is only as good as the premise it
+rests on.
+
+It became unanswerable remotely for a reason worth carrying elsewhere: `main.c`'s `log_dht()`
+publishes the **entire** MQTT payload — counter, uptime and BSSID — only on a **good DHT read**.
+Removing the sensor took the diagnostics with it. **Never gate diagnostic publishing on a sensor
+read**: a failed probe is exactly when you want the device to still be talking.
 
 ## Where this lives
 
