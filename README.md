@@ -129,6 +129,7 @@ sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md).
 | | |
 |---|---|
 | [`fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to this printer |
+| [`openscad-basics/`](docs/openscad-basics/) | Six hands-on OpenSCAD lessons, ending in a part written the way the models here are — every behaviour described was measured, not recalled |
 | [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
 | [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
