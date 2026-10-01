@@ -101,13 +101,19 @@ note "$(grep -E '^; total filament used \[g' "$GCODE" | sed 's/^; //')"
 # --- 4. does the model agree with the profile it was sliced with? -----------
 echo "==> model vs profile"
 # Search the model AND anything it includes. Parameters commonly live in a separate header file, and grepping only the main file made this check report "not declared" and pass — a silent degradation that sounds benign while the most valuable check in the script has quietly stopped running.
-srcs() {
-    echo "$SCAD"
-    d=$(dirname "$SCAD")
-    grep -oE '^[[:space:]]*include[[:space:]]*<[^>]+>' "$SCAD" 2>/dev/null \
+# Follow includes TRANSITIVELY. One level was enough until a model was checked through a wrapper file
+# (wrapper -> model -> params): the values sat two levels down and the cross-check reported them as
+# not declared. Depth-limited, because OpenSCAD itself rejects a cycle and this should not recurse
+# forever trying.
+srcs_of() {  # file, depth
+    echo "$1"
+    [ "$2" -ge 8 ] && return
+    sd=$(dirname "$1")
+    grep -oE '^[[:space:]]*include[[:space:]]*<[^>]+>' "$1" 2>/dev/null \
         | sed 's/.*<//; s/>.*//' \
-        | while read -r f; do [ -f "$d/$f" ] && echo "$d/$f"; done
+        | while read -r f; do [ -f "$sd/$f" ] && ( srcs_of "$sd/$f" $(( $2 + 1 )) ); done   # ( ) so the recursion cannot clobber this loop's $sd
 }
+srcs() { srcs_of "$SCAD" 0 | awk '!seen[$0]++'; }
 # Take what sits BETWEEN the first = and the first ; — which is the value, and nothing else. Stripping comment markers before parsing is the fragile alternative: it breaks on a trailing comment that contains its own =, and again whenever the file's comment style changes. Parsing the assignment is immune to comment style entirely, which is the point.
 m() {
     # shellcheck disable=SC2046
