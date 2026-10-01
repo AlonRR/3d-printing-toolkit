@@ -1,15 +1,40 @@
 # SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
 # SPDX-License-Identifier: MPL-2.0
 
-# air-quality-c3 — particulate (SPS30) and VOC/NOx (SGP41) on an ESP32-C3 SuperMini.
+# print-chamber — the planned printer chamber node, on an ESP32-C3 SuperMini.
 #
-# ⚠️ BRING-UP DRAFT: COMPILED 1 Oct 2026 from PowerShell (ESPHome 2026.8.1, ESP-IDF 5.5.5) to a
-#    1 011 152-byte image, with every entity below present in it. Not yet flashed or wired.
+# Today it carries particulate (SPS30) and VOC/NOx (SGP41). The chamber's own sensors, the
+# 1-Wire probes and the fume-fan control join it later on the pins already reserved for them
+# (GPIO7 1-Wire, GPIO10 fan PWM, GPIO3 tach - see the i2c block). Until they move here,
+# chamber-c3.yaml stays the live chamber node. Decided 1 Oct 2026; this file was
+# air-quality-c3.yaml, written as a standalone air-quality node.
 #
-# ⛔ SETTLE THE NAME BEFORE THE FIRST FLASH. Home Assistant keys long-term statistics to
-# the entity_id, and ESPHome derives entity_ids from `name:` — it cannot set MQTT discovery
-# unique_ids. Renaming after history accrues means a registry repoint, which is exactly
-# what the S3 -> C3 chamber migration cost (docs/chamber-sensor.md).
+# ⚠️ BRING-UP DRAFT: not yet flashed or wired. The logic compiled on 1 Oct 2026 as
+#    air-quality-c3 (1 011 152-byte image); see the build note below for this name.
+#
+# ⛔ THE NAME IS LOAD-BEARING - DO NOT "TIDY" IT. Home Assistant keys long-term statistics to the
+#    entity_id, and ESPHome builds entity_ids from this node's `name:` plus each entity's name.
+#    The chamber's history lives at sensor.print_chamber_chamber_* (docs/chamber-sensor.md, "WHAT
+#    MUST NOT BE LOST"). So the node is named for the SUBJECT, "print-chamber", never the board:
+#    with the chamber's own entity names ("Chamber temperature", ...) it SHOULD regenerate the
+#    historical ids by itself - by the same rule that turned chamber-c3 + "Chamber pressure" into
+#    sensor.chamber_c3_chamber_pressure. That is a prediction: confirm it on first discovery.
+#
+# 📋 WHEN THE CHAMBER SENSORS MOVE HERE, IN THIS ORDER, or the new entities arrive as "_2":
+#    1. power off chamber-c3;
+#    2. `esphome clean-mqtt chamber-c3.yaml` - discovery configs are RETAINED on the broker, and
+#       while chamber-c3's are there Home Assistant keeps recreating its entities;
+#    3. delete the historical registry entries in Home Assistant. Their statistics stay,
+#       keyed to the entity_id string;
+#    4. flash this node with the chamber entities named exactly as in chamber-c3.yaml.
+#    Also rename the diagnostics then, to "Chamber WiFi RSSI" / "Chamber uptime", to land on
+#    their historical ids - NOT before: while chamber-c3 is live those names would collide.
+#
+# ⚠️ OPEN: WHERE THIS NODE SITS DECIDES WHAT THESE TWO SENSORS MEASURE. The SPS30 is rated to
+#    +60 °C and the SGP41 to +50 °C, against a chamber wanted at 40-60 °C, and the SPS30's I2C lead
+#    must stay under 20 cm, so it sits wherever the node sits. docs/chamber-sensor.md §3 puts the
+#    node OUTSIDE the enclosure - where they read the air around the printer, not the chamber's.
+#    That is why their entities are not prefixed "Chamber".
 #
 # ⛔ BUILD AND FLASH FROM POWERSHELL, NOT GIT BASH - and do not trust the word "Successfully".
 #    The rule and its history are in chamber-baseline.yaml. What changed since: once the ESP-IDF
@@ -17,9 +42,9 @@
 #    fails. It prints "MSys/Mingw is no longer supported" as a WARNING, builds nothing, warns
 #    "Firmware not found", and then prints "INFO Successfully compiled program." with exit 0.
 #    Measured twice on 1 Oct 2026, with and without MSYSTEM unset. A real build leaves
-#    .esphome/build/air-quality-c3/build/air-quality-c3.bin of roughly 1 MB - check for it.
+#    .esphome/build/print-chamber/build/print-chamber.bin of roughly 1 MB - check for it.
 #        cd $env:USERPROFILE\Tools\3d-printing\firmware
-#        esphome compile air-quality-c3.yaml
+#        esphome compile print-chamber.yaml
 #
 # ------------------------------------------------------------------------------ WIRING
 #
@@ -75,13 +100,13 @@ substitutions:
   # How often the SPS30 is read. A reading is the sensor's latest ONE-SECOND value (its
   # sampling interval is 1 s), not an average over the interval - so at 30 s the node sees
   # about one second in thirty, and a short dust event can fall between readings entirely.
-  # For an experiment, override it at flash time without editing this file:
-  #     esphome -s pm_update_interval 5s run air-quality-c3.yaml
+  # For a measurement session, override it at flash time without editing this file:
+  #     esphome -s pm_update_interval 5s run print-chamber.yaml
   # ⚠️ An override lasts until the next flash. A later OTA run without `-s` goes back to 30 s.
   pm_update_interval: 30s
 
 esphome:
-  name: air-quality-c3
+  name: print-chamber
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -104,7 +129,7 @@ wifi:
   # if this node must sit centimetres from another radio, cap the power:
   # output_power: 8.5dB
   ap:
-    ssid: air-quality-c3-fallback
+    ssid: print-chamber-fallback
     password: !secret ap_password
 
 captive_portal:
@@ -119,7 +144,7 @@ mqtt:
   broker: !secret mqtt_host
   username: !secret mqtt_username
   password: !secret mqtt_esp_password
-  topic_prefix: printer/air-quality-c3
+  topic_prefix: printer/print-chamber
 
 # GPIO5/GPIO6 is the house SuperMini I2C pair (docs/chamber-sensor.md §4), which keeps this
 # node on the same map as the planned fan-control node: GPIO7 1-Wire, GPIO10 fan PWM and

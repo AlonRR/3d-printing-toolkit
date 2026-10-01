@@ -6,7 +6,7 @@ projects:
     kind:     build
     state:    active
     next:     "prove one ESP32 can carry fan PWM + tach + I2C, then build it"
-    trackers: [docs/chamber-sensor.md, docs/chamber-airflow.md, firmware/air-quality-c3.yaml]
+    trackers: [docs/chamber-sensor.md, docs/chamber-airflow.md, firmware/print-chamber.yaml]
     review:   2026-09-20
 
   - name:     Prusa MK3S+ operations and ASA quality
