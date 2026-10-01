@@ -9,8 +9,9 @@
 # chamber-c3.yaml stays the live chamber node. Decided 1 Oct 2026; this file was
 # air-quality-c3.yaml, written as a standalone air-quality node.
 #
-# ⚠️ BRING-UP DRAFT: not yet flashed or wired. The logic compiled on 1 Oct 2026 as
-#    air-quality-c3 (1 011 152-byte image); see the build note below for this name.
+# ⚠️ BRING-UP DRAFT: COMPILED 1 Oct 2026 from PowerShell (ESPHome 2026.8.1, ESP-IDF 5.5.5) to a
+#    1 011 152-byte print-chamber.bin, with every entity below present in it. Not yet flashed
+#    or wired.
 #
 # ⛔ THE NAME IS LOAD-BEARING - DO NOT "TIDY" IT. Home Assistant keys long-term statistics to the
 #    entity_id, and ESPHome builds entity_ids from this node's `name:` plus each entity's name.
