@@ -44,6 +44,9 @@
 #     ERROR: MSys/Mingw is not supported...
 #     ERROR ESP-IDF 5.5.5 framework installation - failed (returncode=1)
 #   Unsetting MSYSTEM is NOT enough - that was tried and failed identically.
+#   ⚠️ Since 1 Oct 2026 it fails SILENTLY instead: with the framework already installed,
+#   Git Bash builds nothing yet reports "Successfully compiled program" and exit 0.
+#   Judge a build by the .bin it leaves, not by that line (see air-quality-c3.yaml).
 #   `esphome config` validates from EITHER shell, so this only bites at compile,
 #   after the setup looks like it worked.
 #     cd $env:USERPROFILE\Tools\3d-printing\firmware

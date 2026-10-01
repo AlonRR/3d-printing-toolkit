@@ -2167,6 +2167,9 @@ error rather than a clear one, so do not copy it from an older tutorial.
    ⛔ **Build and flash from PowerShell, not git-bash** — PlatformIO will not install ESP-IDF under
    MSYS (*"MSys/Mingw is not supported"*). **Unsetting `MSYSTEM` is not enough; tried, same
    failure.** `esphome config` passes from either shell, so it surfaces only at compile time.
+   ⚠️ **Since 1 Oct 2026 it does not even fail.** Once ESP-IDF is installed, a Git Bash compile
+   builds nothing, warns *"Firmware not found"*, then prints *"Successfully compiled program"* and
+   exits 0. Judge a build by the `.bin` it leaves, never by that line.
 2. **Partially close the open side. Measure again.** If the delta is small, the whole chamber
    theory is weaker than assumed and that is worth knowing before buying anything.
 3. **Buy the AHT20 + 2× DS18B20**, build points A/B/C properly, node outside, probes inside.

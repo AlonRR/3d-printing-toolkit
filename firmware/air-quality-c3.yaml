@@ -3,12 +3,23 @@
 
 # air-quality-c3 — particulate (SPS30) and VOC/NOx (SGP41) on an ESP32-C3 SuperMini.
 #
-# ⚠️ BRING-UP DRAFT: validated with `esphome config`, not yet flashed or wired.
+# ⚠️ BRING-UP DRAFT: COMPILED 1 Oct 2026 from PowerShell (ESPHome 2026.8.1, ESP-IDF 5.5.5) to a
+#    1 011 152-byte image, with every entity below present in it. Not yet flashed or wired.
 #
 # ⛔ SETTLE THE NAME BEFORE THE FIRST FLASH. Home Assistant keys long-term statistics to
 # the entity_id, and ESPHome derives entity_ids from `name:` — it cannot set MQTT discovery
 # unique_ids. Renaming after history accrues means a registry repoint, which is exactly
 # what the S3 -> C3 chamber migration cost (docs/chamber-sensor.md).
+#
+# ⛔ BUILD AND FLASH FROM POWERSHELL, NOT GIT BASH - and do not trust the word "Successfully".
+#    The rule and its history are in chamber-baseline.yaml. What changed since: once the ESP-IDF
+#    framework is installed (by any earlier PowerShell build), a Git Bash compile no longer
+#    fails. It prints "MSys/Mingw is no longer supported" as a WARNING, builds nothing, warns
+#    "Firmware not found", and then prints "INFO Successfully compiled program." with exit 0.
+#    Measured twice on 1 Oct 2026, with and without MSYSTEM unset. A real build leaves
+#    .esphome/build/air-quality-c3/build/air-quality-c3.bin of roughly 1 MB - check for it.
+#        cd $env:USERPROFILE\Tools\3d-printing\firmware
+#        esphome compile air-quality-c3.yaml
 #
 # ------------------------------------------------------------------------------ WIRING
 #
@@ -35,6 +46,10 @@
 # ⛔ IDENTIFY PIN 1 WITH A METER, NOT BY WIRE COLOUR. Generic ZHR-5 leads use arbitrary
 #    colours, and a reversed lead puts 5 V on GND/SEL. Pin order is 1 VDD, 2 SDA, 3 SCL,
 #    4 SEL, 5 GND; the datasheet shows pin 1's position only in a figure.
+#    The quick method: pin 5 is bonded to the metal housing (see below), so with the lead
+#    plugged into the sensor, the END wire that beeps to the housing is pin 5 and the other
+#    end wire is pin 1. Pins 2-4 then follow the order of the wires AT THE SENSOR'S
+#    CONNECTOR. Expect the colours to be unconventional - black can be the 5 V wire.
 #
 # ⚠️ KEEP THE SPS30's I2C LEAD UNDER 20 cm. The datasheet recommends UART beyond that for
 #    EMI robustness, and ESPHome's sps30 platform is I2C. So put the node beside the sensor
@@ -55,6 +70,15 @@
 #    (datasheet Table 4). The SPS30 is rated to +60 °C. An ASA chamber is wanted at 40-60 °C,
 #    so inside a hot chamber the SGP41 runs out of spec and the SPS30 sits at its limit while
 #    its fan pulls fumes across its own optics. Outside the chamber both are in spec.
+
+substitutions:
+  # How often the SPS30 is read. A reading is the sensor's latest ONE-SECOND value (its
+  # sampling interval is 1 s), not an average over the interval - so at 30 s the node sees
+  # about one second in thirty, and a short dust event can fall between readings entirely.
+  # For an experiment, override it at flash time without editing this file:
+  #     esphome -s pm_update_interval 5s run air-quality-c3.yaml
+  # ⚠️ An override lasts until the next flash. A later OTA run without `-s` goes back to 30 s.
+  pm_update_interval: 30s
 
 esphome:
   name: air-quality-c3
@@ -111,8 +135,23 @@ i2c:
 sensor:
   # ---------------------------------------------------------------------------- SPS30
   # Address 0x69. Optical particle counter with its own fan. Readings follow a 30 s
-  # warm-up after measurement starts.
+  # warm-up after measurement starts (datasheet: 8 s above 200 particles/cm3, 16 s at
+  # 100-200, longer in cleaner air - so 30 s is the conservative figure for a room).
+  #
+  # ⚠️ PM4 AND PM10 ARE NOT MEASURED. Datasheet footnote 4: "PM4 and PM10 output values are
+  #    calculated based on distribution profile of all measured particles." The directly
+  #    measured channels are PM1.0 and PM2.5 (mass) and the 0.5 / 1.0 / 2.5 counts. Read the
+  #    calculated channels as the sensor's model, not as an independent look at coarse dust.
+  #
+  # ⚠️ THE COUNTS ARE CUMULATIVE, NOT SIZE BINS. "PM2.5 count" is every particle from 0.3 to
+  #    2.5 um. The number between 1.0 and 2.5 um is PM2.5 count minus PM1.0 count.
+  #
+  # ⚠️ NEVER READ THE ABSOLUTE FIGURES AS A DUST MEASUREMENT. The sensor is calibrated
+  #    against a reference aerosol; mineral dust has a different density and refractive
+  #    index. Compare runs with each other, not with an exposure limit. And it cannot tell
+  #    clay from crystalline silica at all - that needs a filter sample and a lab.
   - platform: sps30
+    id: aq_sps30
     address: 0x69
     pm_1_0:
       name: PM1.0
@@ -126,10 +165,30 @@ sensor:
     pm_10_0:
       name: PM10
       state_class: measurement
+    pmc_0_5:
+      name: PM0.5 count
+      state_class: measurement
+    pmc_1_0:
+      name: PM1.0 count
+      state_class: measurement
+    pmc_2_5:
+      name: PM2.5 count
+      state_class: measurement
+    pmc_4_0:
+      name: PM4.0 count
+      state_class: measurement
+    pmc_10_0:
+      name: PM10 count
+      state_class: measurement
     pm_size:
       name: Typical particle size
       state_class: measurement
-    update_interval: 30s
+    # The datasheet default, written out so it is visible: one fan clean a week. 0 disables
+    # it. During a clean the readings simply stop updating for 10 s (datasheet §4.2), so the
+    # fix is to clean BEFORE a measurement session - see the button below - rather than to
+    # fight the timer.
+    auto_cleaning_interval: 604800s
+    update_interval: ${pm_update_interval}
 
   # ---------------------------------------------------------------------------- SGP41
   # Address 0x59. VOC and NOx INDICES (1-500), not concentrations — and not eCO2.
@@ -160,3 +219,13 @@ sensor:
     state_class: measurement
     entity_category: diagnostic
     update_interval: 60s
+
+button:
+  # Clean the SPS30's fan on demand: 10 s at full speed, with readings frozen meanwhile.
+  # Press it before a measurement session, then wait out the clean and the 30 s warm-up,
+  # so that neither lands inside a run.
+  - platform: template
+    name: SPS30 fan clean
+    entity_category: config
+    on_press:
+      - sps30.start_fan_autoclean: aq_sps30
