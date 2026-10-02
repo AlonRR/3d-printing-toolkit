@@ -9,8 +9,8 @@ print-chamber-box.params.scad at three settings - a step tighter, as set, and a 
 is printed with fits that were tried in ASA on this printer rather than guessed.
 
 Every size comes from the box's own settings, so the test cannot drift from what it tests. Each try
-carries 1, 2 or 3 dots: 1 = a step tighter, 2 = as set, 3 = a step looser. README.md, "The clearance
-test", says what to try with each and how to turn the result into a setting.
+carries 1, 2 or 3 dots: 1 = a step tighter, 2 = as set, 3 = a step looser. docs/clearance-test.md
+says what to try with each, how to turn the result into a setting, and what has been found so far.
 
   sps_fit      three open frames the SPS30 slides through
   pocket_fit   three trays for the SuperMini, three for the GY-SGP41

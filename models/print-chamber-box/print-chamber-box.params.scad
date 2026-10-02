@@ -8,7 +8,7 @@ Everything you SET for the print-chamber box. Render print-chamber-box.scad, not
 
 The box for the node in firmware/print-chamber.yaml: an SPS30 particle sensor standing on edge with its
 air face DOWN, the ESP32-C3 SuperMini above it, and the GY-SGP41 between the two. Why that layout,
-with a source for each rule, is in README.md.
+with a source for each rule, is in docs/design.md; where each value came from, in docs/parameters.md.
 
 COORDINATES are the box as INSTALLED: Y out from the mounting surface, Z up, and X - because the
 frame is right-handed - pointing to YOUR LEFT as you face the box. "Left" and "right" in the

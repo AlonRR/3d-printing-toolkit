@@ -20,7 +20,7 @@ labels seven regions of the back plate "bridge infill"; all are internal, over i
   part = "assembly"   the two parts in place, with the components ghosted in. Not printable.
 
 Settings are in print-chamber-box.params.scad, and why the layout is what it is - with a source for each
-rule - is in README.md.
+rule - is in docs/design.md. The checks it carries, and their controls, are in docs/checking.md.
 */
 include <print-chamber-box.params.scad>
 

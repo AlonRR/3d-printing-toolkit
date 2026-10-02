@@ -45,7 +45,7 @@ bends where it likes — but each ends on its pin from the table, and the drawin
   closed box, so it does not need to grip.
 - From the channel's top, 5V, GND and 3V3 are straight above, on the board's lower edge. GPIO5 and GPIO6
   are on its upper edge, so those two wires cross the front of the board **over its USB-C end**, about
-  8 mm out. GPIO6's pad is straight above GND's, so its wire rises half a pin aside, between the 5V and
+  8 mm out. GPIO6's pad is straight above GND's, so its wire rises 1.4 mm aside, between the 5V and
   GND pads, which leaves GND's pad open for the SGP41's wire coming in from the front.
 
 **The SGP41's four wires** — 22 AWG solid
