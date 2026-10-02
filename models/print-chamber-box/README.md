@@ -10,7 +10,10 @@ Settled from photos, 2 Oct 2026: the SPS30's outlet is on your RIGHT as you face
 antenna wire stands out of the board's component side. Measured the same day: the SuperMini and the
 GY-SGP41. Also 2 Oct: the USB-C socket's mouth reaches the outside face, so **no cable needs measuring**
 (see [The USB-C end](#the-usb-c-end)); and the wiring round — the SGP41 raised to its vents beside the
-SPS30's lead, a tie post for the wires, and where every wire goes (see [Wiring](#wiring)).
+SPS30's lead, a channel for the wires, and where every wire goes (see [Wiring](#wiring)). Changed the
+same day after Alon's review: **the SPS30 goes in from the front** — the lips that held it made that
+impossible, and from above the board's rims and the pedestal were in the way — and the SGP41 rests on a
+ledge and a standoff clear of the parts on its underside.
 
 It houses the node in [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml): an ESP32-C3
 SuperMini, a Sensirion SPS30 particle sensor and a GY-SGP41 VOC/NOx module.
@@ -70,7 +73,7 @@ Drawn from the model, as you face the box, for the sensor in hand (`outlet_at_le
                                    #  the divider: carries the sensor, separates the two
                                       ends, and stands divider_proud below the box
           "=" on the right wall: where the USB-C cable leaves, beside the board
-          ":" the column the SPS30's lead rises through; "(post)" the tie post every wire is tied to
+          ":" the column the SPS30's lead rises through; "(post)" the cable channel the wires lie in
           "]" the SGP41 on its pedestal, a few mm behind its vents in the cover's front
 ```
 
@@ -103,7 +106,8 @@ ends, which is one number to measure.
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 | `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end. From photo 1, scaled against the sensor: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
-| `gy_bare` | **4.4** | the bare strip at the GY-SGP41's far end, opposite its pins: every part on its underside is on the pin half. Photo 2 reads about 4.5 mm, and the mounting hole proves at least 4.45 — its far side is 1.32 + 3.13 mm from that end, and nothing is mounted round a mounting hole |
+| `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside. The ledge stops 0.5 mm short of it. An earlier photo reading of about 4.5 put the ledge under the parts |
+| `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: photo 2 puts the nearest parts beside and above the hole about 2.6 mm from its centre. The 4 mm standoff (`gy_standoff_d`) sits inside it |
 | `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
 | `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end (the short edge opposite its pins), and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
 
@@ -131,20 +135,23 @@ list there, which makes the model warn until it is measured.
 
 | Part | Prints | What it carries |
 |---|---|---|
-| **Back plate** — [`print-chamber-box-back.scad`](print-chamber-box-back.scad) | flat | two mounting tabs; a channel the SPS30 slides down into, with lips that keep it against the plate; a ledge under each end of the air face; the divider; the board's pocket, with two stops that take the push of plugging in; a pedestal that raises the SGP41 to its vents, with a ledge for its bare strip; a tie post for the wires; four bosses for the cover screws |
-| **Cover** — [`print-chamber-box-cover.scad`](print-chamber-box-cover.scad) | front face down | the window under the SPS30; the USB-C opening, in a stretch of wall thinned from inside with a chamfered step; vents in front of the SGP41 and the board; a partition that continues the divider up the air gap in front of the sensor; a baffle that closes that gap off from the warm compartment above |
+| **Back plate** — [`print-chamber-box-back.scad`](print-chamber-box-back.scad) | flat | two mounting tabs; a channel the SPS30 is set into from the front; a ledge under each end of its air face; the divider; the board's pocket, with two stops that take the push of plugging in; a pedestal that raises the SGP41 to its vents, with a ledge and a standoff for it; a cable channel for the wires; four bosses for the cover screws |
+| **Cover** — [`print-chamber-box-cover.scad`](print-chamber-box-cover.scad) | front face down | the window under the SPS30; the USB-C opening, in a stretch of wall thinned from inside with a chamfered step; vents in front of the SGP41 and the board; a partition that continues the divider up the air gap in front of the sensor, and keeps the SPS30 from tipping forward; a baffle that closes that gap off from the warm compartment above |
 
 Hardware: four **M3 × 14 self-tapping** screws close it, and two wood screws up to 3.5 mm hang it. **One
-M2.5 × 8 socket head cap screw** holds the SGP41 down through its mounting hole. One small cable tie, or a
-few turns of thread, ties the wires to the tie post. Double-sided tape holds the SuperMini on the plate;
-it is also held along its length — see below.
+M2.5 × 8 socket head cap screw** holds the SGP41 down through its mounting hole. Double-sided tape
+holds the SuperMini on the plate; it is also held along its length — see below.
+
+**The SPS30 goes in from the front**, before the cover: set it between the channel walls and onto its
+ledges. Nothing on the plate overhangs it — `check_insert` proves its path in is clear — and once the
+cover is on, its partition rib stands 0.3 mm off the sensor's face and keeps it from tipping forward.
 
 **No bridge over air in either part.** Every opening in the cover is a hole in its first layers or a
-notch open at its back edge. The slicer does report eight *bridge infill* regions in the back plate, and
+notch open at its back edge. The slicer does report seven *bridge infill* regions in the back plate, and
 each was traced: all are internal, the first solid layer over the part's own sparse infill — PrusaSlicer
-uses the same label for both. Five are in the plate and the bosses; the other three (2 Oct 2026) are the
-tops of the SGP41's pedestal and of its ledge, and the floor under its screw's blind pilot, each inside
-the pedestal. The cover reports none.
+uses the same label for both. Five are in the plate and the bosses; the other two (2 Oct 2026) are the
+top of the SGP41's pedestal and the floor under its screw's blind pilot, each inside the pedestal. The
+cable channel's 45° lips print with no overhang perimeters at all. The cover reports none.
 
 **"Left" and "right" mean as you face the box.** The model's frame is right-handed with Y out of the wall,
 so +X points to your left. The board's USB-C end faces the SPS30's connector, so with this sensor the
@@ -163,22 +170,22 @@ Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so th
    prints flat on the bed.
 2. **Mounting tabs** — one each side, with a hole for a wood screw up to 3.5 mm. 14 mm long, so the
    screwdriver's shaft clears the box's side.
-3. **Channel walls** — the SPS30 slides down between them and they hold it sideways.
-4. **Front lips** — overlap the sensor's front face by 1 mm so it cannot fall forward. Their 45°
-   undersides print without support.
-5. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.
-6. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side. It
+3. **Channel walls** — the SPS30 is set between them from the front, and they hold it sideways. No lips:
+   anything overhanging its face would have to be slid past, and from above the way is blocked.
+4. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.
+5. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side. It
    stands 4 mm proud below the box, so the outlet's air cannot loop straight back into the inlets.
-7. **Rims** — two low rails that locate the SuperMini up and down.
-8. **Stops** — over the two corners of the board's antenna end. They take the push of plugging the USB-C
+6. **Rims** — two low rails that locate the SuperMini up and down.
+7. **Stops** — over the two corners of the board's antenna end. They take the push of plugging the USB-C
    cable in; the middle stays open for the antenna loop.
-9. **Pedestal** — lifts the SGP41 forward, so its sensor sits 2–3 mm behind its vents instead of 16 mm.
-10. **Ledge and rim** — the SGP41 rests only on the bare strip at its far end, so its parts carry no load.
-    The rim locates it on three sides and is open at the pin end, where the wires leave.
-11. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole.
-12. **Tie post** — the wires are tied to it, so a tug stops here instead of at the SuperMini's solder pads.
-    The cover caps its top, so a tie cannot slip off.
-13. **Bosses** — the cover's four M3 × 14 self-tapping screws bite into these. Their pilots are blind, so
+8. **Pedestal** — lifts the SGP41 forward, so its sensor sits 2–3 mm behind its vents instead of 16 mm.
+9. **Ledge, standoff and rim** — the SGP41 rests on a strip along its far end, kept 0.5 mm short of the
+   parts on its underside, and on a round standoff under its mounting hole. The rim locates it on three
+   sides and is open at the pin end, where the wires leave.
+10. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole into the standoff.
+11. **Cable channel** — the wires from both sensors lie in it on their way to the board's pins. They press
+    in past a 45-degree lip on each wall and stay put; no tie needed.
+12. **Bosses** — the cover's four M3 × 14 self-tapping screws bite into these. Their pilots are blind, so
     the back of the plate stays whole.
 
 ![the cover from inside, numbered](feature-map-cover.png)
@@ -199,7 +206,8 @@ you face it:
    reaches the outside. The board's corners bear on it when a plug is pulled; the 45° step keeps a crack
    from starting.
 8. **Partition** — continues the divider up the air gap in front of the sensor, so the inlet air and the
-   outlet air stay apart.
+   outlet air stay apart. It stands 0.3 mm off the sensor's face, so it also keeps the SPS30 from tipping
+   forward now that the plate has no lips.
 9. **Baffle** — closes that air gap off from the compartment above, so the board's warmth does not drift
    down into the sensor's air.
 10. **Rounded corners** — ASA lifts at sharp corners; the radius is what lets both parts print without a
@@ -247,16 +255,18 @@ would sit 16 mm behind its vents and measure the box's own air, warmed by the bo
 It stands just left of the SPS30's lead, in the zone between the sensor and the board, with its pins
 towards the board's pin end, so its four wires head straight there.
 
-**Only the bare strip at its far end rests on anything.** All the parts on its underside are on the pin
-half; the far `gy_bare` (4 mm) is bare. A ledge carries that strip, so the parts never bear load, and its
-pin end overhangs. The ledge is tall enough that the parts on the thinnest plausible board clear the floor
+**It rests on two bare patches of its underside, so its parts never bear load.** One is the strip along
+its far end: the nearest part is 3.31 mm in (`gy_bare`, measured), and the ledge stops 0.5 mm short of it.
+The other is round the mounting hole, where a 4 mm standoff carries it. Its pin end overhangs. The ledge is tall enough that the parts on the thinnest plausible board clear the floor
 by `gap` (1 mm): the floor prints as a solid skin over infill and can come out a few tenths uneven.
 Because the board touches nothing but the ledge and a rim on three sides, its thickness does not matter:
 anywhere from `gy_pcb_min` to `gy_pcb_max`, the rim catches its edge and the room in front is kept. The
 rim is open at the pin end, where the wires leave.
 
-**An M2.5 × 8 screw holds it down, through its mounting hole into a blind 7.6 mm pilot in the ledge.**
-The hole is in the bare strip, by the long edge away from the sensor, so the screw clamps only bare board.
+**An M2.5 × 8 screw holds it down, through its mounting hole into a blind 7.6 mm pilot in the standoff.**
+The hole is by the long edge away from the sensor, and the screw clamps only the bare patch round it. That
+patch's size is a photo reading (`gy_hole_bare_d`), and the collision check treats its edge as where the
+parts begin.
 Its 4.5 mm head clears the sensor: checked with the screw in the hole, 2 Oct 2026. The hole is 3.13 mm,
 so the M2.5 screw passes it with room to spare, and the rim, not the screw, locates the module. Which edge
 of the pocket the hole sits by comes from photo 1, so the pilot is only as right as that reading; seat the
@@ -297,16 +307,14 @@ Why the SGP41's VIN must be 3V3 is in the same file.
 **The routes:**
 
 - **The SPS30's lead** rises from its plug at the outlet end and bends over towards the right wall. Its
-  column is kept clear: the SGP41's pedestal stands to its left, and the tie post above its bend.
+  column is kept clear: the SGP41's pedestal stands to its left, and the cable channel to its right.
   **Shorten the lead** so it reaches the board with about a centimetre to spare, rather than coiling it:
   the SPS30 has a fan, and a slack lead buzzes.
-- **The SGP41's wires** are soldered from its sensor side, bent flat towards the right, and run to the tie
-  post.
-- **At the tie post**, below the board's pin end, tie all the wires to the post with one small cable tie
-  or a few turns of thread. A tug on either sensor then stops at the post, not at the SuperMini's pads,
-  which are small and lift easily. The post runs from the plate to just short of the cover's front, so a
-  tie cannot slide off its end. **Pull the tie snug, not tight:** the post is a 4 mm pillar 19.5 mm tall.
-- **From the post to the pins:** 5V, GND and 3V3 are on the board's lower edge, right above the post.
+- **The SGP41's wires** are soldered from its sensor side, bent flat towards the right, and run to the
+  cable channel.
+- **In the cable channel**, below the board's pin end, press all nine wires in past its lips. It holds
+  them in place; nothing pulls on them inside a closed box, so it does not need to grip.
+- **From the channel to the pins:** 5V, GND and 3V3 are on the board's lower edge, right above it.
   GPIO5 and GPIO6 are on its upper edge, so their wires cross the board's front **over its USB-C end**.
 - **Never:** across the board's antenna half, in front of the antenna wire, or anywhere in the window or
   the air gap in front of the SPS30.
@@ -363,21 +371,26 @@ Both should report one manifold part and `fdm_*` matching the profile - the back
 with its tabs, the cover 62.8 mm. **Exit 2 is expected** while the
 `unmeasured` and `untested_fits` lists are not empty; exit 0 means both are clear.
 
-Two more checks, which `scad-check.sh` does not run:
+Three more checks, which `scad-check.sh` does not run:
 
 - `-D 'part="check_parts"'` intersects the two parts. The result must have **zero volume** — they meet at
   the plate's face and the boss tops, and nowhere else. Positive controls: `part_fit = -0.6` measured
-  385.1 mm³, and `gz0 = 43.5` (the SGP41's pedestal lowered into the cover's baffle) 48.6 mm³, so the
+  373.8 mm³, and `gz0 = 44.5` (the SGP41's pedestal lowered into the cover's baffle) 21.7 mm³, so the
   check does see a real overlap.
 - `-D 'part="check_components"'` intersects both parts with the sensor, the boards, the antenna wire
   and loop, the USB-C shell, the body of the largest compliant plug — seated with the board pushed
   against its stops — the column the SPS30's lead rises through, the SGP41 at every board thickness
   within the bounds, and its screw's head. It must be **empty**. Positive controls: `sm_pocket_h = 17` (a
   pocket narrower than the board) measured 26.8 mm³, `gx0 = 15` (the pedestal moved into the lead's
-  column) 642.5 mm³, `gy_ledge_x0 = 26.6` (the ledge reaching under the SGP41's parts) 90.6 mm³, and
-  `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's head into the front) 12.5 mm³. Stops
-  reaching into the antenna loop, a tie post on the wrong side of the lead, and a mounting hole too small
-  for the screw or off the bare strip are caught earlier, by asserts.
+  column) 642.5 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
+  `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_x1 = 16` (the cable channel
+  into the lead's column) 18.5 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
+  head into the front) 12.5 mm³. Stops reaching into the antenna loop and a mounting hole too small for the
+  screw are caught earlier, by asserts.
+- `-D 'part="check_insert"'` intersects the back plate with the SPS30's path in from the front — its
+  outline, nubs included, swept from its seat to the cover's front. It must be **empty**. Positive
+  control: the design before 2 Oct 2026's review, with its front lips, measured 131.8 mm³ — which is
+  why the sensor could not have been fitted.
 
 Run both with `outlet_at_left` set each way, too (`-D outlet_at_left=true`). The model mirrors, and a
 check run one way only has passed a mirrored mistake before.

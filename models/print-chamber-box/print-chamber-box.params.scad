@@ -45,7 +45,9 @@ gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
 gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. */
-gy_bare      = 4.4;    /* The GY-SGP41's underside carries all its parts on the pin half; the end opposite the pins is bare. Photo 2 reads about 4.5 mm, and the mounting hole proves at least 4.45: its far side is 1.32 + 3.13 mm from that end, and a mounting hole has no parts around it. The SGP41's ledge carries only this strip, so its parts never bear load. */
+gy_bare      = 3.31;   /* The nearest part on the GY-SGP41's underside, from the end opposite its pins. Measured 2 Oct 2026. The SGP41's ledge stops `gap / 2` short of it, so its parts never bear load. */
+gy_standoff_d = 4.0;   /* A round standoff under the mounting hole, which the screw clamps the module onto. It must stay inside gy_hole_bare_d. */
+gy_hole_bare_d = 5.2;  /* The bare patch round the mounting hole on the underside: photo 2 puts the nearest parts beside and above the hole about 2.6 mm from its centre. A photo reading, not a measurement; the collision check uses it as the parts' edge. */
 gy_hole_d    = 3.13;   /* The GY-SGP41's mounting hole. Measured 2 Oct 2026. It takes the M2.5 screw that holds the module down. */
 gy_hole_far  = 1.32 + gy_hole_d / 2;   /* The hole's centre from the module's far end, the short edge opposite its pins: 1.32 to the hole's edge, measured 2 Oct 2026. */
 gy_hole_side = 1.25 + gy_hole_d / 2;   /* The hole's centre from the nearer long edge, the one away from the sensor: 1.25 to the hole's edge, measured 2 Oct 2026. */
@@ -100,12 +102,13 @@ front_gap_min = 2.5;   /* Least air gap in front of the SPS30's label face - one
 vent_w        = 2.0;   /* Width of each vent slot. */
 vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 
-/* [Holding the sensor and the board] */
-lip    = 1.0;   /* How far the channel's front lips overlap the SPS30's front face. */
-ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. */
+/* [Holding the sensor, the boards and the wires] */
+ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. The SPS30 is put in from the front and stands on them; the cover's partition rib, 0.3 mm in front of its face, keeps it there. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
 wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board, for the wires soldered to its pins on the sensor side before they bend over. The screw's head needs more, and gets it. */
-post_d     = 4.0;   /* The tie post below the board's pin end. The wires are tied to it, so a tug on a sensor's lead never reaches the board's solder pads. */
+wire_slot_w = 3.5;  /* The cable channel below the board's pin end: its slot, across. Nine wires of about 1 mm lie in it. */
+wire_slot_d = 4.0;  /* ... and how deep it is, from the plate. */
+wire_lip_gap = 1.0; /* The opening between the channel's two 45-degree lips: a wire presses in past them and stays. */
 
 /* [Mounting and closing] */
 tab_l     = 14.0;   /* How far each mounting tab reaches beyond the box. Long enough that the screwdriver's shaft clears the box's side wall: the hole sits tab_w/2 from the tab's end. */

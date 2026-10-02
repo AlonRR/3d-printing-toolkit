@@ -54,32 +54,31 @@ if (view == "back") {
     marker(1,  [W - 10, back_t + f, H - 14]);                                    // the plate
     marker(2,  [-tab_hole_x, back_t + f, tab_z + tab_w / 2 + 3.5]);              // tabs
     marker(2,  [W + tab_hole_x, back_t + f, tab_z + tab_w / 2 + 3.5]);
-    marker(3,  [ch_x0 - cradle_t / 2, y_lip1 + f, z_sps0 + 22]);                // channel wall
-    marker(4,  [ch_x1 - lip_reach / 2, y_lip1 + f, z_sps0 + sps_h - 10]);       // lip
-    marker(5,  [ch_x0 + ledge_w / 2 + 2, back_t + sps_t + f, -3.5]);            // ledge
-    marker(6,  [x_div, y_in1 - part_fit + f, -divider_proud - 3.5]);            // divider
-    marker(7,  [conn_hi ? W - 17 : 17, back_t + rim_hgt + f, z_board0 - 3]);    // board rims
-    marker(8,  [stop_x0 + rim_t / 2 + (conn_hi ? -3 : 3), back_t + rim_hgt + f, z_board1 + 3]);  // stops
-    marker(9,  [conn_hi ? gx1 - 3 : gx0 + 3, gy_floor + f, gz0 - rim_t - 3.5]);  // pedestal
-    marker(10, [(gy_ledge_x0 + gy_ledge_x1) / 2, gy_floor + gy_ledge_h + f, gz1 - 2]);   // ledge and rim
-    marker(11, [gy_hole_x + (conn_hi ? 4.5 : -4.5), gy_floor + gy_ledge_h + f, gy_hole_z]);   // pilot
-    marker(12, [post_x, y_in1 - part_fit + f, post_z + post_d / 2 + 3.5]);       // tie post
-    for (b = bosses) marker(13, [b[0], y_in1 + f, b[1] + boss_d / 2 + 3.5]);    // bosses
+    marker(3,  [ch_x0 - cradle_t / 2, y_ch1 + f, z_sps0 + 22]);                 // channel wall
+    marker(3,  [ch_x1 + cradle_t / 2, y_ch1 + f, z_sps0 + 22]);
+    marker(4,  [ch_x0 + ledge_w / 2 + 2, back_t + sps_t + f, -3.5]);            // ledge
+    marker(5,  [x_div, y_in1 - part_fit + f, -divider_proud - 3.5]);            // divider
+    marker(6,  [conn_hi ? W - 17 : 17, back_t + rim_hgt + f, z_board1 + 3]);    // board rims
+    marker(7,  [stop_x0 + rim_t / 2 + (conn_hi ? -3 : 3), back_t + rim_hgt + f, z_board1 + 3]);  // stops
+    marker(8,  [conn_hi ? gx1 - 3 : gx0 + 3, gy_floor + f, gz0 - rim_t - 3.5]);  // pedestal
+    marker(9,  [(gy_ledge_x0 + gy_ledge_x1) / 2, gy_floor + gy_ledge_h + f, gz1 - 2]);   // ledge, standoff, rim
+    marker(10, [gy_hole_x + (conn_hi ? 4.5 : -4.5), gy_floor + gy_ledge_h + f, gy_hole_z]);   // pilot
+    marker(11, [(wch_x0 + wch_x1) / 2, wch_y1 + f, wch_z0 - 3.5]);              // cable channel
+    for (b = bosses) marker(12, [b[0], y_in1 + f, b[1] + boss_d / 2 + 3.5]);    // bosses
     legend(["BACK PLATE - as you face the box, cover off",
             "",
             " 1  the plate - against the wall",
             " 2  mounting tabs and their screw holes",
-            " 3  channel walls - locate the SPS30 sideways",
-            " 4  front lips - hold it against the plate",
-            " 5  ledges - the SPS30 stands on them",
-            " 6  divider - splits inlet from outlet air",
-            " 7  rims - locate the SuperMini",
-            " 8  stops - take the push of plugging in",
-            " 9  pedestal - lifts the SGP41 to its vents",
-            "10  ledge and rim for the SGP41",
-            "11  pilot for the SGP41's M2.5 screw",
-            "12  tie post for the wires",
-            "13  bosses for the cover's four screws"],
+            " 3  channel walls - the SPS30 goes in from the front",
+            " 4  ledges - the SPS30 stands on them",
+            " 5  divider - splits inlet from outlet air",
+            " 6  rims - locate the SuperMini",
+            " 7  stops - take the push of plugging in",
+            " 8  pedestal - lifts the SGP41 to its vents",
+            " 9  ledge, standoff and rim for the SGP41",
+            "10  pilot for the SGP41's M2.5 screw",
+            "11  cable channel - wires press in past its lips",
+            "12  bosses for the cover's four screws"],
            [-tab_l - 4, 0, H + 34]);
 }
 
@@ -108,7 +107,7 @@ if (view == "cover") {
             " 5  window under the SPS30's air face",
             " 6  USB-C opening - the shell passes through",
             " 7  wall thinned for the board's USB end",
-            " 8  partition - continues the divider",
+            " 8  partition - splits the air, holds the SPS30 in",
             " 9  baffle - shuts the sensor's air off",
             "10  rounded corners - instead of a brim"],
            [W + 8, 0, H + 34], -1);
