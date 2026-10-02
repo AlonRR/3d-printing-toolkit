@@ -11,14 +11,22 @@ Assembly views of the print-chamber box, for README.md.
   view = "wiring"     assembled with the cover off, and every wire drawn along its route to its pin.
 
 It includes the model, so every part sits where the model puts it. The wire routes are illustrative - a
-wire bends where it likes - but each one ends on the pin the README's wiring table gives it, passes up
-the cable channel, and keeps out of the SPS30 lead's column, the antenna and the air paths. The SPS30
-lead's colours are the meter-checked ones; the SGP41's four are stand-ins for whatever hookup wire is used.
+wire bends where it likes - but each one ends on the pin the README's wiring table gives it and keeps out
+of the SPS30 lead's column, the antenna and the air paths. The SPS30's five pass up the cable channel; the
+SGP41's four go straight across in front, and the asserts below hold their routes to what wire_room
+promises: no bend tighter than bend_r, clear of the cover, clear of each other and of the board's antenna
+half. The SPS30 lead's colours are the meter-checked ones; the SGP41's are stand-ins for whatever hookup
+wire is used.
 
     openscad -o assembly-exploded.png -D 'view="exploded"' --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,80,44,68,0,252,560 --colorscheme=Tomorrow assembly-views.scad
     openscad -o assembly-wiring.png   -D 'view="wiring"'   --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,0,44,78,0,195,260 --colorscheme=Tomorrow assembly-views.scad
+    openscad -o assembly-wiring-detail.png -D 'view="wiring"' --imgsize=1800,1500 --projection=o \
+      --camera=16,6,58,72,0,200,95 --colorscheme=Tomorrow assembly-views.scad
+
+The wiring view checks the SGP41's routes as it draws them, and an ERROR: Assertion line in the output
+means one broke - OpenSCAD still exits 0, so read the output, not the exit code.
 
 draw_model = false MUST come after the include: the last assignment in a scope wins.
 */
@@ -67,9 +75,32 @@ module label(t, p, size = 4.0) translate(p) rotate([cam_rx, 0, cam_rz]) color("b
 module guide(a, b) color([0.6, 0.6, 0.6]) hull() { translate(a) sphere(d = 0.5, $fn = 8); translate(b) sphere(d = 0.5, $fn = 8); }
 
 // ------------------------------------------------------------------ the wires
-wd = 1.0;   // a wire, drawn 1 mm thick
-module wire(pts, c) color(c) for (i = [0 : len(pts) - 2])
-    hull() { translate(pts[i]) sphere(d = wd, $fn = 10); translate(pts[i + 1]) sphere(d = wd, $fn = 10); }
+wd        = 1.0;   // a wire, drawn 1 mm thick
+bend_r    = 2.0;   // the tightest bend drawn, on the wire's centreline
+wire_stub = 1.0;   // straight out of a solder joint before the first bend
+
+// A route is a list of corners. Each corner is drawn as a circular arc of radius bend_r where the
+// segments leave room for one: an end segment may give all its length to its one bend, a middle segment
+// half to each of its two. Where they do not, the arc is tighter - min_radius() reports it.
+function unit(v) = v / norm(v);
+function turn(pts, i) = acos(max(-1, min(1, unit(pts[i] - pts[i - 1]) * unit(pts[i + 1] - pts[i]))));
+function cut_max(pts, i) = min(norm(pts[i] - pts[i - 1]) / (i == 1 ? 1 : 2),
+                               norm(pts[i + 1] - pts[i]) / (i == len(pts) - 2 ? 1 : 2));
+function cut(pts, i) = min(bend_r * tan(turn(pts, i) / 2), cut_max(pts, i));
+function arc(pts, i, n = 8) = let(th = turn(pts, i), p = pts[i]) th < 0.5 ? [p] : let(
+    ui = unit(p - pts[i - 1]), uo = unit(pts[i + 1] - p),
+    ra = cut(pts, i) / tan(th / 2), n1 = unit(uo - ui * (ui * uo)), o = p - ui * cut(pts, i) + n1 * ra)
+    [for (k = [0 : n]) let(f = th * k / n) o - n1 * ra * cos(f) + ui * ra * sin(f)];
+function rounded(pts) = concat([pts[0]], [for (i = [1 : len(pts) - 2]) each arc(pts, i)], [pts[len(pts) - 1]]);
+function min_radius(pts) = min([for (i = [1 : len(pts) - 2])
+    turn(pts, i) < 0.5 ? 1e9 : cut(pts, i) / tan(turn(pts, i) / 2)]);
+// for the clearance checks: the drawn route, a point every 0.2 mm
+function dense(pts, step = 0.2) = concat([for (i = [0 : len(pts) - 2]) let(a = pts[i], b = pts[i + 1],
+    n = max(1, ceil(norm(b - a) / step))) each [for (k = [0 : n - 1]) a + (b - a) * k / n]], [pts[len(pts) - 1]]);
+function min_gap(p, q) = min([for (a = p) min([for (b = q) norm(a - b)])]);
+
+module wire(pts, c) let(r = rounded(pts)) color(c) for (i = [0 : len(r) - 2])
+    hull() { translate(r[i]) sphere(d = wd, $fn = 10); translate(r[i + 1]) sphere(d = wd, $fn = 10); }
 
 sgn = conn_hi ? -1 : 1;                          // +1: away from the connector-end wall is +X
 function pin_x(k) = sm_usb_x + sgn * (pin_mid + (k - 2) * pin_pitch);   // power-edge pin k = 1, 2, 3
@@ -80,43 +111,88 @@ z_hi  = z_board_c + sm_w / 2 - 1.0;              // ... and its upper edge
 function slot(dx, y) = [wch_cx + sgn * dx, y];
 
 // from the top of the channel to its pin: straight up into a lower-edge pad, or up across the front of
-// the board's USB-C end into an upper-edge one
-function to_pin(s, x, upper) = upper
-    ? [[s[0], s[1], wch_z1 + 0.8], [x, 8.0, wch_z1 + 2.5], [x, 8.0, z_hi], [x, pad_y, z_hi]]
+// the board's USB-C end, 8 mm out, into an upper-edge one. An upper wire rises at xr: GPIO6's pad is
+// straight above GND's, so its wire rises between pads and leaves GND's open to a wire from the front.
+function to_pin(s, x, upper, xr) = upper
+    ? [[s[0], s[1], wch_z1 + 0.8], [xr, 8.0, wch_z1 + 2.5], [xr, 8.0, z_hi - 1.5], [x, 8.0, z_hi], [x, pad_y, z_hi]]
     : [[s[0], s[1], wch_z1 + 0.8], [x, 4.6, z_lo - 0.6], [x, pad_y, z_lo]];
 
 // the SPS30's lead: five wires out of its plug, up, over to the channel and up it
 y_mid = back_t + sps_t / 2;
 function lead_x(d) = conn_hi ? sps_x1 - d : sps_x0 + d;   // d from the outlet end
-module sps_wire(d, s, x, upper, c) wire(concat(
+function sps_route(d, s, x, upper, xr = undef) = concat(
     [[lead_x(d), y_mid, z_sps1 + 3.5], [lead_x(d), y_mid, z_sps1 + cable_zone_h - 3],
-     [s[0], s[1], wch_z0 - 1.5]], to_pin(s, x, upper)), c);
+     [s[0], s[1], wch_z0 - 1.5]], to_pin(s, x, upper, is_undef(xr) ? x : xr));
+// pin 1 to 5, read 8.6 down to 3.0 mm from the outlet end (photo 1)
+sps_routes = [
+    sps_route(8.6, slot(-1.1, 3.1), pin_x(1), false),                              // black  VDD -> 5V
+    sps_route(7.2, slot(-1.1, 4.3), pin_x(1), true),                               // red    SDA -> GPIO5
+    sps_route(5.8, slot( 1.1, 4.3), pin_x(2), true, pin_x(2) - sgn * pin_pitch / 2), // white  SCL -> GPIO6
+    sps_route(4.4, slot( 0.0, 4.3), pin_x(2), false),                              // yellow SEL -> GND
+    sps_route(3.0, slot( 0.0, 3.1), pin_x(2), false)];                             // orange GND -> GND
+sps_colours = [[0.10, 0.10, 0.10], [0.85, 0.10, 0.10], [0.95, 0.95, 0.95], [0.95, 0.80, 0.10], [0.95, 0.45, 0.10]];
 
-// the SGP41's four: soldered from its sensor side, bent flat towards the channel, in front of the lead's
-// column, then back down to the plate and up the channel
+// The SGP41's four: soldered from its sensor side, out of their pads straight towards the cover, over on
+// bend_r, then across in front of everything to the board's pins and straight back into them. Its pins
+// run SDA, SCL, GND, VIN down its edge - the reverse of the board's order - so two pairs must cross. They
+// lie in two layers a wire apart: the inner one for SCL and VIN, the outer for SDA and GND. They stay
+// below the board until they are past its middle, so nothing runs in front of the antenna half.
 gy_pin_x = conn_hi ? gx1 - pocket_fit - 1.6 : gx0 + pocket_fit + 1.6;
 function gy_pin_z(off) = conn_hi ? gz0 + pocket_fit + off : gz1 - pocket_fit - off;   // off from the edge by SDA
-module gy_wire(off, s, x, upper, c) wire(concat(
-    [[gy_pin_x, gy_front, gy_pin_z(off)], [gy_pin_x, gy_front + 1.5, gy_pin_z(off)],
-     [(conn_hi ? lead_x1 + 1.5 : lead_x0 - 1.5), gy_front + 1.5, gy_pin_z(off)],
-     [s[0], s[1], wch_z0 - 1.5]], to_pin(s, x, upper)), c);
+lay_gap = wd + 0.1;                                          // the two layers, centre to centre
+lay     = [gy_front + wire_stub + bend_r, gy_front + wire_stub + bend_r + lay_gap];   // inner, outer
+lo_dx = 1.5; lo_dz = 3.0;   // GND and VIN: along under the board, then up to its lower edge, just past their pin
+up_dx = 1.5; up_dz = 1.3;   // SDA and SCL: under the board to just short of its middle, then up its USB-C half
+up_w  = [sm_usb_x + sgn * (sm_l / 2 - up_dx), z_board0 - up_dz];
+function lo_w(off, x) = [x + sgn * lo_dx, gy_pin_z(off) + lo_dz];
+function gy_route(off, x, z, w, layer) = let(zs = gy_pin_z(off), y = lay[layer])
+    [[gy_pin_x, gy_front, zs], [gy_pin_x, y, zs], [w[0], y, w[1]], [x, y, z], [x, pad_y, z]];
+gy_routes = [
+    gy_route(2.2,  pin_x(1), z_hi, up_w,                 1),   // SDA -> GPIO5
+    gy_route(4.55, pin_x(2), z_hi, up_w,                 0),   // SCL -> GPIO6
+    gy_route(6.9,  pin_x(2), z_lo, lo_w(6.9,  pin_x(2)), 1),   // GND -> GND
+    gy_route(9.2,  pin_x(3), z_lo, lo_w(9.2,  pin_x(3)), 0)];  // VIN -> 3V3
+gy_colours = [[0.20, 0.35, 0.85], [0.20, 0.65, 0.30], [0.45, 0.30, 0.20], [0.60, 0.15, 0.55]];
+
+// The checks, on the routes as drawn. Against the SPS30's wires too - except, for two wires that end on
+// the same pad, within pad_join of it, where they are meant to meet.
+pad_join = 5.0;
+gy_dense  = [for (r = gy_routes) dense(rounded(r))];
+sps_dense = [for (r = sps_routes) dense(rounded(r))];
+function last(v) = v[len(v) - 1];
+function away(d, pad, shared) = shared ? [for (p = d) if (norm(p - pad) > pad_join) p] : d;
+function cross_gap(i, j) = let(pad = last(gy_routes[i]), shared = norm(last(sps_routes[j]) - pad) < 0.01)
+    min_gap(away(gy_dense[i], pad, shared), away(sps_dense[j], pad, shared));
+function in_ant(p) = sgn * (p[0] - sm_usb_x) + wd / 2 > sm_l / 2 && p[2] + wd / 2 > z_board0 && p[2] - wd / 2 < z_board1;
+gy_min_r   = min([for (r = gy_routes) min_radius(r)]);
+gy_min_gap = min(concat([for (i = [0 : 2]) for (j = [i + 1 : 3]) min_gap(gy_dense[i], gy_dense[j])],
+                        [for (i = [0 : 3]) for (j = [0 : 4]) cross_gap(i, j)]));
+gy_ant     = [for (d = gy_dense) for (p = d) if (in_ant(p)) p];
+gy_room    = y_in1 - (lay[1] + (gy_floor + gy_front_max - gy_front) + wd / 2);   // at the thickest board
+module check_routes() {
+    // Mirroring the layout turns both boards end for end: the SGP41's pins run the other way up, and the
+    // SuperMini's power pins move to its upper edge. These routes are for the layout as built.
+    assert(!conn_hi, "the wire routes are laid out for outlet_at_left = false, the sensor as built");
+    assert(gy_min_r >= bend_r - 0.01,
+           str("an SGP41 wire bends on ", gy_min_r, " mm, tighter than bend_r ", bend_r, " - a segment is too short for its bend"));
+    assert(gy_room >= -1e-6,
+           str("the SGP41's outer wire layer reaches ", -gy_room, " mm into the cover at the thickest board - wire_room is too small"));
+    assert(gy_min_gap >= wd,
+           str("an SGP41 wire comes within ", gy_min_gap, " mm of another wire, closer than a wire's width"));
+    assert(len(gy_ant) == 0, str("an SGP41 wire runs in front of the board's antenna half, at ", gy_ant[0]));
+    echo(str("SGP41 wires: tightest bend ", gy_min_r, " mm, nearest other wire ", gy_min_gap, " mm, ", gy_room,
+             " mm clear of the cover at the thickest board"));
+}
 
 module wires() {
-    // the SPS30's lead, pin 1 to 5, read 8.6 down to 3.0 mm from the outlet end (photo 1)
-    sps_wire(8.6, slot(-1.1, 3.1), pin_x(1), false, [0.10, 0.10, 0.10]);   // black  VDD -> 5V
-    sps_wire(7.2, slot(-1.1, 4.3), pin_x(1), true,  [0.85, 0.10, 0.10]);   // red    SDA -> GPIO5
-    sps_wire(5.8, slot( 1.1, 4.3), pin_x(2), true,  [0.95, 0.95, 0.95]);   // white  SCL -> GPIO6
-    sps_wire(4.4, slot( 0.0, 4.3), pin_x(2), false, [0.95, 0.80, 0.10]);   // yellow SEL -> GND
-    sps_wire(3.0, slot( 0.0, 3.1), pin_x(2), false, [0.95, 0.45, 0.10]);   // orange GND -> GND
+    for (i = [0 : 4]) wire(sps_routes[i], sps_colours[i]);   // the SPS30's lead
     // the SGP41's four, top to bottom along its pin edge: SDA, SCL, GND, VIN
-    gy_wire(2.2,  slot(-1.1, 5.5), pin_x(1), true,  [0.20, 0.35, 0.85]);   // SDA -> GPIO5
-    gy_wire(4.55, slot( 1.1, 5.5), pin_x(2), true,  [0.20, 0.65, 0.30]);   // SCL -> GPIO6
-    gy_wire(6.9,  slot( 0.0, 5.5), pin_x(2), false, [0.45, 0.30, 0.20]);   // GND -> GND
-    gy_wire(9.2,  slot( 1.1, 3.1), pin_x(3), false, [0.60, 0.15, 0.55]);   // VIN -> 3V3
+    for (i = [0 : 3]) wire(gy_routes[i], gy_colours[i]);
 }
 
 // ------------------------------------------------------------------ the views
 if (view == "wiring") {
+    check_routes();
     color([0.80, 0.72, 0.58]) back_plate();
     sps30(); supermini(); sgp41(); m25();
     wires();
@@ -133,8 +209,9 @@ if (view == "wiring") {
                  "SGP41 SDA (blue)    ->  GPIO5",
                  "SGP41 SCL (green)   ->  GPIO6",
                  "",
-                 "all nine up the cable channel;",
-                 "GPIO5/6 then across the USB-C end"];
+                 "the SPS30's five up the cable channel,",
+                 "the SGP41's four straight across in front;",
+                 "GPIO5/6 then over the USB-C end"];
         for (i = [0 : len(lines) - 1]) translate([0, -i * 5.2]) text(lines[i], size = 3.0);
     }
 }
