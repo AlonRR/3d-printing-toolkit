@@ -175,9 +175,10 @@ In this order, all before the cover:
 1. **Slide the SuperMini in** from its USB-C side, antenna end first, under the rails' lips until it meets
    the stops.
 2. **Set the SPS30 in from the front**, between its channel walls and onto its ledges.
-3. **Screw the GY-SGP41 down** with the M2.5 × 8, through its mounting hole into the standoff.
-4. **Wire it** — next picture. The SPS30's five wires press into the cable channel; the SGP41's four go
-   straight across in front.
+3. **Solder the SGP41's four wires first, then screw it down** with the M2.5 × 8, through its mounting
+   hole into the standoff. Its wires come out of its back, which cannot be reached once it is down.
+4. **Wire it** — next picture. The SPS30's five wires press into the cable channel; the SGP41's four run
+   from behind it across to the board.
 5. **Put the cover on** with the four M3 × 14 self-tapping screws. Its partition rib holds the SPS30, its
    thinned wall closes behind the SuperMini.
 
@@ -186,8 +187,8 @@ In this order, all before the cover:
 ![the wiring, closer](assembly-wiring-detail.png)
 
 The routes are illustrative — a wire bends where it likes — but each ends on the pin the wiring table
-gives it. The SPS30's five run up the cable channel. The SGP41's four go straight to the board in front of
-everything else, with no bend tighter than 2 mm; GPIO5 and GPIO6 then cross the front of the board's USB-C
+gives it. The SPS30's five run up the cable channel. The SGP41's four come out of its back and run across
+to the board, with no bend tighter than 2 mm; GPIO5 and GPIO6 then cross the front of the board's USB-C
 end to its upper edge. The SPS30's colours are the meter-checked ones; the SGP41's are stand-ins for
 whatever hookup wire is used.
 
@@ -214,10 +215,12 @@ Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so th
    the socket in its snug opening holds the other end. No tape.
 7. **Stops** — over the two corners of the board's antenna end. They take the push of plugging the USB-C
    cable in; the middle stays open for the antenna loop.
-8. **Pedestal** — lifts the SGP41 forward, so its sensor sits 4–5 mm behind its vents instead of 16 mm.
+8. **Pedestal** — lifts the SGP41 forward, so its sensor sits 2–3 mm behind its vents instead of 16 mm.
+   It stands under the module's far half only: behind the pin half there is nothing down to the plate,
+   because the wires come out of the module's back there.
 9. **Ledge, standoff and rim** — the SGP41 rests on a strip along its far end, kept 0.5 mm short of the
    parts on its underside, and on a round standoff under its mounting hole. The rim locates it on three
-   sides and is open at the pin end, where the wires leave.
+   sides along the pedestal, and is open towards the pins.
 10. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole into the standoff.
 11. **Cable channel** — 6 mm long (`wire_ch_l`), upright directly under the board's three power pins. The wires from both
     sensors press in from the front past a 45-degree lip on each wall, run up it, and leave its top end
@@ -294,11 +297,12 @@ towards the board's pin end, so its four wires head straight there.
 
 **It rests on two bare patches of its underside, so its parts never bear load.** One is the strip along
 its far end: the nearest part is 3.31 mm in (`gy_bare`, measured), and the ledge stops 0.5 mm short of it.
-The other is round the mounting hole, where a 4 mm standoff carries it. Its pin end overhangs. The ledge is tall enough that the parts on the thinnest plausible board clear the floor
+The other is round the mounting hole, where a 4 mm standoff carries it. Its pin half overhangs, with
+nothing behind it down to the plate: the pedestal stops a rim's width past the standoff. The ledge is tall enough that the parts on the thinnest plausible board clear the floor
 by `gap` (1 mm): the floor prints as a solid skin over infill and can come out a few tenths uneven.
 Because the board touches nothing but the ledge and a rim on three sides, its thickness does not matter:
 anywhere from `gy_pcb_min` to `gy_pcb_max`, the rim catches its edge and the room in front is kept. The
-rim is open at the pin end, where the wires leave.
+rim is open towards the pins.
 
 **An M2.5 × 8 screw holds it down, through its mounting hole into a blind 7.6 mm pilot in the standoff.**
 The hole is by the long edge away from the sensor, and the screw clamps only the bare patch round it. That
@@ -309,11 +313,15 @@ so the M2.5 screw passes it with room to spare, and the rim, not the screw, loca
 of the pocket the hole sits by comes from photo 1, so the pilot is only as right as that reading; seat the
 module in the printed pocket and look before driving the screw. The screw cuts its own thread in the pilot
 (`gy_pilot_d`, an untested fit). An M2 screw is not the fallback for a smaller hole: its pilot would be
-under the 2 mm minimum. The room in front of the board is set by its wires: `wire_room`, 5 mm at the
-thickest board, more than the screw's 2.5 mm head needs. Each wire leaves its pad straight for 1 mm and
-bends over on 2 mm, and where two cross one lies over the other — 4.6 mm in all. It was 2.5 mm until
-2 Oct 2026, which left room for a bend but not a gentle one; the sensor sat 2.1–2.9 mm behind its vents
-then, and sits 4.3–5.1 mm behind them now.
+under the 2 mm minimum. The room in front of the board is the screw's head, 2.5 mm tall, plus
+`part_fit` to the cover.
+
+**Its wires come out of its back.** Each is soldered so it leaves its pad from the back of the board,
+straight for 1 mm, then bends over on 2 mm; where two cross, one lies behind the other — 4.6 mm in all.
+`wire_room`, 5 mm, is the room kept behind the pin half for that, and the collision check holds the
+pedestal out of it. The wires came out of the front until 2 Oct 2026, first with 2.5 mm to bend in —
+room for a bend, but not a gentle one — and then with 5 mm, which pushed the sensor to 4.3–5.1 mm behind
+its vents. Out of the back they cost the sensor nothing: it is 2.1–2.9 mm behind them again.
 
 The pedestal clears the cover's baffle over the sensor; the box grew 0.95 mm taller for that, to 88.9 mm.
 It also stands under the board's antenna end, 6.5 mm below the loop. That was the one place it fits
@@ -357,12 +365,15 @@ Why the SGP41's VIN must be 3V3 is in the same file.
   GPIO5 and GPIO6 are on its upper edge, so their wires cross the board's front **over its USB-C end**,
   about 8 mm out. GPIO6's pad is straight above GND's, so its wire rises half a pin aside, between the
   5V and GND pads: GND's own pad stays open to the SGP41's wire, which comes in from the front.
-- **The SGP41's four wires do not use the channel.** They leave its pads from the sensor side, straight
-  towards the cover, bend over, and run straight across to the board in front of everything else: along
-  under the board until they are past its middle, then up to their pins and straight back into them.
+- **The SGP41's four wires do not use the channel.** Solder them so they come out of the module's back,
+  before it is screwed down. They leave straight towards the plate, bend over at least 1 mm from the
+  board, and run across to the SuperMini about 13–15 mm out from the plate: in front of the SPS30's lead,
+  along under the board until they are past its middle, then up to their pins and straight into them.
   The module's pins run SDA, SCL, GND, VIN down its edge, the reverse of the board's order, so two pairs
-  cross; one wire lies over the other there. Solder them to the module first, bend each over at least
-  1 mm out from its joint, and cut it to length at its pad.
+  cross; one wire lies behind the other there. Cut each to length at its pad.
+- **Over the SPS30's lead,** the SGP41's wires pass through the column kept for that lead — kept clear
+  of printed parts, not of wires. In the drawing they pass 5 mm in front of the lead's own wires, and the
+  wiring view checks that no two wires come within a wire's width of each other.
 - **Never:** across the board's antenna half, in front of the antenna wire, or anywhere in the window or
   the air gap in front of the SPS30.
 
@@ -423,14 +434,15 @@ Four more checks, which `scad-check.sh` does not run:
 - `-D 'part="check_parts"'` intersects the two parts. The result must have **zero volume** — they meet at
   the plate's face and the boss tops, and nowhere else. Positive controls: `part_fit = -0.6`, with the
   cable channel's walls held where they are (`wch_x0 = 3.2`, `wch_x1 = 9.4` — otherwise the negative fit
-  trips the channel's assert first), measured 351.8 mm³, and `gz0 = 44.5` (the SGP41's pedestal lowered
-  into the cover's baffle) 7.2 mm³, so the check does see a real overlap.
+  trips the channel's assert first), measured 359.8 mm³, and `gz0 = 44.5` (the SGP41's pedestal lowered
+  into the cover's baffle) 10.4 mm³, so the check does see a real overlap.
 - `-D 'part="check_components"'` intersects both parts with the sensor, the boards, the antenna wire
   and loop, the USB-C shell, the body of the largest compliant plug — seated with the board pushed
   against its stops — the column the SPS30's lead rises through, the SGP41 at every board thickness
-  within the bounds, and its screw's head. It must be **empty**. Positive controls: `sm_pocket_h = 17` (a
-  pocket narrower than the board) measured 23.5 mm³, `gx0 = 15` (the pedestal moved into the lead's
-  column) 562.3 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
+  within the bounds, the room behind its pin half where its wires leave (`wire_room` deep), and its
+  screw's head. It must be **empty**. Positive controls: `sm_pocket_h = 17` (a pocket narrower than the
+  board) measured 23.5 mm³, `gx0 = 12` (the pedestal moved into the lead's column) 187.1 mm³,
+  `gy_ped_x0 = 22.6` (the pedestal as long as the module again, under its pins) 171.5 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
   `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_cx = 17` with the walls'
   extent left as set (the cable channel moved into the lead's column, past its assert) 16.2 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
   head into the front) 12.5 mm³, and `sm_lip_l = 2.5` (the rails' lips reaching onto the SuperMini's
@@ -449,12 +461,16 @@ Run both with `outlet_at_left` set each way, too (`-D outlet_at_left=true`). The
 check run one way only has passed a mirrored mistake before.
 
 `assembly-views.scad` checks the SGP41's wire routes whenever it draws the wiring view: no bend
-tighter than 2 mm, the outer wire clear of the cover at the thickest board, no wire within a wire's width
-of another (except two that meet at the same pad, within 5 mm of it), and none in front of the board's
-antenna half. OpenSCAD still exits 0 when one fails, so read the output for `ERROR: Assertion`. Positive
-controls, each failing its own check: `wire_room = 4.0` (0.6 mm into the cover), `lay_gap = 0` (both
-layers in one, 0.04 mm apart where they cross), `up_dx = -2` (GPIO5 and GPIO6 rising in front of the
-antenna half), `wire_stub = -1.5` (a 0.5 mm bend), and the SPS30's white wire rising straight in front of
-the GND pad, as it did before 2 Oct 2026 (0.04 mm). The routes are laid out for the sensor as built: with
-`outlet_at_left = true` both boards turn end for end, and the wiring view stops with an assert rather
+tighter than 2 mm, the routes within the room `wire_room` keeps behind the board, no wire within a wire's
+width of another (except two that meet at the same pad, within 5 mm of it), and none in front of the
+board's antenna half. OpenSCAD still exits 0 when one fails, so read the output for `ERROR: Assertion`.
+Positive controls, each failing its own check: `wire_room = 4.0` (0.6 mm past the room), `lay_gap = 0`
+(both layers in one, 0.04 mm apart where they cross), `up_dx = -2` (GPIO5 and GPIO6 rising in front of
+the antenna half), `wire_stub = -1.5` (a 0.5 mm bend), and the SPS30's white wire rising straight in front
+of the GND pad, as it did before 2 Oct 2026 (0.06 mm). The routes are laid out for the sensor as built:
+with `outlet_at_left = true` both boards turn end for end, and the wiring view stops with an assert rather
 than draw routes that do not fit.
+
+`-D 'view="check_wires"'`, exported to STL, intersects the back plate with the SGP41's wires. It must be
+**empty**, so OpenSCAD writes no file. Positive control: `wire_stub = 9` (both layers moved back to about
+6 mm from the plate, into the cable channel's walls) 2.4 mm³.

@@ -113,7 +113,8 @@ lead_x1 = outlet_at_left ? sps_x1 - conn_from : sps_x0 + conn_to;
 // Its pins face the board's pin end, so its four wires head straight there; the sensor is at the far end.
 // It stands on a pedestal that brings its sensor close behind its vents: on the plate it would sit 16 mm
 // back from them and measure the box's own air. Only the bare strip at the far end of its underside rests
-// on a ledge, so its parts carry no load and its board's thickness does not matter.
+// on a ledge, so its parts carry no load and its board's thickness does not matter. Its wires come out of
+// its back, so the pedestal carries only its far half: behind the pin half there is nothing to the plate.
 gx0 = conn_hi ? lead_x0 - gap - gy_pocket_l : lead_x1 + gap;
 gx1 = gx0 + gy_pocket_l;
 gz0 = z_sps1 + gy_z_base + rim_t;
@@ -127,15 +128,17 @@ gy_ledge_h   = gy_back - gy_pcb_min + gap;
 gy_rim_h     = gy_ledge_h + gy_pcb_min / 2;          // reaches halfway up the thinnest board's edge
 gy_front_max = gy_ledge_h + gy_pcb_max;              // the board's front face, above the floor, at most
 gy_sensor_h  = gy_t - gy_back;
-gy_floor     = y_in1 - max(wire_room, gy_head_h + part_fit) - gy_front_max;   // the pedestal's top
+gy_floor     = y_in1 - (gy_head_h + part_fit) - gy_front_max;   // the pedestal's top: room in front for the screw's head
 // The screw goes through the module's mounting hole into a blind pilot in the ledge. The hole is in the
 // bare strip, by the long edge away from the sensor - and which edge of the pocket that is follows from
 // which way the pins face (photo 1).
 gy_hole_x      = conn_hi ? gx0 + pocket_fit + gy_hole_far : gx1 - pocket_fit - gy_hole_far;
 gy_hole_z      = conn_hi ? gz1 - pocket_fit - gy_hole_side : gz0 + pocket_fit + gy_hole_side;
 gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // below the ledge's top
-gy_ped_x0    = conn_hi ? gx0 - rim_t : gx0;
-gy_ped_x1    = conn_hi ? gx1 : gx1 + rim_t;
+// the pedestal: from the far rim to a rim's width past the standoff, and no further towards the pins
+gy_ped_x0    = conn_hi ? gx0 - rim_t : gy_hole_x - gy_standoff_d / 2 - rim_t;
+gy_ped_x1    = conn_hi ? gy_hole_x + gy_standoff_d / 2 + rim_t : gx1 + rim_t;
+gy_pin_half  = conn_hi ? [gx1 - gy_pocket_l / 2, gx1] : [gx0, gx0 + gy_pocket_l / 2];   // the pocket's pin half
 gy_strip     = gy_bare - gap / 2;    // how far the ledge reaches under the board: short of its parts
 gy_ledge_x0  = conn_hi ? gx0 : gx1 - pocket_fit - gy_strip;
 gy_ledge_x1  = conn_hi ? gx0 + pocket_fit + gy_strip : gx1;
@@ -208,7 +211,7 @@ assert(wire_perpendicular || (conn_hi ? sm_x0 - ant_h - gap >= wall : sm_x1 + an
        "an antenna wire running past the board's end does not fit inside the box");
 
 assert(gy_floor > back_t + gap,
-       str("the SGP41's pedestal has no height (its top at ", gy_floor, ") - wire_room or the bounds are too large"));
+       str("the SGP41's pedestal has no height (its top at ", gy_floor, ") - the bounds are too large"));
 assert(gy_ped_x0 >= ch_x0 && gy_ped_x1 <= ch_x1,
        "the SGP41's pedestal reaches past the cover's baffle, which it is raised to clear");
 assert(gy_ped_x0 >= wall + gap && gy_ped_x1 <= W - wall - gap,
@@ -216,7 +219,7 @@ assert(gy_ped_x0 >= wall + gap && gy_ped_x1 <= W - wall - gap,
 assert(gy_bare + pocket_fit < gy_pocket_l / 2,
        "the SGP41's ledge would reach the parts on its underside - check gy_bare");
 assert(gy_rim_h < gy_ledge_h + gy_pcb_min,
-       "the SGP41's rim would stand above its board's face, under the screw's head and the wires");
+       "the SGP41's rim would stand above its board's face, under the screw's head");
 assert(gy_hole_d >= gy_screw_d + 0.1,
        str("the SGP41's mounting hole (", gy_hole_d, " mm) is too small for an M", gy_screw_d,
            " screw - use a smaller one and set gy_screw_d, gy_head_d and gy_head_h"));
@@ -225,6 +228,8 @@ assert(gy_pilot_d / 2 + 2 * fdm_extrusion_w <= gy_standoff_d / 2,
 assert(gy_standoff_d > gy_hole_d,
        "the SGP41's standoff is no wider than its mounting hole - the board would have nothing to rest on");
 assert(gy_strip > 0, "the SGP41's ledge has no depth - check gy_bare");
+assert(gy_ledge_x0 >= gy_ped_x0 && gy_ledge_x1 <= gy_ped_x1,
+       "the SGP41's ledge runs off the end of its pedestal - check gy_bare and gy_standoff_d");
 assert(gy_pilot_depth + gap <= gy_ledge_h + gy_floor - back_t,
        "the SGP41's screw would run out of pedestal");
 assert(loop_z0 - (gz1 + rim_t) >= gap,
@@ -318,8 +323,8 @@ module back_plate() {
             for (zz = [z_board0, z_board1 - rim_t - stop_reach])
                 translate([stop_x0, back_t - eps, zz]) cube([rim_t, rim_hgt + eps, rim_t + stop_reach]);
 
-            // the SGP41's pedestal, its rim on three sides - open at the pin end, where the wires leave -
-            // and the ledge its bare strip rests on
+            // the SGP41's pedestal, under its far half only, with its rim on three sides - open towards
+            // the pins, whose wires leave the board's back - and the ledge its bare strip rests on
             translate([gy_ped_x0, back_t - eps, gz0 - rim_t])
                 cube([gy_ped_x1 - gy_ped_x0, gy_floor - back_t + eps, gy_pocket_w + 2 * rim_t]);
             for (zz = [gz0 - rim_t, gz1])
@@ -463,6 +468,9 @@ module components(shrink = 0) {
             cyl_y(gy_hole_x, gy_hole_z, gy_hole_bare_d / 2 - s, gy_floor, gy_floor + gy_front_max + gy_sensor_h);
         }
     }
+    // the room behind the pin half, wire_room deep, where the wires leave the board's back and bend over
+    color("purple") translate([gy_pin_half[0] + s, gy_floor + gy_ledge_h - wire_room + s, gz0 + s])
+        cube([gy_pin_half[1] - gy_pin_half[0] - 2 * s, wire_room - 2 * s, gy_pocket_w - 2 * s]);
     // the screw's head, on the thickest board - the nearest it comes to the cover
     color("silver") cyl_y(gy_hole_x, gy_hole_z, gy_head_d / 2 - s, gy_floor + gy_front_max + s,
                           gy_floor + gy_front_max + gy_head_h - s);

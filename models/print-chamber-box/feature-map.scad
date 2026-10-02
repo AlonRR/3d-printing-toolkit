@@ -60,7 +60,7 @@ if (view == "back") {
     marker(5,  [x_div, y_in1 - part_fit + f, -divider_proud - 3.5]);            // divider
     marker(6,  [conn_hi ? W - 17 : 17, back_t + rim_hgt + f, z_board1 + 3]);    // board rims
     marker(7,  [stop_x0 + rim_t / 2 + (conn_hi ? -3 : 3), back_t + rim_hgt + f, z_board1 + 3]);  // stops
-    marker(8,  [conn_hi ? gx1 - 3 : gx0 + 3, gy_floor + f, gz0 - rim_t - 3.5]);  // pedestal
+    marker(8,  [conn_hi ? gy_ped_x1 - 2.5 : gy_ped_x0 + 2.5, gy_floor + f, gz0 - rim_t - 3.5]);  // pedestal
     marker(9,  [(gy_ledge_x0 + gy_ledge_x1) / 2, gy_floor + gy_ledge_h + f, gz1 - 2]);   // ledge, standoff, rim
     marker(10, [gy_hole_x + (conn_hi ? 4.5 : -4.5), gy_floor + gy_ledge_h + f, gy_hole_z]);   // pilot
     marker(11, [conn_hi ? wch_x0 - 3.2 : wch_x1 + 3.2, wch_y1 + f, (wch_z0 + wch_z1) / 2]);   // cable channel
@@ -74,7 +74,7 @@ if (view == "back") {
             " 5  divider - splits inlet from outlet air",
             " 6  rails - the SuperMini slides in under their lips",
             " 7  stops - take the push of plugging in",
-            " 8  pedestal - lifts the SGP41 to its vents",
+            " 8  pedestal - lifts the SGP41's far half to its vents",
             " 9  ledge, standoff and rim for the SGP41",
             "10  pilot for the SGP41's M2.5 screw",
             "11  cable channel - up to the power pins",
