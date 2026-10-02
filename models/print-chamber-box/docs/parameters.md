@@ -1,0 +1,82 @@
+# Parameters
+
+Every dimension has a name in [`print-chamber-box.params.scad`](../print-chamber-box.params.scad), so a
+value goes in against its name rather than a description. This page says where each came from.
+
+If a part changes, set the new value there. A value not yet measured goes in the `unmeasured` list,
+and the model warns until it is.
+
+## Sourced
+
+From the **SPS30 datasheet v2.0**, Figure 7:
+
+| Name | Value | Note |
+|---|---|---|
+| `sps_w`, `sps_h` | **40.6 ± 0.3** | without the shipping foil, which can stay on |
+| `sps_w_nubs` | **41.2** | including the small plastic nubs on the sides |
+| `sps_t` | **12.2 ± 0.3** | |
+| `sps_mass` | **26.3 g** | |
+
+From the **USB Type-C specification**, rev 1.2, so that no cable needs measuring:
+
+| Name | Value | Note |
+|---|---|---|
+| `usb_shell_w` | **8.94** | the receptacle's inside opening is 8.34 × 2.56; the measured 3.16 height against 2.56 gives a 0.30 mm shell wall, so 8.34 + 2 × 0.30 |
+| `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the tabs and the mounting surface |
+
+From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.5**, `gy_head_h` **2.5**.
+
+## Measured
+
+With calipers on the parts in hand, 2 Oct 2026. Three are photo readings, marked; check them on the
+parts before printing the back plate.
+
+| Name | Value | What |
+|---|---|---|
+| `divider_from_inlet_end` | **17.7** | from the SPS30's inlet end to the middle of the blank gap before the outlet grille. Scaled off a straight-on photo against the sensor's 40.6 mm width; three features land within 0.4 mm of the datasheet, so the scale holds. The gap runs from `sps_inlet_end` 15.2 to `sps_outlet_from` 20.2, and an assert keeps the divider inside it |
+| `sm_l`, `sm_w` | **22.8 × 18.03** | the SuperMini's PCB, not counting the USB-C shell |
+| `sm_pcb_t`, `sm_t` | **0.85**, **4.05** | the bare PCB; the PCB with its tallest part, the USB-C shell, without the antenna |
+| `usb_shell_h`, `usb_overhang` | **3.16**, **1.5** | the USB-C shell's height, and how far it overhangs the PCB's edge |
+| `ant_h`, `ant_over` | **18.8**, **4.81** | the antenna wire's tip above the PCB's underside; how far its loop reaches past the PCB's antenna end, in the board's plane |
+| `ant_loop_free` | **4.3** | how much of the antenna end the loop leaves free beside it — 4.3 mm one side, 5.45 the other; the smaller is used both sides |
+| `sm_edge` | **1.0** (photo) | the strip along each long edge of the SuperMini's component side that carries only its castellated pads. The rails' lips reach 0.6 mm over it, no further |
+| `pin_mid` | **5.1** (photo) | the middle of the SuperMini's three power pins from its USB-C end; the photo reads 2.6, 5.1 and 7.7. The cable channel stands under it |
+| `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
+| `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
+| `gy_l`, `gy_w`, `gy_t` | **13.14 × 10.60 × 3.24** | the GY-SGP41 with its parts. The sensor is on one face and the rest of its electronics on the other |
+| `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
+| `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside |
+| `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: the nearest parts beside and above the hole are about 2.6 mm from its centre |
+| `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
+| `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end, and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
+
+## Bounds, not measurements
+
+The design works anywhere inside these, so none needs measuring:
+
+| Name | Value | Why |
+|---|---|---|
+| `gy_pcb_min`, `gy_pcb_max` | **0.8**, **1.6** | the GY-SGP41's bare board thickness. GY modules are usually 1.0–1.6 mm |
+
+## Fits
+
+Clearances that depend on the printer and the filament, found with [the clearance test](clearance-test.md):
+
+| Name | Value | Status |
+|---|---|---|
+| `sps_fit` | **0.2** | tested 2 Oct 2026 — clearance per side round the SPS30 |
+| `pocket_fit` | **0.2** | tested 2 Oct 2026 — clearance per side round both boards |
+| `part_fit` | 0.3 | untested — between a back-plate feature and the cover |
+| `pilot_d` | 2.5 | untested — pilot for the cover's M3 × 14 self-tapping screws |
+| `gy_pilot_d` | 2.1 | untested — pilot for the SGP41's M2.5 screw |
+| `screw_d` | 3.4 | untested — clearance hole for the M3 screws in the cover |
+| `tab_hole_d` | 4.0 | untested — mounting holes in the tabs, for wood screws up to 3.5 mm |
+
+The untested ones are listed in `untested_fits`, and `scad-check.sh` exits 2 until it is empty.
+
+## Not in the params file
+
+The wiring drawing ([`assembly-views.scad`](../assembly-views.scad)) draws the SGP41's wires as the
+lab's **22 AWG solid hookup wire, UL1007, 1.6 mm** over its insulation — that type's typical figure,
+not a measurement. The room the model keeps for them, `wire_room`, follows from it. Worth a check with
+calipers.

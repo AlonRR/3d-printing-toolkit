@@ -4,7 +4,7 @@
 // (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
 
 /*
-Assembly views of the print-chamber box, for README.md.
+Assembly views of the print-chamber box, for docs/assembly.md and docs/wiring.md.
 
   view = "exploded"   every part, moved apart along the way it goes in: the SuperMini out to its USB-C side
                       (it slides in), the sensors, the screws and the cover out from the wall.
@@ -13,18 +13,18 @@ Assembly views of the print-chamber box, for README.md.
                       empty, so OpenSCAD writes no file.
 
 It includes the model, so every part sits where the model puts it. The wire routes are illustrative - a
-wire bends where it likes - but each one ends on the pin the README's wiring table gives it and keeps out
+wire bends where it likes - but each one ends on the pin docs/wiring.md gives it and keeps out
 of the antenna and the air paths. The SPS30's five pass up the cable channel. The SGP41's four come out of
 its back and run across to the board's pins, and the asserts below hold their routes to what wire_room
 promises: no bend tighter than bend_r, within the room behind the board, clear of each other, of the
 SPS30's wires and of the board's antenna half. The SPS30 lead's colours are the meter-checked ones; the
 SGP41's are stand-in colours for the lab's 22 AWG solid hookup wire.
 
-    openscad -o assembly-exploded.png -D 'view="exploded"' --imgsize=1800,1500 --projection=o --viewall \
+    openscad -o docs/assembly-exploded.png -D 'view="exploded"' --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,80,44,68,0,252,560 --colorscheme=Tomorrow assembly-views.scad
-    openscad -o assembly-wiring.png   -D 'view="wiring"'   --imgsize=1800,1500 --projection=o --viewall \
+    openscad -o docs/assembly-wiring.png   -D 'view="wiring"'   --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,0,44,78,0,195,260 --colorscheme=Tomorrow assembly-views.scad
-    openscad -o assembly-wiring-detail.png -D 'view="wiring"' --imgsize=1800,1500 --projection=o \
+    openscad -o docs/assembly-wiring-detail.png -D 'view="wiring"' --imgsize=1800,1500 --projection=o \
       --camera=16,6,58,72,0,200,95 --colorscheme=Tomorrow assembly-views.scad
 
 The wiring view checks the SGP41's routes as it draws them, and an ERROR: Assertion line in the output
@@ -128,11 +128,13 @@ function lead_x(d) = conn_hi ? sps_x1 - d : sps_x0 + d;   // d from the outlet e
 function sps_route(d, s, x, upper, xr = undef) = concat(
     [[lead_x(d), y_mid, z_sps1 + 3.5], [lead_x(d), y_mid, z_sps1 + cable_zone_h - 3],
      [s[0], s[1], wch_z0 - 1.5]], to_pin(s, x, upper, is_undef(xr) ? x : xr));
+// GPIO6's riser stands this far aside of the GND pad, so the SGP41's thicker GND wire clears it
+riser_aside = (gy_wd + wd) / 2 + 0.1;
 // pin 1 to 5, read 8.6 down to 3.0 mm from the outlet end (photo 1)
 sps_routes = [
     sps_route(8.6, slot(-1.1, 3.1), pin_x(1), false),                              // black  VDD -> 5V
     sps_route(7.2, slot( 1.1, 4.3), pin_x(1), true),                               // red    SDA -> GPIO5
-    sps_route(5.8, slot(-1.1, 4.3), pin_x(2), true, pin_x(2) - sgn * ((gy_wd + wd) / 2 + 0.1)), // white SCL -> GPIO6
+    sps_route(5.8, slot(-1.1, 4.3), pin_x(2), true, pin_x(2) - sgn * riser_aside),     // white  SCL -> GPIO6
     sps_route(4.4, slot( 0.0, 4.3), pin_x(2), false),                              // yellow SEL -> GND
     sps_route(3.0, slot( 0.0, 3.1), pin_x(2), false)];                             // orange GND -> GND
 sps_colours = [[0.10, 0.10, 0.10], [0.85, 0.10, 0.10], [0.95, 0.95, 0.95], [0.95, 0.80, 0.10], [0.95, 0.45, 0.10]];

@@ -4,15 +4,15 @@
 // (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
 
 /*
-Feature map for the print-chamber box: each printed part with its features numbered. README.md, "What
-each feature is for", says what every number does.
+Feature map for the print-chamber box: each printed part with its features numbered. docs/features.md
+says what every number does.
 
 It INCLUDES the model rather than restating it, so every marker sits wherever the model currently puts
 that feature. Change a parameter and re-render, and the map follows.
 
-    openscad -o feature-map-back.png  -D 'view="back"'  --imgsize=1800,1500 --projection=o --viewall \
+    openscad -o docs/feature-map-back.png  -D 'view="back"'  --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,0,44,78,0,195,260 --colorscheme=Tomorrow feature-map.scad
-    openscad -o feature-map-cover.png -D 'view="cover"' --imgsize=1800,1500 --projection=o --viewall \
+    openscad -o docs/feature-map-cover.png -D 'view="cover"' --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,0,44,100,0,15,260 --colorscheme=Tomorrow feature-map.scad
 
 The back plate is seen as you face the box with the cover off, so its right is your right. The cover is
