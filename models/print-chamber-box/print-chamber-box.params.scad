@@ -17,7 +17,7 @@ leaves at that end - on your RIGHT with the sensor in hand.
 */
 
 /* [Which part] */
-part = "back";    /* "back", "cover", or "assembly" (preview only - several parts, not printable). */
+part = "back";   /* "back", "cover", or "assembly" (preview only - several parts, not printable). */
 
 /* [The SPS30 - sourced from its datasheet v2.0, Figure 7] */
 sps_w    = 40.6;   /* Along the air face (X). 40.6 +/- 0.3 without the shipping foil, which can stay on. */
@@ -26,27 +26,27 @@ sps_t    = 12.2;   /* Thickness (Y). 12.2 +/- 0.3. */
 sps_nub  = 0.3;    /* Each side: the plastic nubs on the side faces make it 41.2 across. */
 
 /* [MEASURE THESE - placeholders until then; see `unmeasured` below] */
-divider_from_inlet_end = 18.0;   /* Along the air face, from the INLET end to the middle of the gap before the outlet grille. 18.0 is scaled off the datasheet drawing, not measured. */
+divider_from_inlet_end = 17.7;   /* Along the air face, from the INLET end to the middle of the gap between the inlets and the outlet grille. From photo 3, 2 Oct 2026, scaled against the sensor's 40.6 mm width: three features land within 0.4 mm of the datasheet, so the scale holds. */
+sps_inlet_end   = 15.2;          /* Where the inlets END, from the inlet end - the one that wraps onto the label face reaches furthest. Datasheet Figure 7; photo 3 reads 14.9. */
+sps_outlet_from = 20.2;          /* Where the outlet grille STARTS, from the inlet end. Photo 3. The divider must sit between these two. */
 outlet_at_left = false;          /* SETTLED from photos, 2 Oct 2026: facing the box, label towards you, air face down, the outlet grille is on your RIGHT and the two inlets on your left. The connector is at the outlet end (datasheet Figure 7, and the photos agree). */
-sm_l         = 22.5;   /* SuperMini length, USB-C end to antenna end. */
-sm_w         = 18.0;   /* SuperMini width. */
-sm_pcb_t     = 1.0;    /* Bare PCB thickness. */
-sm_t         = 4.0;    /* PCB plus its tallest component, as populated. */
-usb_center_h = 2.6;    /* Height of the USB-C receptacle's centre above the BACK of the PCB. */
+sm_l         = 22.8;   /* SuperMini PCB length, not counting the USB-C shell that overhangs it. Measured 2 Oct 2026. */
+sm_w         = 18.03;  /* SuperMini width. Measured. */
+sm_pcb_t     = 0.85;   /* Bare PCB thickness. Measured. */
+sm_t         = 4.05;   /* PCB plus its tallest component - the USB-C shell - without the antenna. Measured. */
+usb_shell_h  = 3.16;   /* The USB-C shell's height. Measured. It sits on the component side (0.85 + 3.16 = 4.01, against sm_t 4.05), so its centre is sm_pcb_t + usb_shell_h / 2 above the PCB's underside. */
 wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part stands out of the component side, at an angle - the board leans on it when laid face down. */
-wire_h       = 15.0;   /* How high the antenna wire's tip stands above the board's component side. */
-ant_over     = 4.0;    /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so that end of the pocket is left open for it. */
-usb_overhang = 2.0;    /* How far the USB-C shell overhangs the PCB's edge. It sits in the wall's opening and locates the board. About 2 mm in the photo. */
+ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - it sets the box's depth. */
+ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so that end of the pocket is left open for it. Measured. */
+usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It sits in the wall's opening and locates the board. Measured. */
 usb_plug_w   = 12.5;   /* The cable's PLUG BODY, not the receptacle: the opening has to pass the overmould. */
 usb_plug_h   = 7.0;
-gy_l         = 15.0;   /* GY-SGP41 module. */
-gy_w         = 12.0;
-gy_t         = 3.0;
+gy_l         = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
+gy_w         = 10.60;
+gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face for the plug and the bend in the lead. */
 
-unmeasured = ["divider_from_inlet_end", "sm_l", "sm_w", "sm_pcb_t", "sm_t", "usb_center_h",
-              "usb_overhang", "wire_h", "ant_over", "usb_plug_w", "usb_plug_h",
-              "gy_l", "gy_w", "gy_t", "cable_zone_h"];
+unmeasured = ["usb_plug_w", "usb_plug_h", "cable_zone_h"];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 
