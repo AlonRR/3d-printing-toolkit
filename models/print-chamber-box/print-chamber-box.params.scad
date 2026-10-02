@@ -37,15 +37,17 @@ sm_t         = 4.05;   /* PCB plus its tallest component - the USB-C shell - wit
 usb_shell_h  = 3.16;   /* The USB-C shell's height. Measured. It sits on the component side (0.85 + 3.16 = 4.01, against sm_t 4.05), so its centre is sm_pcb_t + usb_shell_h / 2 above the PCB's underside. */
 wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part stands out of the component side, at an angle - the board leans on it when laid face down. */
 ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - it sets the box's depth. */
-ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so that end of the pocket is left open for it. Measured. */
+ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so the middle of that end of the pocket is left open for it. Measured. */
+ant_loop_free = 4.3;   /* How much of the board's antenna end the loop leaves free beside it: 4.3 mm on one side and 5.45 on the other, measured 2 Oct 2026. The smaller is used on both sides, so the box fits the board either way round. */
 usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It passes through the wall, and its mouth reaches the outside face (see port_wall). Measured. */
 usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the USB Type-C compliance document fixes the receptacle's inside opening at 8.34 x 2.56 mm, and the measured height 3.16 against that 2.56 gives a 0.30 mm shell wall - so 8.34 + 2 x 0.30. */
 gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
-cable_zone_h = 10.0;   /* Room above the SPS30's connector face for the plug and the bend in the lead. */
+gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. For the SGP41's mount. */
+cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
-unmeasured = ["cable_zone_h"];
+unmeasured = [];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 

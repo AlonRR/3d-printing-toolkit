@@ -141,6 +141,9 @@ assert(abs(z_board_c - tab_z) >= (usb_plug_w + tab_w) / 2 + gap,
        "the USB-C plug would hit the mounting tab on its side");
 assert(2 * stop_reach < sm_pocket_h,
        "the two stops at the board's antenna end meet - stop_reach is too large");
+assert(stop_reach - pocket_fit + gap <= ant_loop_free,
+       str("the stops at the board's antenna end reach ", stop_reach - pocket_fit, " mm over it, and the",
+           " antenna loop leaves only ", ant_loop_free, " mm free - reduce stop_reach"));
 
 assert(wire_perpendicular || (conn_hi ? sm_x0 - ant_h - gap >= wall : sm_x1 + ant_h + gap <= W - wall),
        "an antenna wire running past the board's end does not fit inside the box");
@@ -292,8 +295,9 @@ module components(shrink = 0) {
                                 z_board_c - usb_plug_w / 2 + s])
         cube([20 - 2 * s, usb_plug_h - 2 * s, usb_plug_w - 2 * s]);
     // the antenna: the loop in the board's plane past its end, then the straight wire
-    color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s, z_board_c - 4 + s])
-        cube([ant_over - 2 * s, 1 - 2 * s, 8 - 2 * s]);
+    color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s,
+                               z_board_c - sm_w / 2 + ant_loop_free + s])
+        cube([ant_over - 2 * s, 1 - 2 * s, sm_w - 2 * ant_loop_free - 2 * s]);
     color("orange")
         if (wire_perpendicular)
             cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,

@@ -1,9 +1,9 @@
 # print-chamber box — enclosure for the printer chamber node
 
-**Status: MODELLED, NOT YET PRINTABLE AS-IS.** The model is complete and passes every check, but one
-dimension is still a placeholder (`cable_zone_h`) and six fits are untested in ASA. It says so itself:
-`scad-check.sh` **exits 2 on purpose** until both lists are empty. Every dimension has a name, so values
-go in against names rather than descriptions.
+**Status: MODELLED, NOT YET PRINTABLE AS-IS.** The model is complete and passes every check, and every
+dimension is now measured or sourced, but six fits are untested in ASA. It says so itself:
+`scad-check.sh` **exits 2 on purpose** until the `untested_fits` list is empty. Every dimension has a
+name, so values go in against names rather than descriptions.
 
 Decided 1 Oct 2026: upright with the air face down, two screw tabs, a cover held by four screws, ASA.
 Settled from photos, 2 Oct 2026: the SPS30's outlet is on your RIGHT as you face the box, and the
@@ -96,23 +96,21 @@ ends, which is one number to measure.
 | `sm_pcb_t`, `sm_t` | **0.85**, **4.05** | the bare PCB; the PCB with its tallest part, the USB-C shell, without the antenna |
 | `usb_shell_h`, `usb_overhang` | **3.16**, **1.5** | the USB-C shell's height, and how far it overhangs the PCB's edge |
 | `ant_h`, `ant_over` | **18.8**, **4.81** | the antenna wire's tip above the PCB's underside; how far its loop reaches past the PCB's antenna end, in the board's plane |
+| `ant_loop_free` | **4.3** | how much of the antenna end the loop leaves free beside it — 4.3 mm one side, 5.45 the other; the smaller is used both sides |
 | `gy_l`, `gy_w`, `gy_t` | **13.14 × 10.60 × 3.24** | the GY-SGP41 with its parts. The sensor is on one face and the rest of its electronics on the other |
+| `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
+| `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 
 **Sourced** — from the USB Type-C compliance document, rev 1.2, so that no cable needs measuring:
 
 | Name | Value | Note |
 |---|---|---|
 | `usb_shell_w` | **8.94** | the receptacle's inside opening is 8.34 × 2.56; the measured 3.16 height against 2.56 gives a 0.30 mm shell wall, so 8.34 + 2 × 0.30 |
-| `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). Used only to check the tabs and the mounting surface, which the plug body is outside the box beside |
+| `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the tabs and the mounting surface |
 
-**Still to measure:**
-
-| Name | What |
-|---|---|
-| `cable_zone_h` | hold the SPS30 as it sits in the box — air openings down, connector on top — plug its lead in, and bend the wires over to the side as tightly as they comfortably go. Measure from the sensor's top to the highest point of the bent wires |
-
-Set it in [`print-chamber-box.params.scad`](print-chamber-box.params.scad), then delete its name from
-the `unmeasured` list there.
+**Nothing is left to measure.** If a part changes, set the new value in
+[`print-chamber-box.params.scad`](print-chamber-box.params.scad); a placeholder goes in the `unmeasured`
+list there, which makes the model warn until it is measured.
 
 ## The two parts
 
@@ -149,10 +147,14 @@ The board can move `part_fit` either way along its length, and both ends of that
   on the thinned wall.
 - **Pushing a plug in** drives the board inwards, against **two stops over the corners of its antenna
   end**. Without them it would slide away from the plug, and the mouth would retreat into the wall at
-  exactly the moment it must not. Each stop reaches `stop_reach` (3 mm) in from its rim; the middle
-  12.6 mm of that end stays open for the antenna loop, which lies in the board's plane past the PCB.
-  ⚠️ **That the loop fits in those 12.6 mm is assumed, not yet confirmed** — the model draws it 8 mm
-  wide.
+  exactly the moment it must not. Each stop reaches `stop_reach` (3 mm) in from its rim, 2.7 mm over the
+  PCB. The antenna loop lies in the board's plane past that end and leaves 4.3 mm and 5.45 mm of it free
+  (measured 2 Oct 2026), so the stops clear it by at least 1.6 mm; an assert keeps it that way.
+
+The recess is as tall as the board's tallest part, not just as thick as the PCB, because something besides
+the socket sits 0.69 mm from the board's USB end on the component side (measured 2 Oct 2026). That
+makes the thinned wall the one stretch a plug's pull-out force bears on across the layer lines, so a
+chamfer at its step is the planned reinforcement.
 
 Pushed in, the mouth is flush with the outside face; pulled out, it stands 0.6 mm proud. An assert
 blocks any setting that would leave it inside the wall. The plug's body then sits beside the box, 4.83 mm
@@ -189,8 +191,9 @@ Two more checks, which `scad-check.sh` does not run:
   measured 301.8 mm³, so the check does see a real overlap.
 - `-D 'part="check_components"'` intersects both parts with the sensor, the boards, the antenna wire
   and loop, the USB-C shell, and the body of the largest compliant plug, seated with the board pushed
-  against its stops. It must be **empty**. A positive control with `stop_reach = 8` measured 1.8 mm³
-  (the stops reaching into the loop), so the check does see a real collision.
+  against its stops. It must be **empty**. A positive control with `sm_pocket_h = 17` (a pocket narrower
+  than the board) measured 28.9 mm³, so the check does see a real collision. Stops reaching into the
+  antenna loop are caught earlier, by an assert.
 
 Run both with `outlet_at_left` set each way, too (`-D outlet_at_left=true`). The model mirrors, and a
 check run one way only has passed a mirrored mistake before.
