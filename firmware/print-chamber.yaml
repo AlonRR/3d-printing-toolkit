@@ -92,6 +92,15 @@
 # The SGP41 goes on 3V3 whatever the module's label says: the bare part is 1.7-3.6 V, and
 # a module with an onboard regulator still works from 3.3 V.
 #
+# ⛔ AND THERE IS A SAFETY REASON FOR 3V3 - inferred from a photo of the module's underside,
+#    2 Oct 2026, NOT verified. Its pins are VIN, GND, SCL, SDA, and the back carries what look
+#    like a regulator, a dual-MOSFET level shifter and resistors: the usual pattern for these
+#    breakouts. On that pattern the HOST-side I2C pull-ups go to VIN. Fed 5 V, VIN would put 5 V
+#    on the C3's SDA and SCL, which are not 5 V tolerant. So VIN to 3V3, never 5V.
+#    Check before wiring, unpowered: SDA-to-VIN and SCL-to-VIN should each read about 10 kΩ.
+#    If they do, the pull-ups exist and go to VIN - and with VIN on 3V3 they already pull the
+#    shared bus to 3.3 V, so no extra resistors are needed (see the pull-up note above).
+#
 # ⚠️ PLACEMENT HAS A TEMPERATURE CEILING, AND THE SGP41 SETS IT: -10 to +50 °C operating
 #    (datasheet Table 4). The SPS30 is rated to +60 °C. An ASA chamber is wanted at 40-60 °C,
 #    so inside a hot chamber the SGP41 runs out of spec and the SPS30 sits at its limit while
