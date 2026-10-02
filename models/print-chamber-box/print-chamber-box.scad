@@ -167,7 +167,7 @@ assert(x_div - divider_t / 2 > sps_x0 + ledge && x_div + divider_t / 2 < sps_x1 
        str("the divider (at ", divider_from_inlet_end, " mm from the inlet end) does not fit between",
            " the two ledges - check divider_from_inlet_end"));
 
-assert(pilot_d >= 2 && tab_hole_d >= 2,
+assert(pilot_d >= 2 && tab_hole_d >= 2 && gy_pilot_d >= 2,
        "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
 
 assert(y_lip1 <= y_in1 - part_fit,

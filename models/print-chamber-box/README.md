@@ -209,9 +209,12 @@ anywhere from `gy_pcb_min` to `gy_pcb_max`, the rim catches its edge and the roo
 rim is open at the pin end, where the wires leave.
 
 **An M2.5 × 8 screw holds it down, through its mounting hole into a blind 7.6 mm pilot in the ledge.**
-The hole is in the bare strip, by the long edge away from the sensor, so the screw clamps only bare board
-and its head clears the sensor. The screw cuts its own thread in the pilot (`gy_pilot_d`, an untested
-fit). The room in front of the board is set by the screw's head, 2.5 mm tall plus `part_fit` to the cover —
+The hole is in the bare strip, by the long edge away from the sensor, so the screw clamps only bare board.
+Its 4.5 mm head should clear the sensor by about 0.85 mm, but that is a photo reading, and measuring the
+hole does not settle it: put the screw through the hole and look before printing. Which edge of the
+pocket the hole sits by also comes from photo 1, so the pilot is only as right as that reading. The screw
+cuts its own thread in the pilot (`gy_pilot_d`, an untested fit). An M2 screw is not the fallback for a
+smaller hole: its pilot would be under the 2 mm minimum. The room in front of the board is set by the screw's head, 2.5 mm tall plus `part_fit` to the cover —
 more than the 2.5 mm `wire_room` the wires need.
 
 The pedestal clears the cover's baffle over the sensor; the box grew 0.95 mm taller for that, to 88.9 mm.
