@@ -263,6 +263,26 @@ out from the wall, and the cable only starts beyond that; the nearest part of th
 socket is protected anyway: the shell-sized opening takes side loads into the wall, and the thinned wall
 takes a pull. **Clip the cable to the wall 3–5 cm from the plug** with a stick-on cable clip.
 
+## The clearance test
+
+**Print [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) before the box**, in the same ASA
+with the same profile: one part, about 2 hours and 19 g. It tries every setting in `untested_fits` three
+ways, and every size comes from the box's own settings, so it tests exactly what the box will print.
+Each try carries dots: **1 = a step tighter, 2 = as set, 3 = a step looser**.
+
+| Setting | Pieces | Try | Pick |
+|---|---|---|---|
+| `sps_fit` (0.2 / 0.3 / 0.4) | three open frames | slide the SPS30 through each | the tightest it slides through without forcing |
+| `pocket_fit` (0.2 / 0.3 / 0.4) | three SuperMini trays, three GY-SGP41 trays | drop each board in | the tightest that each board drops into and lies flat in, without pressing |
+| `pilot_d` (2.3 / 2.5 / 2.7) | the three tall bosses | drive an M3 × 14 self-tapping screw fully in, then back out | the one that bites firmly without splitting the boss or taking real force |
+| `gy_pilot_d` (2.0 / 2.1 / 2.2) | the three short bosses | the same with an M2.5 × 8 cap screw | as above |
+| `screw_d` (3.2 / 3.4 / 3.6) | the bar, upper row, left to right | an M3 screw | the smallest it passes through freely |
+| `tab_hole_d` (3.8 / 4.0 / 4.2) | the bar, lower row, left to right | the wood screws that will hang the box | the smallest they pass through freely |
+| `part_fit` (0.3) | the peg, and the socket beside it | calipers: the peg's width and the socket's | the socket is drawn 0.6 mm wider. If (socket − peg) / 2 comes out under 0.15 mm, the box's parts will bind — raise `part_fit` by the shortfall |
+
+Then set each value in the params file and delete its name from `untested_fits`. If even the tighter
+try is loose, or the looser one still binds, the ladder was in the wrong place: say so, and it moves.
+
 ## Checking it
 
 ```sh
@@ -270,7 +290,11 @@ scripts/scad-check.sh models/print-chamber-box/print-chamber-box-back.scad \
     "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
 scripts/scad-check.sh models/print-chamber-box/print-chamber-box-cover.scad \
     "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
+scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad \
+    "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
 ```
+
+The clearance test has no warnings of its own, so it exits 0.
 
 Check through these two wrappers, never through `print-chamber-box.scad` itself. `part` in the params
 file is also the line you change to view a part, and `scad-check.sh` takes no `-D` - so checked through
