@@ -133,14 +133,15 @@ gy_ledge_x1  = conn_hi ? gx0 + pocket_fit + gy_strip : gx1;
 loop_z0      = z_board_c - sm_w / 2 + ant_loop_free;    // the antenna loop's lowest edge
 
 // =================================================================== the cable channel
-// Below the board's pin end, between the side wall and the lead's column, running along X: the wires
-// from both sensors lie in it on their way to the pins, and press in past a 45-degree lip on each wall,
-// so they stay put without a tie. Open at both ends.
+// Upright, directly under the board's three power pins (5V, GND, 3V3), from just above the SPS30 to just
+// below the board: the wires from both sensors press in from the front past a 45-degree lip on each wall,
+// run up it, and leave its top end straight into those pads. Open at both ends.
 wch_lip = (wire_slot_w - wire_lip_gap) / 2;     // each lip's reach into the slot, at 45 degrees
-wch_z1  = z_board0 - gap;                        // its top, under the board's rim
-wch_z0  = wch_z1 - (2 * rib_t + wire_slot_w);
-wch_x0  = conn_hi ? lead_x1 + gap : wall + gap;
-wch_x1  = conn_hi ? W - wall - gap : lead_x0 - gap;
+wch_cx  = conn_hi ? sm_usb_x - pin_mid : sm_usb_x + pin_mid;
+wch_x0  = wch_cx - wire_slot_w / 2 - rib_t;      // its walls' outer faces
+wch_x1  = wch_cx + wire_slot_w / 2 + rib_t;
+wch_z0  = z_sps1 + gap;                          // from just above the SPS30 ...
+wch_z1  = z_board0 - gap;                        // ... to just below the board's rim
 wch_y1  = back_t + wire_slot_d + wch_lip;        // the walls' front, lips included
 
 // =================================================================== bosses and tabs
@@ -216,9 +217,14 @@ assert(gy_pilot_depth + gap <= gy_ledge_h + gy_floor - back_t,
        "the SGP41's screw would run out of pedestal");
 assert(loop_z0 - (gz1 + rim_t) >= gap,
        str("the SGP41's pedestal reaches within ", loop_z0 - (gz1 + rim_t), " mm of the antenna loop"));
-assert(wch_x1 - wch_x0 >= 2 * wire_slot_w,
-       str("the cable channel has only ", wch_x1 - wch_x0, " mm between the side wall and the SPS30's lead"));
-assert(wch_z0 >= z_sps1 + gap, "the cable channel reaches down to the SPS30");
+// signed: negative means the channel is on the wrong side of the wall or of the lead
+wch_wall_room = conn_hi ? (W - wall) - wch_x1 : wch_x0 - wall;
+wch_lead_room = conn_hi ? wch_x0 - lead_x1 : lead_x0 - wch_x1;
+assert(wch_wall_room >= gap && wch_lead_room >= gap,
+       str("the cable channel, under the board's power pins, must stand clear of the side wall and of the",
+           " SPS30's lead; it leaves ", wch_wall_room, " and ", wch_lead_room, " mm"));
+assert(wch_z1 - wch_z0 >= 2 * wire_slot_w,
+       str("the cable channel is only ", wch_z1 - wch_z0, " mm tall between the SPS30 and the board"));
 assert(wch_lip > 0 && wire_lip_gap >= 2 * fdm_extrusion_w,
        "the cable channel's lips must narrow its slot and leave an opening at least two beads wide");
 
@@ -303,13 +309,16 @@ module back_plate() {
             // onto it, the one bare patch of its underside that reaches past the strip
             cyl_y(gy_hole_x, gy_hole_z, gy_standoff_d / 2, gy_floor - eps, gy_floor + gy_ledge_h);
 
-            // the cable channel: two walls along X, each with a 45-degree lip over the slot, so the
-            // wires press in past the lips and stay. Drawn as its cross-section in Y-Z, run along X.
-            translate([wch_x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = wch_x1 - wch_x0) {
-                polygon([[back_t - eps, wch_z0], [wch_y1, wch_z0], [wch_y1, wch_z0 + rib_t + wch_lip],
-                         [back_t + wire_slot_d, wch_z0 + rib_t], [back_t - eps, wch_z0 + rib_t]]);
-                polygon([[back_t - eps, wch_z1], [wch_y1, wch_z1], [wch_y1, wch_z1 - rib_t - wch_lip],
-                         [back_t + wire_slot_d, wch_z1 - rib_t], [back_t - eps, wch_z1 - rib_t]]);
+            // the cable channel: two upright walls under the board's power pins, each with a 45-degree
+            // lip over the slot, so the wires press in past the lips and stay. Its cross-section in X-Y,
+            // run up Z.
+            translate([0, 0, wch_z0]) linear_extrude(height = wch_z1 - wch_z0) {
+                xi0 = wch_cx - wire_slot_w / 2;   // the slot's two faces
+                xi1 = wch_cx + wire_slot_w / 2;
+                polygon([[xi0 - rib_t, back_t - eps], [xi0, back_t - eps], [xi0, back_t + wire_slot_d],
+                         [xi0 + wch_lip, wch_y1], [xi0 - rib_t, wch_y1]]);
+                polygon([[xi1 + rib_t, back_t - eps], [xi1, back_t - eps], [xi1, back_t + wire_slot_d],
+                         [xi1 - wch_lip, wch_y1], [xi1 + rib_t, wch_y1]]);
             }
 
             // the four bosses the cover screws into

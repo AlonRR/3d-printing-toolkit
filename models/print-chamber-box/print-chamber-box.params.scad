@@ -39,6 +39,7 @@ wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight pa
 ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - it sets the box's depth. */
 ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so the middle of that end of the pocket is left open for it. Measured. */
 ant_loop_free = 4.3;   /* How much of the board's antenna end the loop leaves free beside it: 4.3 mm on one side and 5.45 on the other, measured 2 Oct 2026. The smaller is used on both sides, so the box fits the board either way round. */
+pin_mid      = 5.1;    /* The middle of the SuperMini's three power pins (5V, GND, 3V3), from its PCB's USB-C end. Photo 1, scaled against the board, reads 2.6, 5.1 and 7.7 mm. The cable channel stands under it, so the wires leave its top straight into those pads. */
 usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It passes through the wall, and its mouth reaches the outside face (see port_wall). Measured. */
 usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the USB Type-C compliance document fixes the receptacle's inside opening at 8.34 x 2.56 mm, and the measured height 3.16 against that 2.56 gives a 0.30 mm shell wall - so 8.34 + 2 x 0.30. */
 gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
@@ -106,7 +107,7 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. The SPS30 is put in from the front and stands on them; the cover's partition rib, 0.3 mm in front of its face, keeps it there. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
 wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board, for the wires soldered to its pins on the sensor side before they bend over. The screw's head needs more, and gets it. */
-wire_slot_w = 3.5;  /* The cable channel below the board's pin end: its slot, across. Nine wires of about 1 mm lie in it. */
+wire_slot_w = 3.5;  /* The cable channel, standing upright under the board's power pins: its slot, across. Nine wires of about 1 mm lie in it. */
 wire_slot_d = 4.0;  /* ... and how deep it is, from the plate. */
 wire_lip_gap = 1.0; /* The opening between the channel's two 45-degree lips: a wire presses in past them and stays. */
 

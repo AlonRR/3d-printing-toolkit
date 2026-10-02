@@ -106,6 +106,7 @@ ends, which is one number to measure.
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 | `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end. From photo 1, scaled against the sensor: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
+| `pin_mid` | **5.1** (photo) | the middle of the SuperMini's three power pins from its USB-C end; photo 1 reads 2.6, 5.1 and 7.7. The cable channel stands under it |
 | `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside. The ledge stops 0.5 mm short of it. An earlier photo reading of about 4.5 put the ledge under the parts |
 | `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: photo 2 puts the nearest parts beside and above the hole about 2.6 mm from its centre. The 4 mm standoff (`gy_standoff_d`) sits inside it |
 | `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
@@ -183,8 +184,9 @@ Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so th
    parts on its underside, and on a round standoff under its mounting hole. The rim locates it on three
    sides and is open at the pin end, where the wires leave.
 10. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole into the standoff.
-11. **Cable channel** — the wires from both sensors lie in it on their way to the board's pins. They press
-    in past a 45-degree lip on each wall and stay put; no tie needed.
+11. **Cable channel** — stands upright directly under the board's three power pins. The wires from both
+    sensors press in from the front past a 45-degree lip on each wall, run up it, and leave its top end
+    straight into the 5V, GND and 3V3 pads; no tie needed.
 12. **Bosses** — the cover's four M3 × 14 self-tapping screws bite into these. Their pilots are blind, so
     the back of the plate stays whole.
 
@@ -312,8 +314,9 @@ Why the SGP41's VIN must be 3V3 is in the same file.
   the SPS30 has a fan, and a slack lead buzzes.
 - **The SGP41's wires** are soldered from its sensor side, bent flat towards the right, and run to the
   cable channel.
-- **In the cable channel**, below the board's pin end, press all nine wires in past its lips. It holds
-  them in place; nothing pulls on them inside a closed box, so it does not need to grip.
+- **In the cable channel**, upright under the board's power pins, press all nine wires in from the front
+  past its lips. It holds them in place; nothing pulls on them inside a closed box, so it does not need
+  to grip.
 - **From the channel to the pins:** 5V, GND and 3V3 are on the board's lower edge, right above it.
   GPIO5 and GPIO6 are on its upper edge, so their wires cross the board's front **over its USB-C end**.
 - **Never:** across the board's antenna half, in front of the antenna wire, or anywhere in the window or
@@ -383,8 +386,8 @@ Three more checks, which `scad-check.sh` does not run:
   within the bounds, and its screw's head. It must be **empty**. Positive controls: `sm_pocket_h = 17` (a
   pocket narrower than the board) measured 26.8 mm³, `gx0 = 15` (the pedestal moved into the lead's
   column) 642.5 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
-  `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_x1 = 16` (the cable channel
-  into the lead's column) 18.5 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
+  `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_cx = 17` with the walls'
+  extent left as set (the cable channel moved into the lead's column, past its assert) 140.8 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
   head into the front) 12.5 mm³. Stops reaching into the antenna loop and a mounting hole too small for the
   screw are caught earlier, by asserts.
 - `-D 'part="check_insert"'` intersects the back plate with the SPS30's path in from the front — its

@@ -63,7 +63,7 @@ if (view == "back") {
     marker(8,  [conn_hi ? gx1 - 3 : gx0 + 3, gy_floor + f, gz0 - rim_t - 3.5]);  // pedestal
     marker(9,  [(gy_ledge_x0 + gy_ledge_x1) / 2, gy_floor + gy_ledge_h + f, gz1 - 2]);   // ledge, standoff, rim
     marker(10, [gy_hole_x + (conn_hi ? 4.5 : -4.5), gy_floor + gy_ledge_h + f, gy_hole_z]);   // pilot
-    marker(11, [(wch_x0 + wch_x1) / 2, wch_y1 + f, wch_z0 - 3.5]);              // cable channel
+    marker(11, [conn_hi ? wch_x0 - 3.2 : wch_x1 + 3.2, wch_y1 + f, (wch_z0 + wch_z1) / 2]);   // cable channel
     for (b = bosses) marker(12, [b[0], y_in1 + f, b[1] + boss_d / 2 + 3.5]);    // bosses
     legend(["BACK PLATE - as you face the box, cover off",
             "",
@@ -77,7 +77,7 @@ if (view == "back") {
             " 8  pedestal - lifts the SGP41 to its vents",
             " 9  ledge, standoff and rim for the SGP41",
             "10  pilot for the SGP41's M2.5 screw",
-            "11  cable channel - wires press in past its lips",
+            "11  cable channel - up to the power pins",
             "12  bosses for the cover's four screws"],
            [-tab_l - 4, 0, H + 34]);
 }
