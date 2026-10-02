@@ -137,8 +137,8 @@ filament on every layer, which is why the first print to use it was stopped. ASA
 `scripts/scad-check.sh` now fails any G-code with a skirt or a brim, and
 `scripts/patch_print_profiles.py` turns all three off in every preset.
 
-The ASA profile below is kept only until it is deleted; its notes now say it is retired. What
-follows explains the mechanism, which still matters: a draft shield **is** a skirt.
+The ASA profile below was **deleted on 2 Oct 2026**, from the repo and from PrusaSlicer's presets.
+What follows explains the mechanism, which still matters: a draft shield **is** a skirt.
 
 ~~Every print profile in `slicer/print/` strips skirt and brim by default — the right call for
 most parts and the wrong one for ASA. So there is now an ASA-specific one:

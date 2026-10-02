@@ -88,13 +88,9 @@ JOBS = {
     # Named for its infill, so its infill is the one deliberate exception to cubic.
     "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning": {"skip": ["fill_pattern"]},
     "0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter": {},
-    # RETIRED 2 Oct 2026. It existed to have a skirt, a brim and a draft shield for ASA warping, and
-    # all three are now ruled out (see the delta above). With the delta applied it is the plain 0.2
-    # no-skirt preset under a misleading name, so its notes say so until the file is deleted.
-    "0.2mm QUALITY @MK3 - ASA brim + draft shield": {"extra": {"notes": (
-        '"RETIRED 2 Oct 2026 - now the same as 0.2mm QUALITY @MK3 - no skirt, no brim, no crossing '
-        'perimeter; use that. Never a skirt, a part designed right needs no brim, and the enclosure '
-        'closes fully, which is what this preset\'s draft shield stood in for."')}},
+    # "0.2mm QUALITY @MK3 - ASA brim + draft shield" was here until 2 Oct 2026. It existed to have a
+    # skirt, a brim and a draft shield for ASA warping; all three are ruled out (see the delta
+    # above), so it was deleted - from slicer/print/ and from the live presets - on Alon's yes.
     # Its name says NO SKIRT only, and it never received the brim or crossing-perimeter half.
     "0.30mm DETAIL @0.8 nozzle - NO SKIRT": {},
     # complete_objects=1 is SEQUENTIAL printing: the gantry travels between finished parts and can
