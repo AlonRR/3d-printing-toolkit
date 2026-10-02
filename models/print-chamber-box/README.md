@@ -182,7 +182,8 @@ a 6.1 mm³ overlap, found by drawing that plug into the earlier version.
 
 ## The SGP41's mount
 
-**Its sensor faces the vents, and a pedestal brings it within 1.8–3.6 mm of them.** Lying on the plate it
+**Its sensor faces the vents, and a pedestal brings it within 1.8–3.6 mm of them** — measured to the
+sensor's face, which stands 0.71 mm proud of its board. Lying on the plate it
 would sit 16 mm behind its vents and measure the box's own air, warmed by the board, more than the room's.
 It stands just left of the SPS30's lead, in the zone between the sensor and the board, with its pins
 towards the board's pin end, so its four wires head straight there.
@@ -194,7 +195,10 @@ the board touches nothing but the ledge and a rim on three sides, its thickness 
 from `gy_pcb_min` to `gy_pcb_max`, on any tape up to `tape_max`, the rim catches its edge and its front
 leaves `wire_room` (2.5 mm) for the wires. The rim is open at the pin end, where they leave.
 
-**Stick it down with double-sided tape on the bare strip**, foam tape included.
+**Stick it down with double-sided tape on the bare strip — foam tape is the better choice.** On the
+thinnest board with thin tape, its parts hang only 0.4 mm above the pedestal's top, and that top prints
+as a solid skin over infill, which can come out a few tenths uneven. Foam tape lifts the whole module by
+its thickness and settles the question.
 
 The pedestal clears the cover's baffle over the sensor; the box grew 0.95 mm taller for that, to 88.9 mm.
 It also stands under the board's antenna end, 6.5 mm below the loop. That was the one place it fits
@@ -236,7 +240,7 @@ Why the SGP41's VIN must be 3V3 is in the same file.
 - **At the tie post**, below the board's pin end, tie all the wires to the post with one small cable tie
   or a few turns of thread. A tug on either sensor then stops at the post, not at the SuperMini's pads,
   which are small and lift easily. The post runs from the plate to just short of the cover's front, so a
-  tie cannot slide off its end.
+  tie cannot slide off its end. **Pull the tie snug, not tight:** the post is a 4 mm pillar 19.5 mm tall.
 - **From the post to the pins:** 5V, GND and 3V3 are on the board's lower edge, right above the post.
   GPIO5 and GPIO6 are on its upper edge, so their wires cross the board's front **over its USB-C end**.
 - **Never:** across the board's antenna half, in front of the antenna wire, or anywhere in the window or
