@@ -329,16 +329,17 @@ grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 ⚠️ **Untested here.** Reasoning plus one measured fact from this repo, not a result from this
 printer.
 
-§6 records that ASA's *small thin features lift at the corners*, and the answer so far has been
-process: the `ASA brim + draft shield` profile, `brim_width = 5`. There is a geometry answer too,
-and §3b says to prefer it.
+§6 records that ASA's *small thin features lift at the corners*. The answer used to be process —
+the `ASA brim + draft shield` profile, `brim_width = 5` — and **that is ruled out since 2 Oct 2026**:
+never a skirt, and a part designed correctly needs no brim (Alon). So the geometry answer is the only
+one, and `scripts/scad-check.sh` fails any G-code with a skirt or a brim.
 
 - ⭐ **Round the corners as seen from above.** Lifting starts at a sharp corner in the plan view,
   where the largest contraction meets the smallest bonded area. A radius there is permanent, costs
   nothing per copy, and stays on the part.
 - **Mouse ears** — small thin discs at the corners, trimmed off afterwards. ⛔ **Sacrificial, so
-  §3b applies.** They are the same class of answer as the 5 mm brim already in use, just with less
-  cleanup. Recognise them; reach for the radius first.
+  §3b applies.** They are the same class of answer as a brim, which is ruled out, just with less
+  cleanup. Recognise them; use the radius.
 - Concentric slits cut into the underside of a large flat part are sometimes offered as stress
   relief. Not tested here, and it trades a sealed base for a slotted one — recorded for
   completeness, not recommended.

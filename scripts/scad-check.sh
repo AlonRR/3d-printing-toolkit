@@ -96,6 +96,13 @@ note "$(grep -E '^; estimated printing time \(normal' "$GCODE" | sed 's/^; //')"
 note "$(grep -E '^; total filament used \[g' "$GCODE" | sed 's/^; //')"
 
 [ "$sv" = "0" ] || bad "spiral_vase = $sv -- this profile prints a single-wall shell"
+# Alon, 2 Oct 2026: never print a skirt, and a part designed correctly needs no brim. A draft shield is
+# drawn FROM the skirt (docs/asa-print-quality.md, item 3), so the skirt test catches it too. Read from
+# the G-code, not the profile's name: the one that slipped a skirt through was named for its brim and
+# its shield, and said nothing about a skirt.
+sk=$(g skirts); bw=$(g brim_width)
+[ "$sk" = "0" ] || bad "skirts = $sk -- never print a skirt, and a draft shield is a skirt"
+[ "$bw" = "0" ] || bad "brim_width = $bw -- design the part so it needs no brim"
 [ "$sm" = "0" ] || note "support_material = $sm (house rule prefers 0)"
 
 # --- 4. does the model agree with the profile it was sliced with? -----------

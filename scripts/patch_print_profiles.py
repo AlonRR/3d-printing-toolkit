@@ -26,7 +26,14 @@ rather than against stock - they share a key set, so PrusaSlicer 2.9's additions
 only real differences remain. Comparing a single preset against the vendor bundle instead reports
 ~87 spurious "changes" that are just 2.9 keys the bundle predates.
 
-  skirts = 0 / brim_type = no_brim / brim_width = 0   the profile names say exactly this
+  skirts = 0 / brim_type = no_brim / brim_width = 0   the profile names say exactly this - and since
+      2 Oct 2026 it is a rule with no exceptions, Alon's own: never print a skirt, and a part designed
+      correctly needs no brim. scripts/scad-check.sh fails any G-code that has either.
+  draft_shield = disabled                             NEW, 2 Oct 2026. PrusaSlicer draws the shield FROM
+      the skirt, so skirts = 0 already silences it; set explicitly so that turning a skirt back on can
+      never bring a shield with it. The enclosure closes fully, which is what the shield stood in for.
+  fill_pattern = cubic                                NEW, 2 Oct 2026: Alon's default infill. The one
+      exception is the preset NAMED for its infill (lightning).
   avoid_crossing_perimeters = 1                       set on all seven 0.4 presets, none of the 0.8
   avoid_crossing_perimeters_max_detour = 20           NEW. Not previously set anywhere, and
       PrusaSlicer's own sidetext reads "mm or % (zero to disable)" - so the cap was disabled and
@@ -65,6 +72,8 @@ HOUSE = {
     "skirts": "0",
     "brim_type": "no_brim",
     "brim_width": "0",
+    "draft_shield": "disabled",
+    "fill_pattern": "cubic",
     "avoid_crossing_perimeters": "1",
     "avoid_crossing_perimeters_max_detour": "20",
 }
@@ -76,20 +85,25 @@ JOBS = {
     "0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter": {},
     "0.20mm QUALITY @MK3 no skirt": {},
     "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter": {},
-    "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning": {},
+    # Named for its infill, so its infill is the one deliberate exception to cubic.
+    "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning": {"skip": ["fill_pattern"]},
     "0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter": {},
-    # This preset EXISTS to have a skirt, a brim and a draft shield - for ASA warping.
-    # Applying the no-skirt/no-brim half of the delta would destroy its entire purpose.
-    "0.2mm QUALITY @MK3 - ASA brim + draft shield": {"skip": ["skirts", "brim_type", "brim_width"]},
+    # RETIRED 2 Oct 2026. It existed to have a skirt, a brim and a draft shield for ASA warping, and
+    # all three are now ruled out (see the delta above). With the delta applied it is the plain 0.2
+    # no-skirt preset under a misleading name, so its notes say so until the file is deleted.
+    "0.2mm QUALITY @MK3 - ASA brim + draft shield": {"extra": {"notes": (
+        '"RETIRED 2 Oct 2026 - now the same as 0.2mm QUALITY @MK3 - no skirt, no brim, no crossing '
+        'perimeter; use that. Never a skirt, a part designed right needs no brim, and the enclosure '
+        'closes fully, which is what this preset\'s draft shield stood in for."')}},
     # Its name says NO SKIRT only, and it never received the brim or crossing-perimeter half.
     "0.30mm DETAIL @0.8 nozzle - NO SKIRT": {},
     # complete_objects=1 is SEQUENTIAL printing: the gantry travels between finished parts and can
     # knock them over. Surprising on a general-purpose preset, and confirmed accidental.
     "0.40mm QUALITY @0.8 nozzle - NO Skirt": {"extra": {"complete_objects": "0", "wipe_tower": "1"}},
-    # Keeps its brim: this preset is for large/strong parts where a brim is adhesion, not decoration.
     # Its fill_density 40%, external_perimeter_acceleration 400 and complete_objects 1 are its
-    # character and are left alone - it was never the preset the brim question was asked about.
-    "0.40mm Uber strong @0.8 nozzle": {"skip": ["brim_type", "brim_width"]},
+    # character and are left alone. It used to keep its brim as adhesion for large parts; since
+    # 2 Oct 2026 no preset does - a part that needs a brim needs designing differently.
+    "0.40mm Uber strong @0.8 nozzle": {},
 }
 
 KV = re.compile(r"^([a-z_0-9]+) = (.*)$")

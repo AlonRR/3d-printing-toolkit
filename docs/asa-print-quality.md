@@ -124,16 +124,25 @@ pulled off.
   when the sheet is bare and actually oily, which is
   [Prusa's escalation](https://help.prusa3d.com/article/first-layer-issues_1804) for the
   no-glue case.
-- **Brim, at least 5 mm**, on anything tall or with a small footprint. Prusa recommends ≥ 3 mm
-  as a baseline; ASA earns more.
-- **Use PrusaSlicer's draft shield** (*Print Settings → Skirt and Brim → Draft shield*). It
-  prints a wall around the part that holds a pocket of warm still air against it. On an
-  enclosure with an open side this is the cheapest partial substitute for closing the side, and
-  it costs only filament.
+- ~~**Brim, at least 5 mm**, on anything tall or with a small footprint.~~
+- ~~**Use PrusaSlicer's draft shield**~~, a wall printed round the part to hold warm still air
+  against it.
 
-Every print profile in `slicer/print/` strips skirt and brim by default — the right call for
+⛔ **RETIRED 2 Oct 2026 — no skirt, no brim, no draft shield, on anything.** Alon's rules: *never
+print a skirt*, and *a part designed correctly does not need a brim either*. The shield was a
+stand-in for closing the enclosure's open side, and **the enclosure closes fully**; it also costs
+filament on every layer, which is why the first print to use it was stopped. ASA prints with the plain
+`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter`, and warping is answered in the design
+— rounded corners in plan view first ([fdm-design-rules §5b](fdm-design-rules.md)).
+`scripts/scad-check.sh` now fails any G-code with a skirt or a brim, and
+`scripts/patch_print_profiles.py` turns all three off in every preset.
+
+The ASA profile below is kept only until it is deleted; its notes now say it is retired. What
+follows explains the mechanism, which still matters: a draft shield **is** a skirt.
+
+~~Every print profile in `slicer/print/` strips skirt and brim by default — the right call for
 most parts and the wrong one for ASA. So there is now an ASA-specific one:
-**`0.2mm QUALITY @MK3 - ASA brim + draft shield`**, built 30 Aug 2026 from the plain 0.2 profile.
+**`0.2mm QUALITY @MK3 - ASA brim + draft shield`**, built 30 Aug 2026 from the plain 0.2 profile.~~
 
 ### ⛔ The draft shield is drawn from the skirt — with `skirts = 0` it prints nothing
 
@@ -250,10 +259,8 @@ Drying fixes a wet spool. Storage stops you needing to.
    The install waited a day because PrusaSlicer was open, and it rewrites its config folder on
    exit — a copy made while it is running is silently undone when you quit. Check first with
    `Get-Process prusa-slicer*`.
-3. **Brim and draft shield** on the next tall ASA part — select
-   `0.2mm QUALITY @MK3 - ASA brim + draft shield`. Free. ⚠️ **Not yet installed into
-   `%APPDATA%\PrusaSlicer\print\`** — PrusaSlicer was open when it was built. Copy it in with
-   the slicer closed.
+3. ~~**Brim and draft shield** on the next tall ASA part.~~ ⛔ **Retired 2 Oct 2026** — no skirt,
+   no brim and no shield, ever; see item 3 above. Design the part not to need them.
 4. **Dry a spool** and reprint something that came out badly. Rules out the variable that
    masquerades as everything else.
 5. **Then** the chamber sensor and closing the enclosure side — the biggest effect, the most

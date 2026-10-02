@@ -266,7 +266,7 @@ takes a pull. **Clip the cable to the wall 3–5 cm from the plug** with a stick
 ## The clearance test
 
 **Print [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) before the box**, in the same ASA
-with the same profile: one part, about 2 hours and 19 g. It tries every setting in `untested_fits` three
+with the same profile: one part, about 1 h 45 min and 15 g. It tries every setting in `untested_fits` three
 ways, and every size comes from the box's own settings, so it tests exactly what the box will print.
 Each try carries dots: **1 = a step tighter, 2 = as set, 3 = a step looser**.
 
@@ -287,14 +287,18 @@ try is loose, or the looser one still binds, the ladder was in the wrong place: 
 
 ```sh
 scripts/scad-check.sh models/print-chamber-box/print-chamber-box-back.scad \
-    "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
+    "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter" "Inslogic ASA"
 scripts/scad-check.sh models/print-chamber-box/print-chamber-box-cover.scad \
-    "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
+    "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter" "Inslogic ASA"
 scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad \
-    "0.2mm QUALITY @MK3 - ASA brim + draft shield" "Inslogic ASA"
+    "0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter" "Inslogic ASA"
 ```
 
 The clearance test has no warnings of its own, so it exits 0.
+
+**No skirt, no brim, no draft shield** — the house rule since 2 Oct 2026, and `scad-check.sh` fails a
+G-code with either. The plain profile above has neither, and uses cubic infill; ASA's lifting corners
+are answered by `corner_r` in plan view instead.
 
 Check through these two wrappers, never through `print-chamber-box.scad` itself. `part` in the params
 file is also the line you change to view a part, and `scad-check.sh` takes no `-D` - so checked through
