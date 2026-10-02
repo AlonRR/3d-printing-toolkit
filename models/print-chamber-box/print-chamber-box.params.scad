@@ -44,7 +44,10 @@ usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the US
 gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
-gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. For the SGP41's mount. */
+gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. */
+gy_bare      = 4.0;    /* The GY-SGP41's underside carries all its parts on the pin half; the end opposite the pins is bare for about 4.5 mm (photo 2, 2 Oct 2026). The SGP41's ledge carries only this strip, so its parts never bear load. */
+conn_from    = 2.0;    /* The SPS30's plug and lead, along its top face, from the OUTLET end. Photo 1, 2 Oct 2026, scaled against the 40.6 mm sensor: the wires leave 3.0 to 8.6 mm from that end, and the plug's housing reaches about 1 mm past each. Nothing stands in that column. */
+conn_to      = 10.5;
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
 unmeasured = [];
@@ -54,6 +57,11 @@ unmeasured = [];
 /* [The USB-C cable - sourced, so no cable needs measuring] */
 usb_plug_w = 12.35;   /* The widest a compliant plug's body may be: USB Type-C compliance document rev 1.2, Figure B-1, dimension 1. */
 usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mouth reaches the outside face, so the body never enters the box; it only has to clear the mounting surface and the tabs, and the model echoes the thickest body that does. */
+
+/* [Bounds, not measurements - the design works anywhere inside them] */
+gy_pcb_min = 0.8;   /* The thinnest the GY-SGP41's bare board could plausibly be; GY modules are usually 1.0-1.6 mm. The ledge is tall enough that parts on a board this thin still clear the floor. */
+gy_pcb_max = 1.6;   /* The thickest, for the room left in front of it. */
+tape_max   = 1.0;   /* The thickest double-sided tape the SGP41 might be stuck to its ledge with: foam tape is about 1 mm. */
 
 /* [Fits - untested in ASA on this printer; see `untested_fits` below] */
 sps_fit    = 0.3;    /* Clearance per side around the SPS30. fdm-design-rules records NO house default - this is a placeholder. */
@@ -87,6 +95,8 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 lip    = 1.0;   /* How far the channel's front lips overlap the SPS30's front face. */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
+wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board and tape, for the wires soldered to its pins on the sensor side before they bend over. */
+post_d     = 4.0;   /* The tie post below the board's pin end. The wires are tied to it, so a tug on a sensor's lead never reaches the board's solder pads. */
 
 /* [Mounting and closing] */
 tab_l     = 14.0;   /* How far each mounting tab reaches beyond the box. Long enough that the screwdriver's shaft clears the box's side wall: the hole sits tab_w/2 from the tab's end. */
