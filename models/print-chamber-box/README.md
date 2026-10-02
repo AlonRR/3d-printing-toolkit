@@ -1,10 +1,9 @@
 # print-chamber box — enclosure for the printer chamber node
 
-**Status: MODELLED, NOT YET PRINTABLE AS-IS.** The model is complete and passes every check, but three
-dimensions — where the GY-SGP41's mounting hole is, and its size — are still read off a photo, and seven
-fits are untested in ASA. It says so itself: `scad-check.sh` **exits 2 on purpose** until the
-`unmeasured` and `untested_fits` lists are empty. Every dimension has a name, so values go in against
-names rather than descriptions.
+**Status: MODELLED, NOT YET PRINTABLE AS-IS.** The model is complete and passes every check, and every
+dimension is measured or sourced, but seven fits are untested in ASA. It says so itself: `scad-check.sh`
+**exits 2 on purpose** until the `untested_fits` list is empty. Every dimension has a name, so values go
+in against names rather than descriptions.
 
 Decided 1 Oct 2026: upright with the air face down, two screw tabs, a cover held by four screws, ASA.
 Settled from photos, 2 Oct 2026: the SPS30's outlet is on your RIGHT as you face the box, and the
@@ -104,7 +103,9 @@ ends, which is one number to measure.
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 | `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end. From photo 1, scaled against the sensor: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
-| `gy_bare` | **4.0** | the bare strip at the GY-SGP41's far end, opposite its pins: every part on its underside is on the pin half (photo 2; about 4.5 mm bare) |
+| `gy_bare` | **4.4** | the bare strip at the GY-SGP41's far end, opposite its pins: every part on its underside is on the pin half. Photo 2 reads about 4.5 mm, and the mounting hole proves at least 4.45 — its far side is 1.32 + 3.13 mm from that end, and nothing is mounted round a mounting hole |
+| `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
+| `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end (the short edge opposite its pins), and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
 
 **Bounds, not measurements** — the design works anywhere inside them, so none needs measuring:
 
@@ -122,17 +123,9 @@ ends, which is one number to measure.
 | `usb_shell_w` | **8.94** | the receptacle's inside opening is 8.34 × 2.56; the measured 3.16 height against 2.56 gives a 0.30 mm shell wall, so 8.34 + 2 × 0.30 |
 | `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the tabs and the mounting surface |
 
-**Still to measure** — read off photo 1 for now, so the model warns until they are measured:
-
-| Name | Photo reading | What |
-|---|---|---|
-| `gy_hole_d` | 2.7 | the GY-SGP41's mounting hole, across |
-| `gy_hole_far` | 2.7 | from the hole's centre to the module's far end — the short edge opposite its pins |
-| `gy_hole_side` | 3.4 | from the hole's centre to the nearer long edge — the one away from the sensor |
-
-Set each in [`print-chamber-box.params.scad`](print-chamber-box.params.scad), then delete its name from the
-`unmeasured` list there. The screw goes into a pilot printed at that spot, so a reading off by half a
-millimetre would make the screw miss it.
+**Nothing is left to measure.** If a part changes, set the new value in
+[`print-chamber-box.params.scad`](print-chamber-box.params.scad); a placeholder goes in the `unmeasured`
+list there, which makes the model warn until it is measured.
 
 ## The two parts
 
@@ -210,12 +203,13 @@ rim is open at the pin end, where the wires leave.
 
 **An M2.5 × 8 screw holds it down, through its mounting hole into a blind 7.6 mm pilot in the ledge.**
 The hole is in the bare strip, by the long edge away from the sensor, so the screw clamps only bare board.
-Its 4.5 mm head should clear the sensor by about 0.85 mm, but that is a photo reading, and measuring the
-hole does not settle it: put the screw through the hole and look before printing. Which edge of the
-pocket the hole sits by also comes from photo 1, so the pilot is only as right as that reading. The screw
-cuts its own thread in the pilot (`gy_pilot_d`, an untested fit). An M2 screw is not the fallback for a
-smaller hole: its pilot would be under the 2 mm minimum. The room in front of the board is set by the screw's head, 2.5 mm tall plus `part_fit` to the cover —
-more than the 2.5 mm `wire_room` the wires need.
+Its 4.5 mm head clears the sensor: checked with the screw in the hole, 2 Oct 2026. The hole is 3.13 mm,
+so the M2.5 screw passes it with room to spare, and the rim, not the screw, locates the module. Which edge
+of the pocket the hole sits by comes from photo 1, so the pilot is only as right as that reading; seat the
+module in the printed pocket and look before driving the screw. The screw cuts its own thread in the pilot
+(`gy_pilot_d`, an untested fit). An M2 screw is not the fallback for a smaller hole: its pilot would be
+under the 2 mm minimum. The room in front of the board is set by the screw's head, 2.5 mm tall plus
+`part_fit` to the cover — more than the 2.5 mm `wire_room` the wires need.
 
 The pedestal clears the cover's baffle over the sensor; the box grew 0.95 mm taller for that, to 88.9 mm.
 It also stands under the board's antenna end, 6.5 mm below the loop. That was the one place it fits
@@ -291,14 +285,14 @@ Two more checks, which `scad-check.sh` does not run:
 
 - `-D 'part="check_parts"'` intersects the two parts. The result must have **zero volume** — they meet at
   the plate's face and the boss tops, and nowhere else. Positive controls: `part_fit = -0.6` measured
-  385.1 mm³, and `gz0 = 43.5` (the SGP41's pedestal lowered into the cover's baffle) 48.0 mm³, so the
+  385.1 mm³, and `gz0 = 43.5` (the SGP41's pedestal lowered into the cover's baffle) 48.6 mm³, so the
   check does see a real overlap.
 - `-D 'part="check_components"'` intersects both parts with the sensor, the boards, the antenna wire
   and loop, the USB-C shell, the body of the largest compliant plug — seated with the board pushed
   against its stops — the column the SPS30's lead rises through, the SGP41 at every board thickness
   within the bounds, and its screw's head. It must be **empty**. Positive controls: `sm_pocket_h = 17` (a
   pocket narrower than the board) measured 26.8 mm³, `gx0 = 15` (the pedestal moved into the lead's
-  column) 642.5 mm³, `gy_ledge_x0 = 26.6` (the ledge reaching under the SGP41's parts) 97.9 mm³, and
+  column) 642.5 mm³, `gy_ledge_x0 = 26.6` (the ledge reaching under the SGP41's parts) 90.6 mm³, and
   `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's head into the front) 12.5 mm³. Stops
   reaching into the antenna loop, a tie post on the wrong side of the lead, and a mounting hole too small
   for the screw or off the bare strip are caught earlier, by asserts.

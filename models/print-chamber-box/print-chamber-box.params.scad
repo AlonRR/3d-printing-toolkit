@@ -45,15 +45,15 @@ gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
 gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. */
-gy_bare      = 4.0;    /* The GY-SGP41's underside carries all its parts on the pin half; the end opposite the pins is bare for about 4.5 mm (photo 2, 2 Oct 2026). The SGP41's ledge carries only this strip, so its parts never bear load. */
-gy_hole_d    = 2.7;    /* PLACEHOLDER - the GY-SGP41's mounting hole, read off photo 1. It takes the M2.5 screw that holds the module down. */
-gy_hole_far  = 2.7;    /* PLACEHOLDER - the hole's centre from the module's far end: the short edge opposite its pins. Photo 1. */
-gy_hole_side = 3.4;    /* PLACEHOLDER - the hole's centre from the nearer long edge, which is the one away from the sensor. Photo 1. */
+gy_bare      = 4.4;    /* The GY-SGP41's underside carries all its parts on the pin half; the end opposite the pins is bare. Photo 2 reads about 4.5 mm, and the mounting hole proves at least 4.45: its far side is 1.32 + 3.13 mm from that end, and a mounting hole has no parts around it. The SGP41's ledge carries only this strip, so its parts never bear load. */
+gy_hole_d    = 3.13;   /* The GY-SGP41's mounting hole. Measured 2 Oct 2026. It takes the M2.5 screw that holds the module down. */
+gy_hole_far  = 1.32 + gy_hole_d / 2;   /* The hole's centre from the module's far end, the short edge opposite its pins: 1.32 to the hole's edge, measured 2 Oct 2026. */
+gy_hole_side = 1.25 + gy_hole_d / 2;   /* The hole's centre from the nearer long edge, the one away from the sensor: 1.25 to the hole's edge, measured 2 Oct 2026. */
 conn_from    = 2.0;    /* The SPS30's plug and lead, along its top face, from the OUTLET end. Photo 1, 2 Oct 2026, scaled against the 40.6 mm sensor: the wires leave 3.0 to 8.6 mm from that end, and the plug's housing reaches about 1 mm past each. Nothing stands in that column. */
 conn_to      = 10.5;
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
-unmeasured = ["gy_hole_d", "gy_hole_far", "gy_hole_side"];
+unmeasured = [];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 
