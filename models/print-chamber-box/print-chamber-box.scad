@@ -10,8 +10,9 @@ The print-chamber box: two printed parts, joined by four M3 x 14 self-tapping sc
                divider under its air face, the two board pockets and the four screw bosses.
   COVER        printed front-face down. A five-sided shell.
 
-Neither part has a bridge. Every opening in the cover is either a hole in its first layers or a notch
-open at its back edge, and the back plate is all features rising from the bed.
+Neither part has a bridge over air. Every opening in the cover is either a hole in its first layers or
+a notch open at its back edge, and the back plate is all features rising from the bed. (The slicer
+labels five regions of the back plate "bridge infill"; all are internal, over its own sparse infill.)
 
   part = "back"       this file as it stands - what scripts/scad-check.sh checks
   part = "cover"      print-chamber-box-cover.scad sets it
@@ -45,6 +46,7 @@ x_div    = outlet_at_left ? sps_x0 + divider_from_inlet_end
                           : sps_x1 - divider_from_inlet_end;
 
 // =================================================================== derived: Y (out from the wall)
+ledge_w   = sps_fit + sps_nub + ledge;                      // what each ledge spans, wall to sensor
 y_sps1    = back_t + sps_t;                                 // the SPS30's label face
 inner_d   = max(sps_t + sps_fit + front_gap_min,
                 wire_perpendicular ? sm_pcb_t + wire_h + gap : sm_t + gap);
@@ -66,9 +68,15 @@ z_board_c   = z_board0 + rim_t + sm_pocket_h / 2;
 z_board1    = z_board0 + 2 * rim_t + sm_pocket_h;
 H           = z_board1 + gap + boss_d + 2 * part_fit + wall;   // the top bosses sit above the board
 
-// =================================================================== the board: USB-C out of the +X wall - YOUR LEFT as you face the box
-sm_x1   = W - wall - part_fit;          // USB-C edge
-sm_x0   = sm_x1 - sm_l;                 // antenna end
+// =================================================================== the board
+// Its USB-C end faces the SPS30's connector, which is at the outlet end. The board's power and I2C pins
+// (5V, GND, 3V3, GPIO5, GPIO6) are all at its USB-C end, so every wire stays at one end of the box and
+// the antenna end is left with no wire near it.
+conn_hi  = outlet_at_left;             // connector at high X - your left
+sm_usb_x = conn_hi ? W - wall - part_fit : wall + part_fit;   // the PCB's USB-C edge
+sm_x0    = conn_hi ? sm_usb_x - sm_l : sm_usb_x;
+sm_x1    = sm_x0 + sm_l;
+sm_ant_x = conn_hi ? sm_x0 : sm_x1;    // the PCB's antenna end
 rim_hgt = sm_pcb_t + 2 * fdm_layer_h;   // the rims only locate the boards; they do not hold them
 usb_y   = back_t + usb_center_h;
 
@@ -111,7 +119,7 @@ assert(y_lip1 <= y_in1 - part_fit,
 assert(usb_y - usb_plug_h / 2 >= 0,
        "the USB-C plug would hit the surface the box is screwed to - the board sits too low");
 
-assert(wire_perpendicular || sm_x0 - wire_h - gap >= wall,
+assert(wire_perpendicular || (conn_hi ? sm_x0 - wire_h - gap >= wall : sm_x1 + wire_h + gap <= W - wall),
        "an antenna wire running past the board's end does not fit inside the box");
 
 // =================================================================== geometry helpers
@@ -176,7 +184,6 @@ module back_plate() {
             }
 
             // the ledges the sensor stands on, one under each end of the air face
-            ledge_w = sps_fit + sps_nub + ledge;
             translate([ch_x0 - cradle_t / 2, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
             translate([ch_x1 - ledge_w, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
 
@@ -185,12 +192,11 @@ module back_plate() {
             translate([x_div - divider_t / 2, 0, -divider_proud])
                 cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
-            // the board pocket: three sides of rim, open at the USB-C end
-            translate([sm_x0 - pocket_fit - rim_t, back_t - eps, z_board0])
-                cube([rim_t, rim_hgt + eps, z_board1 - z_board0]);
+            // the board pocket: rims along the two long edges only. The USB-C end is located by its
+            // shell in the wall's opening, and the antenna end is open because the loop lies in the
+            // board's plane, past the PCB.
             for (zz = [z_board0, z_board1 - rim_t])
-                translate([sm_x0 - pocket_fit - rim_t, back_t - eps, zz])
-                    cube([sm_x1 - (sm_x0 - pocket_fit - rim_t), rim_hgt + eps, rim_t]);
+                translate([sm_x0, back_t - eps, zz]) cube([sm_l, rim_hgt + eps, rim_t]);
 
             // the SGP41 pocket: four sides of rim
             difference() {
@@ -219,8 +225,8 @@ module cover() {
         // the window over the SPS30's air face - open at the back edge, so it is a notch, not a bridge
         translate([ch_x0 - cradle_t - part_fit, back_t - eps, -eps])
             cube([ch_in_w + 2 * (cradle_t + part_fit), y_in1 - back_t + eps, wall + 2 * eps]);
-        // the USB-C opening in the +X wall (your left) - also a notch open at the back edge
-        translate([W - wall - eps, back_t - eps, z_board_c - usb_plug_w / 2 - part_fit])
+        // the USB-C opening, in the wall at the connector end - also a notch open at the back edge
+        translate([conn_hi ? W - wall - eps : -eps, back_t - eps, z_board_c - usb_plug_w / 2 - part_fit])
             cube([wall + 2 * eps, usb_y + usb_plug_h / 2 + part_fit - back_t + eps,
                   usb_plug_w + 2 * part_fit]);
         // vents: in front of the SGP41, and in front of the board
@@ -246,11 +252,19 @@ module components(shrink = 0) {
         cube([sps_w - 2 * s, sps_t - 2 * s, sps_h - 2 * s]);
     color("teal") translate([sm_x0 + s, back_t + s, z_board_c - sm_w / 2 + s])
         cube([sm_l - 2 * s, sm_t - 2 * s, sm_w - 2 * s]);
+    // the USB-C shell, overhanging the PCB into the wall's opening
+    color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - 1.6 + s, z_board_c - 4.5 + s])
+        cube([usb_overhang - 2 * s, 3.2 - 2 * s, 9 - 2 * s]);
+    // the antenna: the loop in the board's plane past its end, then the straight wire
+    color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s, z_board_c - 4 + s])
+        cube([ant_over - 2 * s, 1 - 2 * s, 8 - 2 * s]);
     color("orange")
         if (wire_perpendicular)
-            cyl_y(sm_x0 + 1.5, z_board_c, 0.5 - s, back_t + sm_pcb_t + s, back_t + sm_pcb_t + wire_h - s);
+            cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,
+                  back_t + sm_pcb_t + s, back_t + sm_pcb_t + wire_h - s);
         else
-            translate([sm_x0 - wire_h + s, back_t + sm_pcb_t, z_board_c]) cube([wire_h - 2 * s, 1, 1]);
+            translate([conn_hi ? sm_ant_x - wire_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
+                cube([wire_h - 2 * s, 1, 1]);
     color("green") translate([gx0 + pocket_fit + s, back_t + s, gz0 + pocket_fit + s])
         cube([gy_l - 2 * s, gy_t - 2 * s, gy_w - 2 * s]);
 }
