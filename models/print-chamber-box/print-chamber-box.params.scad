@@ -25,7 +25,7 @@ sps_h    = 40.6;   /* The other side of the big face (Z). */
 sps_t    = 12.2;   /* Thickness (Y). 12.2 +/- 0.3. */
 sps_nub  = 0.3;    /* Each side: the plastic nubs on the side faces make it 41.2 across. */
 
-/* [MEASURE THESE - placeholders until then; see `unmeasured` below] */
+/* [Measured from the parts in hand - `unmeasured` below lists what is still a placeholder] */
 divider_from_inlet_end = 17.7;   /* Along the air face, from the INLET end to the middle of the gap between the inlets and the outlet grille. From photo 3, 2 Oct 2026, scaled against the sensor's 40.6 mm width: three features land within 0.4 mm of the datasheet, so the scale holds. */
 sps_inlet_end   = 15.2;          /* Where the inlets END, from the inlet end - the one that wraps onto the label face reaches furthest. Datasheet Figure 7; photo 3 reads 14.9. */
 sps_outlet_from = 20.2;          /* Where the outlet grille STARTS, from the inlet end. Photo 3. The divider must sit between these two. */
@@ -38,17 +38,20 @@ usb_shell_h  = 3.16;   /* The USB-C shell's height. Measured. It sits on the com
 wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part stands out of the component side, at an angle - the board leans on it when laid face down. */
 ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - it sets the box's depth. */
 ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so that end of the pocket is left open for it. Measured. */
-usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It sits in the wall's opening and locates the board. Measured. */
-usb_plug_w   = 12.5;   /* The cable's PLUG BODY, not the receptacle: the opening has to pass the overmould. */
-usb_plug_h   = 7.0;
-gy_l         = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
+usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It passes through the wall, and its mouth reaches the outside face (see port_wall). Measured. */
+usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the USB Type-C compliance document fixes the receptacle's inside opening at 8.34 x 2.56 mm, and the measured height 3.16 against that 2.56 gives a 0.30 mm shell wall - so 8.34 + 2 x 0.30. */
+gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face for the plug and the bend in the lead. */
 
-unmeasured = ["usb_plug_w", "usb_plug_h", "cable_zone_h"];
+unmeasured = ["cable_zone_h"];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
+
+/* [The USB-C cable - sourced, so no cable needs measuring] */
+usb_plug_w = 12.35;   /* The widest a compliant plug's body may be: USB Type-C compliance document rev 1.2, Figure B-1, dimension 1. */
+usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mouth reaches the outside face, so the body never enters the box; it only has to clear the mounting surface and the tabs, and the model echoes the thickest body that does. */
 
 /* [Fits - untested in ASA on this printer; see `untested_fits` below] */
 sps_fit    = 0.3;    /* Clearance per side around the SPS30. fdm-design-rules records NO house default - this is a placeholder. */
@@ -70,6 +73,7 @@ cradle_t  = 1.35;   /* The walls of the channel the SPS30 slides into: 3 beads. 
 divider_t = 1.35;   /* The divider between the inlet and outlet sides: 3 beads. */
 rib_t     = 1.35;   /* The cover's internal ribs: 3 beads. */
 rim_t     = 0.9;    /* The rims that locate the two boards: 2 beads. */
+port_wall = 0.9;    /* The cover's wall where the board's USB-C end meets it, thinned from inside so the socket's mouth reaches the outside face: 2 beads. With the 1.5 mm overhang this is as thick as it can be. */
 
 /* [Airflow] */
 divider_proud = 4.0;   /* How far the divider stands below the box, so the outlet's stream cannot loop straight back to the inlets. */
@@ -77,9 +81,10 @@ front_gap_min = 2.5;   /* Least air gap in front of the SPS30's label face - one
 vent_w        = 2.0;   /* Width of each vent slot. */
 vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 
-/* [Holding the sensor] */
+/* [Holding the sensor and the board] */
 lip    = 1.0;   /* How far the channel's front lips overlap the SPS30's front face. */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. */
+stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
 
 /* [Mounting and closing] */
 tab_l     = 14.0;   /* How far each mounting tab reaches beyond the box. Long enough that the screwdriver's shaft clears the box's side wall: the hole sits tab_w/2 from the tab's end. */

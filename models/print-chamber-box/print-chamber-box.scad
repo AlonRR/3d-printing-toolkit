@@ -75,13 +75,21 @@ H           = z_board1 + gap + boss_d + 2 * part_fit + wall;   // the top bosses
 // (5V, GND, 3V3, GPIO5, GPIO6) are all at its USB-C end, so every wire stays at one end of the box and
 // the antenna end is left with no wire near it.
 conn_hi  = outlet_at_left;             // connector at high X - your left
-sm_usb_x = conn_hi ? W - wall - part_fit : wall + part_fit;   // the PCB's USB-C edge
+// The PCB's USB-C edge reaches into the wall, which is thinned to port_wall over the board's end, so the
+// socket's mouth reaches the outside face. A plug's body then never enters the wall, whatever its size.
+sm_usb_x = conn_hi ? W - port_wall - part_fit : port_wall + part_fit;
 sm_x0    = conn_hi ? sm_usb_x - sm_l : sm_usb_x;
 sm_x1    = sm_x0 + sm_l;
 sm_ant_x = conn_hi ? sm_x0 : sm_x1;    // the PCB's antenna end
 rim_hgt      = sm_pcb_t + 2 * fdm_layer_h;   // the rims only locate the boards; they do not hold them
 usb_center_h = sm_pcb_t + usb_shell_h / 2;  // the shell sits on the component side
 usb_y        = back_t + usb_center_h;
+usb_proud    = usb_overhang - port_wall - part_fit;   // the mouth, past the outside face, board at rest
+usb_proud_in = usb_proud - pocket_fit;   // the same, with a plug pushing the board against its stops
+// The rims run from the cover's wall - they stay out of it - to the two stops past the antenna end.
+stop_x0 = conn_hi ? sm_ant_x - pocket_fit - rim_t : sm_ant_x + pocket_fit;
+rim_x0  = conn_hi ? stop_x0 : wall + part_fit;
+rim_x1  = conn_hi ? W - wall - part_fit : stop_x0 + rim_t;
 
 // =================================================================== the SGP41: cable zone, inlet end
 gx1 = outlet_at_left ? ch_x0 + gap + gy_pocket_l : ch_x1 - gap;   // inlets at low X when the outlet is on your left
@@ -98,7 +106,7 @@ tab_hole_x = tab_l - tab_w / 2;         // from the box's side
 
 // =================================================================== the rules
 for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["rib_t", rib_t],
-          ["rim_t", rim_t], ["vent_rib", vent_rib]])
+          ["rim_t", rim_t], ["port_wall", port_wall], ["vent_rib", vent_rib]])
     assert(whole(w[1] / fdm_extrusion_w),
            str(w[0], " (", w[1], ") must be a whole number of ", fdm_extrusion_w,
                " mm beads - fdm-design-rules §1"));
@@ -123,8 +131,16 @@ assert(y_lip1 <= y_in1 - part_fit,
        str("the channel's front lips (to ", y_lip1, ") reach the cover's front (", y_in1,
            ") - raise front_gap_min"));
 
+assert(usb_proud_in >= -1e-6,
+       str("plugging in pushes the board against its stops, and there the USB-C socket's mouth sits ",
+           -usb_proud_in, " mm inside the wall - a plug's body would hit the wall before it seats.",
+           " Thin port_wall, or tighten part_fit and pocket_fit"));
 assert(usb_y - usb_plug_h / 2 >= 0,
        "the USB-C plug would hit the surface the box is screwed to - the board sits too low");
+assert(abs(z_board_c - tab_z) >= (usb_plug_w + tab_w) / 2 + gap,
+       "the USB-C plug would hit the mounting tab on its side");
+assert(2 * stop_reach < sm_pocket_h,
+       "the two stops at the board's antenna end meet - stop_reach is too large");
 
 assert(wire_perpendicular || (conn_hi ? sm_x0 - ant_h - gap >= wall : sm_x1 + ant_h + gap <= W - wall),
        "an antenna wire running past the board's end does not fit inside the box");
@@ -199,11 +215,14 @@ module back_plate() {
             translate([x_div - divider_t / 2, 0, -divider_proud])
                 cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
-            // the board pocket: rims along the two long edges only. The USB-C end is located by its
-            // shell in the wall's opening, and the antenna end is open because the loop lies in the
-            // board's plane, past the PCB.
+            // the board pocket: rims along the two long edges. Outwards, the PCB's USB-C end bears on
+            // the cover's thinned wall when a plug is pulled out.
             for (zz = [z_board0, z_board1 - rim_t])
-                translate([sm_x0, back_t - eps, zz]) cube([sm_l, rim_hgt + eps, rim_t]);
+                translate([rim_x0, back_t - eps, zz]) cube([rim_x1 - rim_x0, rim_hgt + eps, rim_t]);
+            // inwards, a stop over each corner of the antenna end takes the push of plugging in. The
+            // middle of that end stays open, because the antenna loop lies in the board's plane past it.
+            for (zz = [z_board0, z_board1 - rim_t - stop_reach])
+                translate([stop_x0, back_t - eps, zz]) cube([rim_t, rim_hgt + eps, rim_t + stop_reach]);
 
             // the SGP41 pocket: four sides of rim
             difference() {
@@ -232,13 +251,17 @@ module cover() {
         // the window over the SPS30's air face - open at the back edge, so it is a notch, not a bridge
         translate([ch_x0 - cradle_t - part_fit, back_t - eps, -eps])
             cube([ch_in_w + 2 * (cradle_t + part_fit), y_in1 - back_t + eps, wall + 2 * eps]);
-        // the USB-C opening, in the wall at the connector end - also a notch open at the back edge
-        translate([conn_hi ? W - wall - eps : -eps, back_t - eps, z_board_c - usb_plug_w / 2 - part_fit])
-            cube([wall + 2 * eps, usb_y + usb_plug_h / 2 + part_fit - back_t + eps,
-                  usb_plug_w + 2 * part_fit]);
+        // the wall over the board's USB-C end, thinned from inside to port_wall and as tall as the
+        // board's tallest part - a notch open at the back edge
+        translate([conn_hi ? W - wall - eps : port_wall, back_t - eps, z_board_c - sm_pocket_h / 2])
+            cube([wall - port_wall + eps, sm_t + part_fit + eps, sm_pocket_h]);
+        // the USB-C opening through it, the size of the socket's shell - also open at the back edge
+        translate([conn_hi ? W - wall - eps : -eps, back_t - eps, z_board_c - usb_shell_w / 2 - part_fit])
+            cube([wall + 2 * eps, usb_y + usb_shell_h / 2 + part_fit - back_t + eps,
+                  usb_shell_w + 2 * part_fit]);
         // vents: in front of the SGP41, and in front of the board
         vent_slots(gx0, gx1, gz0, gz1);
-        vent_slots(sm_x0, sm_x1 - gap, z_board0 + rim_t, z_board1 - rim_t);
+        vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), z_board0 + rim_t, z_board1 - rim_t);
         // clearance holes for the four screws
         for (b = bosses) cyl_y(b[0], b[1], hole_r(screw_d), y_in1 - eps, D + eps);
     }
@@ -259,9 +282,15 @@ module components(shrink = 0) {
         cube([sps_w - 2 * s, sps_t - 2 * s, sps_h - 2 * s]);
     color("teal") translate([sm_x0 + s, back_t + s, z_board_c - sm_w / 2 + s])
         cube([sm_l - 2 * s, sm_t - 2 * s, sm_w - 2 * s]);
-    // the USB-C shell, overhanging the PCB into the wall's opening
-    color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - 1.6 + s, z_board_c - 4.5 + s])
-        cube([usb_overhang - 2 * s, 3.2 - 2 * s, 9 - 2 * s]);
+    // the USB-C shell, overhanging the PCB through the wall's opening
+    color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - usb_shell_h / 2 + s,
+                             z_board_c - usb_shell_w / 2 + s])
+        cube([usb_overhang - 2 * s, usb_shell_h - 2 * s, usb_shell_w - 2 * s]);
+    // the body of the largest compliant plug, seated, with the board pushed against its stops. Its
+    // face can come right up to the socket's mouth, so that is where it is drawn.
+    color("dimgray") translate([conn_hi ? W + usb_proud_in + s : -usb_proud_in - 20 + s, usb_y - usb_plug_h / 2 + s,
+                                z_board_c - usb_plug_w / 2 + s])
+        cube([20 - 2 * s, usb_plug_h - 2 * s, usb_plug_w - 2 * s]);
     // the antenna: the loop in the board's plane past its end, then the straight wire
     color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s, z_board_c - 4 + s])
         cube([ant_over - 2 * s, 1 - 2 * s, 8 - 2 * s]);
@@ -287,6 +316,9 @@ echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x de
 echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
          " mm from the inlet end; depth set by the ", inner_d == sps_t + sps_fit + front_gap_min
          ? "SPS30" : "antenna wire"));
+echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
+         " mm past the outside face; any plug body up to ", 2 * usb_y,
+         " mm thick clears the mounting surface (a compliant one is at most ", usb_plug_h, ")"));
 
 if (draw_model) {
     if (part == "back")
