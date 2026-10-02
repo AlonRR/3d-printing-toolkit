@@ -13,7 +13,7 @@ The print-chamber box: two printed parts, joined by four M3 x 14 self-tapping sc
 
 Neither part has a bridge over air. Every opening in the cover is either a hole in its first layers or
 a notch open at its back edge, and the back plate is all features rising from the bed. (The slicer
-labels seven regions of the back plate "bridge infill"; all are internal, over its own sparse infill.)
+labels eight regions of the back plate "bridge infill"; all are internal, over its own sparse infill.)
 
   part = "back"       this file as it stands - what scripts/scad-check.sh checks
   part = "cover"      print-chamber-box-cover.scad sets it
@@ -111,11 +111,20 @@ gz0 = z_sps1 + gy_z_base + rim_t;
 gz1 = gz0 + gy_pocket_w;
 gy_bare_x0  = conn_hi ? gx0 + pocket_fit : gx1 - pocket_fit - gy_bare;   // the board's bare strip
 gy_parts_x0 = conn_hi ? gx0 + pocket_fit + gy_bare : gx0 + pocket_fit;   // ... and the half with its parts
-gy_ledge_h  = gy_back - gy_pcb_min + 2 * fdm_layer_h;   // parts on the thinnest board still clear the floor
-gy_rim_h     = gy_ledge_h + tape_max + gy_pcb_min / 2;   // reaches halfway up the thinnest board's edge
-gy_front_max = gy_ledge_h + tape_max + gy_pcb_max;       // the board's front face, above the floor, at most
+// The parts on the thinnest board clear the floor by `gap`, so the floor's top skin - printed over infill,
+// and not perfectly flat - cannot reach them. Raising the ledge costs nothing: it lowers the floor, not
+// the board.
+gy_ledge_h   = gy_back - gy_pcb_min + gap;
+gy_rim_h     = gy_ledge_h + gy_pcb_min / 2;          // reaches halfway up the thinnest board's edge
+gy_front_max = gy_ledge_h + gy_pcb_max;              // the board's front face, above the floor, at most
 gy_sensor_h  = gy_t - gy_back;
-gy_floor     = y_in1 - wire_room - gy_front_max;        // the pedestal's top
+gy_floor     = y_in1 - max(wire_room, gy_head_h + part_fit) - gy_front_max;   // the pedestal's top
+// The screw goes through the module's mounting hole into a blind pilot in the ledge. The hole is in the
+// bare strip, by the long edge away from the sensor - and which edge of the pocket that is follows from
+// which way the pins face (photo 1).
+gy_hole_x      = conn_hi ? gx0 + pocket_fit + gy_hole_far : gx1 - pocket_fit - gy_hole_far;
+gy_hole_z      = conn_hi ? gz1 - pocket_fit - gy_hole_side : gz0 + pocket_fit + gy_hole_side;
+gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // below the ledge's top
 gy_ped_x0    = conn_hi ? gx0 - rim_t : gx0;
 gy_ped_x1    = conn_hi ? gx1 : gx1 + rim_t;
 gy_ledge_x0  = conn_hi ? gx0 : gx1 - pocket_fit - gy_bare;
@@ -190,8 +199,15 @@ assert(gy_ped_x0 >= wall + gap && gy_ped_x1 <= W - wall - gap,
        "the SGP41's pedestal does not fit between the side walls");
 assert(gy_bare + pocket_fit < gy_pocket_l / 2,
        "the SGP41's ledge would reach the parts on its underside - check gy_bare");
-assert(gy_rim_h < gy_ledge_h + gy_pcb_min + gy_sensor_h,
-       "the SGP41's rim would stand taller than its sensor on the thinnest board");
+assert(gy_rim_h < gy_ledge_h + gy_pcb_min,
+       "the SGP41's rim would stand above its board's face, under the screw's head and the wires");
+assert(gy_hole_d >= gy_screw_d + 0.1,
+       str("the SGP41's mounting hole (", gy_hole_d, " mm) is too small for an M", gy_screw_d,
+           " screw - use a smaller one and set gy_screw_d, gy_head_d and gy_head_h"));
+assert(gy_hole_far - hole_r(gy_pilot_d) >= 0 && gy_hole_far + hole_r(gy_pilot_d) <= gy_bare,
+       "the SGP41's screw would miss its ledge: the hole is not in the bare strip - check gy_hole_far");
+assert(gy_pilot_depth + gap <= gy_ledge_h + gy_floor - back_t,
+       "the SGP41's screw would run out of pedestal");
 assert(loop_z0 - (gz1 + rim_t) >= gap,
        str("the SGP41's pedestal reaches within ", loop_z0 - (gz1 + rim_t), " mm of the antenna loop"));
 assert(post_wall_room >= 2 * gap && post_lead_room >= 2 * gap,
@@ -298,6 +314,9 @@ module back_plate() {
         }
         // pilot holes - blind, so the plate behind stays whole
         for (b = bosses) cyl_y(b[0], b[1], hole_r(pilot_d), back_t + 1.0, y_in1 + eps);
+        // the pilot for the SGP41's screw, blind, down from the ledge's top
+        cyl_y(gy_hole_x, gy_hole_z, hole_r(gy_pilot_d), gy_floor + gy_ledge_h - gy_pilot_depth,
+              gy_floor + gy_ledge_h + eps);
         // mounting holes in the tabs
         cyl_y(-tab_hole_x, tab_z, hole_r(tab_hole_d), -eps, back_t + eps);
         cyl_y(W + tab_hole_x, tab_z, hole_r(tab_hole_d), -eps, back_t + eps);
@@ -371,14 +390,17 @@ module components(shrink = 0) {
         else
             translate([conn_hi ? sm_ant_x - ant_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
                 cube([ant_h - 2 * s, 1, 1]);
-    // the GY-SGP41, as the envelope of every board thickness and tape within the bounds: the bare strip
-    // on its ledge, and the half with the parts hanging towards the floor
+    // the GY-SGP41, as the envelope of every board thickness within the bounds: the bare strip on its
+    // ledge, and the half with the parts hanging towards the floor
     color("green") {
         translate([gy_bare_x0 + s, gy_floor + gy_ledge_h + s, gz0 + pocket_fit + s])
             cube([gy_bare - 2 * s, gy_front_max + gy_sensor_h - gy_ledge_h - 2 * s, gy_w - 2 * s]);
-        translate([gy_parts_x0 + s, gy_floor + 2 * fdm_layer_h + s, gz0 + pocket_fit + s])
-            cube([gy_l - gy_bare - 2 * s, gy_front_max + gy_sensor_h - 2 * fdm_layer_h - 2 * s, gy_w - 2 * s]);
+        translate([gy_parts_x0 + s, gy_floor + gap + s, gz0 + pocket_fit + s])
+            cube([gy_l - gy_bare - 2 * s, gy_front_max + gy_sensor_h - gap - 2 * s, gy_w - 2 * s]);
     }
+    // the screw's head, on the thickest board - the nearest it comes to the cover
+    color("silver") cyl_y(gy_hole_x, gy_hole_z, gy_head_d / 2 - s, gy_floor + gy_front_max + s,
+                          gy_floor + gy_front_max + gy_head_h - s);
     // the SPS30's plug and the column its lead rises through before it bends over
     color("orange") translate([lead_x0 + s, back_t + s, z_sps1 + s])
         cube([lead_x1 - lead_x0 - 2 * s, sps_t - 2 * s, cable_zone_h - 2 * s]);
@@ -397,7 +419,8 @@ echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at 
          ? "SPS30" : "antenna wire"));
 echo(str("SGP41: its sensor ", y_in1 - (gy_floor + gy_front_max + gy_sensor_h), " to ",
          y_in1 - (gy_floor + gy_ledge_h + gy_pcb_min + gy_sensor_h), " mm behind the vents' inner face; its pedestal ",
-         loop_z0 - (gz1 + rim_t), " mm below the antenna loop"));
+         loop_z0 - (gz1 + rim_t), " mm below the antenna loop; held by an M", gy_screw_d, " x ", gy_screw_l,
+         " screw in a ", gy_pilot_depth, " mm pilot"));
 echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
          " mm past the outside face; any plug body up to ", 2 * usb_y,
          " mm thick clears the mounting surface (a compliant one is at most ", usb_plug_h, ")"));

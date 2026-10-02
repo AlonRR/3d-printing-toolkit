@@ -46,11 +46,14 @@ gy_w         = 10.60;
 gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
 gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. */
 gy_bare      = 4.0;    /* The GY-SGP41's underside carries all its parts on the pin half; the end opposite the pins is bare for about 4.5 mm (photo 2, 2 Oct 2026). The SGP41's ledge carries only this strip, so its parts never bear load. */
+gy_hole_d    = 2.7;    /* PLACEHOLDER - the GY-SGP41's mounting hole, read off photo 1. It takes the M2.5 screw that holds the module down. */
+gy_hole_far  = 2.7;    /* PLACEHOLDER - the hole's centre from the module's far end: the short edge opposite its pins. Photo 1. */
+gy_hole_side = 3.4;    /* PLACEHOLDER - the hole's centre from the nearer long edge, which is the one away from the sensor. Photo 1. */
 conn_from    = 2.0;    /* The SPS30's plug and lead, along its top face, from the OUTLET end. Photo 1, 2 Oct 2026, scaled against the 40.6 mm sensor: the wires leave 3.0 to 8.6 mm from that end, and the plug's housing reaches about 1 mm past each. Nothing stands in that column. */
 conn_to      = 10.5;
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
-unmeasured = [];
+unmeasured = ["gy_hole_d", "gy_hole_far", "gy_hole_side"];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 
@@ -61,7 +64,12 @@ usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mo
 /* [Bounds, not measurements - the design works anywhere inside them] */
 gy_pcb_min = 0.8;   /* The thinnest the GY-SGP41's bare board could plausibly be; GY modules are usually 1.0-1.6 mm. The ledge is tall enough that parts on a board this thin still clear the floor. */
 gy_pcb_max = 1.6;   /* The thickest, for the room left in front of it. */
-tape_max   = 1.0;   /* The thickest double-sided tape the SGP41 might be stuck to its ledge with: foam tape is about 1 mm. */
+
+/* [The SGP41's screw - an M2.5 socket head cap screw, ISO 4762] */
+gy_screw_d = 2.5;   /* M2.5. */
+gy_screw_l = 8.0;   /* M2.5 x 8, from the M2.5 box. It cuts its own thread in the ledge's pilot. */
+gy_head_d  = 4.5;   /* ISO 4762 head diameter for M2.5. */
+gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 
 /* [Fits - untested in ASA on this printer; see `untested_fits` below] */
 sps_fit    = 0.3;    /* Clearance per side around the SPS30. fdm-design-rules records NO house default - this is a placeholder. */
@@ -70,8 +78,9 @@ part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. */
 pilot_d    = 2.5;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. */
 screw_d    = 3.4;    /* Clearance hole for those screws in the cover. */
 tab_hole_d = 4.0;    /* Mounting holes in the tabs, for wood screws up to 3.5 mm. */
+gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. */
 
-untested_fits = ["sps_fit", "pocket_fit", "part_fit", "pilot_d", "screw_d", "tab_hole_d"];
+untested_fits = ["sps_fit", "pocket_fit", "part_fit", "pilot_d", "screw_d", "tab_hole_d", "gy_pilot_d"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
@@ -95,7 +104,7 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 lip    = 1.0;   /* How far the channel's front lips overlap the SPS30's front face. */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
-wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board and tape, for the wires soldered to its pins on the sensor side before they bend over. */
+wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board, for the wires soldered to its pins on the sensor side before they bend over. The screw's head needs more, and gets it. */
 post_d     = 4.0;   /* The tie post below the board's pin end. The wires are tied to it, so a tug on a sensor's lead never reaches the board's solder pads. */
 
 /* [Mounting and closing] */
