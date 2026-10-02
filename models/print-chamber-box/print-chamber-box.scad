@@ -56,7 +56,7 @@ inner_d   = max(sps_t + sps_fit + front_gap_min,
 D         = back_t + inner_d + front_t;
 y_in1     = D - front_t;                                    // inside face of the cover's front
 // The channel walls stand 2 * gap proud of the SPS30's face. It goes in from the front - nothing on
-// the plate overhangs it - and the cover's partition rib, 0.3 mm off its face, keeps it from tipping.
+// the plate overhangs it - and the cover's partition rib, sps_fit off its face, keeps it from tipping.
 y_ch1     = y_sps1 + 2 * gap;
 
 // =================================================================== derived: Z (up)
@@ -398,7 +398,7 @@ module cover() {
     translate([x_div - rib_t / 2, y_sps1 + sps_fit, z_sps0 + part_fit])
         cube([rib_t, y_in1 - y_sps1 - sps_fit + eps, sps_h - part_fit]);
     // the baffle that closes that air gap off from the warm compartment above, part_fit over the
-    // sensor's top. With the partition it also keeps the SPS30 from tipping forward, 0.3 mm off its face.
+    // sensor's top. With the partition it also keeps the SPS30 from tipping forward, sps_fit off its face.
     translate([ch_x0, y_sps1 + sps_fit, z_sps1 + part_fit])
         cube([ch_in_w, y_in1 - y_sps1 - sps_fit + eps, rib_t]);
 }

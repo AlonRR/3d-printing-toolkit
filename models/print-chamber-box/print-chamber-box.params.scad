@@ -74,16 +74,16 @@ gy_screw_l = 8.0;   /* M2.5 x 8, from the M2.5 box. It cuts its own thread in th
 gy_head_d  = 4.5;   /* ISO 4762 head diameter for M2.5. */
 gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 
-/* [Fits - untested in ASA on this printer; see `untested_fits` below] */
-sps_fit    = 0.3;    /* Clearance per side around the SPS30. fdm-design-rules records NO house default - this is a placeholder. */
-pocket_fit = 0.3;    /* Clearance per side around the two boards. */
+/* [Fits - the ones still untested in ASA on this printer are listed in `untested_fits` below] */
+sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (the clearance test, Inslogic ASA, MK3S): of 0.2, 0.3 and 0.4 the SPS30 took the tightest, 0.2. That is the bottom of the ladder, so a tighter fit was not tried. */
+pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2026, same print: the SuperMini and the GY-SGP41 each took the tightest of 0.2, 0.3 and 0.4 - again the bottom of the ladder. */
 part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. */
 pilot_d    = 2.5;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. */
 screw_d    = 3.4;    /* Clearance hole for those screws in the cover. */
 tab_hole_d = 4.0;    /* Mounting holes in the tabs, for wood screws up to 3.5 mm. */
 gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. */
 
-untested_fits = ["sps_fit", "pocket_fit", "part_fit", "pilot_d", "screw_d", "tab_hole_d", "gy_pilot_d"];
+untested_fits = ["part_fit", "pilot_d", "screw_d", "tab_hole_d", "gy_pilot_d"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
@@ -108,7 +108,7 @@ ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must
 sm_edge    = 1.0;   /* The strip along each long edge of the SuperMini's component side that holds only its castellated pads, nothing taller. Photo 1. The rails' lips may reach over it, no further. */
 sm_lip_over = 0.6;  /* How far each rail's lip reaches over the board's long edge, onto that pad strip. The board slides in under the lips, and they keep it down on the plate. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
-wire_room  = 5.0;   /* Room behind the pin half of the SGP41's board, for its four wires. They are soldered to come out of its back: each leaves its pad straight for 1 mm, bends over on a 2 mm radius, and where two cross - the module's pins run in the reverse order of the board's - one lies behind the other. That takes 4.6 mm; assembly-views.scad draws the routes and checks them against this, and check_components keeps the pedestal out of it. Alon, 2 Oct 2026: "the wires could be solderd to come out on the back of sgp41. make 8 smaller." Before that they came out of its front, and this was the room in front, which pushed the sensor 2.2 mm further from its vents. Now the room in front is set by the screw's head alone. */
+wire_room  = 7.0;   /* Room behind the pin half of the SGP41's board, for its four wires. They are the lab's 22 AWG solid hookup wire (Alon, 2 Oct 2026: "solid wire thats owned"; HomeBox has five 10 m coils of 22 AWG solid, UL1007, whose outside diameter is typically 1.6 mm - not yet measured). Soldered to come out of its back, each leaves its pad straight for 1 mm, bends over on a 3 mm radius, and where two cross - the module's pins run in the reverse order of the board's - one lies behind the other. That takes 6.5 mm; assembly-views.scad draws the routes and checks them against this, and check_components keeps the pedestal out of it. Alon, 2 Oct 2026: "the wires could be solderd to come out on the back of sgp41. make 8 smaller." Before that they came out of its front, and this was the room in front, which pushed the sensor further from its vents. */
 wire_slot_w = 3.5;  /* The cable channel, standing upright under the board's power pins: its slot, across. The SPS30's five wires, about 1 mm each, lie in it; the SGP41's go straight across in front. */
 wire_slot_d = 4.0;  /* ... and how deep it is, from the plate. */
 wire_ch_l   = 6.0;  /* ... and how long, measured down from just below the board, so the wires leave its top straight into the power pins. Alon, 2 Oct 2026: the full drop from the SPS30 to the board was too long. */
