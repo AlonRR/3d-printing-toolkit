@@ -164,6 +164,31 @@ so +X points to your left. The board's USB-C end faces the SPS30's connector, so
 cable leaves on your right. Every pin the node uses (5V, GND, 3V3, GPIO5, GPIO6) is at that end of the
 board, which leaves the antenna end with no wire near it.
 
+## Assembly
+
+Drawn by [`assembly-views.scad`](assembly-views.scad), which includes the model.
+
+![every part, moved apart along the way it goes in](assembly-exploded.png)
+
+In this order, all before the cover:
+
+1. **Slide the SuperMini in** from its USB-C side, antenna end first, under the rails' lips until it meets
+   the stops.
+2. **Set the SPS30 in from the front**, between its channel walls and onto its ledges.
+3. **Screw the GY-SGP41 down** with the M2.5 × 8, through its mounting hole into the standoff.
+4. **Wire it** — next picture — and press the wires into the cable channel.
+5. **Put the cover on** with the four M3 × 14 self-tapping screws. Its partition rib holds the SPS30, its
+   thinned wall closes behind the SuperMini.
+
+![the wires, each to its pin](assembly-wiring.png)
+
+![the wiring, closer](assembly-wiring-detail.png)
+
+The routes are illustrative — a wire bends where it likes — but each ends on the pin the wiring table
+gives it and runs up the cable channel. The SGP41's four wires pass in front of the SPS30 lead's column,
+not through it; GPIO5 and GPIO6 then cross the front of the board's USB-C end to its upper edge. The
+SPS30's colours are the meter-checked ones; the SGP41's are stand-ins for whatever hookup wire is used.
+
 ## What each feature is for
 
 Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so the numbers move with it.
@@ -192,7 +217,7 @@ Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so th
    parts on its underside, and on a round standoff under its mounting hole. The rim locates it on three
    sides and is open at the pin end, where the wires leave.
 10. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole into the standoff.
-11. **Cable channel** — stands upright directly under the board's three power pins. The wires from both
+11. **Cable channel** — 6 mm long (`wire_ch_l`), upright directly under the board's three power pins. The wires from both
     sensors press in from the front past a 45-degree lip on each wall, run up it, and leave its top end
     straight into the 5V, GND and 3V3 pads; no tie needed.
 12. **Bosses** — the cover's four M3 × 14 self-tapping screws bite into these. Their pilots are blind, so
@@ -395,7 +420,7 @@ Four more checks, which `scad-check.sh` does not run:
   pocket narrower than the board) measured 26.8 mm³, `gx0 = 15` (the pedestal moved into the lead's
   column) 642.5 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
   `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_cx = 17` with the walls'
-  extent left as set (the cable channel moved into the lead's column, past its assert) 140.8 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
+  extent left as set (the cable channel moved into the lead's column, past its assert) 16.2 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
   head into the front) 12.5 mm³, and `sm_lip_l = 2.5` (the rails' lips reaching onto the SuperMini's
   parts) 28.8 mm³. Stops reaching into the antenna loop and a mounting hole too small for the screw are
   caught earlier, by asserts.

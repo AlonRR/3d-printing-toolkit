@@ -111,6 +111,7 @@ stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of
 wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board, for the wires soldered to its pins on the sensor side before they bend over. The screw's head needs more, and gets it. */
 wire_slot_w = 3.5;  /* The cable channel, standing upright under the board's power pins: its slot, across. Nine wires of about 1 mm lie in it. */
 wire_slot_d = 4.0;  /* ... and how deep it is, from the plate. */
+wire_ch_l   = 6.0;  /* ... and how long, measured down from just below the board, so the wires leave its top straight into the power pins. Alon, 2 Oct 2026: the full drop from the SPS30 to the board was too long. */
 wire_lip_gap = 1.0; /* The opening between the channel's two 45-degree lips: a wire presses in past them and stays. */
 
 /* [Mounting and closing] */

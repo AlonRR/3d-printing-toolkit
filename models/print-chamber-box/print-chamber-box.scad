@@ -142,15 +142,15 @@ gy_ledge_x1  = conn_hi ? gx0 + pocket_fit + gy_strip : gx1;
 loop_z0      = z_board_c - sm_w / 2 + ant_loop_free;    // the antenna loop's lowest edge
 
 // =================================================================== the cable channel
-// Upright, directly under the board's three power pins (5V, GND, 3V3), from just above the SPS30 to just
-// below the board: the wires from both sensors press in from the front past a 45-degree lip on each wall,
-// run up it, and leave its top end straight into those pads. Open at both ends.
+// Upright, directly under the board's three power pins (5V, GND, 3V3), wire_ch_l long up to just below the
+// board: the wires from both sensors press in from the front past a 45-degree lip on each wall, run up it,
+// and leave its top end straight into those pads. Open at both ends.
 wch_lip = (wire_slot_w - wire_lip_gap) / 2;     // each lip's reach into the slot, at 45 degrees
 wch_cx  = conn_hi ? sm_usb_x - pin_mid : sm_usb_x + pin_mid;
 wch_x0  = wch_cx - wire_slot_w / 2 - rib_t;      // its walls' outer faces
 wch_x1  = wch_cx + wire_slot_w / 2 + rib_t;
-wch_z0  = z_sps1 + gap;                          // from just above the SPS30 ...
-wch_z1  = z_board0 - gap;                        // ... to just below the board's rim
+wch_z1  = z_board0 - gap;                        // its top, just below the board's rim
+wch_z0  = wch_z1 - wire_ch_l;
 wch_y1  = back_t + wire_slot_d + wch_lip;        // the walls' front, lips included
 
 // =================================================================== bosses and tabs
@@ -235,8 +235,8 @@ wch_lead_room = conn_hi ? wch_x0 - lead_x1 : lead_x0 - wch_x1;
 assert(wch_wall_room >= gap && wch_lead_room >= gap,
        str("the cable channel, under the board's power pins, must stand clear of the side wall and of the",
            " SPS30's lead; it leaves ", wch_wall_room, " and ", wch_lead_room, " mm"));
-assert(wch_z1 - wch_z0 >= 2 * wire_slot_w,
-       str("the cable channel is only ", wch_z1 - wch_z0, " mm tall between the SPS30 and the board"));
+assert(wire_ch_l >= wire_slot_w, "the cable channel is shorter than it is wide - it would not hold a wire");
+assert(wch_z0 >= z_sps1 + gap, "the cable channel reaches down to the SPS30 - shorten wire_ch_l");
 assert(wch_lip > 0 && wire_lip_gap >= 2 * fdm_extrusion_w,
        "the cable channel's lips must narrow its slot and leave an opening at least two beads wide");
 
