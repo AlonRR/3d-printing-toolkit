@@ -6,7 +6,7 @@ Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by to
 Items 3–6 have not been: nothing else was changed.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
-with one side deliberately left open for venting, no temperature sensing inside it, printing
+with one side deliberately left open for venting (it can be closed), no temperature sensing inside it, printing
 Inslogic ASA at 255 °C / 100 °C bed with 20 % fan — and a glue stick on the sheet for every
 print, on every material.** That last one is not incidental: it removes the prerequisite from
 item 2 and changes how the sheet gets cleaned in item 3. Some of the advice below is generic ASA

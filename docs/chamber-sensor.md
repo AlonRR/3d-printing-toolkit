@@ -953,7 +953,7 @@ what the placement rule exists for.
 ⚠️ **THE DOOR WAS ALSO OPEN. This is NOT a measurement of the enclosure.** The first version of this
 entry read it as "one side deliberately open reaches 31 °C, so the open side costs 10–20 °C" — that
 conclusion is **withdrawn**, because it was never a measurement of the normal configuration. With
-the permanent open side *and* the door open, this is very nearly an unenclosed printer, and 31 °C is
+the open side *and* the door open, this is very nearly an unenclosed printer, and 31 °C is
 about what a bed at print temperature does to the air near an open machine.
 
 **So what this number actually establishes is a BASELINE, not a verdict** — and a baseline is worth
@@ -1931,7 +1931,7 @@ fumes — it only has to be closed enough that a modest extraction can hold the 
 ### What it requires
 
 - ⚠️ **The enclosure must actually be closed.** This is the one hard prerequisite. With a side
-  permanently open there is no differential to hold — the flow required scales with the leakage area,
+  left open there is no differential to hold — the flow required scales with the leakage area,
   and an open side is not leakage, it is a duct. This converges neatly with build-order step 2, which
   already wanted the box closed and measured.
 - **Give it a DEFINED makeup-air inlet.** Do not rely on incidental gaps. A deliberate opening of
