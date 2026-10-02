@@ -44,12 +44,14 @@ sps_x1   = sps_x0 + sps_w;
 // So outlet_at_left puts the outlet at the HIGH-X end and the inlets at the low-X end.
 x_div    = outlet_at_left ? sps_x0 + divider_from_inlet_end
                           : sps_x1 - divider_from_inlet_end;
+div_clear_in  = divider_from_inlet_end - divider_t / 2 - sps_inlet_end;     // to the inlets' far end
+div_clear_out = sps_outlet_from - (divider_from_inlet_end + divider_t / 2);  // to the outlet grille
 
 // =================================================================== derived: Y (out from the wall)
 ledge_w   = sps_fit + sps_nub + ledge;                      // what each ledge spans, wall to sensor
 y_sps1    = back_t + sps_t;                                 // the SPS30's label face
 inner_d   = max(sps_t + sps_fit + front_gap_min,
-                wire_perpendicular ? sm_pcb_t + wire_h + gap : sm_t + gap);
+                wire_perpendicular ? ant_h + gap : sm_t + gap);
 D         = back_t + inner_d + front_t;
 y_in1     = D - front_t;                                    // inside face of the cover's front
 y_lip0    = y_sps1 + sps_fit;
@@ -77,8 +79,9 @@ sm_usb_x = conn_hi ? W - wall - part_fit : wall + part_fit;   // the PCB's USB-C
 sm_x0    = conn_hi ? sm_usb_x - sm_l : sm_usb_x;
 sm_x1    = sm_x0 + sm_l;
 sm_ant_x = conn_hi ? sm_x0 : sm_x1;    // the PCB's antenna end
-rim_hgt = sm_pcb_t + 2 * fdm_layer_h;   // the rims only locate the boards; they do not hold them
-usb_y   = back_t + usb_center_h;
+rim_hgt      = sm_pcb_t + 2 * fdm_layer_h;   // the rims only locate the boards; they do not hold them
+usb_center_h = sm_pcb_t + usb_shell_h / 2;  // the shell sits on the component side
+usb_y        = back_t + usb_center_h;
 
 // =================================================================== the SGP41: cable zone, inlet end
 gx1 = outlet_at_left ? ch_x0 + gap + gy_pocket_l : ch_x1 - gap;   // inlets at low X when the outlet is on your left
@@ -105,6 +108,10 @@ for (t = [["back_t", back_t], ["front_t", front_t]])
            str(t[0], " (", t[1], ") is printed flat, so it must be a whole number of ",
                fdm_layer_h, " mm layers"));
 
+assert(div_clear_in >= 0.5 && div_clear_out >= 0.5,
+       str("the divider must sit in the blank gap between the inlets (to ", sps_inlet_end,
+           " mm) and the outlet grille (from ", sps_outlet_from, " mm); it clears them by ",
+           div_clear_in, " and ", div_clear_out, " mm"));
 assert(x_div - divider_t / 2 > sps_x0 + ledge && x_div + divider_t / 2 < sps_x1 - ledge,
        str("the divider (at ", divider_from_inlet_end, " mm from the inlet end) does not fit between",
            " the two ledges - check divider_from_inlet_end"));
@@ -119,7 +126,7 @@ assert(y_lip1 <= y_in1 - part_fit,
 assert(usb_y - usb_plug_h / 2 >= 0,
        "the USB-C plug would hit the surface the box is screwed to - the board sits too low");
 
-assert(wire_perpendicular || (conn_hi ? sm_x0 - wire_h - gap >= wall : sm_x1 + wire_h + gap <= W - wall),
+assert(wire_perpendicular || (conn_hi ? sm_x0 - ant_h - gap >= wall : sm_x1 + ant_h + gap <= W - wall),
        "an antenna wire running past the board's end does not fit inside the box");
 
 // =================================================================== geometry helpers
@@ -261,10 +268,10 @@ module components(shrink = 0) {
     color("orange")
         if (wire_perpendicular)
             cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,
-                  back_t + sm_pcb_t + s, back_t + sm_pcb_t + wire_h - s);
+                  back_t + sm_pcb_t + s, back_t + ant_h - s);
         else
-            translate([conn_hi ? sm_ant_x - wire_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
-                cube([wire_h - 2 * s, 1, 1]);
+            translate([conn_hi ? sm_ant_x - ant_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
+                cube([ant_h - 2 * s, 1, 1]);
     color("green") translate([gx0 + pocket_fit + s, back_t + s, gz0 + pocket_fit + s])
         cube([gy_l - 2 * s, gy_t - 2 * s, gy_w - 2 * s]);
 }
