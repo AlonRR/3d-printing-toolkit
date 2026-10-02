@@ -151,6 +151,60 @@ so +X points to your left. The board's USB-C end faces the SPS30's connector, so
 cable leaves on your right. Every pin the node uses (5V, GND, 3V3, GPIO5, GPIO6) is at that end of the
 board, which leaves the antenna end with no wire near it.
 
+## What each feature is for
+
+Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so the numbers move with it.
+
+![the back plate, numbered](feature-map-back.png)
+
+**The back plate**, as you face the box with the cover off:
+
+1. **The plate** — the back of the box, flat against the wall. Everything else stands on it, and it
+   prints flat on the bed.
+2. **Mounting tabs** — one each side, with a hole for a wood screw up to 3.5 mm. 14 mm long, so the
+   screwdriver's shaft clears the box's side.
+3. **Channel walls** — the SPS30 slides down between them and they hold it sideways.
+4. **Front lips** — overlap the sensor's front face by 1 mm so it cannot fall forward. Their 45°
+   undersides print without support.
+5. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.
+6. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side. It
+   stands 4 mm proud below the box, so the outlet's air cannot loop straight back into the inlets.
+7. **Rims** — two low rails that locate the SuperMini up and down.
+8. **Stops** — over the two corners of the board's antenna end. They take the push of plugging the USB-C
+   cable in; the middle stays open for the antenna loop.
+9. **Pedestal** — lifts the SGP41 forward, so its sensor sits 2–3 mm behind its vents instead of 16 mm.
+10. **Ledge and rim** — the SGP41 rests only on the bare strip at its far end, so its parts carry no load.
+    The rim locates it on three sides and is open at the pin end, where the wires leave.
+11. **Pilot** — for the M2.5 × 8 screw through the module's mounting hole.
+12. **Tie post** — the wires are tied to it, so a tug stops here instead of at the SuperMini's solder pads.
+    The cover caps its top, so a tie cannot slip off.
+13. **Bosses** — the cover's four M3 × 14 self-tapping screws bite into these. Their pilots are blind, so
+    the back of the plate stays whole.
+
+![the cover from inside, numbered](feature-map-cover.png)
+
+**The cover**, seen from inside — from the wall — so its left and right are swapped against the box as
+you face it:
+
+1. **The front** — printed face down, so it comes out flat.
+2. **Vents in front of the SGP41** — room air reaches the gas sensor.
+3. **Vents in front of the board** — the board's warmth leaves here. With the lower vents they should
+   act as a small chimney, drawing fresh air in past the SGP41 (reasoned, not measured).
+4. **Screw holes** — clearance for the four M3 screws into the bosses.
+5. **Window** — most of the bottom wall is open under the SPS30's air face, so its inlets and outlet
+   breathe the room directly. Open at the back edge, so it prints without a bridge.
+6. **USB-C opening** — the size of the socket's metal shell. The socket's mouth reaches the outside face,
+   so any cable seats fully.
+7. **Thinned wall** — 0.9 mm over the board's USB-C end, so the board reaches into it and the socket
+   reaches the outside. The board's corners bear on it when a plug is pulled; the 45° step keeps a crack
+   from starting.
+8. **Partition** — continues the divider up the air gap in front of the sensor, so the inlet air and the
+   outlet air stay apart.
+9. **Baffle** — closes that air gap off from the compartment above, so the board's warmth does not drift
+   down into the sensor's air.
+10. **Rounded corners** — ASA lifts at sharp corners; the radius is what lets both parts print without a
+    brim.
+
 ## The USB-C end
 
 **The socket's mouth reaches the box's outside face, so a plug's body never enters the box** — any
