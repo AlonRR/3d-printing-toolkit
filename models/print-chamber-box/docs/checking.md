@@ -99,10 +99,10 @@ openscad -o wires.stl  -D 'view="check_wires"' assembly-views.scad   # must writ
 
 | Setting | What it breaks | Result |
 |---|---|---|
-| `wire_room = 6.0` | less room behind the module than the routes need | 0.5 mm past the room |
-| `lay_gap = 0` | both wire layers in one, so the crossing pairs meet | 1.55 mm of overlap |
+| `wire_room = 6.0` | less room behind the module than the routes need | 0.44 mm past the room |
+| `lay_gap = 0` | both wire layers in one, so the crossing pairs meet | 1.51 mm of overlap |
 | `up_dx = -2` | GPIO5 and GPIO6 rising past the board's middle | in front of the antenna half |
 | `wire_stub = -1.5` | no straight run before the first bend | a 1.5 mm bend |
-| `riser_aside = 0` | the SPS30's white wire rising straight in front of the GND pad, across the SGP41's GND wire | 1.2 mm of overlap |
-| `wire_stub = 9`, in `check_wires` | both layers pushed back to about 5 mm from the plate, into the cable channel's walls | 6.0 mm³ |
+| `riser_aside = 0` | the SPS30's white wire rising straight in front of the GND pad, across the SGP41's GND wire | 1.18 mm of overlap |
+| `wire_stub = 9`, in `check_wires` | both layers pushed back to about 5 mm from the plate, into the cable channel's walls | 5.5 mm³ |
 

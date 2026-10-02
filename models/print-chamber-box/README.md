@@ -60,4 +60,5 @@ opening is a hole in the first layers or a notch open at an edge.
 | `print-chamber-box-back.scad`, `-cover.scad`, `-fits.scad` | one part each; check and slice through these |
 | [`assembly-views.scad`](assembly-views.scad) | the assembly and wiring pictures, and the wire-route checks |
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
+| [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
 | [`docs/`](docs/) | the pages above and their pictures |

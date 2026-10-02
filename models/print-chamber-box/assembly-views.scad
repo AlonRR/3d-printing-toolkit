@@ -79,7 +79,7 @@ module guide(a, b) color([0.6, 0.6, 0.6]) hull() { translate(a) sphere(d = 0.5, 
 
 // ------------------------------------------------------------------ the wires
 wd        = 1.0;   // the SPS30 lead's wires, drawn 1 mm thick
-gy_wd     = 1.6;   // the SGP41's: the lab's 22 AWG solid hookup wire, UL1007's typical outside diameter
+gy_wd     = 1.56;  // the SGP41's: the lab's 22 AWG solid hookup wire, measured over its insulation
 bend_r    = 3.0;   // the SGP41's wires' tightest bend, on the centreline - about twice the wire
 wire_stub = 1.0;   // straight out of a solder joint before the first bend
 

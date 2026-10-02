@@ -64,8 +64,8 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 
 | Name | Value | Status |
 |---|---|---|
-| `sps_fit` | **0.2** | tested 2 Oct 2026 — clearance per side round the SPS30 |
-| `pocket_fit` | **0.2** | tested 2 Oct 2026 — clearance per side round both boards |
+| `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30 |
+| `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
 | `part_fit` | 0.3 | untested — between a back-plate feature and the cover |
 | `pilot_d` | 2.5 | untested — pilot for the cover's M3 × 14 self-tapping screws |
 | `gy_pilot_d` | 2.1 | untested — pilot for the SGP41's M2.5 screw |
@@ -77,6 +77,5 @@ The untested ones are listed in `untested_fits`, and `scad-check.sh` exits 2 unt
 ## Not in the params file
 
 The wiring drawing ([`assembly-views.scad`](../assembly-views.scad)) draws the SGP41's wires as the
-lab's **22 AWG solid hookup wire, UL1007, 1.6 mm** over its insulation — that type's typical figure,
-not a measurement. The room the model keeps for them, `wire_room`, follows from it. Worth a check with
-calipers.
+lab's **22 AWG solid hookup wire, UL1007, 1.56 mm** over its insulation (`gy_wd`, measured 2 Oct 2026).
+The room the model keeps for them, `wire_room`, follows from it.

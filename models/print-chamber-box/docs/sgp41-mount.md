@@ -46,7 +46,7 @@ a fallback for a tighter hole — its pilot would be under the 2 mm minimum.
 The pedestal carries only the module's far half. Behind the pin half there is nothing down to the
 plate, so the wires can be soldered to leave the back of the board. Each leaves its pad straight for
 1 mm, then bends over on a 3 mm radius; where two cross, one lies behind the other. For the lab's 22 AWG
-solid hookup wire that takes 6.5 mm, and `wire_room` keeps 7 mm free behind the pin half — the collision
+solid hookup wire (1.56 mm thick) that takes 6.4 mm, and `wire_room` keeps 7 mm free behind the pin half — the collision
 check holds the pedestal out of it.
 
 Out of the back, the wires cost the sensor nothing. Out of the front they would need that room between

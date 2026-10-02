@@ -107,6 +107,22 @@ module boss(d, h, pilot, depth, x, y)
             translate([0, 0, h + eps - depth]) cylinder(r = hole_r(pilot), h = depth + eps);
         }
 
+// every try's dots, beside it - a module of their own, so fits-map.scad can show them in a colour
+module tags() {
+    for (i = [0 : 2]) {
+        tag(i + 1, x1, m + i * (sps_out_t + row) + sps_out_t + (row - dot_d) / 2);   // SPS30 frames
+        tag(i + 1, x2, m + i * (sm_out_w + row) + sm_out_w + (row - dot_d) / 2);     // SuperMini trays
+        tag(i + 1, x3, m + i * (gy_out_w + row) + gy_out_w + (row - dot_d) / 2);     // GY-SGP41 trays
+        by = m + boss_d / 2 + i * (boss_d + row);                                    // M3 bosses
+        tag(i + 1, x4 + boss_d + 1, by - dot_d / 2);
+        gby = m + 3 * (boss_d + row) + gy_boss_d / 2 + i * (gy_boss_d + row);        // M2.5 bosses
+        tag(i + 1, x4 + boss_d + 1, gby - dot_d / 2);
+        // the hole bar: one group per column of holes, between its two rows
+        tag(i + 1, x3 + col3_w * (i + 0.5) / 3 - (i * (dot_d + 0.7) + dot_d) / 2 + dot_d / 2,
+            bar_y + bar_h / 2 - dot_d / 2, bar_t);
+    }
+}
+
 // ------------------------------------------------------------------ the part
 module fits() {
     difference() {
@@ -122,33 +138,26 @@ module fits() {
                 frame(sps_w + 2 * sps_nub + 2 * f, sps_t + 2 * f, cradle_t, frame_h,
                       x1 + (sps_in_w - (sps_w + 2 * sps_nub + 2 * f)) / 2,
                       sy + (sps_in_t - (sps_t + 2 * f)) / 2);
-                tag(i + 1, x1, sy + sps_out_t + (row - dot_d) / 2);
 
                 // the SuperMini trays
                 p = pocket_fits[i];
                 my = m + i * (sm_out_w + row);
                 frame(sm_l + 2 * p, sm_w + 2 * p, rim_t, rim_top - base_t, x2, my);
-                tag(i + 1, x2, my + sm_out_w + (row - dot_d) / 2);
 
                 // the GY-SGP41 trays
                 gy = m + i * (gy_out_w + row);
                 frame(gy_l + 2 * p, gy_w + 2 * p, rim_t, rim_top - base_t, x3, gy);
-                tag(i + 1, x3, gy + gy_out_w + (row - dot_d) / 2);
 
                 // the M3 pilot bosses, then the M2.5 ones, down column 4
                 by = m + boss_d / 2 + i * (boss_d + row);
                 boss(boss_d, m3_boss_h, m3_pilots[i], m3_pilot_depth, x4 + boss_d / 2, by);
-                tag(i + 1, x4 + boss_d + 1, by - dot_d / 2);
                 gby = m + 3 * (boss_d + row) + gy_boss_d / 2 + i * (gy_boss_d + row);
                 boss(gy_boss_d, gy_boss_h, gy_pilots[i], gy_pilot_depth, x4 + boss_d / 2, gby);
-                tag(i + 1, x4 + boss_d + 1, gby - dot_d / 2);
             }
+            tags();
 
             // the hole bar: M3 clearance holes above, mounting holes below
             translate([x3, bar_y, base_t - eps]) cube([col3_w, bar_h, bar_t - base_t + eps]);
-            for (i = [0 : 2])
-                tag(i + 1, x3 + col3_w * (i + 0.5) / 3 - (i * (dot_d + 0.7) + dot_d) / 2 + dot_d / 2,
-                    bar_y + bar_h / 2 - dot_d / 2, bar_t);
 
             // the part_fit peg, and the block its socket is cut in
             translate([x4, peg_y, base_t - eps]) cube([peg, peg, peg]);
@@ -176,7 +185,8 @@ module fits() {
 
 echo(str("clearance test: ", BW, " x ", BH, " mm base; dots 1 / 2 / 3 = a step tighter / as set / a step looser"));
 echo(str("  sps_fit ", sps_fits, "   pocket_fit ", pocket_fits, "   pilot_d ", m3_pilots, "   gy_pilot_d ", gy_pilots));
-echo(str("  screw_d ", screw_ds, " (upper row of the bar)   tab_hole_d ", tab_ds, " (lower row)   part_fit ", part_fit,
+echo(str("  screw_d ", screw_ds, " (the bar's row next to the GY-SGP41 trays)   tab_hole_d ", tab_ds,
+         " (its other row)   part_fit ", part_fit,
          " (peg ", peg, ", socket ", peg + 2 * part_fit, ")"));
 
 if (draw_model) fits();
