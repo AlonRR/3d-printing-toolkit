@@ -93,6 +93,15 @@ usb_proud_in = usb_proud - pocket_fit;   // the same, with a plug pushing the bo
 stop_x0 = conn_hi ? sm_ant_x - pocket_fit - rim_t : sm_ant_x + pocket_fit;
 rim_x0  = conn_hi ? stop_x0 : wall + part_fit;
 rim_x1  = conn_hi ? W - wall - part_fit : stop_x0 + rim_t;
+// The board slides in from the USB-C side, before the cover goes on, under a 45-degree lip on each rim.
+// The lips run from its 4th pin to its antenna end, clear of the pins the node solders to - all of them
+// among the first three on each edge.
+pin_pitch = 2.54;                              // the SuperMini's 0.1-inch pin pitch
+sm_lip_x0 = conn_hi ? rim_x0 : sm_usb_x + pin_mid + 2 * pin_pitch;
+sm_lip_x1 = conn_hi ? sm_usb_x - pin_mid - 2 * pin_pitch : rim_x1;
+sm_lip_l  = pocket_fit + sm_lip_over;          // each lip's reach from its rim's inner face
+sm_lip_y0 = back_t + sm_pcb_t + pocket_fit;    // its underside, at that face
+sm_lip_y1 = sm_lip_y0 + sm_lip_l + 2 * fdm_layer_h;   // its top
 
 // =================================================================== the SPS30's lead
 // Its plug sits on the connector face at the outlet end; the wires rise from it and bend over towards
@@ -188,6 +197,9 @@ assert(abs(z_board_c - tab_z) >= (usb_plug_w + tab_w) / 2 + gap,
        "the USB-C plug would hit the mounting tab on its side");
 assert(2 * stop_reach < sm_pocket_h,
        "the two stops at the board's antenna end meet - stop_reach is too large");
+assert(sm_lip_over < sm_edge,
+       "the rails' lips would reach past the SuperMini's pad strip onto its parts - check sm_lip_over");
+assert(sm_lip_x1 - sm_lip_x0 >= 2 * pin_pitch, "the rails' lips have no length - check pin_mid");
 assert(stop_reach - pocket_fit + gap <= ant_loop_free,
        str("the stops at the board's antenna end reach ", stop_reach - pocket_fit, " mm over it, and the",
            " antenna loop leaves only ", ant_loop_free, " mm free - reduce stop_reach"));
@@ -286,10 +298,21 @@ module back_plate() {
             translate([x_div - divider_t / 2, 0, -divider_proud])
                 cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
-            //  the board pocket: rims along the two long edges. Outwards, the PCB's USB-C end bears on
+            // the board pocket: rims along the two long edges. Outwards, the PCB's USB-C end bears on
             // the cover's thinned wall when a plug is pulled out.
             for (zz = [z_board0, z_board1 - rim_t])
                 translate([rim_x0, back_t - eps, zz]) cube([rim_x1 - rim_x0, rim_hgt + eps, rim_t]);
+            // and on each rim a lip with a 45-degree underside, over the board's pad strip from its 4th
+            // pin to its antenna end: it slides in under them, and they keep it down on the plate.
+            // Their cross-section in Y-Z, run along X.
+            translate([sm_lip_x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = sm_lip_x1 - sm_lip_x0) {
+                zi = z_board0 + rim_t;   // the rims' inner faces
+                zo = z_board1 - rim_t;
+                polygon([[back_t - eps, z_board0], [sm_lip_y1, z_board0], [sm_lip_y1, zi + sm_lip_l],
+                         [sm_lip_y0 + sm_lip_l, zi + sm_lip_l], [sm_lip_y0, zi], [back_t - eps, zi]]);
+                polygon([[back_t - eps, z_board1], [sm_lip_y1, z_board1], [sm_lip_y1, zo - sm_lip_l],
+                         [sm_lip_y0 + sm_lip_l, zo - sm_lip_l], [sm_lip_y0, zo], [back_t - eps, zo]]);
+            }
             // inwards, a stop over each corner of the antenna end takes the push of plugging in. The
             // middle of that end stays open, because the antenna loop lies in the board's plane past it.
             for (zz = [z_board0, z_board1 - rim_t - stop_reach])
@@ -382,33 +405,51 @@ module sps_insert_path()
     translate([sps_x0 - sps_nub, back_t + 0.02, z_sps0 + 0.02])
         cube([sps_w + 2 * sps_nub, y_in1 - back_t, sps_h - 0.04]);
 
+// =================================================================== the SuperMini, piece by piece
+// Five pieces, so the slide-in check can sweep each one on its own: a hull of the whole board would fill
+// the space between its antenna wire and its edges, which is exactly where the rails' lips are.
+module sm_piece(i, s) {
+    if (i == 0)        // the bare PCB
+        color("teal") translate([sm_x0 + s, back_t + s, z_board_c - sm_w / 2 + s])
+            cube([sm_l - 2 * s, sm_pcb_t - 2 * s, sm_w - 2 * s]);
+    else if (i == 1)   // its parts, up to the tallest, clear of the pad strip along each long edge
+        color("teal") translate([sm_x0 + s, back_t + sm_pcb_t - s, z_board_c - sm_w / 2 + sm_edge + s])
+            cube([sm_l - 2 * s, sm_t - sm_pcb_t, sm_w - 2 * sm_edge - 2 * s]);
+    else if (i == 2)   // the USB-C shell, overhanging the PCB through the wall's opening
+        color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - usb_shell_h / 2 + s,
+                                 z_board_c - usb_shell_w / 2 + s])
+            cube([usb_overhang - 2 * s, usb_shell_h - 2 * s, usb_shell_w - 2 * s]);
+    else if (i == 3)   // the antenna loop, in the board's plane past its end
+        color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s,
+                                   z_board_c - sm_w / 2 + ant_loop_free + s])
+            cube([ant_over - 2 * s, 1 - 2 * s, sm_w - 2 * ant_loop_free - 2 * s]);
+    else if (i == 4)   // the antenna's straight wire
+        color("orange")
+            if (wire_perpendicular)
+                cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,
+                      back_t + sm_pcb_t + s, back_t + ant_h - s);
+            else
+                translate([conn_hi ? sm_ant_x - ant_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
+                    cube([ant_h - 2 * s, 1, 1]);
+}
+
+// The board's way in: each piece swept from clear of the plate's USB-C side to its seat against the stops.
+module sm_slide_path(s = 0.02) {
+    dx = conn_hi ? sm_l + ant_over + gap : -(sm_l + ant_over + gap);
+    for (i = [0 : 4]) hull() { sm_piece(i, s); translate([dx, 0, 0]) sm_piece(i, s); }
+}
+
 // =================================================================== the components, for preview and checks
 module components(shrink = 0) {
     s = shrink;
     color("silver") translate([sps_x0 + s, back_t + s, z_sps0 + s])
         cube([sps_w - 2 * s, sps_t - 2 * s, sps_h - 2 * s]);
-    color("teal") translate([sm_x0 + s, back_t + s, z_board_c - sm_w / 2 + s])
-        cube([sm_l - 2 * s, sm_t - 2 * s, sm_w - 2 * s]);
-    // the USB-C shell, overhanging the PCB through the wall's opening
-    color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - usb_shell_h / 2 + s,
-                             z_board_c - usb_shell_w / 2 + s])
-        cube([usb_overhang - 2 * s, usb_shell_h - 2 * s, usb_shell_w - 2 * s]);
+    for (i = [0 : 4]) sm_piece(i, s);   // the SuperMini
     // the body of the largest compliant plug, seated, with the board pushed against its stops. Its
     // face can come right up to the socket's mouth, so that is where it is drawn.
     color("dimgray") translate([conn_hi ? W + usb_proud_in + s : -usb_proud_in - 20 + s, usb_y - usb_plug_h / 2 + s,
                                 z_board_c - usb_plug_w / 2 + s])
         cube([20 - 2 * s, usb_plug_h - 2 * s, usb_plug_w - 2 * s]);
-    // the antenna: the loop in the board's plane past its end, then the straight wire
-    color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s,
-                               z_board_c - sm_w / 2 + ant_loop_free + s])
-        cube([ant_over - 2 * s, 1 - 2 * s, sm_w - 2 * ant_loop_free - 2 * s]);
-    color("orange")
-        if (wire_perpendicular)
-            cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,
-                  back_t + sm_pcb_t + s, back_t + ant_h - s);
-        else
-            translate([conn_hi ? sm_ant_x - ant_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
-                cube([ant_h - 2 * s, 1, 1]);
     // the GY-SGP41, as the envelope of every board thickness within the bounds: the bare strip on its
     // ledge, and the half with the parts hanging towards the floor
     color("green") {
@@ -465,6 +506,8 @@ if (draw_model) {
         intersection() { union() { back_plate(); cover(); } components(shrink = 0.02); }
     else if (part == "check_insert")
         intersection() { back_plate(); sps_insert_path(); }
+    else if (part == "check_slide")
+        intersection() { back_plate(); sm_slide_path(); }
     else
         assert(false, str("unknown part \"", part, "\" - use back, cover or assembly"));
 }

@@ -72,7 +72,7 @@ if (view == "back") {
             " 3  channel walls - the SPS30 goes in from the front",
             " 4  ledges - the SPS30 stands on them",
             " 5  divider - splits inlet from outlet air",
-            " 6  rims - locate the SuperMini",
+            " 6  rails - the SuperMini slides in under their lips",
             " 7  stops - take the push of plugging in",
             " 8  pedestal - lifts the SGP41 to its vents",
             " 9  ledge, standoff and rim for the SGP41",

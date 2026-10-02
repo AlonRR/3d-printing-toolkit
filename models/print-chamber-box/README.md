@@ -106,6 +106,7 @@ ends, which is one number to measure.
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 | `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end. From photo 1, scaled against the sensor: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
+| `sm_edge` | **1.0** (photo) | the strip along each long edge of the SuperMini's component side that carries only its castellated pads. The rails' lips reach 0.6 mm over it, no further |
 | `pin_mid` | **5.1** (photo) | the middle of the SuperMini's three power pins from its USB-C end; photo 1 reads 2.6, 5.1 and 7.7. The cable channel stands under it |
 | `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside. The ledge stops 0.5 mm short of it. An earlier photo reading of about 4.5 put the ledge under the parts |
 | `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: photo 2 puts the nearest parts beside and above the hole about 2.6 mm from its centre. The 4 mm standoff (`gy_standoff_d`) sits inside it |
@@ -141,7 +142,11 @@ list there, which makes the model warn until it is measured.
 
 Hardware: four **M3 × 14 self-tapping** screws close it, and two wood screws up to 3.5 mm hang it. **One
 M2.5 × 8 socket head cap screw** holds the SGP41 down through its mounting hole. Double-sided tape
-holds the SuperMini on the plate; it is also held along its length — see below.
+is not needed anywhere: the SuperMini is held by the rails and the cover — see below.
+
+**The SuperMini slides in from its USB-C side**, before the cover: antenna end first, under the rails'
+lips, until it meets the stops. The cover's thinned wall then closes behind it. `check_slide` proves its
+way in is clear.
 
 **The SPS30 goes in from the front**, before the cover: set it between the channel walls and onto its
 ledges. Nothing on the plate overhangs it — `check_insert` proves its path in is clear — and once the
@@ -176,7 +181,10 @@ Drawn by [`feature-map.scad`](feature-map.scad), which includes the model, so th
 4. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.
 5. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side. It
    stands 4 mm proud below the box, so the outlet's air cannot loop straight back into the inlets.
-6. **Rims** — two low rails that locate the SuperMini up and down.
+6. **Rails** — the SuperMini slides in under their 45° lips from its USB-C side, antenna end first,
+   before the cover goes on, until it meets the stops (7). The lips run from its 4th pin to its antenna
+   end, clear of the pins its wires are soldered to, and keep it down on the plate; once the cover is on,
+   the socket in its snug opening holds the other end. No tape.
 7. **Stops** — over the two corners of the board's antenna end. They take the push of plugging the USB-C
    cable in; the middle stays open for the antenna loop.
 8. **Pedestal** — lifts the SGP41 forward, so its sensor sits 2–3 mm behind its vents instead of 16 mm.
@@ -374,7 +382,7 @@ Both should report one manifold part and `fdm_*` matching the profile - the back
 with its tabs, the cover 62.8 mm. **Exit 2 is expected** while the
 `unmeasured` and `untested_fits` lists are not empty; exit 0 means both are clear.
 
-Three more checks, which `scad-check.sh` does not run:
+Four more checks, which `scad-check.sh` does not run:
 
 - `-D 'part="check_parts"'` intersects the two parts. The result must have **zero volume** — they meet at
   the plate's face and the boss tops, and nowhere else. Positive controls: `part_fit = -0.6` measured
@@ -388,8 +396,13 @@ Three more checks, which `scad-check.sh` does not run:
   column) 642.5 mm³, `gy_strip = 4` (the ledge reaching under the SGP41's parts) 6.5 mm³,
   `gy_standoff_d = 5.6` (the standoff wider than the bare patch) 2.8 mm³, `wch_cx = 17` with the walls'
   extent left as set (the cable channel moved into the lead's column, past its assert) 140.8 mm³, and `gy_floor = 17` (the SGP41 pushed towards the cover, its screw's
-  head into the front) 12.5 mm³. Stops reaching into the antenna loop and a mounting hole too small for the
-  screw are caught earlier, by asserts.
+  head into the front) 12.5 mm³, and `sm_lip_l = 2.5` (the rails' lips reaching onto the SuperMini's
+  parts) 28.8 mm³. Stops reaching into the antenna loop and a mounting hole too small for the screw are
+  caught earlier, by asserts.
+- `-D 'part="check_slide"'` intersects the back plate with the SuperMini's way in — each of its pieces
+  swept from clear of the plate's USB-C side to its seat against the stops. It must be **empty**. Positive
+  controls: `stop_x0 = 20` (the stops moved into its path) measured 5.2 mm³, and `sm_lip_y0 = 2.6` (the
+  lips set too low over its edges) 1.2 mm³.
 - `-D 'part="check_insert"'` intersects the back plate with the SPS30's path in from the front — its
   outline, nubs included, swept from its seat to the cover's front. It must be **empty**. Positive
   control: the design before 2 Oct 2026's review, with its front lips, measured 131.8 mm³ — which is

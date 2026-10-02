@@ -105,6 +105,8 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 
 /* [Holding the sensor, the boards and the wires] */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. The SPS30 is put in from the front and stands on them; the cover's partition rib, 0.3 mm in front of its face, keeps it there. */
+sm_edge    = 1.0;   /* The strip along each long edge of the SuperMini's component side that holds only its castellated pads, nothing taller. Photo 1. The rails' lips may reach over it, no further. */
+sm_lip_over = 0.6;  /* How far each rail's lip reaches over the board's long edge, onto that pad strip. The board slides in under the lips, and they keep it down on the plate. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
 wire_room  = 2.5;   /* Room in front of the SGP41's board, at the thickest board, for the wires soldered to its pins on the sensor side before they bend over. The screw's head needs more, and gets it. */
 wire_slot_w = 3.5;  /* The cable channel, standing upright under the board's power pins: its slot, across. Nine wires of about 1 mm lie in it. */
