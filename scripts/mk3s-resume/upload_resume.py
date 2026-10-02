@@ -29,6 +29,15 @@ base = host if host.startswith("http") else "http://" + host
 key = cfg["printhost_apikey"].strip()
 
 data = f.read_bytes()
+# Resolve redirects with a small GET BEFORE sending the file. Behind the proxy, plain http answers
+# every request with 308 to https - and on a PUT the server may answer and close while the body is
+# still going out. Measured 2 Oct 2026: the first 2.9 MB upload followed the 308 and landed; the
+# second died mid-body with ConnectionAbortedError and left nothing on the printer. urllib follows
+# a GET's redirects itself, so its final URL gives the scheme and host to PUT to directly.
+with urllib.request.urlopen(urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key}),
+                            timeout=15) as r:
+    final = urllib.parse.urlparse(r.geturl())
+    base = f"{final.scheme}://{final.netloc}"
 # /api/v1/status lists the writable storage as /local (the SD card is read-only)
 url = f"{base}/api/v1/files/local/{urllib.parse.quote(f.name)}"
 def put(url, data, key, hops=2):
