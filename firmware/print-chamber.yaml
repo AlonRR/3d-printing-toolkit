@@ -76,6 +76,10 @@
 #    plugged into the sensor, the END wire that beeps to the housing is pin 5 and the other
 #    end wire is pin 1. Pins 2-4 then follow the order of the wires AT THE SENSOR'S
 #    CONNECTOR. Expect the colours to be unconventional - black can be the 5 V wire.
+#    The lead this node was built with, identified that way on 1 Oct 2026 (orange beeped
+#    to the housing). It holds for THAT lead only - meter any other:
+#      black  1 VDD -> 5V      red    2 SDA -> GPIO5      white  3 SCL -> GPIO6
+#      yellow 4 SEL -> GND     orange 5 GND -> GND
 #
 # ⚠️ KEEP THE SPS30's I2C LEAD UNDER 20 cm. The datasheet recommends UART beyond that for
 #    EMI robustness, and ESPHome's sps30 platform is I2C. So put the node beside the sensor
