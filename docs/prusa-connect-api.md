@@ -164,7 +164,7 @@ GET  /app/printers/{printer_uuid}/camera
 This is the only API Prusa officially supports for Connect, and it is a direct match for the
 **ESP32-S3 N16R8 CAM with the OV3660** already in the parts inventory. That would put a live view
 of the printer next to the progress readout on the phone, through a supported interface rather
-than a `0.0.1-dev` one. See [chamber-sensor](chamber-sensor.md) §3w for why an S3 is the board to
+than a `0.0.1-dev` one. See [chamber-sensor §3w](chamber-sensor/boards.md#the-arduino-nano-esp32-as-the-bench-reference-3w) for why an S3 is the board to
 build a network device on, and §3z for why the C3 SuperMinis are not.
 
 ---
@@ -180,7 +180,7 @@ written or designed**, which was not the expected answer.
 `ESP32-S3 N16R8 CAM` from the parts inventory. Layout matches the **Freenove ESP32-S3-WROOM CAM**.
 
 ⚠️ **Two USB-C ports, and they are not interchangeable** — the same trap as the C3-MINI-1 in
-[chamber-sensor](chamber-sensor.md) §3y. One is native USB, one is a **CH343 UART bridge**. Plugged
+[chamber-sensor §3y](chamber-sensor/boards.md#the-pairing-that-works-3y). One is native USB, one is a **CH343 UART bridge**. Plugged
 into the UART side it enumerates as `USB-Enhanced-SERIAL CH343`, which is how to tell which port
 you are on without guessing. For ESPHome on the UART port, **do not** set
 `hardware_uart: USB_SERIAL_JTAG` — that sends the console out the *other* connector, and a healthy
@@ -287,7 +287,7 @@ One S3 CAM board replaces all of it:
 - **10 DHT11s are already owned**, and so is the board.
 
 No ESP-NOW, no hub, no USB tether, no antenna surgery. The DHT11 accuracy caveat from
-[chamber-sensor](chamber-sensor.md) §2 still stands (±2 °C, 1 °C resolution) — fine for "is the
+[chamber-sensor §2](chamber-sensor/sensors.md) still stands (±2 °C, 1 °C resolution) — fine for "is the
 chamber warm", poor for characterising a 40–60 °C ASA chamber precisely.
 
 ### The case — exists, fits this exact board, and mounts to an MK3

@@ -21,9 +21,9 @@ this repository. This page lists them, then shows the layout they add up to.
 From this repository:
 
 - **The box sits outside the printer's enclosure.** The SGP41 is rated −10 to +50 °C and the SPS30 to
-  +60 °C, against a chamber wanted at 40–60 °C ([chamber-sensor §3](../../../docs/chamber-sensor.md)).
+  +60 °C, against a chamber wanted at 40–60 °C ([chamber-sensor §3](../../../docs/chamber-sensor/node-design.md#the-node-goes-outside-the-enclosure-3)).
 - **The SuperMini carries a 31 mm antenna-wire mod**, whose last 15 mm stand straight up from the
-  board ([chamber-sensor §3x](../../../docs/chamber-sensor.md)). It needs free space in plastic, away
+  board ([chamber-sensor §3x](../../../docs/chamber-sensor/supermini-antenna.md#rescuing-them-the-31-mm-wire-mod-3x)). It needs free space in plastic, away
   from the SPS30's grounded metal case.
 
 ## The layout

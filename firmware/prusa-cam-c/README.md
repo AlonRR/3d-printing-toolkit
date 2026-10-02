@@ -14,7 +14,7 @@ UART bridge**. The bridge is the one in use here — it enumerates as `USB-Enhan
 (**COM9**), and `sdkconfig.defaults` therefore leaves the console on **UART0**. Selecting
 `USB_SERIAL_JTAG` would push every log line out the *other* connector and the board would look
 dead while running perfectly. That already cost a day on the C3-MINI-1; see
-[chamber-sensor](../../docs/chamber-sensor.md) §3y.
+[chamber-sensor §3y](../../docs/chamber-sensor/boards.md#the-pairing-that-works-3y).
 
 ## Milestone 1 — PASSED
 

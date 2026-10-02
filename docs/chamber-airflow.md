@@ -1,6 +1,6 @@
 # Chamber airflow — the complete filter and extraction plan
 
-**The build that follows from the 4 Sep 2026 decision** in [chamber-sensor](chamber-sensor.md):
+**The build that follows from the 4 Sep 2026 decision** in [chamber-sensor](chamber-sensor/heating-and-airflow.md):
 recirculate through a filter during a print, **plus** a small continuous extraction, so the chamber
 sits slightly below room pressure and every leak flows *inward*.
 
@@ -288,7 +288,7 @@ was iterating on JPEG code. Its position is chosen for optics, not for cable rou
 
 | | |
 |---|---|
-| **Board** | An **ESP32-C3** — ten owned. ⚠️ SuperMini, so the [§3x antenna mod](chamber-sensor.md) comes first, and has not been done on any board yet |
+| **Board** | An **ESP32-C3** — ten owned. ⚠️ SuperMini, so the [§3x antenna mod](chamber-sensor/supermini-antenna.md#rescuing-them-the-31-mm-wire-mod-3x) comes first — one board has it, measured 14 Sep 2026 |
 | **Sensing** | Chamber temp + RH, on **its own** sensor, sited away from the fan. The camera's DHT11 reads high from self-heating and is the wrong input for a control loop |
 | **Outputs** | One PWM channel for the fan. **No damper servo** — the split is mechanical |
 | **Integration** | MQTT to HA, same plumbing the camera node already uses |
@@ -311,9 +311,9 @@ condition it exists for.
 
 ## Build order
 
-1. **Close the enclosure.** ⚠️ This is the hard prerequisite — with a side permanently open there is
-   no differential to hold, because that is not leakage, it is a duct. It is also build-order step 2
-   of `chamber-sensor.md`, still outstanding.
+1. **Close the enclosure.** ⚠️ This is the hard prerequisite — with a side left open there is
+   no differential to hold, because that is not leakage, it is a duct. It is also [build-order step 2](chamber-sensor/build.md#build-order-10)
+   of the chamber sensor: nearly closed is measured (9 Sep 2026); fully closed is still outstanding.
 2. **Measure the closed chamber temperature**, against the open-configuration baseline already
    recorded (31 °C ± 2, door open, 3 Sep 2026). This is the number that decides whether a chamber
    heater is ever needed — answer it before buying one.
