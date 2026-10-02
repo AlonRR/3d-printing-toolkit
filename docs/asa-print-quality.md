@@ -6,7 +6,7 @@ Researched 29 Aug 2026. Ordered by expected payoff per unit of effort, not by to
 Items 3–6 have not been: nothing else was changed.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
-with one side deliberately left open for venting (it can be closed), no temperature sensing inside it, printing
+closed since 19 Sep 2026 (one side was left open for venting until then), printing
 Inslogic ASA at 255 °C / 100 °C bed with 20 % fan — and a glue stick on the sheet for every
 print, on every material.** That last one is not incidental: it removes the prerequisite from
 item 2 and changes how the sheet gets cleaned in item 3. Some of the advice below is generic ASA
@@ -179,9 +179,12 @@ shield lands on top of the brim.
 ## 4. Chamber temperature — the real ceiling, and it is gated on a measurement
 
 ASA wants a **warm, still chamber: 40–50 °C is the usual target**, and sources go as high as
-70. The enclosure currently has **one side deliberately open**, so the chamber is near room
-temperature and the airflow across the part is asymmetric. That is the largest remaining
-variable, and no slicer setting substitutes for it.
+70. ✅ **The enclosure has been closed since 19 Sep 2026, and an ASA print now holds the chamber at
+45–46 °C** (2 Oct 2026, room 26.6 °C) — inside the target on bed heat alone. Until then one side
+was deliberately open, which kept the chamber near room temperature and the airflow across the part
+asymmetric. Details: [chamber-sensor measurements](chamber-sensor/measurements.md#closed-every-print-since-19-sep-2026).
+⚠️ **What closing has not yet been checked against is the Einsy** — see below; its bay has not been
+read with the box closed during an ASA print.
 
 **Do not simply close it — but the exposure is smaller than this page long claimed.** ⚠️ **CORRECTED 4 Sep 2026: the PSU is ALREADY OUTSIDE the enclosure.** Alon moved it out when he built the box, so every statement here and in `CLAUDE.md` that "the Einsy board and the PSU sit inside the frame" has been false since the enclosure was built, and the risk was being overstated in every document that repeated it. **Only the Einsy is inside.** That removes the larger heat source of the two — a PSU dissipates its own losses under bed load *and* stirs the bay with its fan — so the remaining question is Einsy-only. The
 failure mode is documented and specific: users printing ABS/ASA in a closed enclosure report
@@ -190,8 +193,8 @@ electronics box or moving the board outside the enclosure. Reports conflict on w
 MK3S+ tolerates a closed enclosure — some run doors-closed without trouble — which is exactly
 the situation where measuring beats reading forum posts.
 
-**The gating step is the chamber sensor that `CLAUDE.md` already lists as a future project.**
-The fume-fan ESP32 is at the printer with spare inputs and is the natural host.
+**The gating step was the chamber sensor, and it exists:** a node has measured the chamber air
+since September ([chamber-sensor](chamber-sensor.md)). The bay probe is the part still to fit.
 
 ⚠️ **The DHT11 is marginal for this specific job.** Ten are on hand, but its range tops out at
 **50 °C** — the top of the target band — with ±2 °C accuracy and 1 °C resolution. It will tell

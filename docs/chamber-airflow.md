@@ -313,7 +313,7 @@ condition it exists for.
 
 1. **Close the enclosure.** ⚠️ This is the hard prerequisite — with a side left open there is
    no differential to hold, because that is not leakage, it is a duct. It is also [build-order step 2](chamber-sensor/build.md#build-order-10)
-   of the chamber sensor: nearly closed is measured (9 Sep 2026); fully closed is still outstanding.
+   of the chamber sensor. ✅ **Done: the enclosure has been closed for every print since 19 Sep 2026.**
 2. **Measure the closed chamber temperature**, against the open-configuration baseline already
    recorded (31 °C ± 2, door open, 3 Sep 2026). This is the number that decides whether a chamber
    heater is ever needed — answer it before buying one.

@@ -20,12 +20,14 @@ They are split into the topic pages below; this page says where things stand and
   move, `chamber-c3.yaml` stays the live chamber node. Its enclosure is
   [`models/print-chamber-box/`](../models/print-chamber-box/), which hangs outside the printer's
   enclosure.
-- **Measured so far** ([the measurements](chamber-sensor/measurements.md)): with the box open the
-  chamber sits about +5 °C over the room; nearly closed, **+12.5 °C** (40.2 °C); the electronics bay
-  reads **50–51 °C**, about **9.5 °C below** the ~60 °C trouble figure; and the box cools within
-  about an hour after a print.
-- **Not done yet:** the bay and room probes — two DS18B20s, bought in September; these notes do not
-  record them fitted — the fully closed measurement, and the fan interlock
+- **The enclosure has been closed for every print since 19 Sep 2026.** Measured since
+  ([the measurements](chamber-sensor/measurements.md)): PETG prints hold the chamber about **12 °C**
+  over the room; **an ASA print reached 45–46 °C**, inside the 40–60 °C ASA band, on bed heat alone.
+  Earlier: the electronics bay read **50–51 °C** on 9 Sep with the box nearly closed, about 9.5 °C
+  below the ~60 °C trouble figure; and the box cools within about an hour after a print.
+- **Not done yet:** **a bay reading with the box closed during an ASA print** — the most important
+  open number, since on the 9 Sep offset the bay would be near 56 °C; the bay and room probes (two
+  DS18B20s, bought in September; these notes do not record them fitted); and the fan interlock
   ([the build order](chamber-sensor/build.md)).
 
 ## Decisions that hold across the pages

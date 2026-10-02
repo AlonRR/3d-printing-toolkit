@@ -7,10 +7,11 @@
 - **The skeleton below is the full three-point node with the fan interlock.** The node actually in
   service is narrower: [`firmware/chamber-c3.yaml`](../../firmware/chamber-c3.yaml), chamber air
   only. The planned full node is [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml).
-- **Where the build order stands:** step 1 is done (30 Aug). Step 2 has a nearly-closed reading
-  (9 Sep, side 2 cm open) but not the fully closed one. Step 3's AHT20 is in service (11 Sep); the
-  DS18B20s were bought in September, and these notes do not record them fitted. Steps 4–6 have not
-  started.
+- **Where the build order stands:** step 1 is done (30 Aug). Step 2 is done in effect: the box
+  was nearly closed on 9 Sep and fully closed from 19 Sep, and a short ASA print with it closed
+  reached 45–46 °C ([measurements](measurements.md#closed-every-print-since-19-sep-2026)) — a first
+  reading toward step 5, without the bay and room probes. Step 3's AHT20 is in service (11 Sep); the DS18B20s were bought in
+  September, and these notes do not record them fitted. Step 4, the interlock, has not started.
 - **Build ESPHome from PowerShell, not Git Bash** — and judge a build by the `.bin` it leaves.
 
 ## ESPHome skeleton (§9)

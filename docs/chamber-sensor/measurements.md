@@ -4,6 +4,10 @@
 
 **In short:**
 
+- **Closed since 19 Sep 2026.** PETG prints hold the chamber about **12 °C** over the room, only
+  ~1.5 °C more than with a gap. **An ASA print reached 45–46 °C**, mid-way into the 40–60 °C ASA band,
+  on bed heat alone. The bay with the box closed is **not yet measured** — and on the 9 Sep offset it
+  would be near 56 °C during ASA.
 - **Box open (door and side), 3 Sep:** the chamber sat about +5 °C over the room. A baseline, not a
   verdict on the enclosure.
 - **Nearly closed (one side 2 cm open), 9 Sep:** 40.2 °C against a 27.7 °C room, **+12.5 °C** —
@@ -14,6 +18,41 @@
   prints, not a box that cannot shed heat.
 - **Long-term graphs have a seam on 11 Sep, ~14:30 local**, where the instrument changed.
 - Always record the configuration — door, side, how far open — with a reading.
+
+## Closed: every print since 19 Sep 2026
+
+**The enclosure has been fully closed for every print since the last Schubox print** (Alon,
+2 Oct 2026: *"all the prints since the last schbox were with the enclosure closed"*). The last one,
+`schubox-5x4-v2-handle-top` (3 h 11 m), was sent to the printer at 18:01 on 19 Sep, so the box has
+been closed since about 22:00 that evening. From the chamber series in InfluxDB, hourly:
+
+| | Hours | Chamber, mean | Rise over the room, mean (range) |
+|---|---|---|---|
+| PETG prints **before** closing, 6–19 Sep | 85 | 38.3 °C | 10.7 °C (9.1–12.0) |
+| PETG prints **after** closing, 20–29 Sep | 59 | 38.5 °C | **12.1 °C** (10.5–13.6) |
+| A 3 h bed anneal at 95 °C, 25 Sep | 4 | peak 47.5 °C | up to ~21 °C |
+| **An ASA print, 2 Oct** (the clearance test, 1 h 44 m) | ~1 at the top | **45.2–46.0 °C**, flat | **~19 °C** |
+| Idle, after closing | 289 | 28.4 °C | 2.8 °C |
+
+*"Hours" counts hours with the chamber above 37 °C, where the box is near its plateau; idle is below
+30 °C.*
+
+- **On PETG, closing the last gap added about 1.5 °C of rise.** The bed sets the chamber, not the
+  last centimetres of opening: the before and after means are within 0.2 °C because the room was
+  cooler afterwards.
+- **On ASA the closed box sits mid-band on bed heat alone.** 45–46 °C is inside the 40–60 °C ASA
+  range — which answers the heater question below for now: not needed.
+- ⚠️ **The bay with the box closed is not measured, and it matters most now.** On 9 Sep the bay ran
+  about 10 °C above the chamber air. If that offset holds, this ASA print put the Einsy near
+  **56 °C**, against the ~60 °C trouble figure. That is an estimate from one reading in a different
+  configuration, not a measurement. **Read the bay during the next long ASA print** — the LCD's
+  `Support → Temperatures`, or `M105`'s `A:` value.
+
+**The room reference is the guest bedroom's climate unit.** It is the only one that warms when the
+printer runs hot (by 0.8–1.5 °C on 25 Sep and 2 Oct), so the printer is most likely in that room —
+an inference, not a record. With another room as the reference the rises shift by a degree or two.
+The "before" period is not one configuration either: the side was 2 cm open on 9 Sep, and these
+notes do not record it for the other days.
 
 ## The baseline: 31 °C mid-print, door and side open — 3 Sep 2026
 
