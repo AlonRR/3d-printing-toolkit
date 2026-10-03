@@ -39,12 +39,14 @@ gy_pcb_nom = 1.2;                                   // a GY board, for the pictu
 module sgp41() {
     // the PCB, on edge against its standoff, pins up
     color([0.15, 0.55, 0.25]) box3([gy_xs, gy_y0 + pocket_fit, gy_z0], [gy_xs + gy_pcb_nom, gy_y1 + pocket_fit, gy_z1]);
-    // the parts on its underside, away from the bare patch round the hole
-    color([0.12, 0.12, 0.12]) box3([gy_xs - (gy_back - gy_pcb_nom), gy_y0 + 4.5, gy_z0 + gy_bare + 0.5],
-                                   [gy_xs, gy_y1 - 0.8, gy_z1 - 2.6]);
-    // the sensor, on its face at the far end, by the long edge away from the hole
-    color([0.75, 0.75, 0.70]) box3([gy_xs + gy_pcb_nom, gy_y1 + pocket_fit - 3.94, gy_z0 + 1.5],
-                                   [gy_xs + gy_pcb_nom + gy_sensor_h, gy_y1 + pocket_fit - 1.5, gy_z0 + 3.94]);
+    // the parts on its underside, away from the bare patch round the hole; and the sensor, on its face at
+    // the far end, by the long edge away from the hole
+    ya = gy_hole_front ? gy_y0 + 0.8 : gy_y0 + 4.5;
+    ys = gy_hole_front ? gy_y0 + pocket_fit + 1.5 : gy_y1 + pocket_fit - 3.94;
+    color([0.12, 0.12, 0.12]) box3([gy_xs - (gy_back - gy_pcb_nom), ya, gy_z0 + gy_bare + 0.5],
+                                   [gy_xs, ya + gy_w - 5.3, gy_z1 - 2.6]);
+    color([0.75, 0.75, 0.70]) box3([gy_xs + gy_pcb_nom, ys, gy_z0 + 1.5],
+                                   [gy_xs + gy_pcb_nom + gy_sensor_h, ys + 2.44, gy_z0 + 3.94]);
     // its four pins, along the top edge
     for (i = [0 : 3]) color([0.8, 0.7, 0.2])
         box3([gy_xs - 0.5, gy_y0 + pocket_fit + 1.5 + i * 2.54 - 0.3, gy_z1 - 1.2],

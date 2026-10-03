@@ -145,11 +145,16 @@ gy_sensor_h = gy_t - gy_back;
 gy_xs   = W - wall - part_fit - gy_head_h - gy_pcb_max;   // the standoff's face: the PCB's underside
 gy_xp   = gy_xs - (gy_back - gy_pcb_min);                  // the underside's parts reach back to here, at most
 gy_xb   = gy_xp - gap;                                     // the block's face, clear of them
-gy_y0   = back_t + gap;                                    // the module's back long edge - the one by the hole
+gy_y0   = back_t + gap;                                    // the module's back long edge, by the plate
 gy_y1   = gy_y0 + gy_w;
+// Which long edge its hole is by follows from which way round the module is. Seen from outside the side
+// wall - from +X, so its sensor side faces you with its pins up - +Y is on your right, so a hole on the
+// right is by the front edge. The whole box is mirrored when the outlet is at the left, and a real module
+// cannot be: so the canonical drawing takes the mirror image then, and comes out right after it.
+gy_hole_front = gy_hole_right != outlet_at_left;
 gy_z0   = wall + part_fit + nut_boss_d + rim_t + pocket_fit;   // its bottom edge, on a ledge over the nut boss
 gy_z1   = gy_z0 + gy_l;
-gy_hy   = gy_y0 + gy_hole_side;                            // its mounting hole
+gy_hy   = gy_hole_front ? gy_y1 - gy_hole_side : gy_y0 + gy_hole_side;   // its mounting hole
 gy_hz   = gy_z0 + gy_hole_far;
 gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // from the standoff's face
 
@@ -348,7 +353,7 @@ module back_plate() place() difference() {
         // the back stop at its antenna end, which takes the push of plugging in
         box3([stop_x0, back_t - eps, z_f0], [stop_x0 + rim_t, y_b0 + stop_reach, zu + sm_pcb_t + 1]);
 
-        // the SGP41's block, its standoff and the ledge its bottom edge sits on
+        // the SGP41's block, from the plate out past its standoff, and the ledge its bottom edge sits on
         box3([ch_x1 + cradle_t - eps, back_t - eps, gy_hz - gy_standoff_d / 2 - rim_t],
              [gy_xb, gy_hy + gy_standoff_d / 2 + rim_t, gy_hz + gy_standoff_d / 2 + rim_t]);
         cyl_x(gy_hy, gy_hz, gy_standoff_d / 2, gy_xb - eps, gy_xs);

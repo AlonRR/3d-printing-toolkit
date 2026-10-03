@@ -67,6 +67,7 @@ Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie o
 | `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: the nearest parts beside and above the hole are about 2.6 mm from its centre |
 | `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
 | `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end, and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
+| `gy_hole_right` | **true** (photo) | which way round the module is: seen from its sensor side with its pins up, the hole is at the bottom right and the sensor at the bottom left — the GY-SGP41 in [the figure](board-measure.png). From photo 2, which is not mirrored: the SuperMini's labels in the same photo read the right way round. Standing on edge with its sensor towards the side wall and its pins up, the module's hole is therefore by its front edge, away from the plate |
 
 ## Bounds, not measurements
 
