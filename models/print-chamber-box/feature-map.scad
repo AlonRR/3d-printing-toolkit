@@ -53,8 +53,7 @@ if (view == "back") {
     color([0.80, 0.72, 0.58]) back_plate();
     f = 1.2;   // how far a marker stands in front of its surface
     marker(1,  [W - 10, back_t + f, H - 14]);                                    // the plate
-    marker(2,  [-tab_hole_x, back_t + f, tab_z + tab_w / 2 + 3.5]);              // tabs
-    marker(2,  [W + tab_hole_x, back_t + f, tab_z + tab_w / 2 + 3.5]);
+    marker(2,  [key_x + 7, back_t + f, (key_z0 + key_z1) / 2]);                  // keyhole
     marker(3,  [ch_x0 - cradle_t / 2, y_ch1 + f, z_sps0 + 22]);                 // channel wall
     marker(3,  [ch_x1 + cradle_t / 2, y_ch1 + f, z_sps0 + 22]);
     marker(4,  [ch_x0 + ledge_w / 2 + 2, back_t + sps_t + f, -3.5]);            // ledge
@@ -69,7 +68,7 @@ if (view == "back") {
     legend(["BACK PLATE - as you face the box, cover off",
             "",
             " 1  the plate - against the wall",
-            " 2  mounting tabs and their screw holes",
+            " 2  keyhole - it hangs on one wall screw",
             " 3  channel walls - the SPS30 goes in from the front",
             " 4  ledges - the SPS30 stands on them",
             " 5  divider - splits inlet from outlet air",
@@ -80,8 +79,8 @@ if (view == "back") {
             "10  pilot for the SGP41's M2.5 screw",
             "11  cable channel - up to the power pins",
             "12  bosses for the cover's four screws"],
-           [-tab_l - 4, 0, H + 34]);
-    axes([-tab_l - 8, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
+           [-18, 0, H + 34]);
+    axes([-22, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
 }
 
 // ------------------------------------------------------------------ the cover, from inside

@@ -43,8 +43,8 @@ letter("C", [x3 + gy_out_l / 2, -7]);                                           
 letter("D", [BW + 7, m + 1.5 * (boss_d + row) - row / 2]);                       // tall bosses
 letter("E", [BW + 7, m + 3 * (boss_d + row) + 1.5 * (gy_boss_d + row) - row / 2]);   // short bosses
 letter("H", [BW + 7, peg_y + peg / 2]);                                          // peg and socket
-letter("F", [x3 - 5.5, bar_y + m + max(screw_ds) / 2], bar_t + 0.3);                        // bar, row by the trays
-letter("G", [x3 - 5.5, bar_y + bar_h - m - max(tab_ds) / 2], bar_t + 0.3);                  // bar, other row
+letter("F", [x3 - 5.5, bar_y + m + max(screw_ds) / 2], bar_t + 0.3);                        // the hole bar
+// G, the mounting holes, went with the tabs: the box hangs by a keyhole since 3 Oct 2026
 
 note("this edge faced the printer's front", [0, -17]);
 note("dots: 1 = a step tighter, 2 = as set, 3 = a step looser", [0, -24]);

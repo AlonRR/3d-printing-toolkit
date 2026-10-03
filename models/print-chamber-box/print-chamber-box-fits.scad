@@ -17,7 +17,6 @@ says what to try with each, how to turn the result into a setting, and what has 
   pilot_d      three bosses for the M3 x 14 self-tapping screws that close the cover
   gy_pilot_d   three bosses for the M2.5 x 8 screw that holds the SGP41
   screw_d      three clearance holes for those M3 screws
-  tab_hole_d   three mounting holes for the wood screws
   part_fit     a peg and a socket at part_fit, to measure with calipers rather than to try
 
 One part, printed flat. Every piece stands on a shared base, which is also the floor the boards rest on.
@@ -45,7 +44,6 @@ pocket_fits = ladder(pocket_fit, fit_step);
 m3_pilots   = ladder(pilot_d, hole_step);
 gy_pilots   = ladder(gy_pilot_d, fit_step);
 screw_ds    = ladder(screw_d, hole_step);
-tab_ds      = ladder(tab_hole_d, hole_step);
 
 // ------------------------------------------------------------------ sizes, at the loosest try
 sps_in_w  = sps_w + 2 * sps_nub + 2 * sps_fits[2];
@@ -78,16 +76,16 @@ col3_w = max(gy_out_l, 3 * hole_pitch);
 x4 = x3 + col3_w + m;                     // bosses, then the peg and socket
 col4_w = 2 * boss_d + m;
 bar_y = m + 3 * (gy_out_w + row);
-bar_h = 2 * (max(tab_ds) + 2 * fdm_hole_comp) + 3 * m;
+bar_h = (max(screw_ds) + 2 * fdm_hole_comp) + dot_d + 3 * m;   // a row of holes, and its dots above it
 peg_y = m + 3 * (boss_d + row) + 3 * (gy_boss_d + row);
 BW = x4 + col4_w + m;
 BH = max(m + 3 * (sps_out_t + row), m + 3 * (sm_out_w + row), bar_y + bar_h + m, peg_y + peg + 2 * m + m);
 
 // ------------------------------------------------------------------ the rules
-assert(min(m3_pilots) >= 2 && min(gy_pilots) >= 2 && min(screw_ds) >= 2 && min(tab_ds) >= 2,
+assert(min(m3_pilots) >= 2 && min(gy_pilots) >= 2 && min(screw_ds) >= 2,
        "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
 assert(whole(base_t / fdm_layer_h) && whole(bar_t / fdm_layer_h), "printed flat: whole layers only");
-assert(hole_pitch - 2 * hole_r(max(tab_ds)) >= 4 * fdm_extrusion_w, "the holes in the bar are too close together");
+assert(hole_pitch - 2 * hole_r(max(screw_ds)) >= 4 * fdm_extrusion_w, "the holes in the bar are too close together");
 assert(m3_pilot_depth < m3_boss_h + base_t - 2 * fdm_layer_h && gy_pilot_depth < gy_boss_h + base_t - 2 * fdm_layer_h,
        "a pilot would break through the base");
 // ------------------------------------------------------------------ pieces
@@ -119,9 +117,9 @@ module tags() {
         tag(i + 1, x4 + boss_d + 1, by - dot_d / 2);
         gby = m + 3 * (boss_d + row) + gy_boss_d / 2 + i * (gy_boss_d + row);        // M2.5 bosses
         tag(i + 1, x4 + boss_d + 1, gby - dot_d / 2);
-        // the hole bar: one group per column of holes, between its two rows
+        // the hole bar: one group over each hole
         tag(i + 1, x3 + col3_w * (i + 0.5) / 3 - (i * (dot_d + 0.7) + dot_d) / 2 + dot_d / 2,
-            bar_y + bar_h / 2 - dot_d / 2, bar_t);
+            bar_y + bar_h - m - dot_d, bar_t);
     }
 }
 
@@ -158,7 +156,7 @@ module fits() {
             }
             tags();
 
-            // the hole bar: M3 clearance holes above, mounting holes below
+            // the hole bar: the M3 clearance holes
             translate([x3, bar_y, base_t - eps]) cube([col3_w, bar_h, bar_t - base_t + eps]);
 
             // the part_fit peg, and the block its socket is cut in
@@ -173,11 +171,10 @@ module fits() {
                        sy + (sps_in_t - (sps_t + 2 * f)) / 2 + cradle_t, -eps])
                 cube([sps_w + 2 * sps_nub + 2 * f, sps_t + 2 * f, base_t + 3 * eps]);
         }
-        // the holes in the bar, three across each row
+        // the holes in the bar, three across
         for (i = [0 : 2]) {
             hx = x3 + col3_w * (i + 0.5) / 3;
             translate([hx, bar_y + m + max(screw_ds) / 2, -eps]) cylinder(r = hole_r(screw_ds[i]), h = bar_t + 2 * eps);
-            translate([hx, bar_y + bar_h - m - max(tab_ds) / 2, -eps]) cylinder(r = hole_r(tab_ds[i]), h = bar_t + 2 * eps);
         }
         // the part_fit socket
         translate([x4 + peg + m + m / 2, peg_y, base_t])
@@ -187,8 +184,7 @@ module fits() {
 
 echo(str("clearance test: ", BW, " x ", BH, " mm base; dots 1 / 2 / 3 = a step tighter / as set / a step looser"));
 echo(str("  sps_fit ", sps_fits, "   pocket_fit ", pocket_fits, "   pilot_d ", m3_pilots, "   gy_pilot_d ", gy_pilots));
-echo(str("  screw_d ", screw_ds, " (the bar's row next to the GY-SGP41 trays)   tab_hole_d ", tab_ds,
-         " (its other row)   part_fit ", part_fit,
+echo(str("  screw_d ", screw_ds, " (the hole bar, next to the GY-SGP41 trays)   part_fit ", part_fit,
          " (peg ", peg, ", socket ", peg + 2 * part_fit, ")"));
 
 if (draw_model) fits();

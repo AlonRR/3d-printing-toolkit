@@ -71,7 +71,18 @@ z_board0    = z_sps1 + zone_h;
 sm_pocket_h = sm_w + 2 * pocket_fit;
 z_board_c   = z_board0 + rim_t + sm_pocket_h / 2;
 z_board1    = z_board0 + 2 * rim_t + sm_pocket_h;
-H           = z_board1 + gap + boss_d + 2 * part_fit + wall;   // the top bosses sit above the board
+// The box hangs on one wall screw by a keyhole: an entry the screw's head passes, and above it a slot
+// the thread slides up, so the head ends up behind the plate, bearing on it - a wall clock's keyhole. It
+// sits on the centre line, so the box hangs plumb: the SPS30, most of its weight, is centred. That line
+// is taken from the bottom to the board's top - the SPS30, the SGP41, the antenna loop - so the keyhole
+// gets a band of its own above the board, and the box is as tall as that band needs.
+key_entry_d = key_head_d + 1.0;                           // the head passes it
+key_slot_w  = key_shank_d + 0.6;                          // the thread slides along it; the head does not
+key_travel  = key_entry_d / 2 + key_head_d / 2 + 1.0;     // entry to hung: the head clear of the entry by 1 mm
+key_z0      = z_board1 + gap + hole_r(key_entry_d);       // the entry's centre, its edge gap above the board
+key_z1      = key_z0 + key_travel;                        // where the screw is once the box hangs
+H           = max(z_board1 + gap + boss_d + 2 * part_fit + wall,   // the top bosses sit above the board
+                  key_z1 + key_head_d / 2 + gap + wall);           // and the hung screw's head under the top wall
 
 // =================================================================== the board
 // Its USB-C end faces the SPS30's connector, which is at the outlet end. The board's power and I2C pins
@@ -156,12 +167,11 @@ wch_z1  = z_board0 - gap;                        // its top, just below the boar
 wch_z0  = wch_z1 - wire_ch_l;
 wch_y1  = back_t + wire_slot_d + wch_lip;        // the walls' front, lips included
 
-// =================================================================== bosses and tabs
+// =================================================================== bosses and the keyhole
 boss_inset = wall + part_fit + boss_d / 2;
 bosses     = [[boss_inset, boss_inset], [W - boss_inset, boss_inset],
               [boss_inset, H - boss_inset], [W - boss_inset, H - boss_inset]];
-tab_z      = z_sps0 + sps_h / 2;
-tab_hole_x = tab_l - tab_w / 2;         // from the box's side
+key_x      = W / 2;                     // on the centre line
 
 // =================================================================== the rules
 for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["rib_t", rib_t],
@@ -183,7 +193,7 @@ assert(x_div - divider_t / 2 > sps_x0 + ledge && x_div + divider_t / 2 < sps_x1 
        str("the divider (at ", divider_from_inlet_end, " mm from the inlet end) does not fit between",
            " the two ledges - check divider_from_inlet_end"));
 
-assert(pilot_d >= 2 && tab_hole_d >= 2 && gy_pilot_d >= 2,
+assert(pilot_d >= 2 && key_slot_w >= 2 && gy_pilot_d >= 2,
        "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
 
 assert(y_ch1 <= y_in1 - part_fit,
@@ -196,8 +206,11 @@ assert(usb_proud_in >= -1e-6,
            " Thin port_wall, or tighten part_fit and pocket_fit"));
 assert(usb_y - usb_plug_h / 2 >= 0,
        "the USB-C plug would hit the surface the box is screwed to - the board sits too low");
-assert(abs(z_board_c - tab_z) >= (usb_plug_w + tab_w) / 2 + gap,
-       "the USB-C plug would hit the mounting tab on its side");
+assert(key_head_d - 2 * hole_r(key_slot_w) >= 2 * 1.0,
+       str("the keyhole's slot (", 2 * hole_r(key_slot_w), " mm as cut) leaves the screw's ", key_head_d,
+           " mm head less than 1 mm to bear on each side - it could pull through"));
+assert(key_z0 - hole_r(key_entry_d) - z_board1 >= gap,
+       "the keyhole's entry reaches down to the board and its antenna - the screw's head would meet them");
 assert(2 * stop_reach < sm_pocket_h,
        "the two stops at the board's antenna end meet - stop_reach is too large");
 assert(sm_lip_over < sm_edge,
@@ -280,12 +293,8 @@ module vent_slots(x0, x1, z0, z1) {
 module back_plate() {
     difference() {
         union() {
-            // the plate, and its two mounting tabs
+            // the plate
             slab_xz(0, W, 0, back_t, 0, H, corner_r);
-            for (side = [0, 1])
-                slab_xz(side == 0 ? -tab_l : W - corner_r,
-                        side == 0 ? corner_r : W + tab_l,
-                        0, back_t, tab_z - tab_w / 2, tab_z + tab_w / 2, tab_w / 2 - eps);
 
             // the channel walls the SPS30 is set between, from the front. No lips: anything overhanging
             // its face would have to be slid past, and the board's rims and the SGP41's pedestal stand in
@@ -357,9 +366,10 @@ module back_plate() {
         // the pilot for the SGP41's screw, blind, down from the ledge's top
         cyl_y(gy_hole_x, gy_hole_z, hole_r(gy_pilot_d), gy_floor + gy_ledge_h - gy_pilot_depth,
               gy_floor + gy_ledge_h + eps);
-        // mounting holes in the tabs
-        cyl_y(-tab_hole_x, tab_z, hole_r(tab_hole_d), -eps, back_t + eps);
-        cyl_y(W + tab_hole_x, tab_z, hole_r(tab_hole_d), -eps, back_t + eps);
+        // the keyhole: the entry the wall screw's head passes, and the slot above it that the head then
+        // hangs over. A hole through the plate, so on the bed it is an opening in the first layers.
+        cyl_y(key_x, key_z0, hole_r(key_entry_d), -eps, back_t + eps);
+        hull() for (z = [key_z0, key_z1]) cyl_y(key_x, z, hole_r(key_slot_w), -eps, back_t + eps);
     }
 }
 
@@ -474,6 +484,10 @@ module components(shrink = 0) {
     // the screw's head, on the thickest board - the nearest it comes to the cover
     color("silver") cyl_y(gy_hole_x, gy_hole_z, gy_head_d / 2 - s, gy_floor + gy_front_max + s,
                           gy_floor + gy_front_max + gy_head_h - s);
+    // the wall screw's head behind the plate, all the way from the entry up to where it hangs, standing off
+    // the wall by up to key_slack more than the plate is thick
+    color("silver") hull() for (z = [key_z0, key_z1])
+        cyl_y(key_x, z, key_head_d / 2 - s, back_t + s, back_t + key_slack + key_head_h - s);
     // the SPS30's plug and the column its lead rises through before it bends over
     color("orange") translate([lead_x0 + s, back_t + s, z_sps1 + s])
         cube([lead_x1 - lead_x0 - 2 * s, sps_t - 2 * s, cable_zone_h - 2 * s]);
@@ -485,8 +499,11 @@ if (len(unmeasured) > 0)
 if (len(untested_fits) > 0)
     echo(str("WARNING: these fits have not been tested in ASA on this printer: ", untested_fits));
 
-echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), plus a ",
-         tab_l, " mm tab each side and the divider ", divider_proud, " mm below"));
+echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), and the ",
+         "divider ", divider_proud, " mm below"));
+echo(str("keyhole: on the centre line, the screw ", key_z1, " mm up once hung; the entry ",
+         2 * hole_r(key_entry_d), " mm and the slot ", 2 * hole_r(key_slot_w), " mm as cut; set the screw's head ",
+         back_t, " to ", back_t + key_slack, " mm off the wall"));
 echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
          " mm from the inlet end; depth set by the ", inner_d == sps_t + sps_fit + front_gap_min
          ? "SPS30" : "antenna wire"));

@@ -56,7 +56,13 @@ conn_from    = 2.0;    /* The SPS30's plug and lead, along its top face, from th
 conn_to      = 10.5;
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
-unmeasured = [];
+/* The wall screw the box hangs on, by the keyhole in its back plate. Placeholders for a typical 3.5 mm
+   wood screw until the screw that will be used is measured. */
+key_shank_d = 3.5;   /* Its thread, across. */
+key_head_d  = 7.0;   /* Its head, across. */
+key_head_h  = 2.6;   /* Its head, tall. */
+
+unmeasured = ["key_shank_d", "key_head_d", "key_head_h"];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 
@@ -80,16 +86,15 @@ pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2
 part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. Measured 3 Oct 2026 on the same print: peg 5.98, socket 6.50 (Y) and 6.55 (X), so 0.26 and 0.29 per side as printed - over the 0.15 below which the parts would bind. */
 pilot_d    = 2.3;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. Tested 3 Oct 2026: of 2.3, 2.5 and 2.7, 2.5 was fine and 2.3 a little tight, "which might be preferable" (Alon); none split. 2.3, for a thread that is driven again each time the cover comes off. */
 screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 Oct 2026: of 3.2, 3.4 and 3.6, an M3 passes 3.2 freely. */
-tab_hole_d = 4.0;    /* Mounting holes in the tabs, for wood screws up to 3.5 mm. Not tested: how the box is mounted is still open. */
 gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). */
 
-untested_fits = ["tab_hole_d"];
+untested_fits = [];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
 /* [Walls - widths in beads of fdm_extrusion_w, thicknesses in layers of fdm_layer_h] */
 wall      = 1.8;    /* Side, top and bottom walls of the cover: 4 beads. */
-back_t    = 2.4;    /* The back plate, printed flat: 12 layers. Carries the mounting tabs. */
+back_t    = 2.4;    /* The back plate, printed flat: 12 layers. The keyhole runs through it, so it is also what the wall screw's head bears on. */
 front_t   = 1.8;    /* The cover's front, printed flat on the bed: 9 layers. */
 cradle_t  = 1.35;   /* The walls of the channel the SPS30 slides into: 3 beads. */
 divider_t = 1.35;   /* The divider between the inlet and outlet sides: 3 beads. */
@@ -115,8 +120,7 @@ wire_ch_l   = 6.0;  /* ... and how long, measured down from just below the board
 wire_lip_gap = 1.0; /* The opening between the channel's two 45-degree lips: a wire presses in past them and stays. */
 
 /* [Mounting and closing] */
-tab_l     = 14.0;   /* How far each mounting tab reaches beyond the box. Long enough that the screwdriver's shaft clears the box's side wall: the hole sits tab_w/2 from the tab's end. */
-tab_w     = 12.0;   /* Height of each tab. */
+key_slack = 1.0;    /* How much further than back_t the wall screw's head may stand off the wall: the room behind the plate is that much deeper than the head. */
 boss_d    = 6.75;   /* The cover-screw bosses. */
 corner_r  = 4.0;    /* Plan-view corner radius. ASA lifts at sharp corners; a radius is the permanent cure (fdm-design-rules §5b). */
 gap       = 1.0;    /* General clearance between internal features. */

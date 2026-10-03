@@ -10,8 +10,11 @@ As you face the box with the cover off:
 
 1. **The plate** — the back of the box, flat against the wall. Everything else stands on it, and it
    prints flat on the bed.
-2. **Mounting tabs** — one each side, with a hole for a wood screw up to 3.5 mm. 14 mm long, so the
-   screwdriver's shaft clears the box's side.
+2. **Keyhole** — the box hangs on one wall screw, like a wall clock: the screw's head goes in through
+   the round opening, and the box drops so the screw rides up the slot, its head behind the plate. On
+   the centre line, so the box hangs plumb; above the board, because the centre line below it is taken
+   by the SPS30, the SGP41 and the antenna. A hole through the plate, so it prints as an opening in the
+   first layers.
 3. **Channel walls** — the SPS30 is set between them from the front, and they hold it sideways. They
    have no lips: anything over the sensor's face would block its way in.
 4. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.

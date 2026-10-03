@@ -21,9 +21,23 @@ From the **USB Type-C specification**, rev 1.2, so that no cable needs measuring
 | Name | Value | Note |
 |---|---|---|
 | `usb_shell_w` | **8.94** | the receptacle's inside opening is 8.34 × 2.56; the measured 3.16 height against 2.56 gives a 0.30 mm shell wall, so 8.34 + 2 × 0.30 |
-| `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the tabs and the mounting surface |
+| `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the mounting surface |
 
 From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.5**, `gy_head_h` **2.5**.
+
+## Not measured yet
+
+In the `unmeasured` list, so the model warns until they are set. They size the keyhole the box hangs by:
+the entry is the head plus 1 mm, the slot the thread plus 0.6 mm, and an assert keeps at least 1 mm of
+plate under the head on each side.
+
+| Name | Placeholder | What |
+|---|---|---|
+| `key_shank_d` | 3.5 | the wall screw's thread, across |
+| `key_head_d` | 7.0 | its head, across |
+| `key_head_h` | 2.6 | its head, tall |
+
+Placeholders for a typical 3.5 mm wood screw: measure the one that will hang the box.
 
 ## Measured
 
@@ -65,15 +79,16 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 
 | Name | Value | Status |
 |---|---|---|
-| `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width; the width allowance waits on a caliper reading of the sensor |
+| `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width, until the width was measured (`sps_w`, `sps_nub` above) |
 | `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
 | `part_fit` | **0.3** | tested 3 Oct 2026, 0.26–0.29 per side as printed — between a back-plate feature and the cover |
 | `pilot_d` | **2.3** | tested 3 Oct 2026, a little tight — pilot for the cover's M3 × 14 self-tapping screws |
 | `gy_pilot_d` | **2.1** | tested 3 Oct 2026, fine — pilot for the SGP41's M2.5 screw |
 | `screw_d` | **3.2** | tested 3 Oct 2026, passes an M3 freely — clearance hole for the M3 screws in the cover |
-| `tab_hole_d` | 4.0 | untested — mounting holes in the tabs, for wood screws up to 3.5 mm; waits on how the box is mounted |
 
-The untested ones are listed in `untested_fits`, and `scad-check.sh` exits 2 until it is empty.
+Every fit has been tested, so `untested_fits` is empty; a fit added later goes in it untested, and
+`scad-check.sh` exits 2 until it is cleared. The mounting tabs' `tab_hole_d` went with the tabs on
+3 Oct 2026.
 
 ## Not in the params file
 

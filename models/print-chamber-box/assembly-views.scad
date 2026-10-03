@@ -214,8 +214,8 @@ if (view == "wiring") {
     color([0.80, 0.72, 0.58]) back_plate();
     sps30(); supermini(); sgp41(); m25();
     wires();
-    axes(is_undef(axes_at) ? [-tab_l - 8, 0, -25] : axes_at, axes_l, axes_cam, [[0, 0], [1.7, -0.3], [0, 0]]);
-    translate([-tab_l - 4, 0, H + 38]) rotate([90, 0, 180]) color("black") linear_extrude(0.4) {
+    axes(is_undef(axes_at) ? [-22, 0, -25] : axes_at, axes_l, axes_cam, [[0, 0], [1.7, -0.3], [0, 0]]);
+    translate([-18, 0, H + 38]) rotate([90, 0, 180]) color("black") linear_extrude(0.4) {
         lines = ["WIRING - as you face the box, cover off",
                  "",
                  "SPS30 black   VDD  ->  5V",

@@ -8,7 +8,7 @@
 - the ESP32-C3 SuperMini, the SPS30 with its lead, and the GY-SGP41;
 - four **M3 × 14 self-tapping** screws for the cover, and one **M2.5 × 8 socket head cap screw** for the
   SGP41;
-- two **wood screws** up to 3.5 mm, to hang it;
+- one **wall screw** of about 3.5 mm, and its wall plug, to hang it;
 - **22 AWG solid hookup wire** for the SGP41's four wires;
 - no tape and no glue: everything is held by the printed parts.
 
@@ -34,11 +34,20 @@ the model: the SuperMini's slide from its USB-C side, and the SPS30's path in fr
 
 ## Hanging it
 
-Two wood screws through the tabs, up to 3.5 mm. The tabs reach 14 mm past the box, so the screwdriver's
-shaft clears its side.
+On one screw, by the keyhole in the back plate — the way a wall clock hangs.
+
+1. **Drive the screw where the box's centre line will be**, 92 mm above where its bottom edge will sit.
+2. **Leave its head standing about 3 mm off the wall** — between 2.4 and 3.4 mm. The plate is 2.4 mm
+   thick, and the room behind it is 1 mm deeper than the head.
+3. **Put the head through the round opening, then let the box down.** The screw rides up the slot to its
+   top, and the head holds the plate against the wall.
+
+A steel screw head now sits about 10 mm above the board's antenna end. After hanging it, compare the
+node's Wi-Fi signal with what it reads on the bench.
 
 **Clip the USB-C cable to the wall 3–5 cm from the plug** with a stick-on cable clip. The box has no cable
-clamp: a plug's body runs 2–3 cm out from the wall before the cable starts, and the nearest part of the
-box, the tab, ends 14 mm out and 40 mm lower, so anything on the box would force the cable into a loop.
+clamp: a plug's body runs 2–3 cm out from the box's side before the cable starts, so anything on the box
+would force the cable into a loop. On one screw, a cable pulling sideways could also turn the box; the
+clip takes that pull.
 The socket does not need one: its shell-sized opening takes side loads into the wall, and the thinned
 wall takes a pull. More in [The USB-C end](usb-c-end.md).

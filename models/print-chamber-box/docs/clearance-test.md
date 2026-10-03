@@ -26,11 +26,14 @@ are for 1 / 2 / 3 dots.
 | **D** | the three **tall** bosses, nearest the front | `pilot_d` | 2.1 / 2.3 / 2.5 | drive an M3 × 14 self-tapping screw fully in, then back out — once per boss, since the first drive cuts the thread | the one that bites firmly without splitting the boss or taking real force |
 | **E** | the three **short** bosses, behind them | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | the same with the M2.5 × 8 cap screw, through the GY-SGP41's hole: the pilot is as deep as the box's, which counts on the board under the head | as for D |
 | **F** | the hole bar's row **next to the C trays** | `screw_d` | 3.0 / 3.2 / 3.4 | an M3 screw | the smallest it passes through freely |
-| **G** | the hole bar's **other** row — the larger holes | `tab_hole_d` | 3.8 / 4.0 / 4.2 | the wood screws that will hang the box | the smallest they pass through freely |
+| **G** | the 2 Oct print's hole bar has a second row, the larger holes | ~~`tab_hole_d`~~ | retired | — | the mounting tabs it was for went on 3 Oct 2026: the box hangs by a keyhole. A reprint has no G |
 | **H** | the peg, and the block with the socket beside it | `part_fit` | — | calipers: the peg's width and the socket's | the socket is drawn 0.6 mm wider. If (socket − peg) / 2 comes out under 0.15 mm, the box's parts will bind — raise `part_fit` by the shortfall |
 
-**The hole bar has one group of dots per column**, between its two rows: it counts for both holes in
-that column.
+**The hole bar has one group of dots over each hole.** On the 2 Oct print the groups sit between its
+two rows, and count for both.
+
+The keyhole the box hangs by is not tried here: it is sized from the wall screw with room to spare —
+0.6 mm round the thread, at least 1 mm of plate under the head each side — once the screw is measured.
 
 The values follow the settings, so after a setting changes, a reprint tries a new ladder round it. The
 table shows the ladder a reprint would try now; the results below give the one the print tried.
@@ -69,5 +72,5 @@ All from the one print of 2 Oct 2026.
   never short: its pilots are 18.8 mm deep, against the 12.2 mm of screw that passes through the cover.
 - **H**'s 0.26–0.29 mm is over the 0.15 mm floor, so `part_fit` stays at 0.3.
 
-**G is not tested**, because how the box will be mounted is still open: the tabs, and their holes, may
-change.
+**G is retired**, untested: on 3 Oct 2026 the box's mounting tabs, whose holes it tried, gave way to a
+keyhole for one wall screw.

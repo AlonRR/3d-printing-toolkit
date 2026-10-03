@@ -20,7 +20,7 @@ scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad  "$P"
 ```
 
 Each should report **one manifold part** and `fdm_*` values matching the profile: the back plate
-90.4 mm wide with its tabs, the cover 62.4 mm.
+62.4 × 102.3 mm on the bed — the divider stands 4 mm below the box — and the cover 62.4 × 98.3 mm.
 
 - **Exit 2 is expected** for the back plate and the cover while the `unmeasured` and `untested_fits`
   lists are not empty; exit 0 means both are clear. The clearance test has no warnings of its own, so
@@ -50,7 +50,7 @@ check run one way only has passed a mirrored mistake before.
 
 "Empty" means OpenSCAD writes no file.
 
-**Positive controls**, measured 2 Oct 2026:
+**Positive controls**, measured 2–3 Oct 2026:
 
 | Check | Setting | What it breaks | Measured |
 |---|---|---|---|
@@ -67,9 +67,11 @@ check run one way only has passed a mirrored mistake before.
 | `check_slide` | `stop_x0 = 20` | the stops moved into the board's way in | 5.4 mm³ |
 | `check_slide` | `sm_lip_y0 = 2.6` | the lips set too low over the board's edges | 2.1 mm³ |
 | `check_insert` | the design before the SPS30 went in from the front, with lips over its face | the sensor could not have been fitted | 131.8 mm³ |
+| `check_components` | `key_x = 56.925` | the keyhole moved under a top boss: the wall screw's head runs into it | 97.4 mm³ |
 
 Stops reaching into the antenna loop, and a mounting hole too small for the SGP41's screw, are caught
-earlier, by asserts.
+earlier, by asserts. So is a keyhole that would let the wall screw's head meet the board — `key_z0 = 75`
+fires it — or whose slot is too wide to hold the head: `key_shank_d = 5`.
 
 ## The wire routes
 

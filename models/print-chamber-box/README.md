@@ -3,7 +3,8 @@
 An enclosure for the printer chamber node: an ESP32-C3 SuperMini, a Sensirion SPS30 particle sensor and
 a GY-SGP41 VOC/NOx module, running [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml). It
 hangs on the wall outside the printer's enclosure, upright, with the SPS30's air face down. Two parts in
-ASA — a back plate and a cover held by four screws — 62.4 × 88.5 × 24 mm, plus a mounting tab each side.
+ASA — a back plate and a cover held by four screws — 62.4 × 98.3 × 24 mm, hung on one wall screw by a
+keyhole in its back.
 
 ![every part, moved apart along the way it goes in](docs/assembly-exploded.png)
 
@@ -13,10 +14,10 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** Every dimension is measured or sourced, and the
-clearance test has set every fit but one: `tab_hole_d`, the mounting holes, waits on how the box will be
-mounted, and `scad-check.sh` exits 2 on purpose until it is set. The SPS30's width allowance waits on a
-caliper reading of the sensor. See [the clearance test](docs/clearance-test.md).
+**Modelled and checked; not printable as-is yet.** The clearance test has set every fit
+([the clearance test](docs/clearance-test.md)), and every dimension is measured or sourced but the wall
+screw's: its thread and head are placeholders until the screw that will hang the box is measured, and
+`scad-check.sh` exits 2 on purpose until then.
 
 Before printing the back plate, check on the parts the values read off photos rather than calipers:
 `sm_edge`, `pin_mid`, `gy_hole_bare_d`, and which edge of its pocket the SGP41's mounting hole sits by
@@ -35,7 +36,8 @@ Before printing the back plate, check on the parts the values read off photos ra
 | Clearance test | [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) | flat |
 
 **Hardware:** four M3 × 14 self-tapping screws for the cover, one M2.5 × 8 socket head cap screw for the
-SGP41, two wood screws up to 3.5 mm to hang it, and 22 AWG solid hookup wire for the SGP41. No tape, no
+SGP41, one wall screw of about 3.5 mm and its wall plug to hang it, and 22 AWG solid hookup wire for the
+SGP41. No tape, no
 glue.
 
 ## Printing
