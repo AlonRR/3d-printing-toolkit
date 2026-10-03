@@ -105,9 +105,8 @@ micro-electronics soldering** — not by cleverness.
 **rotor turns**. It does not prove the air is being *cleaned* — it says nothing about a HEPA that
 is unseated, a bypass leak, or carbon that has saturated. The **SPS30 (owned)** answers the
 question you actually care about: chamber particulate should fall when the scrubber runs and rise
-when it does not, whatever the cause. Two caveats: it is a **slow** signal (minutes, not seconds),
-and there is **one** SPS30, already wanted for air-quality work — so this competes rather than
-combines.
+when it does not, whatever the cause. Its caveat is that it is a **slow** signal (minutes, not
+seconds). It no longer competes with the air-quality work: Alon has **two** SPS30s (3 Oct 2026).
 
 **The honest recommendation: buy the 3-wire fans.** ₪15–25 removes a known blindness with no
 bench work, and it is the only option on this list that does not trade one unknown for another.

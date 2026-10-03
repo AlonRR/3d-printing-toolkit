@@ -131,8 +131,8 @@ answer was closed first ([the disconnect counter](s3-disconnect-counter.md)).
 
 ### Adding the SPS30 — electrically easy, thermally marginal
 
-The lab owns **one** Sensirion SPS30 (PM1.0 / PM2.5 / PM4 / PM10 mass and number concentration, plus
-typical particle size). Adding it to this node is **not blocked by the bus**:
+The lab owns **two** Sensirion SPS30s (PM1.0 / PM2.5 / PM4 / PM10 mass and number concentration, plus
+typical particle size), and two GY-SGP41s — Alon, 3 Oct 2026. These notes said one until then. Adding it to this node is **not blocked by the bus**:
 
 | Check | Result |
 |---|---|
@@ -141,24 +141,26 @@ typical particle size). Adding it to this node is **not blocked by the bus**:
 | ESPHome support | native `sps30` platform |
 | Bus capacity | the C3's GPIO10/GPIO3 bus has two devices on it; a third is nothing |
 
-⛔ **But three things stand in the way, and two of them are real:**
+⛔ **Three things stood in the way; the third is gone now that there are two:**
 
 1. **It needs a 5 V supply — 4.5–5.5 V, not 3.3 V.** It must come off the board's 5 V pin (present
    when USB-powered, which this node is), never off 3V3. At **45-65 mA** in measurement mode (55 typ), with an **80 mA peak for the first 200 ms** as the fan spins up that is comfortable on
    USB, but it does mean the sensor dies if the node is ever moved to a 3.3 V battery rail.
 2. ⚠️ **Its operating ceiling is +60 °C, and that IS the chamber's target.** An ASA chamber is wanted
-   at 40–60 °C. The chamber currently reads ~37 °C, so it is in spec *today* — but the whole point of
-   the enclosure work is to raise that number, and doing so walks the sensor to its limit. This is
-   the blocker that matters, and it is a design conflict rather than a wiring problem.
-3. **There is exactly one SPS30 and it is already claimed.** [chamber-airflow](../chamber-airflow.md)
-   wants it to verify the *scrubber* — measuring whether particulate actually falls when the fan
-   runs, which a tachometer cannot tell you. Putting it in the chamber **competes with that use
-   rather than combining with it.**
+   at 40–60 °C. Closed, the chamber holds 45–46 °C through an ASA print and peaked at 47.5 °C during a
+   bed anneal ([measurements](measurements.md#closed-every-print-since-19-sep-2026)) — in spec, but
+   already above the 10–40 °C the SPS30 performs best in, and the whole point of the enclosure work is
+   to raise that number further. This is the blocker that matters, and it is a design conflict rather
+   than a wiring problem. What happens past the ratings is in
+   [the box's design notes](../../models/print-chamber-box/docs/design.md#past-the-ratings).
+3. ~~**There is exactly one SPS30 and it is already claimed.**~~ There are two (3 Oct 2026).
+   [chamber-airflow](../chamber-airflow.md) wants one to verify the *scrubber* — measuring whether
+   particulate actually falls when the fan runs, which a tachometer cannot tell you — and that no
+   longer competes with the air-quality use.
 
-⭐ **Verdict: possible, but it is an allocation decision, not a wiring one.** Nothing technical
-prevents it. What prevents it is that the lab owns one sensor, has two good uses for it, and the
-chamber use pushes a +60 °C part to +60 °C. A second unit is ~₪50 and removes the contention; the
-thermal ceiling it does not remove.
+⭐ **Verdict: possible, and no longer an allocation question.** Nothing technical prevents it, and
+the second unit removed the contention. What remains is the thermal ceiling: the chamber use pushes
+a part rated to +60 °C towards +60 °C, and the SGP41 beside it is rated to +50 °C.
 
 ⚠️ **Also worth expecting: fouling.** The SPS30 is a laser scattering counter that pulls sample air
 across its optics with a fan. In an ASA/ABS chamber the thing it measures is also the thing that

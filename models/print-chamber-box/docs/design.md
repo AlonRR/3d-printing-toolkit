@@ -22,9 +22,25 @@ From this repository:
 
 - **The box sits outside the printer's enclosure.** The SGP41 is rated −10 to +50 °C and the SPS30 to
   +60 °C, against a chamber wanted at 40–60 °C ([chamber-sensor §3](../../../docs/chamber-sensor/node-design.md#the-node-goes-outside-the-enclosure-3)).
+  What those ratings mean is below.
 - **The SuperMini carries a 31 mm antenna-wire mod**, whose last 15 mm stand straight up from the
   board ([chamber-sensor §3x](../../../docs/chamber-sensor/supermini-antenna.md#rescuing-them-the-31-mm-wire-mod-3x)). It needs free space in plastic, away
   from the SPS30's grounded metal case.
+
+### Past the ratings
+
+From the datasheets — the SGP41's §2.3–2.4 and the SPS30's (v2.0) §1.2 and §2.2. Neither part stops at
+its limit: past it, accuracy goes first, then the part.
+
+| | Performs best | Rated to | Past that |
+|---|---|---|---|
+| **SGP41** | −10 to 50 °C. Prolonged exposure outside it *"may reduce sensor performance"* | 55 °C, the absolute operating maximum | beyond 55 °C, *"may cause permanent damage"*; long periods at the limits *"may affect sensor performance and reliability"* |
+| **SPS30** | 10 to 40 °C | 60 °C, the absolute operating maximum | beyond 60 °C, permanent damage is possible and operation is not guaranteed. The datasheet names a laser failure at very high temperatures, which the sensor flags in its status register. Its precision also drifts by typically 0.5 % of the reading per °C away from 25 °C |
+
+Against the closed chamber — 45–46 °C through an ASA print, 47.5 °C at the peak of a bed anneal
+([measurements](../../../docs/chamber-sensor/measurements.md#closed-every-print-since-19-sep-2026)) —
+the SPS30 is already above its best range, and the SGP41 is 2.5–5 °C below its 50 °C, before the box's
+own heat, which is not measured. Heating the chamber towards 60 °C would take both past their ratings.
 
 ## The layout
 
