@@ -4,9 +4,13 @@
 
 **In short:**
 
+- **Decided 3 Oct 2026: no DS18B20 probes** (Alon). The chamber air is the C3's AHT20; the room is
+  the guest bedroom's climate unit — the printer's room; the bay is the Einsy's own thermistor, read
+  at the printer. The design below, and its case for a separate bay probe, is the reasoning that
+  decision weighed.
 - **Three points, not one:** chamber air (A), the electronics bay (B), and the room (C). The bay is the
   one that justifies the project — it is what can be damaged.
-- **Chamber air: an AHT20 or similar on I2C. Bay and room: DS18B20s on one 1-Wire bus**, because
+- **As designed — chamber air: an AHT20 or similar on I2C. Bay and room: DS18B20s on one 1-Wire bus**, because
   1-Wire tolerates a metre of cable and I2C does not.
 - **The DHT11s are a first-experiment probe, not the build sensor:** they stop at 50 °C and 20 %RH.
 - The Einsy's own ambient thermistor is physically point B and a free second opinion, but not a

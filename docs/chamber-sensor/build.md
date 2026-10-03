@@ -10,8 +10,10 @@
 - **Where the build order stands:** step 1 is done (30 Aug). Step 2 is done in effect: the box
   was nearly closed on 9 Sep and fully closed from 19 Sep, and a short ASA print with it closed
   reached 45–46 °C ([measurements](measurements.md#closed-every-print-since-19-sep-2026)) — a first
-  reading toward step 5, without the bay and room probes. Step 3's AHT20 is in service (11 Sep); the DS18B20s were bought in
-  September, and these notes do not record them fitted. Step 4, the interlock, has not started.
+  reading toward step 5. Step 3's AHT20 is in service (11 Sep); its two DS18B20s are dropped
+  (Alon, 3 Oct 2026) — the room comes from the guest bedroom's climate unit and the bay from the
+  Einsy's own thermistor. Step 4, the interlock, therefore has no bay probe to act on, and has not
+  started.
 - **Build ESPHome from PowerShell, not Git Bash** — and judge a build by the `.bin` it leaves.
 
 ## ESPHome skeleton (§9)

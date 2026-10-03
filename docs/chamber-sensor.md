@@ -7,7 +7,7 @@ It is step 5 of [asa-print-quality.md](asa-print-quality.md), the last and large
 These notes began as a design on 30 Aug 2026 and grew into a record of what was built and measured.
 They are split into the topic pages below; this page says where things stand and where to look.
 
-## Where it stands — 2 Oct 2026
+## Where it stands — 3 Oct 2026
 
 - **In service since 11 Sep 2026:** [`firmware/chamber-c3.yaml`](../firmware/chamber-c3.yaml) — an
   ESP32-C3-MINI-1 board with an AHT20+BMP280, measuring the chamber air (point A) and pressure, on
@@ -15,8 +15,8 @@ They are split into the topic pages below; this page says where things stand and
   replaced the ESP32-S3 camera node, which went to the cell-tester project
   ([the migration](chamber-sensor/s3-to-c3-migration.md)).
 - **Planned:** [`firmware/print-chamber.yaml`](../firmware/print-chamber.yaml) — an ESP32-C3
-  SuperMini carrying the SPS30 particle sensor and the SGP41 VOC/NOx sensor now, with the bay and room
-  probes and the fume fan to join it later on pins already reserved. Decided 1 Oct 2026; until those
+  SuperMini carrying the SPS30 particle sensor and the SGP41 VOC/NOx sensor now, with the fume-fan
+  control to join it later on pins already reserved. Decided 1 Oct 2026; until those
   move, `chamber-c3.yaml` stays the live chamber node. Its enclosure is
   [`models/print-chamber-box/`](../models/print-chamber-box/), which hangs outside the printer's
   enclosure.
@@ -25,15 +25,20 @@ They are split into the topic pages below; this page says where things stand and
   over the room; **an ASA print reached 45–46 °C**, inside the 40–60 °C ASA band, on bed heat alone.
   Earlier: the electronics bay read **50–51 °C** on 9 Sep with the box nearly closed, about 9.5 °C
   below the ~60 °C trouble figure; and the box cools within about an hour after a print.
+- **No separate bay or room probes** (Alon, 3 Oct 2026). The C3 in the chamber covers the chamber
+  air, and the room is the guest bedroom's climate unit — the printer's own room. The bay is read from
+  the Einsy's own thermistor, at the printer: the LCD's `Support → Temperatures`, or `M105`'s `A:`.
+  The trade-off: no remote bay series, and no bay input for an automatic fan interlock, which the
+  safety rule below assumed.
 - **Not done yet:** **a bay reading with the box closed during an ASA print** — the most important
-  open number, since on the 9 Sep offset the bay would be near 56 °C; the bay and room probes (two
-  DS18B20s, bought in September; these notes do not record them fitted); and the fan interlock
+  open number, since on the 9 Sep offset the bay would be near 56 °C — and the fan interlock
   ([the build order](chamber-sensor/build.md)).
 
 ## Decisions that hold across the pages
 
 - **Three measurements, not one:** chamber air, electronics bay, room. The bay is the one that
-  justifies the project. ([Sensors](chamber-sensor/sensors.md))
+  justifies the project. Since 3 Oct 2026 only the chamber has a sensor of its own; the room comes
+  from the guest bedroom's unit and the bay from the Einsy's thermistor. ([Sensors](chamber-sensor/sensors.md))
 - **The node goes outside the enclosure; only the probes go in**, on short leads, hung in free air.
   ([The node](chamber-sensor/node-design.md))
 - **Safety logic runs on the device; Home Assistant gets convenience logic.** A missing bay reading

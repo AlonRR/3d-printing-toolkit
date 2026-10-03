@@ -3,9 +3,10 @@
 
 # print-chamber — the planned printer chamber node, on an ESP32-C3 SuperMini.
 #
-# Today it carries particulate (SPS30) and VOC/NOx (SGP41). The chamber's own sensors, the
-# 1-Wire probes and the fume-fan control join it later on the pins already reserved for them
-# (GPIO7 1-Wire, GPIO10 fan PWM, GPIO3 tach - see the i2c block). Until they move here,
+# Today it carries particulate (SPS30) and VOC/NOx (SGP41). The chamber's own sensor and the
+# fume-fan control join it later on the pins already reserved for them (GPIO10 fan PWM, GPIO3
+# tach - see the i2c block). GPIO7 was kept for 1-Wire bay and room probes, which are not
+# planned (Alon, 3 Oct 2026). Until they move here,
 # chamber-c3.yaml stays the live chamber node. Decided 1 Oct 2026; this file was
 # air-quality-c3.yaml, written as a standalone air-quality node.
 #

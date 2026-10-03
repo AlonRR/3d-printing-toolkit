@@ -48,9 +48,9 @@ been closed since about 22:00 that evening. From the chamber series in InfluxDB,
   configuration, not a measurement. **Read the bay during the next long ASA print** — the LCD's
   `Support → Temperatures`, or `M105`'s `A:` value.
 
-**The room reference is the guest bedroom's climate unit.** It is the only one that warms when the
-printer runs hot (by 0.8–1.5 °C on 25 Sep and 2 Oct), so the printer is most likely in that room —
-an inference, not a record. With another room as the reference the rises shift by a degree or two.
+**The room reference is the guest bedroom's climate unit — the printer's own room** (Alon,
+3 Oct 2026). It is also the only unit that warms when the printer runs hot, by 0.8–1.5 °C on 25 Sep
+and 2 Oct.
 The "before" period is not one configuration either: the side was 2 cm open on 9 Sep, and these
 notes do not record it for the other days.
 

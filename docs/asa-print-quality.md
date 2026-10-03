@@ -194,7 +194,8 @@ MK3S+ tolerates a closed enclosure — some run doors-closed without trouble —
 the situation where measuring beats reading forum posts.
 
 **The gating step was the chamber sensor, and it exists:** a node has measured the chamber air
-since September ([chamber-sensor](chamber-sensor.md)). The bay probe is the part still to fit.
+since September ([chamber-sensor](chamber-sensor.md)). The bay has no probe of its own (Alon,
+3 Oct 2026): it is read from the Einsy's own thermistor, at the printer.
 
 ⚠️ **The DHT11 is marginal for this specific job.** Ten are on hand, but its range tops out at
 **50 °C** — the top of the target band — with ±2 °C accuracy and 1 °C resolution. It will tell

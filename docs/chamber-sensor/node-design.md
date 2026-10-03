@@ -6,7 +6,8 @@
 
 - **The node goes outside the enclosure; only the probes go in.** It keeps the electronics out of
   the heat and fumes, the USB port reachable, and the WiFi out of the box.
-- **Pins:** I2C on 5/6, 1-Wire on 7, fan PWM on 10 and tach on 3. **Never GPIO18/19 on a C3** —
+- **Pins:** I2C on 5/6, 1-Wire on 7 (its bay and room probes are not planned since 3 Oct 2026),
+  fan PWM on 10 and tach on 3. **Never GPIO18/19 on a C3** —
   they are native USB.
 - **Power:** off the fume fan's 12 V rail through the **S09 buck-boost**, never the TPS63020s,
   which a 12 V input destroys.
