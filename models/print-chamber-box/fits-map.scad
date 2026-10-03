@@ -10,7 +10,8 @@ group lettered. docs/clearance-test.md shows it, with a table
 of what each letter tries and the value behind each dot count.
 
 It INCLUDES the test, so every letter sits wherever the test puts that group and the dots are the test's
-own. Three colours: the base, everything standing on it, and the dots.
+own. Three colours: the base, everything standing on it, and the dots - plus the xyz arrows every figure
+carries (../lib/axes.scad).
 
     openscad -o docs/fits-map.png --imgsize=1600,1150 --projection=o --viewall --autocenter \
       --camera=0,0,0,30,0,0,300 --colorscheme=Tomorrow fits-map.scad
@@ -18,6 +19,7 @@ own. Three colours: the base, everything standing on it, and the dots.
 draw_model = false MUST come after the include, so the test does not also draw itself uncoloured.
 */
 include <print-chamber-box-fits.scad>
+use <../lib/axes.scad>
 draw_model = false;
 
 // the split sits 0.3 mm above the base: closer, and the renderer cannot tell the socket's floor from it
@@ -46,3 +48,6 @@ letter("G", [x3 - 5.5, bar_y + bar_h - m - max(tab_ds) / 2], bar_t + 0.3);      
 
 note("this edge faced the printer's front", [0, -17]);
 note("dots: 1 = a step tighter, 2 = as set, 3 = a step looser", [0, -24]);
+
+// the part's own axes, as it lay on the bed. At this tilt +z points up the picture too: its label goes left
+axes([BW + 2, -34, 0], 20, [30, 0, 0], [[0, 0], [0, 0], [-1.3, -0.3]]);

@@ -24,7 +24,8 @@ SGP41's are stand-in colours for the lab's 22 AWG solid hookup wire.
       --autocenter --camera=31,80,44,68,0,252,560 --colorscheme=Tomorrow assembly-views.scad
     openscad -o docs/assembly-wiring.png   -D 'view="wiring"'   --imgsize=1800,1500 --projection=o --viewall \
       --autocenter --camera=31,0,44,78,0,195,260 --colorscheme=Tomorrow assembly-views.scad
-    openscad -o docs/assembly-wiring-detail.png -D 'view="wiring"' --imgsize=1800,1500 --projection=o \
+    openscad -o docs/assembly-wiring-detail.png -D 'view="wiring"' -D 'axes_at=[23.2, 30, 75.5]' -D axes_l=5 \
+      -D 'axes_cam=[72, 0, 200]' --imgsize=1800,1500 --projection=o \
       --camera=16,6,58,72,0,200,95 --colorscheme=Tomorrow assembly-views.scad
 
 The wiring view checks the SGP41's routes as it draws them, and an ERROR: Assertion line in the output
@@ -33,9 +34,16 @@ means one broke - OpenSCAD still exits 0, so read the output, not the exit code.
 draw_model = false MUST come after the include: the last assignment in a scope wins.
 */
 include <print-chamber-box.scad>
+use <../lib/axes.scad>
 draw_model = false;
 
 view = "wiring";   // "exploded" or "wiring"
+
+// The xyz arrows every figure carries (../lib/axes.scad): the box's own axes. The wiring detail's camera
+// is fixed rather than --viewall, so its render command moves and shrinks them with -D.
+axes_at  = undef;
+axes_l   = 20;
+axes_cam = [78, 0, 195];
 
 // ------------------------------------------------------------------ the parts, as drawn here
 module sps30() {
@@ -206,6 +214,7 @@ if (view == "wiring") {
     color([0.80, 0.72, 0.58]) back_plate();
     sps30(); supermini(); sgp41(); m25();
     wires();
+    axes(is_undef(axes_at) ? [-tab_l - 8, 0, -25] : axes_at, axes_l, axes_cam, [[0, 0], [1.7, -0.3], [0, 0]]);
     translate([-tab_l - 4, 0, H + 38]) rotate([90, 0, 180]) color("black") linear_extrude(0.4) {
         lines = ["WIRING - as you face the box, cover off",
                  "",
@@ -255,4 +264,5 @@ if (view == "exploded") {
     label("M2.5 x 8",                              [gy_hole_x + (conn_hi ? 9 : -9), gy_front + e_m25 + gy_head_h, gy_hole_z + 10]);
     label("cover",                                 [W / 2, D + e_cov, -12]);
     label("4 x M3 x 14 self-tapping",              [W / 2, D + e_m3, H + 18]);
+    axes([W, 0, -80], 25, [cam_rx, 0, cam_rz], [[-1, 0], [0, 0], [0, 0]]);
 }

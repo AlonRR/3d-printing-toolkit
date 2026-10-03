@@ -7,6 +7,10 @@ ASA — a back plate and a cover held by four screws — 62.6 × 88.5 × 24 mm, 
 
 ![every part, moved apart along the way it goes in](docs/assembly-exploded.png)
 
+Every picture carries the box's own axes as arrows: **x across it, y out from the wall, z up.** Facing the
+box, +x points to your left. They are the model's axes, not the printer's: the back plate prints lying on
+its back, so on the bed its y is up.
+
 ## Status
 
 **Modelled and checked; not printable as-is yet.** Every dimension is measured or sourced, and the

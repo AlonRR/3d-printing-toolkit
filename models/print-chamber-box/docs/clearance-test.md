@@ -12,6 +12,9 @@ Drawn by [`fits-map.scad`](../fits-map.scad), which includes the test. **Hold th
 SPS30 frames on your left and the row of bosses on your right** — then it matches the picture, with the
 edge that faced the printer's front nearest you.
 
+The arrows are the part's own axes, as it lay on the bed: **+x to the right, +y away from the front edge
+(up the picture), +z up off the bed, towards you.** A reading given as "in x" or "in y" uses them.
+
 Each try carries **1, 2 or 3 dots**: 1 = a step tighter, 2 = as set, 3 = a step looser. The values below
 are for 1 / 2 / 3 dots.
 

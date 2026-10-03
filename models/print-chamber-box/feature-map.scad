@@ -23,6 +23,7 @@ draw_model = false MUST come after the include: the last assignment in a scope w
 the part while keeping every variable.
 */
 include <print-chamber-box.scad>
+use <../lib/axes.scad>
 draw_model = false;
 
 view = "back";   // "back" or "cover"
@@ -80,6 +81,7 @@ if (view == "back") {
             "11  cable channel - up to the power pins",
             "12  bosses for the cover's four screws"],
            [-tab_l - 4, 0, H + 34]);
+    axes([-tab_l - 8, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
 }
 
 // ------------------------------------------------------------------ the cover, from inside
@@ -111,4 +113,5 @@ if (view == "cover") {
             " 9  baffle - shuts the sensor's air off",
             "10  rounded corners - instead of a brim"],
            [W + 8, 0, H + 34], -1);
+    axes([W + 12, 0, -20], 20, [100, 0, 15], [[0, 0], [-1.75, -0.3], [0, 0]]);
 }
