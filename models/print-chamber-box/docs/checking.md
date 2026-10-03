@@ -20,7 +20,7 @@ scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad  "$P"
 ```
 
 Each should report **one manifold part** and `fdm_*` values matching the profile: the back plate
-90.6 mm wide with its tabs, the cover 62.6 mm.
+90.4 mm wide with its tabs, the cover 62.4 mm.
 
 - **Exit 2 is expected** for the back plate and the cover while the `unmeasured` and `untested_fits`
   lists are not empty; exit 0 means both are clear. The clearance test has no warnings of its own, so
@@ -57,8 +57,8 @@ check run one way only has passed a mirrored mistake before.
 | `check_parts` | `part_fit = -0.6`, with `wch_x0 = 3.2` and `wch_x1 = 9.4` | the cover's features overlap the plate's. The cable channel's walls are held where they are, or the negative fit trips the channel's assert first | 360.0 mm³ |
 | `check_parts` | `gz0 = 44.5` | the SGP41's pedestal lowered into the cover's baffle | 10.5 mm³ |
 | `check_components` | `sm_pocket_h = 17` | a pocket narrower than the board | 21.6 mm³ |
-| `check_components` | `gx0 = 12` | the pedestal moved into the lead's column | 187.1 mm³ |
-| `check_components` | `gy_ped_x0 = 22.6` | the pedestal as long as the module again, under its pins | 309.8 mm³ |
+| `check_components` | `gx0 = 12` | the pedestal moved into the lead's column | 173.6 mm³ |
+| `check_components` | `gy_ped_x0 = 22.6` | the pedestal as long as the module again, under its pins | 303.0 mm³ |
 | `check_components` | `gy_strip = 4` | the ledge reaching under the SGP41's parts | 6.5 mm³ |
 | `check_components` | `gy_standoff_d = 5.6` | the standoff wider than the bare patch round the hole | 2.8 mm³ |
 | `check_components` | `wch_cx = 17`, with `wch_x0 = 3.2` and `wch_x1 = 9.4` | the cable channel moved into the lead's column, past its own assert | 19.3 mm³ |

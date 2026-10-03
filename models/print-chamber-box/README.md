@@ -3,7 +3,7 @@
 An enclosure for the printer chamber node: an ESP32-C3 SuperMini, a Sensirion SPS30 particle sensor and
 a GY-SGP41 VOC/NOx module, running [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml). It
 hangs on the wall outside the printer's enclosure, upright, with the SPS30's air face down. Two parts in
-ASA — a back plate and a cover held by four screws — 62.6 × 88.5 × 24 mm, plus a mounting tab each side.
+ASA — a back plate and a cover held by four screws — 62.4 × 88.5 × 24 mm, plus a mounting tab each side.
 
 ![every part, moved apart along the way it goes in](docs/assembly-exploded.png)
 

@@ -19,11 +19,11 @@ leaves at that end - on your RIGHT with the sensor in hand.
 /* [Which part] */
 part = "back";   /* "back", "cover", or "assembly" (preview only - several parts, not printable). */
 
-/* [The SPS30 - sourced from its datasheet v2.0, Figure 7] */
-sps_w    = 40.6;   /* Along the air face (X). 40.6 +/- 0.3 without the shipping foil, which can stay on. */
-sps_h    = 40.6;   /* The other side of the big face (Z). */
+/* [The SPS30 - from its datasheet v2.0, Figure 7, and its width measured] */
+sps_w    = 40.69;  /* Along the air face (X), across the body beside the nubs. Measured 3 Oct 2026 with calipers (Alon; docs/sps30-measure.png, B). The datasheet gives 40.6 +/- 0.3 without the shipping foil, which can stay on. */
+sps_h    = 40.6;   /* The other side of the big face (Z). Datasheet; not measured. */
 sps_t    = 12.2;   /* Thickness (Y). 12.2 +/- 0.3. */
-sps_nub  = 0.3;    /* Each side: the plastic nubs on the side faces make it 41.2 across. */
+sps_nub  = 0.155;  /* Each side: the plastic nubs on the side faces. Measured 41.00 across them on 3 Oct 2026 (Alon; docs/sps30-measure.png, A), so (41.00 - 40.69) / 2. The datasheet's 41.2 across left the clearance test's frame A about 0.7 mm loose in X. */
 
 /* [Measured from the parts in hand - `unmeasured` below lists what is still a placeholder] */
 divider_from_inlet_end = 17.7;   /* Along the air face, from the INLET end to the middle of the gap between the inlets and the outlet grille. From photo 3, 2 Oct 2026, scaled against the sensor's 40.6 mm width: three features land within 0.4 mm of the datasheet, so the scale holds. */

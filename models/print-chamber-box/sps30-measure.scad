@@ -11,7 +11,7 @@ datasheet's 41.2 mm, which frame A of the clearance test found about 0.7 mm gene
 
 Drawn as the sensor stands in frame A of the clearance test, in that part's axes: x across its width, y
 through its thickness, z along the way it slides through. Sizes are the params file's; where the nubs
-sit is read off the datasheet's Figure 7, so it is approximate, and they are drawn three times as proud
+sit is read off the datasheet's Figure 7, so it is approximate, and they are drawn `show` times as proud
 as they are so that they show.
 
     openscad -o docs/sps30-measure.png --imgsize=1800,1300 --projection=o --viewall --autocenter \
@@ -22,7 +22,7 @@ use <../lib/axes.scad>
 draw_model = false;   // only the variables
 
 cam = [86, 0, 0];     // the --camera angles above: the text faces the camera
-show = 3;             // how much prouder than they are the nubs are drawn
+show = 6;             // how much prouder than they are the nubs are drawn
 nub = 1.2;            // a nub's side, read off Figure 7
 nub_z = [5.4, 15.7, 25.7, 36.0];   // their centres along the sensor, from Figure 7
 nub_y = 2.1;          // their centres in from the big face nearest the camera
@@ -63,7 +63,7 @@ flat("B", [sps_w / 2 - 1, dy, zb + 2.2], 3.2, C_B);
 flat("SPS30 - the two widths to measure, both in x", [-8, dy, sps_h + 22], 3.0);
 flat("A  across the small plastic nubs on its sides - its widest point", [-8, dy, sps_h + 16], 2.6, C_A);
 flat("B  across the body, beside the nubs", [-8, dy, sps_h + 11], 2.6, C_B);
-flat("datasheet: 40.6 body, 41.2 with the nubs; the nubs are drawn 3x as proud as they are", [-8, dy, -11], 2.2);
+flat(str("datasheet: 40.6 body, 41.2 with the nubs; the nubs are drawn ", show, "x as proud as they are"), [-8, dy, -11], 2.2);
 flat("measure it as it will go in the box - shipping foil on or off", [-8, dy, -15.5], 2.2);
 
 // which way round: the two plain sides, not the connector end and the air end

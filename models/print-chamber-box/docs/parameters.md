@@ -12,8 +12,7 @@ From the **SPS30 datasheet v2.0**, Figure 7:
 
 | Name | Value | Note |
 |---|---|---|
-| `sps_w`, `sps_h` | **40.6 ± 0.3** | without the shipping foil, which can stay on |
-| `sps_w_nubs` | **41.2** | including the small plastic nubs on the sides |
+| `sps_h` | **40.6 ± 0.3** | without the shipping foil, which can stay on. The datasheet gives the same for `sps_w`, and 41.2 across the side nubs; both were measured instead, below |
 | `sps_t` | **12.2 ± 0.3** | |
 | `sps_mass` | **26.3 g** | |
 
@@ -28,11 +27,13 @@ From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.
 
 ## Measured
 
-With calipers on the parts in hand, 2 Oct 2026. Three are photo readings, marked; check them on the
+With calipers on the parts in hand, 2 Oct 2026 unless dated. Three are photo readings, marked; check them on the
 parts before printing the back plate.
 
 | Name | Value | What |
 |---|---|---|
+| `sps_w` | **40.69** | across the SPS30's body, beside its side nubs — measured 3 Oct 2026, reading B in [the figure](sps30-measure.png) |
+| `sps_nub` | **0.155** | each side: 41.00 across the nubs (reading A), less the body, halved. The datasheet's 41.2 left the clearance test's frame A about 0.7 mm loose |
 | `divider_from_inlet_end` | **17.7** | from the SPS30's inlet end to the middle of the blank gap before the outlet grille. Scaled off a straight-on photo against the sensor's 40.6 mm width; three features land within 0.4 mm of the datasheet, so the scale holds. The gap runs from `sps_inlet_end` 15.2 to `sps_outlet_from` 20.2, and an assert keeps the divider inside it |
 | `sm_l`, `sm_w` | **22.8 × 18.03** | the SuperMini's PCB, not counting the USB-C shell |
 | `sm_pcb_t`, `sm_t` | **0.85**, **4.05** | the bare PCB; the PCB with its tallest part, the USB-C shell, without the antenna |

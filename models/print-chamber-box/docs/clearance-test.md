@@ -56,9 +56,10 @@ All from the one print of 2 Oct 2026.
 | 3 Oct 2026 | H | `part_fit` | — | peg 5.98; socket 6.50 in y, 6.55 in x — 0.26 and 0.29 per side | **0.3** |
 
 - **A, B, C, D and F** each took the tightest try, so nothing tighter has been tried.
-- **A's x play is the width allowance, not the fit.** The frame's width is the datasheet's 41.2 mm across
-  the sensor's side nubs plus the fit. Flush in y says the fit itself is right. Two caliper readings
-  on the sensor will set the width — until then the box's SPS30 channel carries the same 0.7 mm:
+- **A's x play was the width allowance, not the fit.** The frame's width was the datasheet's 41.2 mm
+  across the sensor's side nubs plus the fit; flush in y said the fit itself was right. Measured on
+  3 Oct 2026 instead: **41.00 across the nubs, 40.69 across the body**. The box's SPS30 channel now
+  takes its width from those, so it is 0.2 mm narrower than the frame that was 0.7 mm loose:
 
   ![the two widths to measure on the SPS30](sps30-measure.png)
 
