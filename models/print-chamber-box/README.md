@@ -65,7 +65,7 @@ opening is a hole in the first layers or a notch open at an edge.
 | [`print-chamber-box.params.scad`](print-chamber-box.params.scad) | every setting, measurement and fit — the one file to edit |
 | [`print-chamber-box.scad`](print-chamber-box.scad) | the model, its asserts and its collision checks |
 | `print-chamber-box-back.scad`, `-cover.scad`, `-fits.scad` | one part each; check and slice through these |
-| [`assembly-views.scad`](assembly-views.scad) | the assembly pictures: exploded, and open with the wiring table |
+| [`assembly-views.scad`](assembly-views.scad) | the assembly pictures: exploded; open, with every wire's route and the wiring table; the wires at the pins close up; and the wires' collision check |
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
 | [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
 | [`sps30-measure.scad`](sps30-measure.scad) | the two widths to measure on the SPS30 |

@@ -41,7 +41,7 @@ plate in the model: the SuperMini's push into its clips, and the SPS30's path in
 
 On two screws, by the keyholes in the back plate — the way a wall clock hangs.
 
-1. **Drive the two screws level, 55.3 mm apart**, where the box's bottom edge will be 48.5 mm below them.
+1. **Drive the two screws level, 55.3 mm apart**, where the box's bottom edge will be 46.8 mm below them.
    The divider stands another 4 mm below that edge.
 2. **Leave each head standing about 3 mm off the wall** — between 2.4 and 3.4 mm. The plate is 2.4 mm
    thick, and the room behind it is 1 mm deeper than the head.

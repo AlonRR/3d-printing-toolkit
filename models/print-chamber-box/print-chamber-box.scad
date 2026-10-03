@@ -122,10 +122,11 @@ zu      = z_f0 + shelf_t;             // the PCB's underside
 z_uc    = zu + sm_pcb_t + usb_shell_h / 2;   // the USB-C socket's centre: the shell sits on the component side
 nut_bz  = wall + part_fit + nut_boss_d / 2;  // the nut bosses' centres, in each bottom corner
 nut_bx  = [nut_bz, W - nut_bz];
-// The keyholes: the hung heads' tops gap under the clasps, and the slots key_level_tol longer, so one
-// screw may sit that much lower than the other and its head still clear its entry.
+// The keyholes: the hung heads' tops gap under the clasps, and under the room the wires to the board's
+// back pins need; the slots key_level_tol longer, so one screw may sit that much lower than the other and
+// its head still clear its entry.
 key_travel = key_entry_d / 2 + key_head_d / 2 + 1.0 + key_level_tol;
-key_z1  = z_f0 - gap - key_head_d / 2;    // where a screw is once the box hangs
+key_z1  = min(z_f0, zu - back_wire_room) - gap - key_head_d / 2;   // where a screw is once the box hangs
 key_z0  = key_z1 - key_travel;            // the entry's centre
 H       = zu + ant_h + gap + wall;        // the pole stands under the top wall
 // The cover's top locates on one bump in the middle of the plate's top, which stands out into a U hanging

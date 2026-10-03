@@ -130,6 +130,7 @@ thicknesses whole layers of `fdm_layer_h`, and the model asserts both.
 | `stop_reach` | **3.0** | how far each stop at the antenna end reaches in from a long edge; the loop leaves 4.3 free |
 | `gy_standoff_d`, `gy_screw_l` | **4.0**, **6.0** | the SGP41's standoff, inside the bare patch round its hole; its M2.5 screw's length — an 8 would reach the SPS30's channel |
 | `key_slack`, `key_level_tol` | **1.0**, **2.0** | how much further than the plate's thickness a wall screw's head may stand off the wall; how much lower one screw may sit than the other |
+| `back_wire_room` | **3.0** | the room kept under the board's back edge, over the wall screws' heads, for the wires to GPIO5 and GPIO6: two stacked there, the SGP41's 1.56 mm and a lead wire of about 1 mm. The keyholes sit low enough to leave it — see [Wiring](wiring.md) |
 | `bump_w`, `bump_out`, `u_drop` | **8.0**, **4.0**, **5.0** | the bump the cover's top locates on: its width, how far it stands out from the plate, and how far the U's arms hang down round it |
 | `cover_screw_l` | **20** | the cover's M3 socket head cap screws. The nut's shoulder sits where, from its flush head, the screw passes right through the nut |
 | `corner_r`, `gap` | **4.0**, **1.0** | the plan-view corner radius, which keeps ASA's corners down without a brim; the general clearance between internal features |

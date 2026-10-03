@@ -127,6 +127,7 @@ stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of
 /* [Mounting and closing] */
 key_slack = 1.0;    /* How much further than back_t the wall screws' heads may stand off the wall: the room behind the plate is that much deeper than the head. */
 key_level_tol = 2.0;   /* How much lower one wall screw may sit than the other: each keyhole's slot is this much longer, so the lower screw's head is still clear of its entry. */
+back_wire_room = 3.0;  /* Room kept under the board's back edge, over the wall screws' heads, for the wires to GPIO5 and GPIO6: two each, stacked - the SGP41's 1.56 mm solid wire against the board and an SPS30 lead wire of about 1 mm under it - with some to spare. The keyholes sit low enough to leave it. */
 bump_w    = 8.0;    /* The cover's top locates on one bump on the back plate, inside a U that hangs from the cover's top wall. Alon, 3 Oct 2026: "1 u shape that is from the top wall of the cover down -z. 1 bump where that u shape is hollow and touchs the back plate" - in place of the two pins. The bump's width, along X. */
 bump_out  = 4.0;    /* ... how far it stands out from the plate, in +Y, into the U. */
 u_drop    = 5.0;    /* ... how far the U's two arms hang down from the cover's top wall: the bump's height, and part_fit more. */
