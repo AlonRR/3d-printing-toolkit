@@ -7,7 +7,7 @@
 Assembly views of the print-chamber box, for docs/assembly.md and docs/wiring.md.
 
   view = "exploded"   every part, moved apart along the way it goes in: the nuts from the wall side, the
-                      SuperMini from the front and along to its stops, the SGP41 and its screw from the side,
+                      SuperMini from the front into its clasps, the SGP41 and its screw from the side,
                       the SPS30, the cover and its screws from the front.
   view = "open"       assembled with the cover off, and the wiring table beside it. The wires' routes are
                       not drawn yet (Alon, 3 Oct 2026: "Let's first get the layout right").
@@ -95,7 +95,7 @@ if (view == "exploded") {
     cam = [68, 0, 252];
     color([0.80, 0.72, 0.58]) back_plate();
     e_nut = -18; e_sm = 72; e_sps = 40; e_gy = 22; e_m25 = 36; e_cov = 105; e_m3 = 150;   // how far out each one goes
-    dx_sm = -(sm_back_lip + gap);
+    dx_sm = 0;
     translate([0, e_nut, 0]) nuts();
     translate([dx_sm, e_sm, 0]) supermini();
     translate([0, e_sps, 0]) sps30();
@@ -106,15 +106,14 @@ if (view == "exploded") {
     // the way each one goes in
     for (x = nut_bx) guide([x, e_nut + nut_y1, nut_bz], [x, nut_y1 - nut_h, nut_bz]);
     guide([sm_x0 + sm_l / 2 + dx_sm, y_bc + e_sm, zu], [sm_x0 + sm_l / 2 + dx_sm, y_bc, zu]);
-    guide([sm_x0 + sm_l / 2 + dx_sm, y_bc, zu - 0.5], [sm_x0 + sm_l / 2, y_bc, zu - 0.5]);
     guide([(sps_x0 + sps_x1) / 2, back_t + e_sps, (z_sps0 + z_sps1) / 2], [(sps_x0 + sps_x1) / 2, back_t, (z_sps0 + z_sps1) / 2]);
     guide([gy_xs + e_m25, gy_hy, gy_hz], [gy_xs, gy_hy, gy_hz]);
     for (x = nut_bx) guide([x, D + e_m3, nut_bz], [x, y_in1, nut_bz]);
     label("back plate",                            [W / 2, 0, H + 12], cam);
     label("2 x M3 nut, from the back",             [W / 2, e_nut, -16], cam, 3.2);
-    label("SuperMini - onto its shelf, then along", [sm_x0 + dx_sm + sm_l / 2, y_bc + e_sm, zu + ant_h + 6], cam, 3.2);
+    label("SuperMini - into its clasps, from the front", [sm_x0 + dx_sm + sm_l / 2, y_bc + e_sm, zu + ant_h + 6], cam, 3.2);
     label("SPS30 - in from the front",             [(sps_x0 + sps_x1) / 2, back_t + e_sps + sps_t, z_sps0 - 12], cam, 3.2);
-    label("cover - its top on two pins",           [W / 2, D + e_cov, -14], cam, 3.2);
+    label("cover - its top in a U on a bump",           [W / 2, D + e_cov, -14], cam, 3.2);
     label("2 x M3 x 20",                           [W / 2, D + e_m3, nut_bz + 16], cam, 3.2);
     axes([W, 0, -80], 25, cam, [[-1, 0], [0, 0], [0, 0]]);
 }

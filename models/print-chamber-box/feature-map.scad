@@ -52,21 +52,20 @@ module legend(lines, p, toward = 1) {
 if (view == "back") {
     color([0.80, 0.72, 0.58]) back_plate();
     f = 1.2;   // how far a marker stands in front of its surface
-    marker(1,  [W / 2 + 6, back_t + f, H - 12]);                                    // the plate
+    marker(1,  [W / 2 + 14, back_t + f, H - 24]);                                   // the plate
     for (x = key_xs) marker(2, [x, back_t + f, key_z1 + 7.5]);                      // keyholes
     marker(3,  [ch_x0 - cradle_t / 2, y_ch1 + f, z_sps0 + 22]);                     // channel walls
     marker(3,  [ch_x1 + cradle_t / 2, y_ch1 + f, z_sps0 + 22]);
     marker(4,  [ch_x0 + ledge_w / 2 + 2, back_t + sps_t + f, -3.5]);                // ledge
     marker(5,  [x_div, y_in1 - part_fit + f, -divider_proud - 3.5]);                // divider
-    marker(6,  [(wall + sm_ant_x) / 2, y_b1 + f, z_f0 - 3.5]);                      // the board's shelf
-    marker(7,  [sm_ant_x - sm_back_lip / 2, y_b0 + sm_lip_over + f, zu + 4.5]);     // back lip
-    marker(8,  [stop_x0 + rim_t / 2 + 3.5, y_b0 + stop_reach + f, zu + 4.5]);       // back stop
+    for (c = clasp_xs) marker(6, [(c[0] + c[1]) / 2, y_b0 + clasp_low + f, z_f0 - 3.5]);   // the board's back clips
+    marker(7,  [stop_x0 + rim_t / 2 + 3.5, y_b0 + stop_reach + f, zu + 4.5]);       // back stop
     // the SGP41's three sit behind the channel wall from here, so they stand in front of it
-    marker(9,  [ch_x1 - 4, y_ch1 + f, gy_hz + 7]);                                  // block
-    marker(10, [ch_x1 - 4, y_ch1 + f, gy_hz + 0.5]);                                // pilot
-    marker(11, [ch_x1 - 4, y_ch1 + f, gy_z0 - 6]);                                  // ledge
-    for (x = nut_bx) marker(12, [x, y_in1 + f, nut_bz + nut_boss_d / 2 + 3.5]);     // nut bosses
-    for (x = [boss_inset, W - boss_inset]) marker(13, [x, D + f, H - boss_inset - boss_d / 2 - 3.5]);   // pins
+    marker(8,  [ch_x1 - 4, y_ch1 + f, gy_hz + 7]);                                  // block
+    marker(9,  [ch_x1 - 4, y_ch1 + f, gy_hz + 0.5]);                                // pilot
+    marker(10, [ch_x1 - 4, y_ch1 + f, gy_z0 - 6]);                                  // ledge
+    for (x = nut_bx) marker(11, [x, y_in1 + f, nut_bz + nut_boss_d / 2 + 3.5]);     // nut bosses
+    marker(12, [W / 2, back_t + bump_out + f, u_z0 - 3.5]);                         // the bump at the top
     legend(["BACK PLATE - as you face the box, cover off",
             "",
             " 1  the plate - against the wall",
@@ -74,14 +73,13 @@ if (view == "back") {
             " 3  channel walls - the SPS30 goes in from the front",
             " 4  ledges - the SPS30 stands on them",
             " 5  divider - splits inlet from outlet air",
-            " 6  shelf - the SuperMini lies on it, its pole up",
-            " 7  back lip - the board slides in under it",
-            " 8  back stop - takes the push of plugging in",
-            " 9  block and standoff - the SGP41, on edge",
-            "10  pilot for the SGP41's M2.5 screw, sideways",
-            "11  ledge - the SGP41's bottom edge sits on it",
-            "12  nut bosses - an M3 nut pressed in from behind",
-            "13  pins - the cover's top slips onto them"],
+            " 6  clips - the board's back edge snaps in",
+            " 7  back stop - takes the push of plugging in",
+            " 8  block and standoff - the SGP41, on edge",
+            " 9  pilot for the SGP41's M2.5 screw, sideways",
+            "10  ledge - the SGP41's bottom edge sits on it",
+            "11  nut bosses - an M3 nut pressed in from behind",
+            "12  bump - the cover's top locates on it"],
            [-18, 0, H + 34]);
     axes([-22, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
 }
@@ -93,8 +91,8 @@ if (view == "cover") {
     marker(1,  [W / 2 + 14, y_in1 + f, 26], -1);                                      // the front
     marker(2,  [W - wall - 3.5, back_t + f, gy_z1 + 3.5], -1);                      // side vents
     marker(3,  [(sm_x0 + sm_x1) / 2, y_in1 + f, zu + sm_t + gap + 13.5], -1);       // board vents
-    marker(4,  [nut_bx[0], y_in1 + f, nut_bz + 8], -1);                          // screw and pin holes
-    marker(4,  [W - boss_inset - 6, y_in1 + f, H - boss_inset - 5], -1);
+    for (x = nut_bx) marker(4, [x, y_in1 + f, nut_bz + 8], -1);                  // screw holes
+    marker(13, [W / 2, back_t + part_fit + f, u_z0 - 3.5], -1);                      // the U at the top
     marker(5,  [ch_x0 + 15, back_t + f, wall + 3.5], -1);                             // window
     marker(6,  [wall / 2, back_t + f, z_uc - 7], -1);                                // USB opening
     marker(7,  [wall + 2.5, back_t + f, zu + sm_t + 5], -1);                         // thinned wall
@@ -108,15 +106,16 @@ if (view == "cover") {
             " 1  the front - printed face down",
             " 2  vents in the side, at the SGP41's sensor",
             " 3  vents in front of the board",
-            " 4  holes: two screws below, two pins above",
+            " 4  holes for the two bottom screws",
             " 5  window under the SPS30's air face",
             " 6  USB-C opening - the shell passes through",
             " 7  wall thinned for the board's USB end",
             " 8  partition - splits the air, holds the SPS30 in",
             " 9  baffle - shuts the sensor's air off",
-            "10  rim and lip - hold the board's front edge",
+            "10  front clasp - the board's front edge",
             "11  front stop - takes the push of plugging in",
-            "12  rounded corners - instead of a brim"],
+            "12  rounded corners - instead of a brim",
+            "13  U - straddles the plate's bump"],
            [W + 8, 0, H + 34], -1);
     axes([W + 12, 0, -20], 20, [100, 0, 15], [[0, 0], [-1.75, -0.3], [0, 0]]);
 }

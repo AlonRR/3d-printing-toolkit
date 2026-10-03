@@ -7,7 +7,7 @@
 Everything you SET for the print-chamber box. Render print-chamber-box.scad, not this file.
 
 The box for the node in firmware/print-chamber.yaml: an SPS30 particle sensor standing on edge with its
-air face DOWN, the ESP32-C3 SuperMini lying level on a shelf above its lead with the antenna's pole
+air face DOWN, the ESP32-C3 SuperMini held level by its edges just above its lead, the antenna's pole
 standing up, and the GY-SGP41 on edge beside the SPS30, its sensor facing the side wall. It hangs on two
 wall screws by keyholes beside the SPS30's top corners. Why that layout, with a source for each rule, is
 in docs/design.md; where each value came from, in docs/parameters.md.
@@ -39,7 +39,7 @@ sm_pcb_t     = 0.85;   /* Bare PCB thickness. Measured. */
 sm_t         = 4.05;   /* PCB plus its tallest component - the USB-C shell - without the antenna. Measured. */
 usb_shell_h  = 3.16;   /* The USB-C shell's height. Measured. It sits on the component side (0.85 + 3.16 = 4.01, against sm_t 4.05), so its centre is sm_pcb_t + usb_shell_h / 2 above the PCB's underside. */
 wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part - the pole - stands out of the component side, at an angle - the board leans on it when laid face down. The layout needs it: the board lies level so the pole stands up. */
-ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - with the board level on its shelf, it sets the box's height. */
+ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - with the board level, it sets the box's height. */
 ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so the middle of that end of the pocket is left open for it. Measured. */
 ant_loop_free = 4.3;   /* How much of the board's antenna end the loop leaves free beside it: 4.3 mm on one side and 5.45 on the other, measured 2 Oct 2026. The smaller is used on both sides, so the box fits the board either way round. */
 pin_mid      = 5.1;    /* The middle of the SuperMini's three power pins (5V, GND, 3V3), from its PCB's USB-C end. Photo 1, scaled against the board, reads 2.6, 5.1 and 7.7 mm. The lips that hold the board start past its fourth pin, clear of every pin the node solders to. */
@@ -92,7 +92,9 @@ screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 O
 gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. */
 nut_fit    = 0.0;    /* The M3 nut's hex pocket, per side, on top of fdm_hole_comp: 0 should make it a press fit, so a nut stays put with its screw out (docs/mechanical-design-review.md, "Nuts stay put without their screw"). Untested. */
 
-untested_fits = ["nut_fit", "gy_pilot_d"];
+clasp_pinch = 0.1;  /* How much narrower than the PCB the clips' gap is at their catch, so the catch presses on the PCB and holds it. The jaw is short and stiff, so the catch's ridge gives a little rather than the jaw bending - which is why this is small, and untested. */
+
+untested_fits = ["nut_fit", "gy_pilot_d", "clasp_pinch"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
@@ -115,15 +117,19 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 /* [Holding the sensor, the boards and the wires] */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. The SPS30 is put in from the front and stands on them; the cover's partition rib, 0.3 mm in front of its face, keeps it there. */
 sm_edge    = 1.0;   /* The strip along each long edge of the SuperMini's component side that holds only its castellated pads, nothing taller. Photo 1. The rails' lips may reach over it, no further. */
-sm_lip_over = 0.6;  /* How far each rail's lip reaches over the board's long edge, onto that pad strip. The board slides in under the lips, and they keep it down on the plate. */
-sm_back_lip = 6.0;  /* How long the lip over the board's back edge is, back from its antenna end. The board goes onto its shelf that far towards its USB-C side, then slides into the stops - so its standing pole never sweeps past the top pin. */
+sm_lip_over = 0.9;  /* How far the lip of the cover's front clasp reaches over the board's front edge, onto that pad strip. It must stay under sm_edge. */
+clip_room   = 2.1;  /* How far in +Y from the plate the clips on the board's back edge may reach - over its pad row, where the back edge's pins are not used. Alon, 3 Oct 2026: "the lip should angle in and out like a clip. it can be up to 2.1mm +Y". Relayed, not measured: the parts envelope keeps out of it only where the clips are. */
+clasp_len   = 5.0;  /* How long each of the two clips on the board's back edge is, along it: one at its antenna end, one just past its second pin - the back edge's first two carry GPIO5 and GPIO6. */
+clasp_low   = 3.0;  /* How far each clip's lower jaw reaches under the board, past its back edge - all the shelf there is, now. The underside is bare, so it may reach further than the upper jaw. */
 stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in over a corner - the back one from the plate, the front one from the cover - and the middle stays open for the antenna loop. */
 
 /* [Mounting and closing] */
 key_slack = 1.0;    /* How much further than back_t the wall screws' heads may stand off the wall: the room behind the plate is that much deeper than the head. */
 key_level_tol = 2.0;   /* How much lower one wall screw may sit than the other: each keyhole's slot is this much longer, so the lower screw's head is still clear of its entry. */
-boss_d    = 6.75;   /* The top bosses, which carry the pins the cover's top sits on. */
-pin_d     = 2.9;    /* Those pins, slipping into the cover's top holes. An M3 passes the 3.2 hole freely (the clearance test, 3 Oct 2026), and printed pins come out a little oversize, so 2.9. They only locate the cover's top; the two bottom screws hold it. */
+boss_d    = 6.75;   /* RETIRED from the box 3 Oct 2026, with the self-tapping cover screws and then the top pins. Kept because the 2 Oct clearance test's group D bosses are this size. */
+bump_w    = 8.0;    /* The cover's top locates on one bump on the back plate, inside a U that hangs from the cover's top wall. Alon, 3 Oct 2026: "1 u shape that is from the top wall of the cover down -z. 1 bump where that u shape is hollow and touchs the back plate" - in place of the two pins. The bump's width, along X. */
+bump_out  = 4.0;    /* ... how far it stands out from the plate, in +Y, into the U. */
+u_drop    = 5.0;    /* ... how far the U's two arms hang down from the cover's top wall: the bump's height, and part_fit more. */
 cover_screw_l = 20.0;   /* The two M3 screws through the cover's bottom corners into nuts in the back plate: M3 x 20, from the M3/M4/M5 box. */
 nut_af    = 5.5;    /* The M3 hex nut, across its flats - ISO 4032. */
 nut_h     = 2.4;    /* ... and its height - ISO 4032, the largest allowed. */
