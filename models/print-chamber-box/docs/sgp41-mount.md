@@ -23,8 +23,8 @@ height.
 
 - **a ledge** along its far end. The nearest part is 3.31 mm in from that end (`gy_bare`, measured), and
   the ledge stops 0.5 mm short of it;
-- **a 4 mm standoff** round the mounting hole, inside the bare patch there (`gy_hole_bare_d`, read off a
-  photo; the collision check treats its edge as where the parts begin).
+- **a 4 mm standoff** round the mounting hole, inside the bare patch there (`gy_hole_bare_d`, measured;
+  the collision check treats its edge as where the parts begin).
 
 The ledge is tall enough that the parts on the thinnest plausible board clear the pedestal's top by
 `gap` (1 mm), since that top prints as a skin over infill and can come out a few tenths uneven. The board

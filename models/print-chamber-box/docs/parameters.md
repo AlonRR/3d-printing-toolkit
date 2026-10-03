@@ -40,10 +40,10 @@ thread: of 3.8, 4.0 and 4.2 mm holes, the screw fits the 4.2.
 
 ## Measured
 
-With calipers on the parts in hand, 2 Oct 2026 unless dated. Three are photo readings, marked; check them on the
-parts before printing the back plate — A, B and C here:
+With calipers on the parts in hand, 2 Oct 2026 unless dated. Three were read off photos first and
+measured on 3 Oct 2026 — A, B and C here:
 
-![the three photo readings to check with calipers](board-measure.png)
+![the three readings taken on the boards](board-measure.png)
 
 Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie on the table.
 
@@ -57,14 +57,14 @@ Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie o
 | `usb_shell_h`, `usb_overhang` | **3.16**, **1.5** | the USB-C shell's height, and how far it overhangs the PCB's edge |
 | `ant_h`, `ant_over` | **18.8**, **4.81** | the antenna wire's tip above the PCB's underside; how far its loop reaches past the PCB's antenna end, in the board's plane |
 | `ant_loop_free` | **4.3** | how much of the antenna end the loop leaves free beside it — 4.3 mm one side, 5.45 the other; the smaller is used both sides |
-| `sm_edge` | **1.0** (photo) | the strip along each long edge of the SuperMini's component side that carries only its castellated pads. The rails' lips reach 0.6 mm over it, no further |
-| `pin_mid` | **5.1** (photo) | the middle of the SuperMini's three power pins from its USB-C end; the photo reads 2.6, 5.1 and 7.7. The cable channel stands under it |
+| `sm_edge` | **2.3** | the strip along each long edge of the SuperMini's component side that carries only its castellated pads: from the board's edge to the nearest part. Reading A, on the 5V edge past the 4th pin; the photo had read 1.0. The back edge was not measured — only the clips reach over it, and they keep within `clip_room`. The cover's front lip reaches 0.9 mm over it |
+| `pin_mid` | **1.6 + 2.54** | the middle of the SuperMini's three power pins, from its PCB's USB-C end — the board, not the shell that overhangs it. Reading B puts the 5V pin's middle 1.6 mm from that end; the photo had read 2.6, because the shell hides the board's end. The clips and the front clasp are placed from it |
 | `cable_zone_h` | **10** | above the SPS30's connector face, with the lead plugged in and bent over as tightly as it comfortably goes |
 | `conn_from`, `conn_to` | **2.0**, **10.5** | where the SPS30's plug and lead sit along its top face, from the outlet end: the wires leave 3.0–8.6 mm from that end, and the housing reaches about 1 mm past each |
 | `gy_l`, `gy_w`, `gy_t` | **13.14 × 10.60 × 3.24** | the GY-SGP41 with its parts. The sensor is on one face and the rest of its electronics on the other |
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside |
-| `gy_hole_bare_d` | **5.2** (photo) | the bare patch round the mounting hole on the underside: the nearest parts beside and above the hole are about 2.6 mm from its centre |
+| `gy_hole_bare_d` | **3.13 + 2 × 1.0** | the bare patch round the mounting hole on the underside: reading C, 1.0 mm from the hole's edge to the nearest part, as the photo had read. The 4 mm standoff bears inside it, and the collision check treats its edge as where the parts begin |
 | `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
 | `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end, and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
 | `gy_hole_right` | **true** (photo) | which way round the module is: seen from its sensor side with its pins up, the hole is at the bottom right and the sensor at the bottom left — the GY-SGP41 in [the figure](board-measure.png). From photo 2, which is not mirrored: the SuperMini's labels in the same photo read the right way round. Standing on edge with its sensor towards the side wall and its pins up, the module's hole is therefore by its front edge, away from the plate |

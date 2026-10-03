@@ -26,10 +26,6 @@ of the M3 nuts' pockets; `gy_pilot_d`, which was tested upright and is now a sid
 `clasp_pinch`, how hard the clips on the SuperMini's back edge grip it. `scad-check.sh` exits 2 on
 purpose until they are settled.
 
-Before printing the back plate, check on the parts the three values read off photos rather than
-calipers — `sm_edge`, `pin_mid` and `gy_hole_bare_d`. [What to measure](docs/board-measure.png), and
-where each came from: [parameters](docs/parameters.md).
-
 ## Building it
 
 1. **[Print the clearance test](docs/clearance-test.md)** and set the fits it finds.
@@ -74,5 +70,5 @@ opening is a hole in the first layers or a notch open at an edge.
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
 | [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
 | [`sps30-measure.scad`](sps30-measure.scad) | the two widths to measure on the SPS30 |
-| [`board-measure.scad`](board-measure.scad) | the three photo readings to check on the SuperMini and the GY-SGP41 |
+| [`board-measure.scad`](board-measure.scad) | the three readings taken on the SuperMini and the GY-SGP41 |
 | [`docs/`](docs/) | the pages above and their pictures |

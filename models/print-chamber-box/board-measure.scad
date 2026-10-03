@@ -4,7 +4,7 @@
 // (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
 
 /*
-What to measure on the two boards, to replace three values read off photos: A, the strip of bare pads
+What was measured on the two boards on 3 Oct 2026, replacing three values read off photos: A, the strip of bare pads
 along the SuperMini's 5V edge, which the cover's front clasp reaches over (sm_edge); B, where its 5V pin
 is (pin_mid, which is two pins further along); C, the bare ring round the GY-SGP41's mounting hole on its
 underside, where the standoff bears (gy_hole_bare_d). The GY-SGP41 is drawn from both sides, so the hole
@@ -70,7 +70,7 @@ module supermini() {
     color([0.05, 0.05, 0.05]) translate([14, sm_w / 2, sm_pcb_t]) rotate([0, 0, 45]) translate([-2.4, -2.4, 0]) cube([4.8, 4.8, 0.9]);
     color([0.80, 0.78, 0.70]) for (y = [3.4, 11.4]) translate([6.8, y, sm_pcb_t]) cube([3.2, 3.2, 1.5]);
     color([0.80, 0.78, 0.70]) translate([18.3, 3.3, sm_pcb_t]) cube([2.8, 2.3, 0.8]);
-    color([0.55, 0.55, 0.55]) for (p = [[11.2, 12.6], [16.6, sm_w - 3.6], [18.6, sm_w - 3.6], [19.6, 8.0], [11.4, 4.2], [15.2, 3.4]])
+    color([0.55, 0.55, 0.55]) for (p = [[11.2, 12.6], [16.6, sm_w - sm_edge - 0.6], [18.6, sm_w - sm_edge - 0.6], [19.6, 8.0], [11.4, 4.2], [15.2, 3.4]])
         translate([p[0], p[1], sm_pcb_t]) cube([1.0, 0.6, 0.5]);
     // the pins' names, as the board's labels read
     for (i = [0 : 7]) {
@@ -82,7 +82,7 @@ supermini();
 
 // A: from the 5V edge in to the nearest part, past the 4th pin
 xa = p1 + 5.5 * pin_pitch;
-dim([xa, sm_w], [xa, sm_w - 3.0], C_A);
+dim([xa, sm_w], [xa, sm_w - sm_edge], C_A);
 flat("A", [xa + 0.8, sm_w - 1.6, top], 1.8, C_A);
 // B: from the PCB's USB-C end to the middle of the 5V pin, run above the pin names
 yb = sm_w + 4.2;
@@ -114,15 +114,15 @@ module gy_board(holexy, names) {
 translate([gx0, 0, 0]) {
     gy_board(hole_u, ["VIN", "GND", "SCL", "SDA"]);
     color([0.20, 0.20, 0.20]) {
-        translate([hole_u[0] + 2.6, gy_bare, 0.8]) cube([2.6, 1.6, 0.7]);
-        translate([0.9, hole_u[1] + 2.6, 0.8]) cube([3.0, 1.8, 0.7]);
+        translate([hole_u[0] + gy_hole_bare_d / 2, gy_bare, 0.8]) cube([2.6, 1.6, 0.7]);
+        translate([0.9, hole_u[1] + gy_hole_bare_d / 2 + 0.3, 0.8]) cube([3.0, 1.8, 0.7]);
         translate([5.4, 6.6, 0.8]) cube([3.6, 2.8, 1.1]);
         translate([1.2, 7.6, 0.8]) cube([1.6, 0.9, 0.5]);
     }
     ring(hole_u, gy_hole_bare_d / 2, 0.14, C_C);
 }
 // C: from the hole's edge to the nearest part
-dim([gx0 + hole_u[0] + gy_hole_d / 2, hole_u[1]], [gx0 + hole_u[0] + 2.6, hole_u[1]], C_C);
+dim([gx0 + hole_u[0] + gy_hole_d / 2, hole_u[1]], [gx0 + hole_u[0] + gy_hole_bare_d / 2, hole_u[1]], C_C);
 flat("C", [gx0 + 6.6, 1.1, top], 1.8, C_C, "center");
 
 // the sensor side, as photo 2 shows it: the sensor bottom left, the hole bottom right
@@ -133,17 +133,17 @@ translate([gx1, 0, 0]) {
 }
 
 // ------------------------------------------------------------------ the words
-flat("Q30 - what to measure, with calipers", [-2, 50, 0], 2.2);
+flat("What was measured on the boards, with calipers", [-2, 50, 0], 2.2);
 lines = [
     ["A   SuperMini, its 5V edge: from the board's edge in to the nearest part,", C_A],
     ["     anywhere past the 4th pin - the cover's front clasp reaches over this strip.", C_A],
-    ["     Read off the photo as 1.0 mm.", C_A],
+    [str("     Measured 3 Oct 2026: ", sm_edge, " mm. The photo had read 1.0."), C_A],
     ["B   SuperMini: from the PCB's USB-C end - the board itself, beside the metal shell -", C_B],
     ["     to the middle of the 5V pin's half-hole. The clips and the clasp are placed by it.", C_B],
-    ["     Read off the photo as 2.6 mm.", C_B],
+    [str("     Measured 3 Oct 2026: ", pin_mid - pin_pitch, " mm. The photo had read 2.6."), C_B],
     ["C   GY-SGP41, its underside - the face WITHOUT the sensor: from the mounting hole's", C_C],
     ["     edge to the nearest part, whichever way that is. The standoff bears inside the", C_C],
-    ["     orange ring. Read off the photo as 1.0 mm.", C_C]];
+    [str("     orange ring. Measured 3 Oct 2026: ", (gy_hole_bare_d - gy_hole_d) / 2, " mm, as the photo had read."), C_C]];
 for (i = [0 : len(lines) - 1])
     flat(lines[i][0], [-2, 46.2 - i * 1.75 - floor(i / 3) * 0.9, 0], 1.15, lines[i][1]);
 
