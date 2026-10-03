@@ -1,6 +1,6 @@
 # Design — why the box looks like this
 
-Most of the layout is decided by the SPS30, and Sensirion publishes the rules. Two more come from
+Most of the layout is decided by the SPS30, and Sensirion publishes the rules. Three more come from
 this repository. This page lists them, then shows the layout they add up to.
 
 ## The rules
@@ -48,60 +48,62 @@ own heat, which is not measured. Heating the chamber towards 60 °C would take b
 
 ## The layout
 
-Every rule points the same way. Stand the SPS30 on edge with its air face **down**. That puts its
-connector **up**, facing the board. The board goes **above** the sensor, so its heat rises away from
-it, and the board's antenna end sits in the top compartment, as far from the sensor's metal case as
-the box allows. The SGP41 sits between them, on a pedestal that brings it close behind its own vents.
+Every rule points the same way. Stand the SPS30 on edge with its air face **down**, over a window in the
+bottom wall; its connector is then **up**, at the outlet end. Lay the SuperMini **level above it**, just
+over the lead, so the board's heat rises away from the sensor and its antenna's pole stands up into the
+top of the box, away from the sensor's grounded case. Stand the SGP41 on edge **beside** the SPS30, its
+sensor 2–3 mm behind vents in the side wall.
 
-Drawn from the model, as you face the box:
+![assembled, cover off](assembly-open.png)
 
-```
-                  FRONT, as you face it                                 SIDE SECTION, through the SGP41
-          |<------------------------ W ------------------------->|     back            front
-          +------------------------------------------------------+     +--+----------+--+    ^
-          | o                                                  o |     |  |          |  |    |
-          |                            +---------------------+   |     |  |board     |  |    |
-          | antenna end - its wire    o|  C3 SuperMini       |====     |  |  + wire  |  |    |
-          | stands out towards you     |  pins at this end ->|   |     |  |          |  |    |
-          |                            +---------------------+   |     |  |          |  |    |
-          |             +---------------+  : lead :  (channel)   |     |  |   +----+]|  |    |  H
-          |      vents  |   GY-SGP41    |  :      :              |     |  |   |ped.|]|  |    |
-          |             +--- raised ----+  :      :              |     |  |   +----+]|  |    |
-          |   +--------------------------------------------+     |     |  +------+   |  |    |
-          |   |  SPS30 on edge, label facing you,          |     |     |  |      |   |  |    |
-          |   |  connector UP at the outlet end            |     |     |  |SPS30 | gap  |    |
-          |   |  air face DOWN                             |     |     |  |      |   |  |    |
-          |   +--------------------------------------------+     |     |  +------+   |  |    |
-          | o --[  inlet window  ]#[     outlet window     ]-- o |     +--[  window   ]--+    v
-          +------------------------------------------------------+
-                                   #  the divider: carries the sensor, separates the two
-                                      ends, and stands 4 mm below the box
-          "=" on the right wall: where the USB-C cable leaves, beside the board
-          ":" the column the SPS30's lead rises through; "(channel)" the cable channel for its wires
-          "]" the SGP41 on its pedestal, 2-3 mm behind its vents in the cover's front
-```
+As you face the box, cover off:
+
+- **The SPS30** stands at the bottom centre, in a channel on the back plate, label towards you, its outlet
+  on your right. A divider under its air face splits the inlet side from the outlet side.
+- **The SuperMini** lies level across your right half, 54.8 mm up, component side up. Its USB-C end is in
+  the right-hand wall; its antenna end points to the middle, and the antenna's pole stands 1 mm short of
+  the top wall. It is held by its long edges — two clips on the plate take its back edge and a clasp on
+  the cover its front edge — so the pins along both stay open from below.
+- **The SGP41** stands on edge low in the left-hand column, its sensor towards the side wall's vents and
+  its pins up, screwed sideways to a standoff.
+- **Two keyholes**, one in each side column beside the SPS30's top corners, hang the box on two wall
+  screws.
+- **The cover** locates at the top on a bump inside a U, and two M3 screws through its bottom corners,
+  their heads flush, close it into nuts in the back plate.
 
 **One large window, one divider.** The window is a single opening over the whole air face, split by a
 single divider. The box does not have to line up with each grille; it only has to put the divider in
 the blank gap between the two ends, which is one number to measure.
 
-**Every pin the node uses is at the board's USB-C end** — 5V, GND, 3V3, GPIO5 and GPIO6. That end faces
-the SPS30's connector, so the wires are short and none comes near the antenna end.
+**Every pin the node uses is among the first three at the board's USB-C end** — 5V, GND and 3V3 on its
+front edge, GPIO5 and GPIO6 on its back edge. So the clips start past the back edge's second pin and the
+clasp past the front edge's third, and nothing printed covers a pin that is soldered.
+
+What each feature is for is in [Features](features.md); the SGP41's mount in
+[The SGP41's mount](sgp41-mount.md); the USB-C end in [The USB-C end](usb-c-end.md).
 
 ## Left and right
 
 **"Left" and "right" always mean as you face the box.** The model's frame is right-handed with Y
 pointing out of the wall, so +X is your **left**. The layout above is for the SPS30 in hand, whose outlet
-is on your right (`outlet_at_left = false`), so the USB-C cable leaves on your right too. The model can
-mirror for a sensor the other way round; the wiring drawing cannot, and says so.
+is on your right (`outlet_at_left = false`), so the USB-C cable leaves on your right too.
+
+The model can mirror for a sensor the other way round. A real GY-SGP41 cannot be mirrored, so when the
+box is, the model draws the module's mirror image first and it comes out the right way round.
 
 ## Printing without support
 
-**No bridge over air in either part.** Every opening in the cover is a hole in its first layers or a
-notch open at its back edge. The slicer reports seven *bridge infill* regions in the back plate, and
-each is internal: the first solid layer over the part's own sparse infill, which PrusaSlicer labels the
-same way. Five are in the plate and the bosses, one is the top of the SGP41's pedestal and one the
-floor under its screw's blind pilot. The cable channel's 45° lips print with no overhang perimeters.
+**The back plate prints on its back.** The keyholes are openings in its first layers. The channel
+walls, clips, stop, the SGP41's block and the bump are walls standing on it. The nut pockets open on the
+bed side, and each pocket's ceiling is bridged in three layers — a slot the screw hole's width, then a
+square, then the round hole — so it needs no support. The SGP41's standoff is the one overhang: a 4 mm
+peg standing 2.7 mm out of the side of its block.
+
+**The cover prints front face down.** The window under the SPS30 is a notch open at the back edge, and
+the vents in the front are holes in its first layers. The counterbores the screw heads sit in open on the
+bed, and their floors are bridged the same three-layer way as the nut pockets. The partition, baffle,
+clasp, stop and U are walls standing on the front. The USB-C opening and the side vents are windows in a
+standing wall, with short bridged tops: 3.8 mm and 2 mm.
 
 **No skirt, no brim, no draft shield.** Rounded corners in plan view (`corner_r`) keep ASA's corners
 down instead.
