@@ -20,10 +20,11 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** Three fits are untested: `nut_fit`, the press fit
-of the M3 nuts' pockets; `gy_pilot_d`, which was tested upright and is now a sideways hole; and
-`clasp_pinch`, how hard the clips on the SuperMini's back edge grip it. `scad-check.sh` exits 2 on
-purpose until they are settled.
+**Modelled and checked; not printable as-is yet.** The SGP41's standoff does not print: the second
+clearance test's K, three copies of it, came out unusable — it is a peg standing sideways out of its
+block with nothing under it. Its mount is to be reconsidered, and until then `gy_pilot_d` is the one
+untested fit, so `scad-check.sh` exits 2 on purpose. The nut pockets and the SuperMini's clips are tested
+([clearance test](docs/clearance-test.md)).
 
 ## Building it
 

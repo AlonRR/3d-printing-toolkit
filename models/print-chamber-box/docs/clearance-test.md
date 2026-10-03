@@ -43,7 +43,20 @@ the wrong place: say so, and it moves.
 
 ## Results
 
-**Second round — J, K and L:** not printed yet.
+**Second round**, printed 3 Oct 2026:
+
+| Read | Group | Setting | Ladder | Pick | Now |
+|---|---|---|---|---|---|
+| 3 Oct 2026 | J | `nut_fit` | −0.1 / 0 / 0.1 | 2 dots | **0** |
+| 3 Oct 2026 | L | `clasp_pinch` | 0.2 / 0.1 / 0 | 2 dots | **0.1** |
+| 3 Oct 2026 | K | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | none: no standoff printed usably | untested |
+
+- **J and L** each took the setting as it stood, so it stays.
+- **K's standoffs did not print usably**, any of the three. Each is the box's own: a 4 mm peg standing
+  2.7 mm out of its block, sideways, with nothing under it on the bed — the one real overhang in the
+  back plate. It cannot be propped from below, because the module's own parts are there. The fault is
+  the mount, not the pilot's size, so the SGP41's mount is to be reconsidered before `gy_pilot_d` is
+  tried again.
 
 **First round**, all from the one print of 2 Oct 2026. Its groups were: A, the SPS30 frames; B and C,
 trays for the two boards; D, bosses for the cover's self-tapping screws; E, upright pilots for the

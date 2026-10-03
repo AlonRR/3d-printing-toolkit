@@ -90,12 +90,12 @@ sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (
 pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2026, same print: the SuperMini and the GY-SGP41 each took the tightest of 0.2, 0.3 and 0.4, and both were snug (Alon). */
 part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. Measured 3 Oct 2026 on the same print: peg 5.98, socket 6.50 (Y) and 6.55 (X), so 0.26 and 0.29 per side as printed - over the 0.15 below which the parts would bind. */
 screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 Oct 2026: of 3.2, 3.4 and 3.6, an M3 passes 3.2 freely. */
-gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. */
-nut_fit    = 0.0;    /* The M3 nut's hex pocket, per side, on top of fdm_hole_comp: 0 should make it a press fit, so a nut stays put with its screw out (docs/mechanical-design-review.md, "Nuts stay put without their screw"). Untested. */
+gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. The second clearance test's K tried it sideways on 3 Oct 2026 and none of its three standoffs printed usably (Alon): the standoff is a peg standing 2.7 mm out of its block with nothing under it. Untested, and the mount is to be reconsidered. */
+nut_fit    = 0.0;    /* The M3 nut's hex pocket, per side, on top of fdm_hole_comp: 0 should make it a press fit, so a nut stays put with its screw out (docs/mechanical-design-review.md, "Nuts stay put without their screw"). Tested 3 Oct 2026, the second clearance test's J: of -0.1, 0 and 0.1, 0 - 2 dots (Alon). */
 
-clasp_pinch = 0.1;  /* How much narrower than the PCB the clips' gap is at their catch, so the catch presses on the PCB and holds it. The jaw is short and stiff, so the catch's ridge gives a little rather than the jaw bending - which is why this is small, and untested. */
+clasp_pinch = 0.1;  /* How much narrower than the PCB the clips' gap is at their catch, so the catch presses on the PCB and holds it. The jaw is short and stiff, so the catch's ridge gives a little rather than the jaw bending - which is why this is small. Tested 3 Oct 2026, the second clearance test's L: of 0.2, 0.1 and 0, 0.1 - 2 dots (Alon). */
 
-untested_fits = ["nut_fit", "gy_pilot_d", "clasp_pinch"];
+untested_fits = ["gy_pilot_d"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
