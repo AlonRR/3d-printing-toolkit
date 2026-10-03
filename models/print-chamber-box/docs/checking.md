@@ -56,26 +56,27 @@ Each setting breaks one thing; the check, or an assert, must catch it. Measured 
 
 | Check | Setting | What it breaks | Measured |
 |---|---|---|---|
-| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 212.4 mm³ |
+| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 220.8 mm³ |
 | `check_parts` | `bump_z1 = 75` | the bump at the top into the cover's top wall | 14.4 mm³ |
 | `check_parts` | `nut_boss_y1 = 21.5` | the nut bosses run into the cover's screw bosses | 190.5 mm³ |
 | `check_components` | `z_f0 = 50` | the board lowered into the column the SPS30's lead rises through | 24.3 mm³ |
-| `check_components` | `gy_xb = 61.8` | the SGP41's block face into the parts on the module's underside | 40.5 mm³ |
-| `check_components` | `gy_standoff_d = 5.6` | the standoff wider than the bare patch round the hole | 7.3 mm³ |
-| `check_components` | `key_xs = [6.25, 57]` | the left keyhole moved under the SPS30's channel wall: its screw head runs into it | 63.8 mm³ |
+| `check_components` | `gy_post_y1 = 18.4` | the SGP41's post pushed up into the module | 6.0 mm³ |
+| `check_components` | `gy_standoff_d = 5.6` | the post's top wider than the bare ring round the module's hole | 1.9 mm³ |
+| `check_components` | `key_xs = [6.25, 57]` | the left keyhole moved under the SPS30's channel wall: its screw head runs into it | 60.0 mm³ |
 | `check_components` | `clip_g_catch = 0.5` | the clips' catch pressing too far into the PCB | 0.61 mm³ |
 | `check_components` | `usb_open_r = 1.3` | the USB-C opening's round ends tighter than the shell's | 4.4 mm³ |
 | `check_components` | `gy_ch_zc = 44` | the SGP41 wires' channel lowered into the SPS30 | 67.5 mm³ |
 | `check_slide` | `stop_x0 = 20` | the stops moved into the board's way in | 2.9 mm³ |
 | `check_slide` | `clip_g_mouth = 0.6` | the clips' mouth narrower than the PCB | 0.59 mm³ |
-| `check_insert` | `ch_x1 = 50` | the channel's wall moved into the SPS30's way in | 1050 mm³ |
+| `check_insert` | `ch_x1 = 50` | the channel's wall moved into the SPS30's way in | 760 mm³ |
 
 These fire an **assert** instead, which stops the render with an `ERROR: Assertion` line:
 
 | Setting | What it breaks |
 |---|---|
-| `gy_xs = 63` | the SGP41's screw head reaches the side wall over the thickest board |
-| `gy_screw_l = 8` | the SGP41's pilot runs into the SPS30's channel |
+| `gy_yf = 19.8` | the SGP41's screw head reaches the cover's front |
+| `gy_screw_l = 18` | the SGP41's pilot runs out of its post into the plate |
+| `ch_notch = 16.6` | the SPS30 channel's wall left whole, within a gap of the SGP41's underside parts |
 | `key_z1 = 25` | the keyholes run into the nut bosses below and the board's clips above |
 | `key_shank_d = 5.5` | the keyholes' slots leave the wall screws' heads less than 1 mm to bear on each side |
 | `cover_screw_l = 25` | an M3 × 25 through the cover's corner pokes out of the back plate |

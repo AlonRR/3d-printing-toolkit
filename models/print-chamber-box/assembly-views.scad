@@ -47,25 +47,24 @@ module sps30() {
 }
 module supermini() for (i = [0 : 4]) sm_piece(i, 0);
 
-gy_pcb_nom = 1.2;                                   // a GY board, for the picture only
 module sgp41() {
-    // the PCB, on edge against its standoff, pins up
-    color([0.15, 0.55, 0.25]) box3([gy_xs, gy_y0 + pocket_fit, gy_z0], [gy_xs + gy_pcb_nom, gy_y1 + pocket_fit, gy_z1]);
-    // the parts on its underside, away from the bare patch round the hole; and the sensor, on its face at
-    // the far end, by the long edge away from the hole
-    ya = gy_hole_front ? gy_y0 + 0.8 : gy_y0 + 4.5;
-    ys = gy_hole_front ? gy_y0 + pocket_fit + 1.5 : gy_y1 + pocket_fit - 3.94;
-    color([0.12, 0.12, 0.12]) box3([gy_xs - (gy_back - gy_pcb_nom), ya, gy_z0 + gy_bare + 0.5],
-                                   [gy_xs, ya + gy_w - 5.3, gy_z1 - 2.6]);
-    color([0.75, 0.75, 0.70]) box3([gy_xs + gy_pcb_nom, ys, gy_z0 + 1.5],
-                                   [gy_xs + gy_pcb_nom + gy_sensor_h, ys + 2.44, gy_z0 + 3.94]);
+    // the PCB, flat, its sensor towards the cover and its pins up
+    color([0.15, 0.55, 0.25]) box3([gy_x0, gy_yu, gy_z0], [gy_x1, gy_yf, gy_z1]);
+    // the parts on its underside, above the bare strip along its bottom edge and clear of the bare patch
+    // round its hole; and the sensor, on its face at the bottom, at the side away from the hole
+    color([0.12, 0.12, 0.12]) difference() {
+        box3([gy_x0 + 0.8, gy_yp, gy_z0 + gy_bare + 0.3], [gy_x1 - 0.8, gy_yu, gy_z1 - 2.6]);
+        cyl_y(gy_hx, gy_hz, gy_hole_bare_d / 2, gy_yp - 1, gy_yu + 1);
+    }
+    xs = gy_hole_lowx ? gy_x1 - 4.3 : gy_x0 + 1.84;
+    color([0.75, 0.75, 0.70]) box3([xs, gy_yf, gy_z0 + 1.7], [xs + 2.44, gy_yf + gy_sensor_h, gy_z0 + 4.14]);
     // its four pin holes along the top edge, the wires soldered into them - no header
     for (i = [0 : 3]) color([0.8, 0.7, 0.2])
-        box3([gy_xs - 0.2, gy_pin_y(i) - 0.5, gy_pin_z - 0.5], [gy_xs + gy_pcb_nom + 0.2, gy_pin_y(i) + 0.5, gy_pin_z + 0.5]);
+        box3([gy_pin_x(i) - 0.5, gy_yu - 0.2, gy_pin_z - 0.5], [gy_pin_x(i) + 0.5, gy_yf + 0.2, gy_pin_z + 0.5]);
 }
-module m25() color([0.55, 0.55, 0.60]) {   // head on the module's face, shank sideways into the standoff
-    cyl_x(gy_hy, gy_hz, gy_head_d / 2, gy_xs + gy_pcb_nom, gy_xs + gy_pcb_nom + gy_head_h);
-    cyl_x(gy_hy, gy_hz, gy_screw_d / 2, gy_xs + gy_pcb_nom + gy_head_h - gy_screw_l, gy_xs + gy_pcb_nom);
+module m25() color([0.55, 0.55, 0.60]) {   // head on the module's face, shank back into the post
+    cyl_y(gy_hx, gy_hz, gy_head_d / 2, gy_yf, gy_yf + gy_head_h);
+    cyl_y(gy_hx, gy_hz, gy_screw_d / 2, gy_yf - gy_screw_l, gy_yf);
 }
 module nuts() for (x = nut_bx) color([0.55, 0.55, 0.60])
     translate([x, nut_y1 - nut_h, nut_bz]) rotate([-90, 0, 0]) rotate([0, 0, 30]) cylinder(d = nut_ac, h = nut_h, $fn = 6);
@@ -142,21 +141,19 @@ lead_routes = [
 lead_pads   = ["5V", "GPIO5", "GPIO6", "GND", "GND"];
 lead_colours = [[0.10, 0.10, 0.10], [0.85, 0.10, 0.10], [0.95, 0.95, 0.95], [0.95, 0.80, 0.10], [0.95, 0.45, 0.10]];
 
-// The SGP41's four: soldered into its pin holes from its back, they come out towards the SPS30's channel,
-// turn up its column - stepping out to their lanes low down, below the wall screw's head - and once level
-// cross the SPS30's top-left corner in
-// the plate's channel (gy_channel in the model). Past it they slant forward - gently, so the slant does not
+// The SGP41's four: soldered into its pin holes from its back, they come out towards the plate, turn up
+// the column behind the module - stepping to their lanes low down, below the wall screw's head - and once
+// level cross the SPS30's top-left corner in the plate's channel (gy_channel in the model). Past it they slant forward - gently, so the slant does not
 // bring them together - to pass in front of the SPS30's plug, under the cable zone's lead wires and well
 // under the antenna. At the board's USB-C end the two for the back pads
 // climb to lie against the board's underside and run back to them; VIN climbs straight up to 3V3 at the
 // front edge, and GND, which passes behind it, slants up to its pad beside it.
-function gy_pin_y(i) = gy_y0 + pocket_fit + 1.5 + i * pin_pitch;   // SDA, SCL, GND, VIN
-gy_pin_z = gy_z1 - 1.3;
 z_cross  = gy_ch_zc;                                           // where they cross the SPS30's top: the channel's slot
 gy_lane  = [for (i = [0 : 3]) y_front_end - (3 - i) * gy_pitch];   // past the channel; VIN's is the front pads' line
 gy_slant = 20;                                                  // the run over which they slant forward
-function gy_start(i) = [[gy_xs - gy_wd / 2, gy_pin_y(i), gy_pin_z], [gy_x_up, gy_pin_y(i), gy_pin_z],
-    [gy_x_up, gy_ch_lane[i], gy_pin_z + 6], [gy_x_up, gy_ch_lane[i], z_cross], [gy_ch_x0, gy_ch_lane[i], z_cross],
+gy_y_up  = gy_yu - gy_wd / 2 - wire_stub - bend_r;              // where they rise, behind the module
+function gy_start(i) = [[gy_pin_x(i), gy_yu - gy_wd / 2, gy_pin_z], [gy_pin_x(i), gy_y_up, gy_pin_z],
+    [gy_rise_x(i), gy_ch_lane[i], gy_pin_z + 8], [gy_rise_x(i), gy_ch_lane[i], z_cross], [gy_ch_x0, gy_ch_lane[i], z_cross],
     [gy_ch_x0 - gy_slant, gy_lane[i], z_cross]];
 function gy_to_back(i, x, y_flat) = concat(gy_start(i),
     [[x, gy_lane[i], z_cross], [x, y_flat, zg], [x, y_back_end, zg]]);
@@ -208,12 +205,12 @@ module obstacles() {
     box3([sps_x0, back_t, z_sps0], [sps_x1, back_t + sps_t, z_sps1]);
     box3([lead_x0, y_plug - 2.5, z_sps1], [lead_x1, y_plug + 2.5, z_sps1 + 3.5]);
     for (i = [0 : 2]) sm_piece(i, 0);
-    box3([gy_xs, gy_y0 + pocket_fit, gy_z0], [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z1]);
+    box3([gy_x0, gy_yu, gy_z0], [gy_x1, gy_yf + gy_sensor_h, gy_z1]);
     difference() {
-        box3([gy_xp, gy_y0 + pocket_fit, gy_z0], [gy_xs, gy_y1 + pocket_fit, gy_z1 - 2.6]);
-        cyl_x(gy_hy, gy_hz, gy_hole_bare_d / 2, gy_xp - 1, gy_xs + 1);
+        box3([gy_x0, gy_yp, gy_z0 + gy_bare], [gy_x1, gy_yu, gy_z1 - 2.6]);
+        cyl_y(gy_hx, gy_hz, gy_hole_bare_d / 2, gy_yp - 1, gy_yu + 1);
     }
-    cyl_x(gy_hy, gy_hz, gy_head_d / 2, gy_xs + gy_pcb_min, gy_xs + gy_pcb_max + gy_head_h);
+    cyl_y(gy_hx, gy_hz, gy_head_d / 2, gy_yf, gy_yf + gy_head_h);
     for (x = key_xs) hull() for (z = [key_z0, key_z1]) cyl_y(x, z, key_head_d / 2, back_t, back_t + key_slack + key_head_h);
     box3([ch_x0, y_sps1, z_sps0], [ch_x1, y_in1, z_sps1 + part_fit]);
 }
@@ -255,20 +252,20 @@ if (view == "open") {
 if (view == "exploded") {
     cam = [68, 0, 252];
     color([0.80, 0.72, 0.58]) back_plate();
-    e_nut = -18; e_sm = 72; e_sps = 40; e_gy = 22; e_m25 = 36; e_cov = 105; e_m3 = 150;   // how far out each one goes
+    e_nut = -18; e_sm = 72; e_sps = 40; e_gy = 22; e_m25 = 44; e_cov = 105; e_m3 = 150;   // how far out each one goes
     dx_sm = 0;
     translate([0, e_nut, 0]) nuts();
     translate([dx_sm, e_sm, 0]) supermini();
     translate([0, e_sps, 0]) sps30();
-    translate([e_gy, 0, 0]) sgp41();
-    translate([e_m25, 0, 0]) m25();
+    translate([0, e_gy, 0]) sgp41();
+    translate([0, e_m25, 0]) m25();
     translate([0, e_cov, 0]) color([0.62, 0.72, 0.85]) cover();
     translate([0, e_m3, 0]) m3s();
     // the way each one goes in
     for (x = nut_bx) guide([x, e_nut + nut_y1, nut_bz], [x, nut_y1 - nut_h, nut_bz]);
     guide([sm_x0 + sm_l / 2 + dx_sm, y_bc + e_sm, zu], [sm_x0 + sm_l / 2 + dx_sm, y_bc, zu]);
     guide([(sps_x0 + sps_x1) / 2, back_t + e_sps, (z_sps0 + z_sps1) / 2], [(sps_x0 + sps_x1) / 2, back_t, (z_sps0 + z_sps1) / 2]);
-    guide([gy_xs + e_m25, gy_hy, gy_hz], [gy_xs, gy_hy, gy_hz]);
+    guide([gy_hx, gy_yf + e_m25, gy_hz], [gy_hx, gy_post_y1, gy_hz]);
     for (x = nut_bx) guide([x, D + e_m3, nut_bz], [x, y_in1, nut_bz]);
     label("back plate",                            [W / 2, 0, H + 12], cam);
     label("2 x M3 nut, from the back",             [W / 2, e_nut, -16], cam, 3.2);
@@ -276,6 +273,7 @@ if (view == "exploded") {
     label("SPS30 - in from the front",             [(sps_x0 + sps_x1) / 2, back_t + e_sps + sps_t, z_sps0 - 12], cam, 3.2);
     label("cover - its top in a U on a bump",           [W / 2, D + e_cov, -14], cam, 3.2);
     label("2 x M3 x 20",                           [W / 2, D + e_m3, nut_bz + 16], cam, 3.2);
+    label("SGP41 and its M2.5 x 6, from the front", [gy_x1 + 4, gy_yf + e_m25, gy_z1 + 6], cam, 3.2);
     axes([W, 0, -80], 25, cam, [[-1, 0], [0, 0], [0, 0]]);
 }
 

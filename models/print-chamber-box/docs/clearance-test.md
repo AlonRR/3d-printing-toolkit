@@ -1,33 +1,30 @@
 # The clearance test
 
 **Print [`print-chamber-box-fits.scad`](../print-chamber-box-fits.scad) before the box**, in the same ASA
-with the same profile: one flat part, about 49 min and 6.2 g. It tries each fit still untested three
+with the same profile: one flat part, about 33 min and 3.2 g. It tries each fit still untested three
 ways. Every piece is the box's own geometry — drawn by the box's own modules, with only the fit changed,
 and lying on the bed as it does in the back plate — so it tests exactly what the box will print.
 
-This is the second round. The first, printed 2 Oct 2026, settled every fit it tried — its results are
-below — so none of its pieces is printed again; they are in the repository's history.
+This is the third round. The first two, printed 2 and 3 Oct 2026, settled every fit they tried but one —
+their results are below — so none of their pieces is printed again; they are in the repository's history.
 
 ## Which piece is which
 
-![the clearance test, each group lettered](fits-map.png)
+![the clearance test, lettered](fits-map.png)
 
-Drawn by [`fits-map.scad`](../fits-map.scad), which includes the test. **Hold the part with the low clips
-on your left and the standoffs on your right** — then it matches the picture, with the edge that faced
-the printer's front nearest you.
+Drawn by [`fits-map.scad`](../fits-map.scad), which includes the test. Hold the part with the dots nearest
+you — then it matches the picture, with the edge that faced the printer's front nearest you.
 
 The arrows are the part's own axes, as it lay on the bed: **+x to the right, +y away from the front edge
 (up the picture), +z up off the bed, towards you.** A reading given as "in x" or "in y" uses them.
 
-Each try carries **1, 2 or 3 dots**: 1 = a step tighter, 2 = as set, 3 = a step looser — beside the nut
-bosses and standoffs, in front of the clips. The values below are for 1 / 2 / 3 dots. The letters go on
-from the first round's A–H, skipping I, so that a letter always means one piece.
+Each try carries **1, 2 or 3 dots** in front of it: 1 = a step tighter, 2 = as set, 3 = a step looser. The
+values below are for 1 / 2 / 3 dots. The letters go on from the earlier rounds' A–H and J–L, skipping I, so
+that a letter always means one piece.
 
 | | Pieces | Setting | 1 / 2 / 3 dots | Try | Pick |
 |---|---|---|---|---|---|
-| **J** | the three round bosses in the middle | `nut_fit` | −0.1 / 0 / 0.1 — pockets 5.56 / 5.76 / 5.96 across flats as drawn | from underneath — the face that was on the bed, as the box's nuts go in from the wall side — start an M3 nut square in each hex pocket's mouth. The nut seats 1.4 mm in from the mouth, so a thumb will not get it there: drive an M3 screw in from the top, through the cap and into the nut, and tighten until it draws the nut up to the shoulder. Then take the screw out | the loosest that still holds its nut, screw out, when the part is turned over and tapped. A nut that will not start in the mouth at all is too tight, whatever it does once in |
-| **K** | the three blocks on the right, each with a round standoff | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | hold the GY-SGP41 against the standoff's face and drive the M2.5 × 6 cap screw through its hole, fully in, then back out — once per standoff, since the first drive cuts the thread. The pilot is sideways and as deep as the box's | the one that bites firmly without splitting the standoff or taking real force |
-| **L** | the three low pairs of clips on the left | `clasp_pinch` | 0.2 / 0.1 / 0 — the catch 0.65 / 0.75 / 0.85 mm over the jaw below, against the 0.85 mm PCB | push the SuperMini's back edge — the one whose first two pins are GPIO5 and GPIO6 — straight down into a pair: USB-C end to the left, antenna end at the right-hand clip's end, parts side towards the front edge | the loosest that snaps the edge past its catches and holds the board upright when the part is tipped. 1 dot is the tightest here: a bigger pinch grips harder |
+| **M** | the three posts, each with its rib and ledge — the SGP41's mount | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | lay the GY-SGP41 on each post, sensor up and its bottom edge on the ledge, and drive the M2.5 × 6 through its hole into the pilot, fully in, then back out — once per post, since the first drive cuts the thread | the one that bites firmly without splitting the post's 4.6 mm top or taking real force |
 
 The keyholes the box hangs by are not tried here: they are sized from the wall screw with room to spare
 — the slot 0.6 mm wider than the thread, at least 1 mm of plate under the head each side. The first
@@ -43,7 +40,10 @@ the wrong place: say so, and it moves.
 
 ## Results
 
-**Second round**, printed 3 Oct 2026:
+**Third round — M:** not printed yet.
+
+**Second round**, printed 3 Oct 2026. Its groups were: J, the M3 nuts' pockets; K, the SGP41's first
+mount, on edge on a sideways standoff; L, pairs of the SuperMini's back clips.
 
 | Read | Group | Setting | Ladder | Pick | Now |
 |---|---|---|---|---|---|
@@ -54,9 +54,9 @@ the wrong place: say so, and it moves.
 - **J and L** each took the setting as it stood, so it stays.
 - **K's standoffs did not print usably**, any of the three. Each is the box's own: a 4 mm peg standing
   2.7 mm out of its block, sideways, with nothing under it on the bed — the one real overhang in the
-  back plate. It cannot be propped from below, because the module's own parts are there. The fault is
-  the mount, not the pilot's size, so the SGP41's mount is to be reconsidered before `gy_pilot_d` is
-  tried again.
+  back plate. It cannot be propped from below, because the module's own parts are there. The fault was
+  the mount, not the pilot's size: the module now lies flat on a post, and the third round's M tries
+  the pilot upright in it.
 
 **First round**, all from the one print of 2 Oct 2026. Its groups were: A, the SPS30 frames; B and C,
 trays for the two boards; D, bosses for the cover's self-tapping screws; E, upright pilots for the
@@ -85,8 +85,9 @@ SGP41's screw; F, the cover's screw holes; G, the mounting tabs' holes; H, a peg
 - **D's screws stopped about 1 mm short in all three bosses**, because that print's pilots were 13 mm
   deep for a 14 mm screw. The three still compare. `pilot_d` has since gone from the box with the
   self-tapping cover screws: its bottom corners now screw into nuts.
-- **E tried the SGP41's pilot upright.** The module now stands on edge and its screw goes in sideways, a
-  hole that prints tighter at its top, so the second round's K tries it again.
+- **E tried the SGP41's pilot upright, in a 6 mm boss.** The module stood on edge after that, with its
+  screw sideways; it now lies flat with its pilot upright again, in a post only 4.6 mm across at its top,
+  so the third round's M tries it there.
 - **H**'s 0.26–0.29 mm is over the 0.15 mm floor, so `part_fit` stays at 0.3.
 
 **G is retired**: on 3 Oct 2026 the box's mounting tabs, whose holes it tried, gave way to keyholes. It

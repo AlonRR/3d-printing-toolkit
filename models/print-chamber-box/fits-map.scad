@@ -5,8 +5,8 @@
 
 /*
 Which piece of the clearance test is which: print-chamber-box-fits.scad as it sat on the bed, seen from
-the printer's front and a little above - enough tilt for the standoffs' pilots and the clips to show -
-each group lettered. docs/clearance-test.md shows it, with a table of what each letter tries and the
+the printer's front and a little above - enough tilt for the posts' pilots to show - each group
+lettered. docs/clearance-test.md shows it, with a table of what each letter tries and the
 value behind each dot count.
 
 It INCLUDES the test, so every letter sits wherever the test puts that group and the dots are the test's
@@ -22,7 +22,7 @@ include <print-chamber-box-fits.scad>
 use <../lib/axes.scad>
 draw_fits = false;
 
-// the split sits 0.3 mm above the base, so the pads under the clips and standoffs read as pieces
+// the split sits 0.3 mm above the base, so the pads under the posts read as pieces
 module above_base() translate([-1, -1, base_t + 0.3]) cube([BW + 2, BH + 2, 50]);
 
 color([0.88, 0.82, 0.68]) difference() { fits(); above_base(); }                    // the base
@@ -37,9 +37,7 @@ module letter(t, p, z = 0.6) translate([p[0], p[1], z]) {
 }
 module note(t, p, size = 3.4) color("black") translate([p[0], p[1], 0]) linear_extrude(0.4) text(t, size = size);
 
-letter("L", [l_x + (l_c1 - l_c0) / 2, -7]);      // the back clips
-letter("J", [j_x, -7]);                           // the nut pockets
-letter("K", [k_x + (gy_xs - k_x0) / 2, -7]);      // the SGP41 standoffs
+letter("M", [BW / 2, -7]);                       // the SGP41's mounts
 
 note("this edge faced the printer's front", [0, -17]);
 note("dots: 1 = a step tighter, 2 = as set, 3 = a step looser", [0, -24]);

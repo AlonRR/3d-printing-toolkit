@@ -26,9 +26,12 @@ As you face the box with the cover off:
    leaving GPIO5 and GPIO6 open; the other is at the antenna end. They reach 2.1 mm onto the board.
 7. **Back stop** — over the back corner of the board's antenna end. It takes the push of plugging the
    USB-C cable in; the middle of that end stays open for the antenna loop.
-8. **Block and standoff** — the SGP41's. The block backs onto the SPS30 channel's wall; the 4 mm round
-   standoff stands out of it, and the module's underside bears on it only round its mounting hole.
-9. **Pilot** — for the M2.5 × 6 screw, sideways through the module's hole into the standoff and block.
+8. **Post and rib** — the SGP41 lies flat on them. The post rises from the plate to the module's
+   mounting hole, 6 mm across and narrowing to 4.6 mm where the module's underside parts are, so it bears
+   only on the bare ring round the hole. The rib bears on the bare strip along the module's bottom edge.
+   The SPS30 channel's wall beside them is notched where the module reaches past its front end.
+9. **Pilot** — for the M2.5 × 6 screw, upright down the post: the screw goes in from the front, through
+   the module's hole.
 10. **Ledge** — the SGP41's bottom edge sits on it, over the nut boss.
 11. **Nut bosses** — one in each bottom corner. An M3 nut goes into each hex pocket from the wall side
     and is drawn up to its shoulder by the cover's screw.
@@ -46,9 +49,9 @@ More on 8–10 in [The SGP41's mount](sgp41-mount.md), and on 6 and 7 in [The US
 Seen from inside — from the wall — so its left and right are swapped against the box as you face it:
 
 1. **The front** — printed face down, so it comes out flat.
-2. **Vents in the side** — room air reaches the SGP41's sensor, 2–3 mm behind them.
-3. **Vents in front of the board** — the board's warmth leaves here. With the side vents lower down they
-   should act as a small chimney, drawing fresh air in past the SGP41 (reasoned, not measured).
+2. **Vents in front of the SGP41** — room air reaches its sensor, about 2 mm behind them.
+3. **Vents in front of the board** — the board's warmth leaves here. With the SGP41's vents lower down
+   they should act as a small chimney, drawing fresh air in past the SGP41 (reasoned, not measured).
 4. **Bottom screws** — the two M3 × 20 screws' heads sit flush, each in a counterbore 6.0 mm across and
    3.0 mm deep. The front is only 1.8 mm thick, so a boss on its inside carries the floor the head
    clamps on, and the back plate's nut boss meets that boss.

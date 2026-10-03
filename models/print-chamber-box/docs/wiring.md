@@ -55,9 +55,10 @@ go — a wire bends where it likes — but each ends on its pin from the table, 
 **The SGP41's four wires** — 22 AWG solid
 
 - **Solder them to come out of the module's back**, before it is screwed down: they leave towards the
-  SPS30's channel, then turn up, at least 1 mm from the board and round no tighter than about 3 mm.
-- They step out from the plate low in the module's column, below the right wall screw's head, and rise
-  straight past it.
+  plate, then turn up, at least 1 mm from the board and round no tighter than about 3 mm.
+- They rise behind the module, each above its own pin — VIN, the one nearest the SPS30, stepped a hair
+  aside to clear the channel's wall — stepping to their lanes low down, below the right wall screw's
+  head, then straight past it.
 - Once level, they cross over the SPS30's top-left corner in **the wire channel** on the plate: press
   them in from the front past its lips, SDA nearest the plate and VIN outermost.
 - Past the channel they **slant forward** — gently, so the slant does not bring them together — to cross
@@ -66,8 +67,9 @@ go — a wire bends where it likes — but each ends on its pin from the table, 
 - At the board's USB-C end, **SDA and SCL** climb to lie against the board's underside and run back to
   GPIO5 and GPIO6; **VIN** climbs straight up into 3V3; **GND**, which passes behind VIN, slants up into
   its pad beside it.
-- The module's pins run SDA, SCL, GND, VIN from the plate outwards, and the wires keep that order all the
-  way, so no two cross.
+- The module's pins run SDA, SCL, GND, VIN from the side wall towards the SPS30; in the channel the
+  wires lie SDA, SCL, GND, VIN from the plate outwards, and keep that order to the board, so no two
+  cross.
 - Cut each to length at its pad. Solid wire holds the shape it is bent to, so bend each to its route
   before soldering its second end.
 

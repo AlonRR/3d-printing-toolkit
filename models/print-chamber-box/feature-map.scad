@@ -60,10 +60,9 @@ if (view == "back") {
     marker(5,  [x_div, y_in1 - part_fit + f, -divider_proud - 3.5]);                // divider
     for (c = clasp_xs) marker(6, [(c[0] + c[1]) / 2, y_b0 + clasp_low + f, z_f0 - 3.5]);   // the board's back clips
     marker(7,  [stop_x0 + rim_t / 2 + 3.5, y_b0 + stop_reach + f, zu + 4.5]);       // back stop
-    // the SGP41's three sit behind the channel wall from here, so they stand in front of it
-    marker(8,  [ch_x1 - 4, y_ch1 + f, gy_hz + 7]);                                  // block
-    marker(9,  [ch_x1 - 4, y_ch1 + f, gy_hz + 0.5]);                                // pilot
-    marker(10, [ch_x1 - 4, y_ch1 + f, gy_z0 - 6]);                                  // ledge
+    marker(8,  [gy_x1 - 3, gy_yu + f, gy_rib_z1 + 3.5]);                             // post and rib
+    marker(9,  [gy_hx, gy_post_y1 + f, gy_hz + gy_standoff_d / 2 + 3.2]);            // pilot
+    marker(10, [gy_x1 - 2.5, gy_yf + f, gy_z0 - 5.5]);                               // ledge
     for (x = nut_bx) marker(11, [x, y_in1 + f, nut_bz + nut_boss_d / 2 + 3.5]);     // nut bosses
     marker(12, [W / 2, back_t + bump_out + f, u_z0 - 3.5]);                         // the bump at the top
     marker(13, [(gy_ch_x0 + gy_ch_x1) / 2, gy_ch_y1 + f, gy_ch_zc + gy_ch_slot / 2 + rib_t + 3.5]);   // the SGP41 wires' channel
@@ -76,8 +75,8 @@ if (view == "back") {
             " 5  divider - splits inlet from outlet air",
             " 6  clips - the board's back edge snaps in",
             " 7  back stop - takes the push of plugging in",
-            " 8  block and standoff - the SGP41, on edge",
-            " 9  pilot for the SGP41's M2.5 screw, sideways",
+            " 8  post and rib - the SGP41 lies flat on them",
+            " 9  pilot for the SGP41's M2.5 screw, upright",
             "10  ledge - the SGP41's bottom edge sits on it",
             "11  nut bosses - an M3 nut pressed in from behind",
             "12  bump - the cover's top locates on it",
@@ -91,7 +90,7 @@ if (view == "cover") {
     color([0.62, 0.72, 0.85]) cover();
     f = -1.2;   // markers stand towards the wall, where the camera is
     marker(1,  [W / 2 + 14, y_in1 + f, 26], -1);                                      // the front
-    marker(2,  [W - wall - 3.5, back_t + f, gy_z1 + 3.5], -1);                      // side vents
+    marker(2,  [(gy_x0 + gy_x1) / 2, y_in1 + f, gy_z0 + gy_l / 2 + 6], -1);          // the SGP41's vents
     marker(3,  [(sm_x0 + sm_x1) / 2, y_in1 + f, zu + sm_t + gap + 13.5], -1);       // board vents
     for (x = nut_bx) marker(4, [x, y_in1 + f, nut_bz + 8], -1);                  // screw holes
     marker(13, [W / 2, back_t + part_fit + f, u_z0 - 3.5], -1);                      // the U at the top
@@ -106,7 +105,7 @@ if (view == "cover") {
     legend(["COVER - seen from INSIDE: left and right swapped",
             "",
             " 1  the front - printed face down",
-            " 2  vents in the side, at the SGP41's sensor",
+            " 2  vents in front of the SGP41's sensor",
             " 3  vents in front of the board",
             " 4  bottom screws - their heads sit flush",
             " 5  window under the SPS30's air face",

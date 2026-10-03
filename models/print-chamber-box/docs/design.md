@@ -51,8 +51,8 @@ own heat, which is not measured. Heating the chamber towards 60 °C would take b
 Every rule points the same way. Stand the SPS30 on edge with its air face **down**, over a window in the
 bottom wall; its connector is then **up**, at the outlet end. Lay the SuperMini **level above it**, just
 over the lead, so the board's heat rises away from the sensor and its antenna's pole stands up into the
-top of the box, away from the sensor's grounded case. Stand the SGP41 on edge **beside** the SPS30, its
-sensor 2–3 mm behind vents in the side wall.
+top of the box, away from the sensor's grounded case. Lay the SGP41 flat **beside** the SPS30, its
+sensor about 2 mm behind vents in the cover's front.
 
 ![assembled, cover off](assembly-open.png)
 
@@ -64,8 +64,8 @@ As you face the box, cover off:
   the right-hand wall; its antenna end points to the middle, and the antenna's pole stands 1 mm short of
   the top wall. It is held by its long edges — two clips on the plate take its back edge and a clasp on
   the cover its front edge — so the pins along both stay open from below.
-- **The SGP41** stands on edge low in the left-hand column, its sensor towards the side wall's vents and
-  its pins up, screwed sideways to a standoff.
+- **The SGP41** lies flat low in the left-hand column, its sensor towards vents in the cover's front and
+  its pins up, screwed from the front onto a post rising from the plate.
 - **Two keyholes**, one in each side column beside the SPS30's top corners, hang the box on two wall
   screws.
 - **The cover** locates at the top on a bump inside a U, and two M3 screws through its bottom corners,
@@ -94,18 +94,18 @@ box is, the model draws the module's mirror image first and it comes out the rig
 ## Printing without support
 
 **The back plate prints on its back.** The keyholes are openings in its first layers. The channel
-walls, clips, stop, the SGP41's block, the bump and the wire channel's ribs are walls standing on it; the
-wire channel's lips are 45° ledges at the ribs' tops. The nut pockets open on the
-bed side, and each pocket's ceiling is bridged in three layers — a slot the screw hole's width, then a
-square, then the round hole — so it needs no support. The SGP41's standoff is the one overhang: a 4 mm
-peg standing 2.7 mm out of the side of its block.
+walls, clips, stop, the SGP41's post, rib and ledge, the bump and the wire channel's ribs are walls
+standing on it; the wire channel's lips are 45° ledges at the ribs' tops, and the SGP41's pilot is an
+upright hole down its post. The nut pockets open on the bed side, and each pocket's ceiling is bridged in
+three layers — a slot the screw hole's width, then a square, then the round hole — so it needs no
+support. Nothing overhangs: the SGP41 was first held on edge by a peg standing 2.7 mm sideways out of a
+block, and that peg did not print, which is why it now lies flat.
 
 **The cover prints front face down.** The window under the SPS30 is a notch open at the back edge, and
 the vents in the front are holes in its first layers. The counterbores the screw heads sit in open on the
 bed, and their floors are bridged the same three-layer way as the nut pockets. The partition, baffle,
-clasp, stop and U are walls standing on the front. The side vents are windows in a standing wall, with short
-bridged tops, 2 mm. The USB-C opening is a stadium standing on end in that wall, and its top end closes in
-a 45° point, so it needs no bridge at all.
+clasp, stop and U are walls standing on the front. The USB-C opening is a stadium standing on end in the
+right-hand wall, and its top end closes in a 45° point, so it needs no bridge at all.
 
 **No skirt, no brim, no draft shield.** Rounded corners in plan view (`corner_r`) keep ASA's corners
 down instead.

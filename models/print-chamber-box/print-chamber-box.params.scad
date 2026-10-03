@@ -47,10 +47,11 @@ usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It p
 usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the USB Type-C compliance document fixes the receptacle's inside opening at 8.34 x 2.56 mm, and the measured height 3.16 against that 2.56 gives a 0.30 mm shell wall - so 8.34 + 2 x 0.30. */
 gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
 gy_w         = 10.60;
-gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other, so it cannot lie flat on either: sensor towards the vents means electronics towards the plate. */
+gy_t         = 3.24;   /* With its parts. The sensor is on one face and the rest of the electronics on the other: it lies flat with its sensor towards the cover's vents and its electronics towards the plate, raised on a post. */
 gy_back      = 2.53;   /* The GY-SGP41 through its PCB and electronics, clamped beside the sensor - its height lying sensor-up on its electronics. Measured 2 Oct 2026. The sensor makes up the rest of gy_t. */
-gy_bare      = 3.31;   /* The nearest part on the GY-SGP41's underside, from the end opposite its pins. Measured 2 Oct 2026. The SGP41's ledge stops `gap / 2` short of it, so its parts never bear load. */
-gy_standoff_d = 4.0;   /* A round standoff under the mounting hole, which the screw clamps the module onto. It must stay inside gy_hole_bare_d. */
+gy_bare      = 3.31;   /* The nearest part on the GY-SGP41's underside, from the end opposite its pins. Measured 2 Oct 2026. Across the module's whole width, so the rib it lies on stops `gap / 2` short of it, and its parts never bear load. */
+gy_standoff_d = 4.6;   /* The post's top, where the screw clamps the module onto it: inside the bare patch round the mounting hole (gy_hole_bare_d), and two beads and more round the pilot. */
+gy_post_d    = 6.0;    /* The post below that, where the module's underside parts do not reach: as wide as the first clearance test's bosses, which took this screw upright. */
 gy_hole_d    = 3.13;   /* The GY-SGP41's mounting hole. Measured 2 Oct 2026. It takes the M2.5 screw that holds the module down. */
 gy_hole_bare_d = gy_hole_d + 2 * 1.0;   /* The bare patch round the mounting hole on the underside, where the standoff bears: the nearest part is 1.0 from the hole's edge. Measured 3 Oct 2026 (reading C in docs/board-measure.png), as photo 2 had read it. The collision check uses it as the parts' edge. */
 gy_hole_far  = 1.32 + gy_hole_d / 2;   /* The hole's centre from the module's far end, the short edge opposite its pins: 1.32 to the hole's edge, measured 2 Oct 2026. */
@@ -76,12 +77,11 @@ usb_plug_w = 12.35;   /* The widest a compliant plug's body may be: USB Type-C c
 usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mouth reaches the outside face, so the body never enters the box; it only has to clear the mounting surface. */
 
 /* [Bounds, not measurements - the design works anywhere inside them] */
-gy_pcb_min = 0.8;   /* The thinnest the GY-SGP41's bare board could plausibly be; GY modules are usually 1.0-1.6 mm. The ledge is tall enough that parts on a board this thin still clear the floor. */
-gy_pcb_max = 1.6;   /* The thickest, for the room left in front of it. */
+gy_pcb_t   = 1.5;   /* The GY-SGP41's bare board, measured 3 Oct 2026 (Alon). With gy_back it puts the underside's parts 1.03 deep, and with the screw's head in front it sets how close to the cover the module sits. */
 
 /* [The SGP41's screw - an M2.5 socket head cap screw, ISO 4762] */
 gy_screw_d = 2.5;   /* M2.5. */
-gy_screw_l = 6.0;   /* M2.5 x 6, from the M2.5 box. It goes in sideways, through the module standing on edge, and cuts its own thread in the standoff's pilot. An 8 would run out of block before the SPS30's channel. */
+gy_screw_l = 6.0;   /* M2.5 x 6, from the M2.5 box. It goes in from the front, through the module lying flat, and cuts its own thread in the post's pilot. */
 gy_head_d  = 4.5;   /* ISO 4762 head diameter for M2.5. */
 gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 
@@ -90,7 +90,7 @@ sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (
 pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2026, same print: the SuperMini and the GY-SGP41 each took the tightest of 0.2, 0.3 and 0.4, and both were snug (Alon). */
 part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. Measured 3 Oct 2026 on the same print: peg 5.98, socket 6.50 (Y) and 6.55 (X), so 0.26 and 0.29 per side as printed - over the 0.15 below which the parts would bind. */
 screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 Oct 2026: of 3.2, 3.4 and 3.6, an M3 passes 3.2 freely. */
-gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. The second clearance test's K tried it sideways on 3 Oct 2026 and none of its three standoffs printed usably (Alon): the standoff is a peg standing 2.7 mm out of its block with nothing under it. Untested, and the mount is to be reconsidered. */
+gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. The second clearance test's K tried it sideways on 3 Oct 2026 and none of its three standoffs printed usably (Alon): the standoff was a peg standing 2.7 mm out of its block with nothing under it. So the module now lies flat and its pilot is upright again (Alon, 3 Oct 2026: q34 "A") - but in a post whose top is 4.6 mm across, thinner round the pilot than the first test's 6 mm bosses. Untested until the third clearance test's M is read. */
 nut_fit    = 0.0;    /* The M3 nut's hex pocket, per side, on top of fdm_hole_comp: 0 should make it a press fit, so a nut stays put with its screw out (docs/mechanical-design-review.md, "Nuts stay put without their screw"). Tested 3 Oct 2026, the second clearance test's J: of -0.1, 0 and 0.1, 0 - 2 dots (Alon). */
 
 clasp_pinch = 0.1;  /* How much narrower than the PCB the clips' gap is at their catch, so the catch presses on the PCB and holds it. The jaw is short and stiff, so the catch's ridge gives a little rather than the jaw bending - which is why this is small. Tested 3 Oct 2026, the second clearance test's L: of 0.2, 0.1 and 0, 0.1 - 2 dots (Alon). */

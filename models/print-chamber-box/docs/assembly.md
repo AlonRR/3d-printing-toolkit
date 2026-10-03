@@ -25,9 +25,10 @@ All of this happens before the cover goes on.
 3. **Push the SuperMini's back edge into its clips** from the front, component side up and its antenna's
    pole standing up, until the edge snaps past the clips' catches. The back edge is the one whose first two
    pins are GPIO5 and GPIO6; its antenna end goes against the back stop.
-4. **Screw the SGP41 on**, sensor side out towards where the side wall will be and pins up, its bottom
-   edge on its ledge: drive the M2.5 × 6 through its mounting hole into the standoff's pilot. The first
-   drive cuts the thread.
+4. **Screw the SGP41 on**, with its four wires already soldered into it from its back (see
+   [Wiring](wiring.md)): lay it flat on its post and rib, sensor towards you and pins up, its bottom edge
+   on its ledge, and drive the M2.5 × 6 through its mounting hole into the post's pilot. The first drive
+   cuts the thread.
 5. **Wire it** — see [Wiring](wiring.md).
 6. **Put the cover on**, straight onto the plate: the U at its top goes over the plate's bump, its front
    clasp takes the board's front edge, and its partition slides past the divider. Then drive the two

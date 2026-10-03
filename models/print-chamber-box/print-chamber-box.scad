@@ -142,37 +142,51 @@ bump_x1  = W / 2 + bump_w / 2;
 u_z0     = H - wall - u_drop;            // the U's arms' lower ends, and the bump's underside
 bump_z1  = H - wall - part_fit;          // the bump's top
 
-// =================================================================== the GY-SGP41: on edge beside the SPS30
-// It stands in the left-hand column, its sensor towards the side wall's vents and its pins up. One M2.5
-// screw holds it, sideways, through its mounting hole onto a round standoff: the only part of its
-// underside that bears is the bare patch round that hole. Its bottom edge sits on a ledge. The screw's
-// head is on the sensor's side, so the side wall leaves room for it over the thickest board.
-gy_sensor_h = gy_t - gy_back;
-gy_xs   = W - wall - part_fit - gy_head_h - gy_pcb_max;   // the standoff's face: the PCB's underside
-gy_xp   = gy_xs - (gy_back - gy_pcb_min);                  // the underside's parts reach back to here, at most
-gy_xb   = gy_xp - gap;                                     // the block's face, clear of them
-gy_y0   = back_t + gap;                                    // the module's back long edge, by the plate
-gy_y1   = gy_y0 + gy_w;
-// Which long edge its hole is by follows from which way round the module is. Seen from outside the side
-// wall - from +X, so its sensor side faces you with its pins up - +Y is on your right, so a hole on the
-// right is by the front edge. The whole box is mirrored when the outlet is at the left, and a real module
-// cannot be: so the canonical drawing takes the mirror image then, and comes out right after it.
-gy_hole_front = gy_hole_right != outlet_at_left;
-gy_z0   = wall + part_fit + nut_boss_d + rim_t + pocket_fit;   // its bottom edge, on a ledge over the nut boss
+// =================================================================== the GY-SGP41: flat, behind the cover
+// Alon, 3 Oct 2026, once the standoff it stood on edge on would not print: "make the sgp41 flat and raised
+// up against the cover" (q34 "A"). It lies flat in the left-hand column, its sensor towards vents in the
+// cover's front and its pins up. One M2.5 screw holds it from the front, through its mounting hole into a
+// post rising from the plate; it lies on the post's top and on a rib under the bare strip along its bottom
+// edge, and its bottom edge sits on a ledge. All three stand on the plate, so they print as walls, and the
+// pilot is upright. The screw's head sits between the module and the cover, so the module is as far forward
+// as that allows. Its edge towards the SPS30 reaches past the end of the SPS30's channel wall, which is
+// notched there so the module's underside parts clear it by a gap.
+gy_sensor_h = gy_t - gy_back;                   // the sensor, standing off its face
+gy_parts_h  = gy_back - gy_pcb_t;               // the parts on its underside
+gy_yf   = y_in1 - part_fit - gy_head_h;         // its face: the screw's head between it and the cover
+gy_yu   = gy_yf - gy_pcb_t;                     // its underside, on the post and the rib
+gy_yp   = gy_yu - gy_parts_h;                   // its underside's parts reach back to here
+gy_x0   = W - wall - part_fit - pocket_fit - gy_w;   // its edge towards the SPS30: as far from it as the side wall allows,
+                                                     // so the wire from its pin nearest the SPS30 clears the channel wall
+gy_x1   = gy_x0 + gy_w;
+// Which side its hole is on follows from which way round the module is. Facing the box, its sensor faces
+// you with its pins up, and your right is -X: so a hole on the right is at the module's low-X edge, by the
+// SPS30. The whole box is mirrored when the outlet is at the left, and a real module cannot be: so the
+// canonical drawing takes the mirror image then, and comes out right after it.
+gy_hole_lowx = gy_hole_right != outlet_at_left;
+gy_z0   = wall + part_fit + nut_boss_d + part_fit + rim_t + pocket_fit;   // its bottom edge, on a ledge over the nut boss
 gy_z1   = gy_z0 + gy_l;
-gy_hy   = gy_hole_front ? gy_y1 - gy_hole_side : gy_y0 + gy_hole_side;   // its mounting hole
+gy_hx   = gy_hole_lowx ? gy_x0 + gy_hole_side : gy_x1 - gy_hole_side;   // its mounting hole
 gy_hz   = gy_z0 + gy_hole_far;
-gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // from the standoff's face
+gy_post_y1 = gy_yu;                             // the post's top, against the module's underside
+gy_post_yw = gy_yp - gap;                       // where the post narrows, a gap short of the underside's parts
+gy_rib_z1  = gy_z0 + gy_bare - gap / 2;         // the rib's top edge, short of the underside's nearest part
+gy_pilot_depth = gy_screw_l - gy_pcb_t + 2 * fdm_layer_h;   // into the post from its top
+ch_notch = gy_yp - gap;                          // the SPS30 channel wall's front, where the module overhangs it
 
-// Its four wires leave its back, turn up its column and, once level, cross over the SPS30's top-left
-// corner in a short channel on the plate: a slot open to the front between two ribs, the wires side by side
-// across its depth. They press in from the front past a 45-degree lip on each rib, and the lips hold them.
-// The ribs print as walls, the lips as 45-degree ledges. Their lanes keep clear of the wall screw's head as
-// they rise up the column.
+// Its four wires leave its back by its pins, turn up the column behind it and, once level, cross over the
+// SPS30's top-left corner in a short channel on the plate: a slot open to the front between two ribs, the
+// wires side by side across its depth. They press in from the front past a 45-degree lip on each rib, and
+// the lips hold them. The ribs print as walls, the lips as 45-degree ledges. Their lanes keep clear of the
+// wall screw's head as they rise; each rises above its own pin, but none nearer the SPS30's channel wall
+// than a wire's width.
 gy_bend_r  = 3.0;                                             // the solid wire's tightest bend
 gy_stub    = 1.0;                                             // straight out of a solder joint first
 gy_pitch   = gy_wd + 0.34;                                    // the wires' spacing, centre to centre
-gy_x_up    = gy_xs - gy_wd / 2 - gy_stub - gy_bend_r;         // where they rise, up the column
+function gy_pin_x(i) = gy_hole_lowx ? gy_x1 - 1.5 - i * 2.54 : gy_x0 + 1.5 + i * 2.54;   // SDA, SCL, GND, VIN
+gy_pin_z   = gy_z1 - 1.3;
+function gy_rise_x(i) = max(gy_pin_x(i), ch_x1 + cradle_t + gy_wd / 2 + 0.15);
+gy_x_up    = min([for (i = [0 : 3]) gy_rise_x(i)]);            // the riser nearest the SPS30
 gy_ch_lane = [for (i = [0 : 3]) back_t + key_slack + key_head_h + 0.1 + gy_wd / 2 + i * gy_pitch];
 gy_ch_slot = gy_wd + 0.4;                                     // the slot, across: a wire, 0.2 either side
 gy_ch_zc   = z_sps1 + part_fit + rib_t + gy_ch_slot / 2;      // its middle: the floor rib part_fit over the SPS30
@@ -269,20 +283,23 @@ assert(head_y - cover_screw_l <= nut_y1 - nut_h,
        "the cover's screw stops short of passing right through its nut - raise the shoulder");
 assert(nut_y1 + 2 * fdm_layer_h < nut_boss_y1, "the nut's shoulder reaches the cover's boss - the nut boss is too short");
 
-assert(gy_xs + gy_pcb_max + gy_head_h + part_fit <= W - wall + 1e-6,
-       "the SGP41's screw head would reach the side wall over the thickest board");
-assert(gy_xs - gy_pilot_depth - ch_x1 >= 2 * fdm_extrusion_w,
-       str("the SGP41's pilot runs to within ", gy_xs - gy_pilot_depth - ch_x1,
-           " mm of the SPS30's channel - shorten gy_screw_l"));
-assert(gy_xb > ch_x1 + cradle_t, "the SGP41's block has no thickness - the column is too narrow");
+assert(gy_yf + gy_head_h + part_fit <= y_in1 + 1e-6, "the SGP41's screw head would reach the cover's front");
+assert(gy_yf + gy_sensor_h + part_fit <= y_in1 + 1e-6, "the SGP41's sensor would reach the cover's front");
+assert(gy_x1 + pocket_fit <= W - wall - part_fit + 1e-6, "the SGP41 lying flat does not fit the column's width");
+assert(gy_post_y1 - gy_pilot_depth >= back_t + 2 * fdm_layer_h,
+       str("the SGP41's pilot would run out of the post into the wall side of the plate - shorten gy_screw_l"));
+assert(gy_yp - ch_notch >= gap - 1e-6, "the SGP41's underside parts come within a gap of the SPS30's channel wall");
+assert(ch_notch >= y_sps1 + sps_fit + 2 * fdm_layer_h, "the channel wall's notch reaches the SPS30's face");
+assert(gy_z0 - pocket_fit - rim_t >= nut_bz + nut_boss_d / 2 + part_fit - 1e-6,
+       "the SGP41's ledge comes down onto the nut bosses");
 assert(gy_hole_d >= gy_screw_d + 0.1,
        str("the SGP41's mounting hole (", gy_hole_d, " mm) is too small for an M", gy_screw_d,
            " screw - use a smaller one and set gy_screw_d, gy_head_d and gy_head_h"));
-assert(gy_pilot_d / 2 + 2 * fdm_extrusion_w <= gy_standoff_d / 2,
-       "the standoff round the SGP41's pilot is thinner than two beads - widen gy_standoff_d");
+assert(hole_r(gy_pilot_d) + 2 * fdm_extrusion_w <= gy_standoff_d / 2,
+       "the post round the SGP41's pilot is thinner than two beads - widen gy_standoff_d");
 assert(gy_standoff_d > gy_hole_d,
-       "the SGP41's standoff is no wider than its mounting hole - the board would have nothing to rest on");
-assert(gy_y1 + pocket_fit <= y_in1 - part_fit, "the SGP41 standing on edge does not fit the depth");
+       "the SGP41's post is no wider than its mounting hole - the board would have nothing to rest on");
+assert(gy_post_d >= gy_standoff_d, "the SGP41's post narrows the wrong way");
 
 assert(bump_x0 - part_fit - rib_t - (sm_ant_x - pole_in + 0.5) >= gap,
        "the U at the top reaches the antenna's pole - narrow bump_w");
@@ -374,14 +391,17 @@ module clip(c, g_catch = clip_g_catch) {
     box3([c[0], back_t - eps, z_f0], [c[1], back_t + eps, zu + clip_g_mouth + rim_t]);
 }
 
-// The SGP41's block, from the plate out past its standoff, and the standoff the module is screwed to; and
-// the pilot its screw cuts its thread in, sideways through both. The clearance test tries other pilots.
-module gy_holder() {
-    box3([ch_x1 + cradle_t - eps, back_t - eps, gy_hz - gy_standoff_d / 2 - rim_t],
-         [gy_xb, gy_hy + gy_standoff_d / 2 + rim_t, gy_hz + gy_standoff_d / 2 + rim_t]);
-    cyl_x(gy_hy, gy_hz, gy_standoff_d / 2, gy_xb - eps, gy_xs);
+// The SGP41's mount, all standing on the plate: the post its screw goes into - wide, narrowing to
+// gy_standoff_d where the module's underside parts are - the rib under the bare strip along its bottom
+// edge, and the ledge that edge sits on. And the pilot, straight down into the post. The clearance test
+// tries other pilots.
+module gy_mount() {
+    cyl_y(gy_hx, gy_hz, gy_post_d / 2, back_t - eps, gy_post_yw);
+    cyl_y(gy_hx, gy_hz, gy_standoff_d / 2, gy_post_yw - eps, gy_post_y1);
+    box3([gy_x0 + gap / 2, back_t - eps, gy_z0 - pocket_fit], [gy_x1 - gap / 2, gy_yu, gy_rib_z1]);
+    box3([gy_x0, back_t - eps, gy_z0 - pocket_fit - rim_t], [gy_x1, gy_yf, gy_z0 - pocket_fit]);
 }
-module gy_pilot(d = gy_pilot_d) cyl_x(gy_hy, gy_hz, hole_r(d), gy_xs - gy_pilot_depth, gy_xs + eps);
+module gy_pilot(d = gy_pilot_d) cyl_y(gy_hx, gy_hz, hole_r(d), gy_post_y1 - gy_pilot_depth, gy_post_y1 + eps);
 
 // The SGP41 wires' channel over the SPS30's top-left corner: a floor rib and a roof rib standing on the
 // plate, each with its lip at the front - a 45-degree ridge into the slot.
@@ -406,8 +426,12 @@ module back_plate() place() difference() {
         // the channel walls the SPS30 is set between, from the front. No lips: anything overhanging
         // its face would have to be slid past. Down to Z = 0, through the window, so the ledges join them
         // by a FACE - meeting along an edge only is not manifold (docs/openscad-basics, lesson 2).
-        for (xw = [ch_x0 - cradle_t, ch_x1])
+        // The one by the SGP41 is notched to ch_notch where the module overhangs its front end.
+        for (xw = [ch_x0 - cradle_t, ch_x1]) difference() {
             translate([xw, back_t - eps, 0]) cube([cradle_t, y_ch1 - back_t + eps, z_sps1]);
+            if (xw == ch_x1 && ch_notch < y_ch1)
+                box3([xw - eps, ch_notch, gy_z0 - pocket_fit - rim_t - gap], [xw + cradle_t + eps, y_ch1 + eps, gy_z1 + gap]);
+        }
 
         // the ledges the sensor stands on, one under each end of the air face
         translate([ch_x0 - cradle_t / 2, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
@@ -423,12 +447,10 @@ module back_plate() place() difference() {
         // the back stop at its antenna end, which takes the push of plugging in
         box3([stop_x0, back_t - eps, z_f0], [stop_x0 + rim_t, y_b0 + stop_reach, zu + sm_pcb_t + 1]);
 
-        // the SGP41's block and standoff, and the ledge its bottom edge sits on
-        gy_holder();
+        // the SGP41's post, rib and ledge
+        gy_mount();
         // the channel its wires cross the SPS30's top-left corner in
         gy_channel();
-        box3([ch_x1 + cradle_t - eps, back_t - eps, gy_z0 - pocket_fit - rim_t],
-             [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z0 - pocket_fit]);
 
         // the nut bosses in the bottom corners
         for (x = nut_bx) cyl_y(x, nut_bz, nut_boss_d / 2, back_t - eps, nut_boss_y1);
@@ -437,7 +459,7 @@ module back_plate() place() difference() {
     }
     // the nuts' pockets, open to the wall, and the screw holes over them
     for (x = nut_bx) nut_trap(x, nut_bz);
-    // the SGP41's pilot, sideways into its standoff and block
+    // the SGP41's pilot, down into its post
     gy_pilot();
     // the keyholes: each an entry the wall screw's head passes, and the slot above it the head then
     // hangs over. Holes through the plate, so on the bed they are openings in the first layers.
@@ -474,8 +496,9 @@ module cover() place() {
             for (dy = [-1, 1]) translate([y_bc + dy * usb_open_c, z_uc]) circle(r = usb_open_r, $fn = 48);
             translate([y_bc - usb_open_c - usb_open_r * sqrt(2), z_uc]) square(0.01, center = true);
         }
-        // vents: in the left-hand wall over the SGP41's sensor, and in the front over the board
-        side_vents(gy_y0, gy_y1, gy_z0, gy_z1);
+        // vents in the front: over the SGP41's lower half, where its sensor is, clear of the bottom
+        // screw's boss below - and over the board
+        vent_slots(gy_x0 + 1, gy_x1 - 1, max(gy_z0, nut_bz + nut_boss_d / 2 + gap), gy_z0 + gy_l / 2 + 2);
         vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), zu + sm_t + gap, zu + sm_t + gap + 10);
         // the two bottom screws' counterbores and holes
         for (x = nut_bx) cover_screw_hole(x, nut_bz);
@@ -558,19 +581,18 @@ module components(shrink = 0) place() {
     // face can come right up to the socket's mouth, so that is where it is drawn.
     color("dimgray") box3([-usb_proud_in - 20 + s, y_bc - usb_plug_w / 2 + s, z_uc - usb_plug_h / 2 + s],
                           [-usb_proud_in - s, y_bc + usb_plug_w / 2 - s, z_uc + usb_plug_h / 2 - s]);
-    // the GY-SGP41 on edge, as the envelope of every board thickness within the bounds: the PCB and its
-    // sensor towards the wall, and behind it the parts on its underside - less the bare patch round the
-    // mounting hole (gy_hole_bare_d, read off photo 2), where the standoff bears
+    // the GY-SGP41 lying flat: the PCB and its sensor towards the cover, and behind it the parts on its
+    // underside - less the bare strip along its bottom edge, where the rib bears, and the bare patch round
+    // its mounting hole, where the post does
     color("green") {
-        box3([gy_xs + s, gy_y0 + pocket_fit + s, gy_z0 + s],
-             [gy_xs + gy_pcb_max + gy_sensor_h - s, gy_y1 + pocket_fit - s, gy_z1 - s]);
+        box3([gy_x0 + s, gy_yu + s, gy_z0 + s], [gy_x1 - s, gy_yf + gy_sensor_h - s, gy_z1 - s]);
         difference() {
-            box3([gy_xp + s, gy_y0 + pocket_fit + s, gy_z0 + s], [gy_xs + s, gy_y1 + pocket_fit - s, gy_z1 - s]);
-            cyl_x(gy_hy, gy_hz, gy_hole_bare_d / 2 - s, gy_xp, gy_xs + 2 * s);
+            box3([gy_x0 + s, gy_yp + s, gy_z0 + gy_bare + s], [gy_x1 - s, gy_yu + s, gy_z1 - s]);
+            cyl_y(gy_hx, gy_hz, gy_hole_bare_d / 2 - s, gy_yp, gy_yu + 2 * s);
         }
     }
-    // the SGP41 screw's head, on the thickest board - the nearest it comes to the side wall
-    color("silver") cyl_x(gy_hy, gy_hz, gy_head_d / 2 - s, gy_xs + gy_pcb_max + s, gy_xs + gy_pcb_max + gy_head_h - s);
+    // the SGP41 screw's head, between the module and the cover
+    color("silver") cyl_y(gy_hx, gy_hz, gy_head_d / 2 - s, gy_yf + s, gy_yf + gy_head_h - s);
     // the SPS30's plug and the column its lead rises through before it bends over
     color("orange") box3([lead_x0 + s, back_t + s, z_sps1 + s], [lead_x1 - s, back_t + sps_t - s, z_sps1 + cable_zone_h - s]);
     // the wall screws' heads behind the plate, each all the way from its entry up to where it hangs,
@@ -596,9 +618,9 @@ if (draw_model) {
              2 * hole_r(key_entry_d), " mm and slot ", 2 * hole_r(key_slot_w), " mm as cut; set the heads ",
              back_t, " to ", back_t + key_slack, " mm off the wall"));
     echo(str("board: in its clasps ", zu, " mm up, its pole's tip ", zu + ant_h, " mm, the top wall's inside ", H - wall,
-             "; SGP41 on edge, ", W - wall - (gy_xs + gy_pcb_max + gy_sensor_h), " to ",
-             W - wall - (gy_xs + gy_pcb_min + gy_sensor_h), " mm behind the side wall's vents, held by an M",
-             gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot"));
+             "; SGP41 flat, its sensor ", y_in1 - (gy_yf + gy_sensor_h), " mm behind the cover's vents, held by an M",
+             gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot down a ", gy_post_y1 - back_t,
+             " mm post; its underside parts ", gy_yp - ch_notch, " mm off the notched channel wall"));
     echo(str("cover: two M3 x ", cover_screw_l, ", heads flush in ", 2 * hole_r(cb_d), " mm counterbores ", cb_depth,
              " deep, into nuts whose shoulder is ", nut_y1,
              " mm from the back; its top locates on a ", bump_w, " mm bump in a U"));

@@ -69,10 +69,11 @@ Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie o
 | `gy_l`, `gy_w`, `gy_t` | **13.14 × 10.60 × 3.24** | the GY-SGP41 with its parts. The sensor is on one face and the rest of its electronics on the other |
 | `gy_back` | **2.53** | the GY-SGP41 through its PCB and electronics, clamped beside the sensor: its height lying sensor-up |
 | `gy_bare` | **3.31** | from the GY-SGP41's far end (opposite its pins) to the nearest part on its underside |
-| `gy_hole_bare_d` | **3.13 + 2 × 1.0** | the bare patch round the mounting hole on the underside: reading C, 1.0 mm from the hole's edge to the nearest part, as the photo had read. The 4 mm standoff bears inside it, and the collision check treats its edge as where the parts begin |
+| `gy_hole_bare_d` | **3.13 + 2 × 1.0** | the bare patch round the mounting hole on the underside: reading C, 1.0 mm from the hole's edge to the nearest part, as the photo had read. The post's 4.6 mm top bears inside it, and the collision check treats its edge as where the parts begin |
 | `gy_hole_d` | **3.13** | the GY-SGP41's mounting hole, across |
 | `gy_hole_far`, `gy_hole_side` | **1.32**, **1.25** + half the hole | from the hole's edge to the module's far end, and to the nearer long edge (the one away from the sensor). The file adds half the diameter to put the centre at 2.885 and 2.815 |
-| `gy_hole_right` | **true** | which way round the module is: seen from its sensor side with its pins up, the hole is at the bottom right and the sensor at the bottom left — the GY-SGP41 in [the figure](board-measure.png). Read off photo 2, then confirmed on both modules in hand, 3 Oct 2026. Standing on edge with its sensor towards the side wall and its pins up, the module's hole is therefore by its front edge, away from the plate |
+| `gy_pcb_t` | **1.5** | the GY-SGP41's bare board, measured 3 Oct 2026. With `gy_back` it puts the underside's parts 1.03 mm deep |
+| `gy_hole_right` | **true** | which way round the module is: seen from its sensor side with its pins up, the hole is at the bottom right and the sensor at the bottom left — the GY-SGP41 in [the figure](board-measure.png). Read off photo 2, then confirmed on both modules in hand, 3 Oct 2026. Lying flat with its sensor towards the cover and its pins up, the module's hole is therefore at its edge towards the SPS30 |
 
 ## Settled from photos
 
@@ -84,14 +85,6 @@ Which way round the parts go, read off photos and checked against the parts:
 | `sps_outlet_from` | **20.2** | where the outlet grille starts, from the inlet end. The divider sits between this and `sps_inlet_end` |
 | `wire_perpendicular` | **true** | the antenna's straight part, the pole, stands out of the SuperMini's component side, so with the board level it stands up |
 
-## Bounds, not measurements
-
-The design works anywhere inside these, so none needs measuring:
-
-| Name | Value | Why |
-|---|---|---|
-| `gy_pcb_min`, `gy_pcb_max` | **0.8**, **1.6** | the GY-SGP41's bare board thickness. GY modules are usually 1.0–1.6 mm |
-
 ## Fits
 
 Clearances that depend on the printer and the filament, found with [the clearance test](clearance-test.md):
@@ -101,12 +94,12 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 | `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width, until the width was measured (`sps_w`, `sps_nub` above) |
 | `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
 | `part_fit` | **0.3** | tested 3 Oct 2026, 0.26–0.29 per side as printed — between a back-plate feature and the cover |
-| `gy_pilot_d` | **2.1** | **untested sideways** — pilot for the SGP41's M2.5 screw. Tested upright 3 Oct 2026, fine. Tried sideways by the clearance test's K the same day: no standoff printed usably, so the mount is to be reconsidered |
+| `gy_pilot_d` | **2.1** | **untested** — pilot for the SGP41's M2.5 screw. Tested upright 3 Oct 2026 in a 6 mm boss, fine; tried sideways the same day by the second test's K, whose standoffs did not print. Upright again in the flat mount's post, but 4.6 mm across at its top: the third test's M |
 | `nut_fit` | **0** | tested 3 Oct 2026, the clearance test's J, 2 dots — the M3 nuts' hex pockets, per side on top of the hole compensation: a press fit |
 | `clasp_pinch` | **0.1** | tested 3 Oct 2026, the clearance test's L, 2 dots — how much the SuperMini's back clips pinch its PCB at their catch |
 | `screw_d` | **3.2** | tested 3 Oct 2026, passes an M3 freely — clearance hole for the M3 screws in the cover |
 
-The three untested ones are in `untested_fits`, and `scad-check.sh` exits 2 until they are cleared.
+The untested one is in `untested_fits`, and `scad-check.sh` exits 2 until it is cleared.
 Two the first round tested have gone from the box: `pilot_d` with the self-tapping cover screws, and
 `tab_hole_d` with the mounting tabs.
 
@@ -130,7 +123,7 @@ thicknesses whole layers of `fdm_layer_h`, and the model asserts both.
 | `stop_reach` | **3.0** | how far each stop at the antenna end reaches in from a long edge; the loop leaves 4.3 free |
 | `gy_wd` | **1.56** | the SGP41's wires: the lab's 22 AWG solid hookup wire, UL1007, measured over its insulation 2 Oct 2026. The wire channel's slot is sized from it |
 | `gy_ch_len`, `gy_ch_lip_gap` | **8.0**, **1.3** | the wire channel over the SPS30's top-left corner: its length, and the opening between its two lips — narrower than a wire, so each presses in past them and stays |
-| `gy_standoff_d`, `gy_screw_l` | **4.0**, **6.0** | the SGP41's standoff, inside the bare patch round its hole; its M2.5 screw's length — an 8 would reach the SPS30's channel |
+| `gy_standoff_d`, `gy_post_d`, `gy_screw_l` | **4.6**, **6.0**, **6.0** | the SGP41's post: its top, inside the bare ring round the module's hole and two beads round the pilot; below the depth of the module's underside parts, as wide as the first clearance test's bosses; and its M2.5 screw's length |
 | `key_slack`, `key_level_tol` | **1.0**, **2.0** | how much further than the plate's thickness a wall screw's head may stand off the wall; how much lower one screw may sit than the other |
 | `back_wire_room` | **3.0** | the room kept under the board's back edge, over the wall screws' heads, for the wires to GPIO5 and GPIO6: two stacked there, the SGP41's 1.56 mm and a lead wire of about 1 mm. The keyholes sit low enough to leave it — see [Wiring](wiring.md) |
 | `bump_w`, `bump_out`, `u_drop` | **8.0**, **4.0**, **5.0** | the bump the cover's top locates on: its width, how far it stands out from the plate, and how far the U's arms hang down round it |

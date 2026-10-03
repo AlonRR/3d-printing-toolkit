@@ -8,7 +8,7 @@ corners are screwed into nuts, the screws' heads flush in its front. It hangs on
 keyholes beside the SPS30's top corners.
 
 The SuperMini lies level above the SPS30's lead, held by its edges, its antenna's pole standing up; the
-SGP41 stands on edge beside the SPS30, behind vents in the side wall.
+SGP41 lies flat in the column beside the SPS30, close behind vents in the cover's front.
 
 ![assembled, cover off](docs/assembly-open.png)
 
@@ -20,11 +20,11 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** The SGP41's standoff does not print: the second
-clearance test's K, three copies of it, came out unusable — it is a peg standing sideways out of its
-block with nothing under it. Its mount is to be reconsidered, and until then `gy_pilot_d` is the one
-untested fit, so `scad-check.sh` exits 2 on purpose. The nut pockets and the SuperMini's clips are tested
-([clearance test](docs/clearance-test.md)).
+**Modelled and checked; print the third clearance test before the box.** The SGP41's first mount, on
+edge on a sideways standoff, did not print, so it now lies flat on a post with an upright pilot. That post
+is narrower round the pilot than the boss the first test tried, so `gy_pilot_d` is untested once more and
+`scad-check.sh` exits 2 on purpose; the [clearance test](docs/clearance-test.md)'s M — three of the new
+mount, about 33 min — settles it. Every other fit is tested.
 
 ## Building it
 
