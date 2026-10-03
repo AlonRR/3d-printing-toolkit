@@ -9,10 +9,10 @@ ASA — a back plate and a cover held by four screws — 62.6 × 88.5 × 24 mm, 
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** Every dimension is measured or sourced, but five fits
-are still untested in ASA — `part_fit`, `pilot_d`, `gy_pilot_d`, `screw_d` and `tab_hole_d` — and
-`scad-check.sh` exits 2 on purpose until they are. The clearance test that tries them is printed, and
-its results for the SPS30's and the boards' fits are in. See [the clearance test](docs/clearance-test.md).
+**Modelled and checked; not printable as-is yet.** Every dimension is measured or sourced, and the
+clearance test has set every fit but one: `tab_hole_d`, the mounting holes, waits on how the box will be
+mounted, and `scad-check.sh` exits 2 on purpose until it is set. The SPS30's width allowance waits on a
+caliper reading of the sensor. See [the clearance test](docs/clearance-test.md).
 
 Before printing the back plate, check on the parts the values read off photos rather than calipers:
 `sm_edge`, `pin_mid`, `gy_hole_bare_d`, and which edge of its pocket the SGP41's mounting hole sits by

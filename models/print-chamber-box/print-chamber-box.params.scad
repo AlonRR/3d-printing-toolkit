@@ -75,15 +75,15 @@ gy_head_d  = 4.5;   /* ISO 4762 head diameter for M2.5. */
 gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 
 /* [Fits - the ones still untested in ASA on this printer are listed in `untested_fits` below] */
-sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (the clearance test, Inslogic ASA, MK3S): of 0.2, 0.3 and 0.4 the SPS30 took the tightest, 0.2, and it was snug (Alon) - so 0.2 stands, though nothing tighter was tried. */
+sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (the clearance test, Inslogic ASA, MK3S): of 0.2, 0.3 and 0.4 the SPS30 took the tightest, 0.2, and it was snug (Alon) - so 0.2 stands, though nothing tighter was tried. Looked at closer on 3 Oct: flush across its thickness (Y), about 0.7 mm loose along its width (X) - the width allowance, sps_nub, is the datasheet's and waits on a caliper reading of the sensor. */
 pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2026, same print: the SuperMini and the GY-SGP41 each took the tightest of 0.2, 0.3 and 0.4, and both were snug (Alon). */
-part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. */
-pilot_d    = 2.5;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. */
-screw_d    = 3.4;    /* Clearance hole for those screws in the cover. */
-tab_hole_d = 4.0;    /* Mounting holes in the tabs, for wood screws up to 3.5 mm. */
-gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. */
+part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. Measured 3 Oct 2026 on the same print: peg 5.98, socket 6.50 (Y) and 6.55 (X), so 0.26 and 0.29 per side as printed - over the 0.15 below which the parts would bind. */
+pilot_d    = 2.3;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. Tested 3 Oct 2026: of 2.3, 2.5 and 2.7, 2.5 was fine and 2.3 a little tight, "which might be preferable" (Alon); none split. 2.3, for a thread that is driven again each time the cover comes off. */
+screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 Oct 2026: of 3.2, 3.4 and 3.6, an M3 passes 3.2 freely. */
+tab_hole_d = 4.0;    /* Mounting holes in the tabs, for wood screws up to 3.5 mm. Not tested: how the box is mounted is still open. */
+gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). */
 
-untested_fits = ["part_fit", "pilot_d", "screw_d", "tab_hole_d", "gy_pilot_d"];
+untested_fits = ["tab_hole_d"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 

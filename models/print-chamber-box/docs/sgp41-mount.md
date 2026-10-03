@@ -32,7 +32,7 @@ touches nothing but the ledge, the standoff and a rim on three sides, so its thi
 anywhere from `gy_pcb_min` to `gy_pcb_max`, the rim catches its edge.
 
 **An M2.5 × 8 socket head screw holds it down**, through its 3.13 mm mounting hole into a blind 7.6 mm
-pilot in the standoff, and cuts its own thread there (`gy_pilot_d`, still an untested fit). The hole is
+pilot in the standoff, and cuts its own thread there (`gy_pilot_d`, 2.1 mm, tested). The hole is
 larger than the screw, so the rim, not the screw, locates the module. Its 4.5 mm head clears the sensor
 (checked with the screw in the hole). The room in front of the board is the head's 2.5 mm plus
 `part_fit` to the cover.

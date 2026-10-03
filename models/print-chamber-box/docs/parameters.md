@@ -64,13 +64,13 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 
 | Name | Value | Status |
 |---|---|---|
-| `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30 |
+| `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width; the width allowance waits on a caliper reading of the sensor |
 | `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
-| `part_fit` | 0.3 | untested — between a back-plate feature and the cover |
-| `pilot_d` | 2.5 | untested — pilot for the cover's M3 × 14 self-tapping screws |
-| `gy_pilot_d` | 2.1 | untested — pilot for the SGP41's M2.5 screw |
-| `screw_d` | 3.4 | untested — clearance hole for the M3 screws in the cover |
-| `tab_hole_d` | 4.0 | untested — mounting holes in the tabs, for wood screws up to 3.5 mm |
+| `part_fit` | **0.3** | tested 3 Oct 2026, 0.26–0.29 per side as printed — between a back-plate feature and the cover |
+| `pilot_d` | **2.3** | tested 3 Oct 2026, a little tight — pilot for the cover's M3 × 14 self-tapping screws |
+| `gy_pilot_d` | **2.1** | tested 3 Oct 2026, fine — pilot for the SGP41's M2.5 screw |
+| `screw_d` | **3.2** | tested 3 Oct 2026, passes an M3 freely — clearance hole for the M3 screws in the cover |
+| `tab_hole_d` | 4.0 | untested — mounting holes in the tabs, for wood screws up to 3.5 mm; waits on how the box is mounted |
 
 The untested ones are listed in `untested_fits`, and `scad-check.sh` exits 2 until it is empty.
 

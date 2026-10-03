@@ -58,8 +58,10 @@ sm_out_w  = sm_w + 2 * pocket_fits[2] + 2 * rim_t;
 gy_out_l  = gy_l + 2 * pocket_fits[2] + 2 * rim_t;
 gy_out_w  = gy_w + 2 * pocket_fits[2] + 2 * rim_t;
 rim_top   = base_t + sm_pcb_t + 2 * fdm_layer_h;   // as tall above the floor as the box's rims
-m3_boss_h = 14;                // the box's bosses take 12+ mm of an M3 x 14
-m3_pilot_depth = 13;
+// No cover sits on these, so the whole M3 x 14 goes in: the pilot must take all 14 mm. The 2 Oct print's
+// was 13 deep and the screws stopped short (Alon). The box's pilots are deeper than its 12.2 mm of screw.
+m3_boss_h = 15;
+m3_pilot_depth = 15;
 gy_boss_d = 6;
 gy_boss_h = 9;
 gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // as deep as the box's
