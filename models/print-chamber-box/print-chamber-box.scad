@@ -159,11 +159,20 @@ gy_hy   = gy_hole_front ? gy_y1 - gy_hole_side : gy_y0 + gy_hole_side;   // its 
 gy_hz   = gy_z0 + gy_hole_far;
 gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // from the standoff's face
 
-// =================================================================== the nuts
+// =================================================================== the cover's screws and their nuts
+// The two bottom screws sit flush: each head in a counterbore in the cover's front, on a floor as thick as
+// the front. The front is thinner than a head is tall, so a boss on its inside carries the floor, and the
+// nut boss on the back plate stops where that boss starts - the screw clamps the two together.
+cb_d     = cover_head_d + (screw_d - 3);   // the counterbore: the head, and the tested screw hole's allowance
+cb_depth = up_to_layer(cover_head_h);    // the cover prints front face down: whole layers from the bed
+cb_floor = front_t;
+head_y   = D - cb_depth;                  // where a screw's head bears
+cb_y0    = head_y - cb_floor;             // the cover boss's end, inside
+nut_boss_y1 = cb_y0;                      // the nut boss's end, against it
 // Pressed into a hex pocket from the wall side, the nut bears on a shoulder towards the cover - a
 // bottom-inserted nut, the strongest of the ways a print holds one (docs/mechanical-design-review.md).
-// The shoulder sits where the M3 x cover_screw_l, from the cover's face, passes right through the nut.
-nut_y1  = up_to_layer(D - cover_screw_l + nut_h + 2 * fdm_layer_h);   // the shoulder
+// The shoulder sits where the M3 x cover_screw_l, from its head, passes right through the nut.
+nut_y1  = up_to_layer(head_y - cover_screw_l + nut_h + 2 * fdm_layer_h);   // the shoulder
 
 // =================================================================== the rules
 for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["rib_t", rib_t],
@@ -172,7 +181,7 @@ for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["ri
            str(w[0], " (", w[1], ") must be a whole number of ", fdm_extrusion_w,
                " mm beads - fdm-design-rules §1"));
 
-for (t = [["back_t", back_t], ["front_t", front_t], ["the nut's shoulder", nut_y1]])
+for (t = [["back_t", back_t], ["front_t", front_t], ["the nut's shoulder", nut_y1], ["cb_depth", cb_depth]])
     assert(whole(t[1] / fdm_layer_h),
            str(t[0], " (", t[1], ") is printed flat, so it must be a whole number of ",
                fdm_layer_h, " mm layers"));
@@ -228,11 +237,14 @@ assert(key_room_low >= gap && key_room_high >= gap,
 assert(key_room_gy >= gap,
        str("the left keyhole's entry reaches down to the SGP41 - it leaves ", key_room_gy, " mm"));
 
-assert(D - cover_screw_l >= 2 * fdm_layer_h,
+assert(cb_depth >= cover_head_h - 1e-6, "the cover's screw heads would stand proud of its front - deepen the counterbore");
+assert(hole_r(cb_d) + 2 * fdm_extrusion_w <= nut_boss_d / 2,
+       "the counterbore leaves the cover's boss less than two beads round it");
+assert(head_y - cover_screw_l >= 2 * fdm_layer_h,
        str("an M3 x ", cover_screw_l, " through the cover's corner would poke out of the back plate"));
-assert(D - cover_screw_l <= nut_y1 - nut_h,
+assert(head_y - cover_screw_l <= nut_y1 - nut_h,
        "the cover's screw stops short of passing right through its nut - raise the shoulder");
-assert(nut_y1 + 2 * fdm_layer_h < y_in1, "the nut's shoulder reaches the cover - the boss is too short");
+assert(nut_y1 + 2 * fdm_layer_h < nut_boss_y1, "the nut's shoulder reaches the cover's boss - the nut boss is too short");
 
 assert(gy_xs + gy_pcb_max + gy_head_h + part_fit <= W - wall + 1e-6,
        "the SGP41's screw head would reach the side wall over the thickest board");
@@ -308,7 +320,20 @@ module nut_trap(x, z, r = nut_pock_r) {
     translate([x - hr, nut_y1 - eps, z - r * cos(30)])
         cube([2 * hr, fdm_layer_h + eps, 2 * r * cos(30)]);
     translate([x - hr, nut_y1 + fdm_layer_h - eps, z - hr]) cube([2 * hr, fdm_layer_h + eps, 2 * hr]);
-    cyl_y(x, z, hr, nut_y1 + 2 * fdm_layer_h - eps, y_in1 + eps);
+    cyl_y(x, z, hr, nut_y1 + 2 * fdm_layer_h - eps, nut_boss_y1 + eps);
+}
+
+// A bottom screw's way through the cover, from its face in: the counterbore its head sits flush in, then
+// the clearance hole on through the boss. The cover prints front face down, so the counterbore's floor is
+// a ceiling: its first layer bridges across leaving a slot the hole's width, its second across that
+// leaving a square, and the round hole starts on the third - as over the nuts, with no support.
+module cover_screw_hole(x, z) {
+    hr = hole_r(screw_d);
+    cr = hole_r(cb_d);
+    cyl_y(x, z, cr, head_y, D + eps);
+    translate([x - hr, head_y - fdm_layer_h, z - cr]) cube([2 * hr, fdm_layer_h + eps, 2 * cr]);
+    translate([x - hr, head_y - 2 * fdm_layer_h, z - hr]) cube([2 * hr, fdm_layer_h + eps, 2 * hr]);
+    cyl_y(x, z, hr, cb_y0 - eps, head_y - 2 * fdm_layer_h + eps);
 }
 
 // One of the board's two back clips, over c = [x0, x1] along its back edge: a lower jaw under the edge, and
@@ -373,7 +398,7 @@ module back_plate() place() difference() {
              [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z0 - pocket_fit]);
 
         // the nut bosses in the bottom corners
-        for (x = nut_bx) cyl_y(x, nut_bz, nut_boss_d / 2, back_t - eps, y_in1);
+        for (x = nut_bx) cyl_y(x, nut_bz, nut_boss_d / 2, back_t - eps, nut_boss_y1);
         // the bump at the top the cover locates on
         box3([bump_x0, back_t - eps, u_z0], [bump_x1, back_t + bump_out, bump_z1]);
     }
@@ -415,8 +440,14 @@ module cover() place() {
         // vents: in the left-hand wall over the SGP41's sensor, and in the front over the board
         side_vents(gy_y0, gy_y1, gy_z0, gy_z1);
         vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), zu + sm_t + gap, zu + sm_t + gap + 10);
-        // holes for the two bottom screws
-        for (x = nut_bx) cyl_y(x, nut_bz, hole_r(screw_d), y_in1 - eps, D + eps);
+        // the two bottom screws' counterbores and holes
+        for (x = nut_bx) cover_screw_hole(x, nut_bz);
+    }
+    // the bosses behind them, which carry the counterbores' floors, the nut bosses' size. Standing on the
+    // front, so on the cover's bed they are short columns.
+    for (x = nut_bx) difference() {
+        cyl_y(x, nut_bz, nut_boss_d / 2, cb_y0, y_in1 + eps);
+        cover_screw_hole(x, nut_bz);
     }
     // the U at the top: two arms hanging from the top wall, either side of the plate's bump, from the
     // cover's front back to part_fit off the plate
@@ -531,7 +562,8 @@ if (draw_model) {
              "; SGP41 on edge, ", W - wall - (gy_xs + gy_pcb_max + gy_sensor_h), " to ",
              W - wall - (gy_xs + gy_pcb_min + gy_sensor_h), " mm behind the side wall's vents, held by an M",
              gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot"));
-    echo(str("cover: two M3 x ", cover_screw_l, " into nuts whose shoulder is ", nut_y1,
+    echo(str("cover: two M3 x ", cover_screw_l, ", heads flush in ", 2 * hole_r(cb_d), " mm counterbores ", cb_depth,
+             " deep, into nuts whose shoulder is ", nut_y1,
              " mm from the back; its top locates on a ", bump_w, " mm bump in a U"));
     echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
              " mm past the outside face; the plug's body clears the mounting surface by ", y_bc - usb_plug_w / 2, " mm"));

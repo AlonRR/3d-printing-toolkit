@@ -4,7 +4,7 @@ An enclosure for the printer chamber node: an ESP32-C3 SuperMini, a Sensirion SP
 a GY-SGP41 VOC/NOx module, running [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml). It
 hangs on the wall outside the printer's enclosure, upright, with the SPS30's air face down. Two parts in
 ASA, 68.7 × 76.4 × 24 mm: a back plate, and a cover whose top locates on a bump in a U and whose bottom
-corners are screwed into nuts. It hangs on two wall screws by keyholes beside the SPS30's top corners.
+corners are screwed into nuts, the screws' heads flush in its front. It hangs on two wall screws by keyholes beside the SPS30's top corners.
 
 > ⚠️ **The layout was rebuilt on 3 Oct 2026, and the topic pages below still describe the one before.**
 > The SuperMini is now held level by its edges in clips over the SPS30's lead, its antenna's pole up; the SGP41
@@ -38,7 +38,7 @@ purpose until they are settled.
 | Cover | [`print-chamber-box-cover.scad`](print-chamber-box-cover.scad) | front face down |
 | Clearance test | [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) | flat |
 
-**Hardware:** two M3 × 20 screws and two M3 nuts for the cover, one M2.5 × 6 socket head cap screw for
+**Hardware:** two M3 × 20 socket head cap screws and two M3 nuts for the cover, one M2.5 × 6 socket head cap screw for
 the SGP41, two 4 × 20 chipboard screws and their wall plugs to hang it, and 22 AWG solid hookup wire
 for the SGP41. No tape, no glue.
 

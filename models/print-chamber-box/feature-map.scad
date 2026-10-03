@@ -106,7 +106,7 @@ if (view == "cover") {
             " 1  the front - printed face down",
             " 2  vents in the side, at the SGP41's sensor",
             " 3  vents in front of the board",
-            " 4  holes for the two bottom screws",
+            " 4  bottom screws - their heads sit flush",
             " 5  window under the SPS30's air face",
             " 6  USB-C opening - the shell passes through",
             " 7  wall thinned for the board's USB end",

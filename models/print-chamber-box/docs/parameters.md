@@ -23,7 +23,9 @@ From the **USB Type-C specification**, rev 1.2, so that no cable needs measuring
 | `usb_shell_w` | **8.94** | the receptacle's inside opening is 8.34 × 2.56; the measured 3.16 height against 2.56 gives a 0.30 mm shell wall, so 8.34 + 2 × 0.30 |
 | `usb_plug_w`, `usb_plug_h` | **12.35 × 6.5** | the largest a compliant plug's body may be (Figure B-1, dimensions 1 and 14). The body stays outside the box, so these only check that it clears the mounting surface |
 
-From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.5**, `gy_head_h` **2.5**.
+From **ISO 4762**, the largest socket heads allowed: the SGP41's M2.5 × 6, `gy_head_d` **4.5** and
+`gy_head_h` **2.5**; and the cover's M3 × 20, `cover_head_d` **5.5** and `cover_head_h` **3.0**, which
+size the counterbores its heads sit flush in.
 
 ## The wall screws
 
