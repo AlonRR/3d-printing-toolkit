@@ -8,183 +8,127 @@ The clearance test for the print-chamber box: one small print that tries every u
 print-chamber-box.params.scad at three settings - a step tighter, as set, and a step looser - so the box
 is printed with fits that were tried in ASA on this printer rather than guessed.
 
-Every size comes from the box's own settings, so the test cannot drift from what it tests. Each try
-carries 1, 2 or 3 dots: 1 = a step tighter, 2 = as set, 3 = a step looser. docs/clearance-test.md
-says what to try with each, how to turn the result into a setting, and what has been found so far.
+It INCLUDES the box, and every piece is the box's own geometry - its nut pocket, its SGP41 standoff and
+pilot, its clips - drawn by the box's own modules with only the fit changed, and turned onto the bed as
+the back plate is. So the test cannot drift from what it tests, and each piece prints the way it will in
+the box. Each try carries 1, 2 or 3 dots: 1 = a step tighter, 2 = as set, 3 = a step looser.
+docs/clearance-test.md says what to try with each, how to turn the result into a setting, and what has
+been found so far.
 
-  sps_fit      three open frames the SPS30 slides through
-  pocket_fit   three trays for the SuperMini, three for the GY-SGP41
-  pilot_d      three bosses for the M3 x 14 self-tapping screws that close the cover
-  gy_pilot_d   three bosses for the M2.5 x 8 screw that holds the SGP41
-  screw_d      three clearance holes for those M3 screws
-  part_fit     a peg and a socket at part_fit, to measure with calipers rather than to try
+  J  nut_fit      three nut pockets, open on the bed side as the back plate's are
+  K  gy_pilot_d   three SGP41 standoffs, each with its pilot sideways, as the box's
+  L  clasp_pinch  three pairs of the SuperMini's back clips, as far apart as the box's
 
-One part, printed flat. Every piece stands on a shared base, which is also the floor the boards rest on.
+The fits the first round, of 2 Oct 2026, settled are not tried again; its pieces are in the history.
+
+draw_fits = false after including this file draws nothing, as fits-map.scad does.
 */
-include <print-chamber-box.params.scad>
+include <print-chamber-box.scad>
+draw_model = false;   // after the include: the box's own parts stay undrawn
+draw_fits = true;
 
-draw_model = true;   // also tells the params file it is being used
-
-eps = 0.01;
-$fa = 2;
-$fs = 0.4;
-
-function hole_r(d) = d / 2 + fdm_hole_comp;   // the box's own hole compensation
-function ladder(v, s) = [v - s, v, v + s];
-function whole(x) = abs(x - round(x)) < 1e-6;
-
-base_t = 6 * fdm_layer_h;   // 1.2 mm: the floor everything stands on
-fit_step  = 0.1;            // the step for the fits
-hole_step = 0.2;            // the step for the screw holes
+fit_step = 0.1;             // the step for every fit here
 m = 3;                      // margin round and between the pieces
+row = 4;                    // gap in front of each try, towards the printer's front
 dot_d = 1.5;                // the tags: about three beads across, two layers proud
+dots_w = 3 * dot_d + 2 * 0.7;   // three of them in a row
+base_t = 6 * fdm_layer_h;   // 1.2 mm: the floor everything stands on
 
-sps_fits    = ladder(sps_fit, fit_step);
-pocket_fits = ladder(pocket_fit, fit_step);
-m3_pilots   = ladder(pilot_d, hole_step);
-gy_pilots   = ladder(gy_pilot_d, fit_step);
-screw_ds    = ladder(screw_d, hole_step);
+function ladder(v, s) = [v - s, v, v + s];
+nut_fits  = ladder(nut_fit, fit_step);       // smaller is tighter
+gy_pilots = ladder(gy_pilot_d, fit_step);    // smaller is tighter
+// A bigger pinch is the TIGHTER clip, so this ladder runs the other way: 1 dot still means a step tighter.
+pinches   = [clasp_pinch + fit_step, clasp_pinch, clasp_pinch - fit_step];
 
-// ------------------------------------------------------------------ sizes, at the loosest try
-sps_in_w  = sps_w + 2 * sps_nub + 2 * sps_fits[2];
-sps_in_t  = sps_t + 2 * sps_fits[2];
-sps_out_w = sps_in_w + 2 * cradle_t;
-sps_out_t = sps_in_t + 2 * cradle_t;
-frame_h   = 4;                                     // tall enough to guide, short enough to see through
-sm_out_l  = sm_l + 2 * pocket_fits[2] + 2 * rim_t;
-sm_out_w  = sm_w + 2 * pocket_fits[2] + 2 * rim_t;
-gy_out_l  = gy_l + 2 * pocket_fits[2] + 2 * rim_t;
-gy_out_w  = gy_w + 2 * pocket_fits[2] + 2 * rim_t;
-rim_top   = base_t + sm_pcb_t + 2 * fdm_layer_h;   // as tall above the floor as the box's rims
-// No cover sits on these, so the whole M3 x 14 goes in: the pilot must take all 14 mm. The 2 Oct print's
-// was 13 deep and the screws stopped short (Alon). The box's pilots are deeper than its 12.2 mm of screw.
-m3_boss_h = 15;
-m3_pilot_depth = 15;
-gy_boss_d = 6;
-gy_boss_h = 9;
-gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // as deep as the box's
-peg = 6;                       // the part_fit peg, and the socket's nominal size
-bar_t = back_t;                // the hole bar is as thick as the box's tabs
+// The box's geometry is drawn in its own frame - X across, Y out from the wall, Z up - and the back plate
+// prints flat on its back. This is the turn its part file makes: the box's Y comes up off the bed.
+module to_bed() rotate([90, 0, 0]) children();
 
-// ------------------------------------------------------------------ layout: four columns
-row = 4;                                  // gap between tries in a column; the dots sit in it
-x1 = m;                                   // SPS30 frames
-x2 = x1 + sps_out_w + m;                  // SuperMini trays
-x3 = x2 + sm_out_l + m;                   // GY-SGP41 trays, then the hole bar
-hole_pitch = 7;                           // between holes in the bar: leaves 2.5 mm between the largest
-col3_w = max(gy_out_l, 3 * hole_pitch);
-x4 = x3 + col3_w + m;                     // bosses, then the peg and socket
-col4_w = 2 * boss_d + m;
-bar_y = m + 3 * (gy_out_w + row);
-bar_h = (max(screw_ds) + 2 * fdm_hole_comp) + dot_d + 3 * m;   // a row of holes, and its dots above it
-peg_y = m + 3 * (boss_d + row) + 3 * (gy_boss_d + row);
-BW = x4 + col4_w + m;
-BH = max(m + 3 * (sps_out_t + row), m + 3 * (sm_out_w + row), bar_y + bar_h + m, peg_y + peg + 2 * m + m);
+// ------------------------------------------------------------------ J: the nut pockets
+// The box's nut boss, as tall as the pocket, its bridging layers and a cap the screw passes through.
+j_r = nut_pocket_r(max(nut_fits)) + 2 * fdm_extrusion_w;   // two beads round the loosest pocket's corners
+j_h = up_to_layer(nut_y1 + 2 * fdm_layer_h + 2);
+// ------------------------------------------------------------------ K: the SGP41 standoffs
+// In the box the block backs onto the SPS30 channel's wall, which the pilot stops short of; so the piece
+// carries that much of the wall too.
+k_x0 = ch_x1;                               // the channel wall's inside face, in the box's X
+k_r  = gy_standoff_d / 2 + rim_t;           // the block's half-height round the hole
+module k_piece(d) difference() {            // in the box's frame, on a pad of plate
+    union() {
+        gy_holder();
+        box3([k_x0, back_t - eps, gy_hz - k_r], [k_x0 + cradle_t, gy_hy + k_r, gy_hz + k_r]);
+        box3([k_x0 - 1, 0, gy_hz - k_r - 1], [gy_xs + 1, back_t, gy_hz + k_r + 1]);
+    }
+    gy_pilot(d);
+}
+// ------------------------------------------------------------------ L: the back clips
+l_c0 = clasp_xs[0][0];                      // the clips' run along the board's back edge, in the box's X
+l_c1 = clasp_xs[1][1];
+l_m  = 1.5;                                 // the pad round them
+l_z1 = zu + clip_g_mouth + rim_t + l_m;     // the pad's top, in the box's Z
+module l_piece(pinch) {                     // in the box's frame, on a pad of plate
+    box3([l_c0 - l_m, 0, z_f0 - l_m], [l_c1 + l_m, back_t, l_z1]);
+    for (c = clasp_xs) clip(c, sm_pcb_t - pinch);
+}
+l_board_out = l_c0 - sm_x0 + usb_overhang;  // how far the board reaches past the clips towards its USB-C end
+
+// ------------------------------------------------------------------ layout: three columns, J K L from the left
+// L: each piece's run of clips starts at l_x; the board standing in them reaches l_board_out further left.
+l_x  = m + l_board_out;
+l_y0 = clip_g_mouth + rim_t + l_m;          // a piece's reach below its board line, on the bed
+l_y1 = shelf_t + l_m;                       // ... and above it
+l_p  = l_y0 + l_y1 + row;
+// J: the bosses' centres, their dots beside them on the left, where the boss in front cannot hide them
+j_x  = l_x + (l_c1 - l_c0) + l_m + m + dots_w + 0.8 + j_r;
+j_p  = 2 * j_r + row;
+// K: each block's back at k_x, its hole's centre row by row; its dots beside it on the left, as J's
+k_x  = j_x + j_r + m + dots_w + 0.8 + 1;
+k_p  = 2 * k_r + 2 + row;
+k_out = gy_pcb_max + gy_sensor_h + gy_head_h;   // the module and its screw's head, past the standoff's face
+BW = k_x + (gy_xs - k_x0) + k_out + m;
+s0 = m + row;                               // where the first try starts, a row in from the front edge
+BH = s0 + 3 * max(j_p, k_p, l_p) - row + m;
+j_y = [for (i = [0 : 2]) s0 + j_r + i * j_p];
+k_y = [for (i = [0 : 2]) s0 + k_r + 1 + i * k_p];
+l_y = [for (i = [0 : 2]) s0 + l_y0 + i * l_p];   // the board lines
 
 // ------------------------------------------------------------------ the rules
-assert(min(m3_pilots) >= 2 && min(gy_pilots) >= 2 && min(screw_ds) >= 2,
-       "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
-assert(whole(base_t / fdm_layer_h) && whole(bar_t / fdm_layer_h), "printed flat: whole layers only");
-assert(hole_pitch - 2 * hole_r(max(screw_ds)) >= 4 * fdm_extrusion_w, "the holes in the bar are too close together");
-assert(m3_pilot_depth < m3_boss_h + base_t - 2 * fdm_layer_h && gy_pilot_depth < gy_boss_h + base_t - 2 * fdm_layer_h,
-       "a pilot would break through the base");
+assert(min(gy_pilots) >= 2, "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
+assert(min(pinches) >= 0 && sm_pcb_t - max(pinches) >= sm_pcb_t / 2,
+       "the clips' ladder must run from no pinch to one that does not close the catch up");
+assert(min(nut_fits) > -fdm_hole_comp, "the tightest nut pocket would be smaller than the nut");
+assert(whole(base_t / fdm_layer_h), "printed flat: whole layers only");
+
 // ------------------------------------------------------------------ pieces
 module tag(n, x, y, z = base_t)
     for (i = [0 : n - 1])
         translate([x + i * (dot_d + 0.7), y + dot_d / 2, z - eps]) cylinder(d = dot_d, h = 2 * fdm_layer_h + eps);
 
-module frame(in_x, in_y, wall, h, x, y)   // a rectangular ring standing on the base at (x, y)
-    translate([x, y, base_t - eps])
-        difference() {
-            cube([in_x + 2 * wall, in_y + 2 * wall, h + eps]);
-            translate([wall, wall, -eps]) cube([in_x, in_y, h + 3 * eps]);
-        }
-
-module boss(d, h, pilot, depth, x, y)
-    translate([x, y, base_t - eps])
-        difference() {
-            cylinder(d = d, h = h + eps);
-            translate([0, 0, h + eps - depth]) cylinder(r = hole_r(pilot), h = depth + eps);
-        }
-
-// every try's dots, beside it - a module of their own, so fits-map.scad can show them in a colour
-module tags() {
-    for (i = [0 : 2]) {
-        tag(i + 1, x1, m + i * (sps_out_t + row) + sps_out_t + (row - dot_d) / 2);   // SPS30 frames
-        tag(i + 1, x2, m + i * (sm_out_w + row) + sm_out_w + (row - dot_d) / 2);     // SuperMini trays
-        tag(i + 1, x3, m + i * (gy_out_w + row) + gy_out_w + (row - dot_d) / 2);     // GY-SGP41 trays
-        by = m + boss_d / 2 + i * (boss_d + row);                                    // M3 bosses
-        tag(i + 1, x4 + boss_d + 1, by - dot_d / 2);
-        gby = m + 3 * (boss_d + row) + gy_boss_d / 2 + i * (gy_boss_d + row);        // M2.5 bosses
-        tag(i + 1, x4 + boss_d + 1, gby - dot_d / 2);
-        // the hole bar: one group over each hole
-        tag(i + 1, x3 + col3_w * (i + 0.5) / 3 - (i * (dot_d + 0.7) + dot_d) / 2 + dot_d / 2,
-            bar_y + bar_h - m - dot_d, bar_t);
-    }
+// every try's dots, where a view from the front sees them: in front of the low clips, beside the taller
+// bosses and blocks - a module of their own, so fits-map.scad can show them in a colour
+module tags() for (i = [0 : 2]) {
+    tag(i + 1, l_x - l_m, l_y[i] - l_y0 - row / 2 - dot_d / 2);
+    tag(i + 1, j_x - j_r - 0.8 - dots_w, j_y[i] - dot_d / 2);
+    tag(i + 1, k_x - 1 - 0.8 - dots_w, k_y[i] - dot_d / 2);
 }
 
 // ------------------------------------------------------------------ the part
-module fits() {
-    difference() {
-        union() {
-            // the base, corners rounded against ASA's lifting
-            linear_extrude(height = base_t)
-                offset(r = corner_r) offset(delta = -corner_r) square([BW, BH]);
-
-            for (i = [0 : 2]) {
-                f = sps_fits[i];
-                // the SPS30 frames, centred in the column so all three line up
-                sy = m + i * (sps_out_t + row);
-                frame(sps_w + 2 * sps_nub + 2 * f, sps_t + 2 * f, cradle_t, frame_h,
-                      x1 + (sps_in_w - (sps_w + 2 * sps_nub + 2 * f)) / 2,
-                      sy + (sps_in_t - (sps_t + 2 * f)) / 2);
-
-                // the SuperMini trays
-                p = pocket_fits[i];
-                my = m + i * (sm_out_w + row);
-                frame(sm_l + 2 * p, sm_w + 2 * p, rim_t, rim_top - base_t, x2, my);
-
-                // the GY-SGP41 trays
-                gy = m + i * (gy_out_w + row);
-                frame(gy_l + 2 * p, gy_w + 2 * p, rim_t, rim_top - base_t, x3, gy);
-
-                // the M3 pilot bosses, then the M2.5 ones, down column 4
-                by = m + boss_d / 2 + i * (boss_d + row);
-                boss(boss_d, m3_boss_h, m3_pilots[i], m3_pilot_depth, x4 + boss_d / 2, by);
-                gby = m + 3 * (boss_d + row) + gy_boss_d / 2 + i * (gy_boss_d + row);
-                boss(gy_boss_d, gy_boss_h, gy_pilots[i], gy_pilot_depth, x4 + boss_d / 2, gby);
-            }
-            tags();
-
-            // the hole bar: the M3 clearance holes
-            translate([x3, bar_y, base_t - eps]) cube([col3_w, bar_h, bar_t - base_t + eps]);
-
-            // the part_fit peg, and the block its socket is cut in
-            translate([x4, peg_y, base_t - eps]) cube([peg, peg, peg]);
-            translate([x4 + peg + m, peg_y - m / 2, base_t - eps]) cube([peg + 2 * part_fit + m, peg + 2 * part_fit + m, peg]);
-        }
-        // the SPS30 slides right through: open the base inside each frame
+module fits() difference() {
+    union() {
+        // the base, corners rounded against ASA's lifting
+        linear_extrude(height = base_t) offset(r = corner_r) offset(delta = -corner_r) square([BW, BH]);
         for (i = [0 : 2]) {
-            f = sps_fits[i];
-            sy = m + i * (sps_out_t + row);
-            translate([x1 + (sps_in_w - (sps_w + 2 * sps_nub + 2 * f)) / 2 + cradle_t,
-                       sy + (sps_in_t - (sps_t + 2 * f)) / 2 + cradle_t, -eps])
-                cube([sps_w + 2 * sps_nub + 2 * f, sps_t + 2 * f, base_t + 3 * eps]);
+            translate([j_x, j_y[i], 0]) to_bed() cyl_y(0, 0, j_r, 0, j_h);
+            translate([k_x - k_x0, k_y[i] + gy_hz, 0]) to_bed() k_piece(gy_pilots[i]);
+            translate([l_x - l_c0, l_y[i] + zu, 0]) to_bed() l_piece(pinches[i]);
         }
-        // the holes in the bar, three across
-        for (i = [0 : 2]) {
-            hx = x3 + col3_w * (i + 0.5) / 3;
-            translate([hx, bar_y + m + max(screw_ds) / 2, -eps]) cylinder(r = hole_r(screw_ds[i]), h = bar_t + 2 * eps);
-        }
-        // the part_fit socket
-        translate([x4 + peg + m + m / 2, peg_y, base_t])
-            cube([peg + 2 * part_fit, peg + 2 * part_fit, peg + eps]);
+        tags();
     }
+    // the nut pockets, open on the bed side through the base, with the screw's hole on over them
+    for (i = [0 : 2]) translate([j_x, j_y[i], 0]) to_bed() nut_trap(0, 0, nut_pocket_r(nut_fits[i]));
 }
 
 echo(str("clearance test: ", BW, " x ", BH, " mm base; dots 1 / 2 / 3 = a step tighter / as set / a step looser"));
-echo(str("  sps_fit ", sps_fits, "   pocket_fit ", pocket_fits, "   pilot_d ", m3_pilots, "   gy_pilot_d ", gy_pilots));
-echo(str("  screw_d ", screw_ds, " (the hole bar, next to the GY-SGP41 trays)   part_fit ", part_fit,
-         " (peg ", peg, ", socket ", peg + 2 * part_fit, ")"));
+echo(str("  J nut_fit ", nut_fits, "   K gy_pilot_d ", gy_pilots, "   L clasp_pinch ", pinches));
 
-if (draw_model) fits();
+if (draw_fits) fits();

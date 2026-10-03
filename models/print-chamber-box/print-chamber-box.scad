@@ -50,7 +50,8 @@ key_entry_d = key_head_d + 1.0;                             // the head passes i
 key_slot_w  = key_shank_d + 0.6;                            // the thread slides along it; the head does not
 // The cover's bottom corners are screwed into M3 nuts, pressed into hex pockets from the wall side.
 nut_ac     = nut_af / cos(30);                              // the nut across its corners
-nut_pock_r = nut_ac / 2 + fdm_hole_comp + nut_fit / cos(30);   // the hex pocket, to its corners
+function nut_pocket_r(fit) = nut_ac / 2 + fdm_hole_comp + fit / cos(30);   // the hex pocket, to its corners
+nut_pock_r = nut_pocket_r(nut_fit);
 nut_boss_d = 2 * nut_pock_r + 4 * fdm_extrusion_w;          // two beads round the pocket's corners
 // Each column beside the channel holds a nut boss low down and a keyhole higher up, and the cover's wall.
 col_w    = max(nut_boss_d + 2 * part_fit, part_fit + 2 * hole_r(key_entry_d) + gap);
@@ -300,15 +301,39 @@ module side_vents(y0, y1, z0, z1) {
 
 // The nut's pocket, from the wall side up to its shoulder, and over it the ceiling's three layers:
 // a slot the screw hole's width right across the pocket's flats, then a square, then the round hole.
-module nut_trap(x, z) {
+module nut_trap(x, z, r = nut_pock_r) {
     hr = hole_r(screw_d);
     translate([x, -eps, z]) rotate([-90, 0, 0]) rotate([0, 0, 30])
-        cylinder(r = nut_pock_r, h = nut_y1 + eps, $fn = 6);
-    translate([x - hr, nut_y1 - eps, z - nut_pock_r * cos(30)])
-        cube([2 * hr, fdm_layer_h + eps, 2 * nut_pock_r * cos(30)]);
+        cylinder(r = r, h = nut_y1 + eps, $fn = 6);
+    translate([x - hr, nut_y1 - eps, z - r * cos(30)])
+        cube([2 * hr, fdm_layer_h + eps, 2 * r * cos(30)]);
     translate([x - hr, nut_y1 + fdm_layer_h - eps, z - hr]) cube([2 * hr, fdm_layer_h + eps, 2 * hr]);
     cyl_y(x, z, hr, nut_y1 + 2 * fdm_layer_h - eps, y_in1 + eps);
 }
+
+// One of the board's two back clips, over c = [x0, x1] along its back edge: a lower jaw under the edge, and
+// an upper jaw over its pad row whose underside angles in from the mouth to the catch - g_catch over the
+// PCB's underside - and out again to the plate. Both stand on the plate, so on the bed they are walls; the
+// catch's slope leans 30 degrees at most. The clearance test draws it with other catches.
+module clip(c, g_catch = clip_g_catch) {
+    box3([c[0], back_t - eps, z_f0], [c[1], y_b0 + clasp_low, zu]);
+    translate([c[0], 0, 0]) rotate([90, 0, 90]) linear_extrude(height = c[1] - c[0])
+        polygon([[back_t - eps, zu + clip_g_open],
+                 [clip_catch_y, zu + g_catch],
+                 [back_t + clip_reach, zu + clip_g_mouth],
+                 [back_t + clip_reach, zu + clip_g_mouth + rim_t],
+                 [back_t - eps, zu + clip_g_mouth + rim_t]]);
+    box3([c[0], back_t - eps, z_f0], [c[1], back_t + eps, zu + clip_g_mouth + rim_t]);
+}
+
+// The SGP41's block, from the plate out past its standoff, and the standoff the module is screwed to; and
+// the pilot its screw cuts its thread in, sideways through both. The clearance test tries other pilots.
+module gy_holder() {
+    box3([ch_x1 + cradle_t - eps, back_t - eps, gy_hz - gy_standoff_d / 2 - rim_t],
+         [gy_xb, gy_hy + gy_standoff_d / 2 + rim_t, gy_hz + gy_standoff_d / 2 + rim_t]);
+    cyl_x(gy_hy, gy_hz, gy_standoff_d / 2, gy_xb - eps, gy_xs);
+}
+module gy_pilot(d = gy_pilot_d) cyl_x(gy_hy, gy_hz, hole_r(d), gy_xs - gy_pilot_depth, gy_xs + eps);
 
 // Mirror everything when the outlet - and so the connector, the board and its cable - is on the left.
 module place() {
@@ -337,26 +362,13 @@ module back_plate() place() difference() {
         translate([x_div - divider_t / 2, 0, -divider_proud])
             cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
-        // the board's two back clips: a lower jaw under its back edge, and an upper jaw over its pad row
-        // whose underside angles in from the mouth to the catch and out again to the plate. Both stand on the
-        // plate, so on the bed they are walls; the catch's slope leans 30 degrees at most.
-        for (c = clasp_xs) {
-            box3([c[0], back_t - eps, z_f0], [c[1], y_b0 + clasp_low, zu]);
-            translate([c[0], 0, 0]) rotate([90, 0, 90]) linear_extrude(height = c[1] - c[0])
-                polygon([[back_t - eps, zu + clip_g_open],
-                         [clip_catch_y, zu + clip_g_catch],
-                         [back_t + clip_reach, zu + clip_g_mouth],
-                         [back_t + clip_reach, zu + clip_g_mouth + rim_t],
-                         [back_t - eps, zu + clip_g_mouth + rim_t]]);
-            box3([c[0], back_t - eps, z_f0], [c[1], back_t + eps, zu + clip_g_mouth + rim_t]);
-        }
+        // the board's two back clips
+        for (c = clasp_xs) clip(c);
         // the back stop at its antenna end, which takes the push of plugging in
         box3([stop_x0, back_t - eps, z_f0], [stop_x0 + rim_t, y_b0 + stop_reach, zu + sm_pcb_t + 1]);
 
-        // the SGP41's block, from the plate out past its standoff, and the ledge its bottom edge sits on
-        box3([ch_x1 + cradle_t - eps, back_t - eps, gy_hz - gy_standoff_d / 2 - rim_t],
-             [gy_xb, gy_hy + gy_standoff_d / 2 + rim_t, gy_hz + gy_standoff_d / 2 + rim_t]);
-        cyl_x(gy_hy, gy_hz, gy_standoff_d / 2, gy_xb - eps, gy_xs);
+        // the SGP41's block and standoff, and the ledge its bottom edge sits on
+        gy_holder();
         box3([ch_x1 + cradle_t - eps, back_t - eps, gy_z0 - pocket_fit - rim_t],
              [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z0 - pocket_fit]);
 
@@ -368,7 +380,7 @@ module back_plate() place() difference() {
     // the nuts' pockets, open to the wall, and the screw holes over them
     for (x = nut_bx) nut_trap(x, nut_bz);
     // the SGP41's pilot, sideways into its standoff and block
-    cyl_x(gy_hy, gy_hz, hole_r(gy_pilot_d), gy_xs - gy_pilot_depth, gy_xs + eps);
+    gy_pilot();
     // the keyholes: each an entry the wall screw's head passes, and the slot above it the head then
     // hangs over. Holes through the plate, so on the bed they are openings in the first layers.
     for (x = key_xs) {
@@ -500,26 +512,30 @@ module components(shrink = 0) place() {
 }
 
 // =================================================================== what gets drawn
-if (len(unmeasured) > 0)
-    echo(str("WARNING: ", len(unmeasured), " dimensions are placeholders, not measurements: ", unmeasured));
-if (len(untested_fits) > 0)
-    echo(str("WARNING: these fits have not been tested in ASA on this printer: ", untested_fits));
+// Only when the box itself is drawn: the clearance test and the pictures include this file and say
+// draw_model = false, and none of this is theirs to report.
+if (draw_model) {
+    if (len(unmeasured) > 0)
+        echo(str("WARNING: ", len(unmeasured), " dimensions are placeholders, not measurements: ", unmeasured));
+    if (len(untested_fits) > 0)
+        echo(str("WARNING: these fits have not been tested in ASA on this printer: ", untested_fits));
 
-echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), and the ",
-         "divider ", divider_proud, " mm below"));
-echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
-         " mm from the inlet end"));
-echo(str("keyholes: ", key_xs[1] - key_xs[0], " mm apart, the screws ", key_z1, " mm up once hung; each entry ",
-         2 * hole_r(key_entry_d), " mm and slot ", 2 * hole_r(key_slot_w), " mm as cut; set the heads ",
-         back_t, " to ", back_t + key_slack, " mm off the wall"));
-echo(str("board: in its clasps ", zu, " mm up, its pole's tip ", zu + ant_h, " mm, the top wall's inside ", H - wall,
-         "; SGP41 on edge, ", W - wall - (gy_xs + gy_pcb_max + gy_sensor_h), " to ",
-         W - wall - (gy_xs + gy_pcb_min + gy_sensor_h), " mm behind the side wall's vents, held by an M",
-         gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot"));
-echo(str("cover: two M3 x ", cover_screw_l, " into nuts whose shoulder is ", nut_y1,
-         " mm from the back; its top locates on a ", bump_w, " mm bump in a U"));
-echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
-         " mm past the outside face; the plug's body clears the mounting surface by ", y_bc - usb_plug_w / 2, " mm"));
+    echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), and the ",
+             "divider ", divider_proud, " mm below"));
+    echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
+             " mm from the inlet end"));
+    echo(str("keyholes: ", key_xs[1] - key_xs[0], " mm apart, the screws ", key_z1, " mm up once hung; each entry ",
+             2 * hole_r(key_entry_d), " mm and slot ", 2 * hole_r(key_slot_w), " mm as cut; set the heads ",
+             back_t, " to ", back_t + key_slack, " mm off the wall"));
+    echo(str("board: in its clasps ", zu, " mm up, its pole's tip ", zu + ant_h, " mm, the top wall's inside ", H - wall,
+             "; SGP41 on edge, ", W - wall - (gy_xs + gy_pcb_max + gy_sensor_h), " to ",
+             W - wall - (gy_xs + gy_pcb_min + gy_sensor_h), " mm behind the side wall's vents, held by an M",
+             gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot"));
+    echo(str("cover: two M3 x ", cover_screw_l, " into nuts whose shoulder is ", nut_y1,
+             " mm from the back; its top locates on a ", bump_w, " mm bump in a U"));
+    echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
+             " mm past the outside face; the plug's body clears the mounting surface by ", y_bc - usb_plug_w / 2, " mm"));
+}
 
 if (draw_model) {
     if (part == "back")

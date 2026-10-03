@@ -29,7 +29,7 @@ From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.
 
 The two 4 × 20 chipboard screws the box hangs on, measured 3 Oct 2026. They size the keyholes: the entry
 is the head plus 1 mm (9.2 mm as cut), the slot the thread plus 0.6 mm (4.9 mm as cut), and an assert
-keeps at least 1 mm of plate under the head on each side. The clearance test's G row agrees on the
+keeps at least 1 mm of plate under the head on each side. The first clearance test's G row agrees on the
 thread: of 3.8, 4.0 and 4.2 mm holes, the screw fits the 4.2.
 
 | Name | Value | What |
@@ -50,7 +50,7 @@ Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie o
 | Name | Value | What |
 |---|---|---|
 | `sps_w` | **40.69** | across the SPS30's body, beside its side nubs — measured 3 Oct 2026, reading B in [the figure](sps30-measure.png) |
-| `sps_nub` | **0.155** | each side: 41.00 across the nubs (reading A), less the body, halved. The datasheet's 41.2 left the clearance test's frame A about 0.7 mm loose |
+| `sps_nub` | **0.155** | each side: 41.00 across the nubs (reading A), less the body, halved. The datasheet's 41.2 left the first clearance test's frame A about 0.7 mm loose |
 | `divider_from_inlet_end` | **17.7** | from the SPS30's inlet end to the middle of the blank gap before the outlet grille. Scaled off a straight-on photo against the sensor's 40.6 mm width; three features land within 0.4 mm of the datasheet, so the scale holds. The gap runs from `sps_inlet_end` 15.2 to `sps_outlet_from` 20.2, and an assert keeps the divider inside it |
 | `sm_l`, `sm_w` | **22.8 × 18.03** | the SuperMini's PCB, not counting the USB-C shell |
 | `sm_pcb_t`, `sm_t` | **0.85**, **4.05** | the bare PCB; the PCB with its tallest part, the USB-C shell, without the antenna |
@@ -86,13 +86,14 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 | `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width, until the width was measured (`sps_w`, `sps_nub` above) |
 | `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
 | `part_fit` | **0.3** | tested 3 Oct 2026, 0.26–0.29 per side as printed — between a back-plate feature and the cover |
-| `pilot_d` | **2.3** | tested 3 Oct 2026, a little tight — pilot for the cover's M3 × 14 self-tapping screws |
-| `gy_pilot_d` | **2.1** | tested 3 Oct 2026, fine — pilot for the SGP41's M2.5 screw |
+| `gy_pilot_d` | **2.1** | **untested sideways** — pilot for the SGP41's M2.5 screw. Tested upright 3 Oct 2026, fine; the module now stands on edge, so the clearance test's K tries it again |
+| `nut_fit` | **0** | **untested** — the M3 nuts' hex pockets, per side on top of the hole compensation: meant as a press fit. The clearance test's J |
+| `clasp_pinch` | **0.1** | **untested** — how much the SuperMini's back clips pinch its PCB at their catch. The clearance test's L |
 | `screw_d` | **3.2** | tested 3 Oct 2026, passes an M3 freely — clearance hole for the M3 screws in the cover |
 
-Every fit has been tested, so `untested_fits` is empty; a fit added later goes in it untested, and
-`scad-check.sh` exits 2 until it is cleared. The mounting tabs' `tab_hole_d` went with the tabs on
-3 Oct 2026.
+The three untested ones are in `untested_fits`, and `scad-check.sh` exits 2 until they are cleared.
+Two the first round tested have gone from the box: `pilot_d` with the self-tapping cover screws, and
+`tab_hole_d` with the mounting tabs.
 
 ## Not in the params file
 
