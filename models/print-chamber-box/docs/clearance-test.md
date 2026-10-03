@@ -57,8 +57,12 @@ All from the one print of 2 Oct 2026.
 
 - **A, B, C, D and F** each took the tightest try, so nothing tighter has been tried.
 - **A's x play is the width allowance, not the fit.** The frame's width is the datasheet's 41.2 mm across
-  the sensor's side nubs plus the fit. Flush in y says the fit itself is right. A caliper reading across
-  the nubs will set the width; until then the box's SPS30 channel carries the same 0.7 mm.
+  the sensor's side nubs plus the fit. Flush in y says the fit itself is right. Two caliper readings
+  on the sensor will set the width — until then the box's SPS30 channel carries the same 0.7 mm:
+
+  ![the two widths to measure on the SPS30](sps30-measure.png)
+
+  Drawn by [`sps30-measure.scad`](../sps30-measure.scad), in the clearance test's axes.
 - **D's screws stopped about 1 mm short in all three bosses**, because that print's pilots were 13 mm
   deep for a 14 mm screw. The three still compare. The test's pilots are now 15 mm deep. The box was
   never short: its pilots are 18.8 mm deep, against the 12.2 mm of screw that passes through the cover.

@@ -65,4 +65,5 @@ opening is a hole in the first layers or a notch open at an edge.
 | [`assembly-views.scad`](assembly-views.scad) | the assembly and wiring pictures, and the wire-route checks |
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
 | [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
+| [`sps30-measure.scad`](sps30-measure.scad) | the two widths to measure on the SPS30 |
 | [`docs/`](docs/) | the pages above and their pictures |
