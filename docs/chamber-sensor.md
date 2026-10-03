@@ -19,7 +19,10 @@ They are split into the topic pages below; this page says where things stand and
   control to join it later on pins already reserved. Decided 1 Oct 2026; until those
   move, `chamber-c3.yaml` stays the live chamber node. Its enclosure is
   [`models/print-chamber-box/`](../models/print-chamber-box/), which hangs outside the printer's
-  enclosure.
+  enclosure. **A second, identical box inside the chamber is possible, not decided** (Alon,
+  3 Oct 2026): there are two of each sensor, and it would pair with the chamber's air filter, but
+  the chamber runs close to the sensors' temperature ratings and needs more thinking first. The
+  outside box is built first.
 - **The enclosure has been closed for every print since 19 Sep 2026.** Measured since
   ([the measurements](chamber-sensor/measurements.md)): PETG prints hold the chamber about **12 °C**
   over the room; **an ASA print reached 45–46 °C**, inside the 40–60 °C ASA band, on bed heat alone.
