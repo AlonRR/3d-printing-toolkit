@@ -4,16 +4,17 @@
 // (LICENSES/CC-BY-4.0.txt): reuse freely, including commercially, with attribution.
 
 /*
-The print-chamber box: two printed parts, joined by four M3 x 14 self-tapping screws.
+The print-chamber box: two printed parts. The cover's top sits on two pins, and two M3 screws through its
+bottom corners go into nuts in the back plate.
 
-  BACK PLATE   printed flat. Carries the mounting tabs, the channel the SPS30 is set into from the
-               front, the divider under its air face, the board's pocket, the SGP41's pedestal, the
-               cable channel for the wires and the four screw bosses.
+  BACK PLATE   printed flat. Carries the two keyholes it hangs by, the channel the SPS30 is set into from
+               the front, the divider under its air face, the shelf the SuperMini slides onto, the block
+               the GY-SGP41 is screwed to on edge, the two nut bosses and the two pins.
   COVER        printed front-face down. A five-sided shell.
 
-Neither part has a bridge over air. Every opening in the cover is either a hole in its first layers or
-a notch open at its back edge, and the back plate is all features rising from the bed. (The slicer
-labels seven regions of the back plate "bridge infill"; all are internal, over its own sparse infill.)
+Every opening is a hole in its part's first layers or a notch open at its back edge, except the cover's
+USB-C opening and its side vents, which are holes in a wall bridged by at most 4 mm. The nut pockets'
+ceilings are printed with the three-layer two-bridge technique (docs/fdm-design-rules.md §3c).
 
   part = "back"       this file as it stands - what scripts/scad-check.sh checks
   part = "cover"      print-chamber-box-cover.scad sets it
@@ -21,6 +22,10 @@ labels seven regions of the back plate "bridge infill"; all are internal, over i
 
 Settings are in print-chamber-box.params.scad, and why the layout is what it is - with a source for each
 rule - is in docs/design.md. The checks it carries, and their controls, are in docs/checking.md.
+
+Everything below is drawn the way the params file's photos settled it - the SPS30's outlet, its connector
+and the board's USB-C end on your RIGHT as you face the box, which is low X - and mirrored whole when
+outlet_at_left is set.
 */
 include <print-chamber-box.params.scad>
 
@@ -32,146 +37,110 @@ $fs = 0.4;
 
 function hole_r(d) = d / 2 + fdm_hole_comp;
 function whole(x) = abs(x - round(x)) < 1e-6;
+function up_to_layer(y) = ceil(y / fdm_layer_h - 1e-6) * fdm_layer_h;
 
 // =================================================================== derived: X (across the box)
 ch_in_w  = sps_w + 2 * sps_nub + 2 * sps_fit;               // inside of the SPS30 channel
 ch_out_w = ch_in_w + 2 * cradle_t;
-W        = ch_out_w + 2 * (boss_d + 2 * part_fit) + 2 * wall;   // bosses sit beside the channel
+// The two keyholes the box hangs by: an entry the screw's head passes, and above it a slot the thread
+// slides up, so the head ends up behind the plate, bearing on it - a wall clock's keyhole, twice. One
+// sits in each column beside the SPS30, so the shelf above can come down onto the SPS30's lead.
+key_entry_d = key_head_d + 1.0;                             // the head passes it
+key_slot_w  = key_shank_d + 0.6;                            // the thread slides along it; the head does not
+// The cover's bottom corners are screwed into M3 nuts, pressed into hex pockets from the wall side.
+nut_ac     = nut_af / cos(30);                              // the nut across its corners
+nut_pock_r = nut_ac / 2 + fdm_hole_comp + nut_fit / cos(30);   // the hex pocket, to its corners
+nut_boss_d = 2 * nut_pock_r + 4 * fdm_extrusion_w;          // two beads round the pocket's corners
+// Each column beside the channel holds a nut boss low down and a keyhole higher up, and the cover's wall.
+col_w    = max(nut_boss_d + 2 * part_fit, boss_d + 2 * part_fit,
+               part_fit + 2 * hole_r(key_entry_d) + gap);
+W        = ch_out_w + 2 * col_w + 2 * wall;
 ch_x0    = (W - ch_in_w) / 2;
 ch_x1    = ch_x0 + ch_in_w;
 sps_x0   = ch_x0 + sps_fit + sps_nub;                       // the sensor body, nominally centred
 sps_x1   = sps_x0 + sps_w;
-// "Left" means left AS YOU FACE THE BOX, which is +X here (see the coordinate note in the params file).
-// So outlet_at_left puts the outlet at the HIGH-X end and the inlets at the low-X end.
-x_div    = outlet_at_left ? sps_x0 + divider_from_inlet_end
-                          : sps_x1 - divider_from_inlet_end;
+x_div    = sps_x1 - divider_from_inlet_end;                 // the inlets are at the high-X end
 div_clear_in  = divider_from_inlet_end - divider_t / 2 - sps_inlet_end;     // to the inlets' far end
 div_clear_out = sps_outlet_from - (divider_from_inlet_end + divider_t / 2);  // to the outlet grille
+key_xs   = [wall + part_fit + hole_r(key_entry_d), W - wall - part_fit - hole_r(key_entry_d)];
+
+// The SPS30's lead: its plug sits on the connector face at the outlet end; the wires rise from it and bend
+// over towards the board's pins. Nothing may stand in that column (photo 1, 2 Oct 2026).
+lead_x0 = sps_x0 + conn_from;
+lead_x1 = sps_x0 + conn_to;
+
+// The board lies level, its USB-C end in the right-hand wall, which is thinned to port_wall over it so the
+// socket's mouth reaches the outside face. A plug's body then never enters the wall, whatever its size.
+sm_usb_x  = port_wall + part_fit;
+sm_x0     = sm_usb_x;
+sm_x1     = sm_x0 + sm_l;
+sm_ant_x  = sm_x1;                                          // the PCB's antenna end
+pole_in   = 1.5;                                            // the pole stands this far in from that end
+usb_proud    = usb_overhang - port_wall - part_fit;         // the mouth, past the outside face, board at rest
+usb_proud_in = usb_proud - pocket_fit;                      // the same, with a plug pushing the board against its stops
+// It goes onto its shelf before the cover, sm_back_lip towards its USB-C side, and slides into the stops,
+// under a short lip along its back edge - short, so its standing pole never sweeps past the top pin. A lip
+// on the cover takes its front edge, from its 4th pin, clear of the pins the node solders to - all of them
+// among the first three on each edge.
+pin_pitch = 2.54;                                           // the SuperMini's 0.1-inch pin pitch
+sm_lip_x0 = sm_usb_x + pin_mid + 2 * pin_pitch;
+stop_x0   = sm_ant_x + pocket_fit;                          // the stops, just past the antenna end
+sm_lip_x1 = stop_x0;
 
 // =================================================================== derived: Y (out from the wall)
-ledge_w   = sps_fit + sps_nub + ledge;                      // what each ledge spans, wall to sensor
-y_sps1    = back_t + sps_t;                                 // the SPS30's label face
-inner_d   = max(sps_t + sps_fit + front_gap_min,
-                wire_perpendicular ? ant_h + gap : sm_t + gap);
-D         = back_t + inner_d + front_t;
-y_in1     = D - front_t;                                    // inside face of the cover's front
+ledge_w = sps_fit + sps_nub + ledge;                        // what each ledge spans, wall to sensor
+y_sps1  = back_t + sps_t;                                   // the SPS30's label face
+y_b0    = back_t + pocket_fit;                              // the board's back long edge, by the plate
+y_b1    = y_b0 + sm_w;                                      // its front long edge
+y_bc    = (y_b0 + y_b1) / 2;
+// The board's width now fills the depth: back edge by the plate, front edge in the cover's rim.
+inner_d = max(sps_t + sps_fit + front_gap_min, pocket_fit + sm_w + pocket_fit + rib_t);
+D       = back_t + inner_d + front_t;
+y_in1   = D - front_t;                                      // inside face of the cover's front
 // The channel walls stand 2 * gap proud of the SPS30's face. It goes in from the front - nothing on
 // the plate overhangs it - and the cover's partition rib, sps_fit off its face, keeps it from tipping.
-y_ch1     = y_sps1 + 2 * gap;
+y_ch1   = y_sps1 + 2 * gap;
 
 // =================================================================== derived: Z (up)
-z_sps0      = wall;                     // the air face sits at the inside of the bottom wall: minimal depth to ambient
-z_sps1      = z_sps0 + sps_h;
-gy_pocket_l = gy_l + 2 * pocket_fit;
-gy_pocket_w = gy_w + 2 * pocket_fit;
-gy_z_base   = part_fit + rib_t + part_fit;   // the SGP41's pedestal clears the cover's baffle over the sensor
-zone_h      = max(cable_zone_h + gap,                           // the SPS30 lead's bend
-                  gy_z_base + gy_pocket_w + 2 * rim_t + gap);   // the SGP41's pedestal, clear of the baffle
-z_board0    = z_sps1 + zone_h;
-sm_pocket_h = sm_w + 2 * pocket_fit;
-z_board_c   = z_board0 + rim_t + sm_pocket_h / 2;
-z_board1    = z_board0 + 2 * rim_t + sm_pocket_h;
-// The box hangs on one wall screw by a keyhole: an entry the screw's head passes, and above it a slot
-// the thread slides up, so the head ends up behind the plate, bearing on it - a wall clock's keyhole. It
-// sits on the centre line, so the box hangs plumb: the SPS30, most of its weight, is centred. That line
-// is taken from the bottom to the board's top - the SPS30, the SGP41, the antenna loop - so the keyhole
-// gets a band of its own above the board, and the box is as tall as that band needs.
-key_entry_d = key_head_d + 1.0;                           // the head passes it
-key_slot_w  = key_shank_d + 0.6;                          // the thread slides along it; the head does not
-key_travel  = key_entry_d / 2 + key_head_d / 2 + 1.0;     // entry to hung: the head clear of the entry by 1 mm
-key_z0      = z_board1 + gap + hole_r(key_entry_d);       // the entry's centre, its edge gap above the board
-key_z1      = key_z0 + key_travel;                        // where the screw is once the box hangs
-H           = max(z_board1 + gap + boss_d + 2 * part_fit + wall,   // the top bosses sit above the board
-                  key_z1 + key_head_d / 2 + gap + wall);           // and the hung screw's head under the top wall
+z_sps0  = wall;                       // the air face sits at the inside of the bottom wall: minimal depth to ambient
+z_sps1  = z_sps0 + sps_h;
+shelf_t = rib_t;                      // the board's shelf: printed upright, so a width in beads
+z_f0    = z_sps1 + cable_zone_h + gap;   // the shelf's underside, just over the SPS30's lead
+zu      = z_f0 + shelf_t;             // the PCB's underside
+z_uc    = zu + sm_pcb_t + usb_shell_h / 2;   // the USB-C socket's centre: the shell sits on the component side
+nut_bz  = wall + part_fit + nut_boss_d / 2;  // the nut bosses' centres, in each bottom corner
+nut_bx  = [nut_bz, W - nut_bz];
+boss_inset = wall + part_fit + boss_d / 2;   // the pin bosses', in each top corner
+// The keyholes: the hung heads' tops gap under the shelf, and the slots key_level_tol longer, so one
+// screw may sit that much lower than the other and its head still clear its entry.
+key_travel = key_entry_d / 2 + key_head_d / 2 + 1.0 + key_level_tol;
+key_z1  = z_f0 - gap - key_head_d / 2;    // where a screw is once the box hangs
+key_z0  = key_z1 - key_travel;            // the entry's centre
+H       = max(zu + ant_h + gap + wall,                             // the pole stands under the top wall
+              zu + sm_t + gap + boss_d + part_fit + wall);         // and the top pin bosses over the board
 
-// =================================================================== the board
-// Its USB-C end faces the SPS30's connector, which is at the outlet end. The board's power and I2C pins
-// (5V, GND, 3V3, GPIO5, GPIO6) are all at its USB-C end, so every wire stays at one end of the box and
-// the antenna end is left with no wire near it.
-conn_hi  = outlet_at_left;             // connector at high X - your left
-// The PCB's USB-C edge reaches into the wall, which is thinned to port_wall over the board's end, so the
-// socket's mouth reaches the outside face. A plug's body then never enters the wall, whatever its size.
-sm_usb_x = conn_hi ? W - port_wall - part_fit : port_wall + part_fit;
-sm_x0    = conn_hi ? sm_usb_x - sm_l : sm_usb_x;
-sm_x1    = sm_x0 + sm_l;
-sm_ant_x = conn_hi ? sm_x0 : sm_x1;    // the PCB's antenna end
-rim_hgt      = sm_pcb_t + 2 * fdm_layer_h;   // the rims only locate the boards; they do not hold them
-usb_center_h = sm_pcb_t + usb_shell_h / 2;  // the shell sits on the component side
-usb_y        = back_t + usb_center_h;
-usb_proud    = usb_overhang - port_wall - part_fit;   // the mouth, past the outside face, board at rest
-usb_proud_in = usb_proud - pocket_fit;   // the same, with a plug pushing the board against its stops
-// The rims run from the cover's wall - they stay out of it - to the two stops past the antenna end.
-stop_x0 = conn_hi ? sm_ant_x - pocket_fit - rim_t : sm_ant_x + pocket_fit;
-rim_x0  = conn_hi ? stop_x0 : wall + part_fit;
-rim_x1  = conn_hi ? W - wall - part_fit : stop_x0 + rim_t;
-// The board slides in from the USB-C side, before the cover goes on, under a 45-degree lip on each rim.
-// The lips run from its 4th pin to its antenna end, clear of the pins the node solders to - all of them
-// among the first three on each edge.
-pin_pitch = 2.54;                              // the SuperMini's 0.1-inch pin pitch
-sm_lip_x0 = conn_hi ? rim_x0 : sm_usb_x + pin_mid + 2 * pin_pitch;
-sm_lip_x1 = conn_hi ? sm_usb_x - pin_mid - 2 * pin_pitch : rim_x1;
-sm_lip_l  = pocket_fit + sm_lip_over;          // each lip's reach from its rim's inner face
-sm_lip_y0 = back_t + sm_pcb_t + pocket_fit;    // its underside, at that face
-sm_lip_y1 = sm_lip_y0 + sm_lip_l + 2 * fdm_layer_h;   // its top
+// =================================================================== the GY-SGP41: on edge beside the SPS30
+// It stands in the left-hand column, its sensor towards the side wall's vents and its pins up. One M2.5
+// screw holds it, sideways, through its mounting hole onto a round standoff: the only part of its
+// underside that bears is the bare patch round that hole. Its bottom edge sits on a ledge. The screw's
+// head is on the sensor's side, so the side wall leaves room for it over the thickest board.
+gy_sensor_h = gy_t - gy_back;
+gy_xs   = W - wall - part_fit - gy_head_h - gy_pcb_max;   // the standoff's face: the PCB's underside
+gy_xp   = gy_xs - (gy_back - gy_pcb_min);                  // the underside's parts reach back to here, at most
+gy_xb   = gy_xp - gap;                                     // the block's face, clear of them
+gy_y0   = back_t + gap;                                    // the module's back long edge - the one by the hole
+gy_y1   = gy_y0 + gy_w;
+gy_z0   = wall + part_fit + nut_boss_d + rim_t + pocket_fit;   // its bottom edge, on a ledge over the nut boss
+gy_z1   = gy_z0 + gy_l;
+gy_hy   = gy_y0 + gy_hole_side;                            // its mounting hole
+gy_hz   = gy_z0 + gy_hole_far;
+gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // from the standoff's face
 
-// =================================================================== the SPS30's lead
-// Its plug sits on the connector face at the outlet end; the wires rise from it and bend over towards
-// the board's pins. Nothing may stand in that column (photo 1, 2 Oct 2026).
-lead_x0 = outlet_at_left ? sps_x1 - conn_to : sps_x0 + conn_from;
-lead_x1 = outlet_at_left ? sps_x1 - conn_from : sps_x0 + conn_to;
-
-// =================================================================== the SGP41: beside the lead, raised to its vents
-// Its pins face the board's pin end, so its four wires head straight there; the sensor is at the far end.
-// It stands on a pedestal that brings its sensor close behind its vents: on the plate it would sit 16 mm
-// back from them and measure the box's own air. Only the bare strip at the far end of its underside rests
-// on a ledge, so its parts carry no load and its board's thickness does not matter. Its wires come out of
-// its back, so the pedestal carries only its far half: behind the pin half there is nothing to the plate.
-gx0 = conn_hi ? lead_x0 - gap - gy_pocket_l : lead_x1 + gap;
-gx1 = gx0 + gy_pocket_l;
-gz0 = z_sps1 + gy_z_base + rim_t;
-gz1 = gz0 + gy_pocket_w;
-gy_bare_x0  = conn_hi ? gx0 + pocket_fit : gx1 - pocket_fit - gy_bare;   // the board's bare strip
-gy_parts_x0 = conn_hi ? gx0 + pocket_fit + gy_bare : gx0 + pocket_fit;   // ... and the half with its parts
-// The parts on the thinnest board clear the floor by `gap`, so the floor's top skin - printed over infill,
-// and not perfectly flat - cannot reach them. Raising the ledge costs nothing: it lowers the floor, not
-// the board.
-gy_ledge_h   = gy_back - gy_pcb_min + gap;
-gy_rim_h     = gy_ledge_h + gy_pcb_min / 2;          // reaches halfway up the thinnest board's edge
-gy_front_max = gy_ledge_h + gy_pcb_max;              // the board's front face, above the floor, at most
-gy_sensor_h  = gy_t - gy_back;
-gy_floor     = y_in1 - (gy_head_h + part_fit) - gy_front_max;   // the pedestal's top: room in front for the screw's head
-// The screw goes through the module's mounting hole into a blind pilot in the ledge. The hole is in the
-// bare strip, by the long edge away from the sensor - and which edge of the pocket that is follows from
-// which way the pins face (photo 1).
-gy_hole_x      = conn_hi ? gx0 + pocket_fit + gy_hole_far : gx1 - pocket_fit - gy_hole_far;
-gy_hole_z      = conn_hi ? gz1 - pocket_fit - gy_hole_side : gz0 + pocket_fit + gy_hole_side;
-gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // below the ledge's top
-// the pedestal: from the far rim to a rim's width past the standoff, and no further towards the pins
-gy_ped_x0    = conn_hi ? gx0 - rim_t : gy_hole_x - gy_standoff_d / 2 - rim_t;
-gy_ped_x1    = conn_hi ? gy_hole_x + gy_standoff_d / 2 + rim_t : gx1 + rim_t;
-gy_pin_half  = conn_hi ? [gx1 - gy_pocket_l / 2, gx1] : [gx0, gx0 + gy_pocket_l / 2];   // the pocket's pin half
-gy_strip     = gy_bare - gap / 2;    // how far the ledge reaches under the board: short of its parts
-gy_ledge_x0  = conn_hi ? gx0 : gx1 - pocket_fit - gy_strip;
-gy_ledge_x1  = conn_hi ? gx0 + pocket_fit + gy_strip : gx1;
-loop_z0      = z_board_c - sm_w / 2 + ant_loop_free;    // the antenna loop's lowest edge
-
-// =================================================================== the cable channel
-// Upright, directly under the board's three power pins (5V, GND, 3V3), wire_ch_l long up to just below the
-// board: the wires from both sensors press in from the front past a 45-degree lip on each wall, run up it,
-// and leave its top end straight into those pads. Open at both ends.
-wch_lip = (wire_slot_w - wire_lip_gap) / 2;     // each lip's reach into the slot, at 45 degrees
-wch_cx  = conn_hi ? sm_usb_x - pin_mid : sm_usb_x + pin_mid;
-wch_x0  = wch_cx - wire_slot_w / 2 - rib_t;      // its walls' outer faces
-wch_x1  = wch_cx + wire_slot_w / 2 + rib_t;
-wch_z1  = z_board0 - gap;                        // its top, just below the board's rim
-wch_z0  = wch_z1 - wire_ch_l;
-wch_y1  = back_t + wire_slot_d + wch_lip;        // the walls' front, lips included
-
-// =================================================================== bosses and the keyhole
-boss_inset = wall + part_fit + boss_d / 2;
-bosses     = [[boss_inset, boss_inset], [W - boss_inset, boss_inset],
-              [boss_inset, H - boss_inset], [W - boss_inset, H - boss_inset]];
-key_x      = W / 2;                     // on the centre line
+// =================================================================== the nuts
+// Pressed into a hex pocket from the wall side, the nut bears on a shoulder towards the cover - a
+// bottom-inserted nut, the strongest of the ways a print holds one (docs/mechanical-design-review.md).
+// The shoulder sits where the M3 x cover_screw_l, from the cover's face, passes right through the nut.
+nut_y1  = up_to_layer(D - cover_screw_l + nut_h + 2 * fdm_layer_h);   // the shoulder
 
 // =================================================================== the rules
 for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["rib_t", rib_t],
@@ -180,10 +149,13 @@ for (w = [["wall", wall], ["cradle_t", cradle_t], ["divider_t", divider_t], ["ri
            str(w[0], " (", w[1], ") must be a whole number of ", fdm_extrusion_w,
                " mm beads - fdm-design-rules §1"));
 
-for (t = [["back_t", back_t], ["front_t", front_t]])
+for (t = [["back_t", back_t], ["front_t", front_t], ["the nut's shoulder", nut_y1]])
     assert(whole(t[1] / fdm_layer_h),
            str(t[0], " (", t[1], ") is printed flat, so it must be a whole number of ",
                fdm_layer_h, " mm layers"));
+
+assert(wire_perpendicular,
+       "the layout lies the board level so its antenna's pole stands up - it needs the pole off the component side");
 
 assert(div_clear_in >= 0.5 && div_clear_out >= 0.5,
        str("the divider must sit in the blank gap between the inlets (to ", sps_inlet_end,
@@ -193,7 +165,7 @@ assert(x_div - divider_t / 2 > sps_x0 + ledge && x_div + divider_t / 2 < sps_x1 
        str("the divider (at ", divider_from_inlet_end, " mm from the inlet end) does not fit between",
            " the two ledges - check divider_from_inlet_end"));
 
-assert(pilot_d >= 2 && key_slot_w >= 2 && gy_pilot_d >= 2,
+assert(key_slot_w >= 2 && gy_pilot_d >= 2 && screw_d >= 2,
        "a hole under 2 mm distorts or closes up - fdm-design-rules §2");
 
 assert(y_ch1 <= y_in1 - part_fit,
@@ -204,35 +176,42 @@ assert(usb_proud_in >= -1e-6,
        str("plugging in pushes the board against its stops, and there the USB-C socket's mouth sits ",
            -usb_proud_in, " mm inside the wall - a plug's body would hit the wall before it seats.",
            " Thin port_wall, or tighten part_fit and pocket_fit"));
-assert(usb_y - usb_plug_h / 2 >= 0,
-       "the USB-C plug would hit the surface the box is screwed to - the board sits too low");
-assert(key_head_d - 2 * hole_r(key_slot_w) >= 2 * 1.0,
-       str("the keyhole's slot (", 2 * hole_r(key_slot_w), " mm as cut) leaves the screw's ", key_head_d,
-           " mm head less than 1 mm to bear on each side - it could pull through"));
-assert(key_z0 - hole_r(key_entry_d) - z_board1 >= gap,
-       "the keyhole's entry reaches down to the board and its antenna - the screw's head would meet them");
-assert(2 * stop_reach < sm_pocket_h,
-       "the two stops at the board's antenna end meet - stop_reach is too large");
-assert(sm_lip_over < sm_edge,
-       "the rails' lips would reach past the SuperMini's pad strip onto its parts - check sm_lip_over");
-assert(sm_lip_x1 - sm_lip_x0 >= 2 * pin_pitch, "the rails' lips have no length - check pin_mid");
+assert(y_bc - usb_plug_w / 2 >= 0,
+       "the USB-C plug would hit the surface the box hangs on - the board sits too close to the wall");
 assert(stop_reach - pocket_fit + gap <= ant_loop_free,
        str("the stops at the board's antenna end reach ", stop_reach - pocket_fit, " mm over it, and the",
            " antenna loop leaves only ", ant_loop_free, " mm free - reduce stop_reach"));
+assert(sm_lip_over < sm_edge,
+       "the lips would reach past the SuperMini's pad strip onto its parts - check sm_lip_over");
+assert(sm_lip_x1 - sm_lip_x0 >= 2 * pin_pitch, "the cover's lip has no length - check pin_mid");
+assert(sm_back_lip > 0 && sm_back_lip <= sm_lip_x1 - sm_lip_x0,
+       "the back lip must have a length, and stay clear of the pins the node solders to");
 
-assert(wire_perpendicular || (conn_hi ? sm_x0 - ant_h - gap >= wall : sm_x1 + ant_h + gap <= W - wall),
-       "an antenna wire running past the board's end does not fit inside the box");
+assert(key_head_d - 2 * hole_r(key_slot_w) >= 2 * 1.0,
+       str("the keyholes' slots (", 2 * hole_r(key_slot_w), " mm as cut) leave the screws' ", key_head_d,
+           " mm heads less than 1 mm to bear on each side - they could pull through"));
+// signed: negative means the keyhole runs into what is below or above it
+key_room_low  = key_z0 - hole_r(key_entry_d) - (wall + part_fit + nut_boss_d);
+key_room_high = z_f0 - (key_z1 + key_head_d / 2);
+key_room_gy   = key_z0 - hole_r(key_entry_d) - gy_z1;
+assert(key_room_low >= gap && key_room_high >= gap,
+       str("the keyholes must stand clear of the nut bosses below and the board's shelf above; they leave ",
+           key_room_low, " and ", key_room_high, " mm"));
+assert(key_room_gy >= gap,
+       str("the left keyhole's entry reaches down to the SGP41 - it leaves ", key_room_gy, " mm"));
 
-assert(gy_floor > back_t + gap,
-       str("the SGP41's pedestal has no height (its top at ", gy_floor, ") - the bounds are too large"));
-assert(gy_ped_x0 >= ch_x0 && gy_ped_x1 <= ch_x1,
-       "the SGP41's pedestal reaches past the cover's baffle, which it is raised to clear");
-assert(gy_ped_x0 >= wall + gap && gy_ped_x1 <= W - wall - gap,
-       "the SGP41's pedestal does not fit between the side walls");
-assert(gy_bare + pocket_fit < gy_pocket_l / 2,
-       "the SGP41's ledge would reach the parts on its underside - check gy_bare");
-assert(gy_rim_h < gy_ledge_h + gy_pcb_min,
-       "the SGP41's rim would stand above its board's face, under the screw's head");
+assert(D - cover_screw_l >= 2 * fdm_layer_h,
+       str("an M3 x ", cover_screw_l, " through the cover's corner would poke out of the back plate"));
+assert(D - cover_screw_l <= nut_y1 - nut_h,
+       "the cover's screw stops short of passing right through its nut - raise the shoulder");
+assert(nut_y1 + 2 * fdm_layer_h < y_in1, "the nut's shoulder reaches the cover - the boss is too short");
+
+assert(gy_xs + gy_pcb_max + gy_head_h + part_fit <= W - wall + 1e-6,
+       "the SGP41's screw head would reach the side wall over the thickest board");
+assert(gy_xs - gy_pilot_depth - ch_x1 >= 2 * fdm_extrusion_w,
+       str("the SGP41's pilot runs to within ", gy_xs - gy_pilot_depth - ch_x1,
+           " mm of the SPS30's channel - shorten gy_screw_l"));
+assert(gy_xb > ch_x1 + cradle_t, "the SGP41's block has no thickness - the column is too narrow");
 assert(gy_hole_d >= gy_screw_d + 0.1,
        str("the SGP41's mounting hole (", gy_hole_d, " mm) is too small for an M", gy_screw_d,
            " screw - use a smaller one and set gy_screw_d, gy_head_d and gy_head_h"));
@@ -240,23 +219,9 @@ assert(gy_pilot_d / 2 + 2 * fdm_extrusion_w <= gy_standoff_d / 2,
        "the standoff round the SGP41's pilot is thinner than two beads - widen gy_standoff_d");
 assert(gy_standoff_d > gy_hole_d,
        "the SGP41's standoff is no wider than its mounting hole - the board would have nothing to rest on");
-assert(gy_strip > 0, "the SGP41's ledge has no depth - check gy_bare");
-assert(gy_ledge_x0 >= gy_ped_x0 && gy_ledge_x1 <= gy_ped_x1,
-       "the SGP41's ledge runs off the end of its pedestal - check gy_bare and gy_standoff_d");
-assert(gy_pilot_depth + gap <= gy_ledge_h + gy_floor - back_t,
-       "the SGP41's screw would run out of pedestal");
-assert(loop_z0 - (gz1 + rim_t) >= gap,
-       str("the SGP41's pedestal reaches within ", loop_z0 - (gz1 + rim_t), " mm of the antenna loop"));
-// signed: negative means the channel is on the wrong side of the wall or of the lead
-wch_wall_room = conn_hi ? (W - wall) - wch_x1 : wch_x0 - wall;
-wch_lead_room = conn_hi ? wch_x0 - lead_x1 : lead_x0 - wch_x1;
-assert(wch_wall_room >= gap && wch_lead_room >= gap,
-       str("the cable channel, under the board's power pins, must stand clear of the side wall and of the",
-           " SPS30's lead; it leaves ", wch_wall_room, " and ", wch_lead_room, " mm"));
-assert(wire_ch_l >= wire_slot_w, "the cable channel is shorter than it is wide - it would not hold a wire");
-assert(wch_z0 >= z_sps1 + gap, "the cable channel reaches down to the SPS30 - shorten wire_ch_l");
-assert(wch_lip > 0 && wire_lip_gap >= 2 * fdm_extrusion_w,
-       "the cable channel's lips must narrow its slot and leave an opening at least two beads wide");
+assert(gy_y1 + pocket_fit <= y_in1 - part_fit, "the SGP41 standing on edge does not fit the depth");
+
+assert(pin_d < screw_d, "the pins are no thinner than the cover's holes they slip into");
 
 // =================================================================== geometry helpers
 // A 2D rectangle with its convex corners rounded: shrink, then grow (lesson 5 of docs/openscad-basics).
@@ -272,13 +237,19 @@ module slab_xz(x0, x1, y0, y1, z0, z1, r = 0) {
             linear_extrude(height = y1 - y0)
                 translate([x0, z0]) rrect(x1 - x0, z1 - z0, r);
 }
+// A box from corner to corner.
+module box3(a, b) translate(a) cube(b - a);
 
-// A cylinder along Y.
-module cyl_y(x, z, r, y0, y1) {
-    translate([x, y0, z]) rotate([-90, 0, 0]) cylinder(r = r, h = y1 - y0);
+// A cylinder along Y, and one along X.
+module cyl_y(x, z, r, y0, y1, fn = 0) {
+    translate([x, y0, z]) rotate([-90, 0, 0])
+        if (fn > 0) cylinder(r = r, h = y1 - y0, $fn = fn); else cylinder(r = r, h = y1 - y0);
+}
+module cyl_x(y, z, r, x0, x1) {
+    translate([x0, y, z]) rotate([0, 90, 0]) cylinder(r = r, h = x1 - x0);
 }
 
-// Vertical slots through the cover's front, spread across [x0, x1].
+// Slots through a face, spread across [a0, a1] - in the cover's front (X), or its side wall (Z).
 module vent_slots(x0, x1, z0, z1) {
     n     = floor((x1 - x0 + vent_rib) / (vent_w + vent_rib));
     used  = n * vent_w + (n - 1) * vent_rib;
@@ -288,93 +259,94 @@ module vent_slots(x0, x1, z0, z1) {
             translate([start + i * (vent_w + vent_rib), y_in1 - eps, z0])
                 cube([vent_w, front_t + 2 * eps, z1 - z0]);
 }
+module side_vents(y0, y1, z0, z1) {
+    n     = floor((z1 - z0 + vent_rib) / (vent_w + vent_rib));
+    used  = n * vent_w + (n - 1) * vent_rib;
+    start = z0 + (z1 - z0 - used) / 2;
+    if (n > 0)
+        for (i = [0 : n - 1])
+            translate([W - wall - eps, y0, start + i * (vent_w + vent_rib)])
+                cube([wall + 2 * eps, y1 - y0, vent_w]);
+}
+
+// The nut's pocket, from the wall side up to its shoulder, and over it the ceiling's three layers:
+// a slot the screw hole's width right across the pocket's flats, then a square, then the round hole.
+module nut_trap(x, z) {
+    hr = hole_r(screw_d);
+    translate([x, -eps, z]) rotate([-90, 0, 0]) rotate([0, 0, 30])
+        cylinder(r = nut_pock_r, h = nut_y1 + eps, $fn = 6);
+    translate([x - hr, nut_y1 - eps, z - nut_pock_r * cos(30)])
+        cube([2 * hr, fdm_layer_h + eps, 2 * nut_pock_r * cos(30)]);
+    translate([x - hr, nut_y1 + fdm_layer_h - eps, z - hr]) cube([2 * hr, fdm_layer_h + eps, 2 * hr]);
+    cyl_y(x, z, hr, nut_y1 + 2 * fdm_layer_h - eps, y_in1 + eps);
+}
+
+// Mirror everything when the outlet - and so the connector, the board and its cable - is on the left.
+module place() {
+    if (outlet_at_left) translate([W, 0, 0]) mirror([1, 0, 0]) children();
+    else children();
+}
 
 // =================================================================== the back plate, as installed
-module back_plate() {
-    difference() {
-        union() {
-            // the plate
-            slab_xz(0, W, 0, back_t, 0, H, corner_r);
+module back_plate() place() difference() {
+    union() {
+        // the plate
+        slab_xz(0, W, 0, back_t, 0, H, corner_r);
 
-            // the channel walls the SPS30 is set between, from the front. No lips: anything overhanging
-            // its face would have to be slid past, and the board's rims and the SGP41's pedestal stand in
-            // the way from above. Down to Z = 0, through the window, so the ledges join them by a FACE -
-            // meeting along an edge only is not manifold (docs/openscad-basics, lesson 2).
-            for (xw = [ch_x0 - cradle_t, ch_x1])
-                translate([xw, back_t - eps, 0]) cube([cradle_t, y_ch1 - back_t + eps, z_sps1]);
+        // the channel walls the SPS30 is set between, from the front. No lips: anything overhanging
+        // its face would have to be slid past. Down to Z = 0, through the window, so the ledges join them
+        // by a FACE - meeting along an edge only is not manifold (docs/openscad-basics, lesson 2).
+        for (xw = [ch_x0 - cradle_t, ch_x1])
+            translate([xw, back_t - eps, 0]) cube([cradle_t, y_ch1 - back_t + eps, z_sps1]);
 
-            // the ledges the sensor stands on, one under each end of the air face
-            translate([ch_x0 - cradle_t / 2, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
-            translate([ch_x1 - ledge_w, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
+        // the ledges the sensor stands on, one under each end of the air face
+        translate([ch_x0 - cradle_t / 2, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
+        translate([ch_x1 - ledge_w, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
 
-            // the divider: it also carries the sensor, and stands proud below the box. It rises from
-            // the very back (Y = 0) so that the part below the plate still starts on the bed.
-            translate([x_div - divider_t / 2, 0, -divider_proud])
-                cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
+        // the divider: it also carries the sensor, and stands proud below the box. It rises from
+        // the very back (Y = 0) so that the part below the plate still starts on the bed.
+        translate([x_div - divider_t / 2, 0, -divider_proud])
+            cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
-            // the board pocket: rims along the two long edges. Outwards, the PCB's USB-C end bears on
-            // the cover's thinned wall when a plug is pulled out.
-            for (zz = [z_board0, z_board1 - rim_t])
-                translate([rim_x0, back_t - eps, zz]) cube([rim_x1 - rim_x0, rim_hgt + eps, rim_t]);
-            // and on each rim a lip with a 45-degree underside, over the board's pad strip from its 4th
-            // pin to its antenna end: it slides in under them, and they keep it down on the plate.
-            // Their cross-section in Y-Z, run along X.
-            translate([sm_lip_x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = sm_lip_x1 - sm_lip_x0) {
-                zi = z_board0 + rim_t;   // the rims' inner faces
-                zo = z_board1 - rim_t;
-                polygon([[back_t - eps, z_board0], [sm_lip_y1, z_board0], [sm_lip_y1, zi + sm_lip_l],
-                         [sm_lip_y0 + sm_lip_l, zi + sm_lip_l], [sm_lip_y0, zi], [back_t - eps, zi]]);
-                polygon([[back_t - eps, z_board1], [sm_lip_y1, z_board1], [sm_lip_y1, zo - sm_lip_l],
-                         [sm_lip_y0 + sm_lip_l, zo - sm_lip_l], [sm_lip_y0, zo], [back_t - eps, zo]]);
+        // the board's shelf, from the right-hand wall to its antenna end. Printed upright, as a wall.
+        box3([wall + part_fit, back_t - eps, z_f0], [sm_ant_x, y_b1 + pocket_fit - part_fit, zu]);
+        // the short lip along its back edge, over the pad strip: the board slides in under it
+        box3([sm_ant_x - sm_back_lip, back_t - eps, zu + sm_pcb_t + pocket_fit],
+             [sm_lip_x1, y_b0 + sm_lip_over, zu + sm_pcb_t + pocket_fit + rim_t]);
+        // the back stop at its antenna end, which takes the push of plugging in
+        box3([stop_x0, back_t - eps, z_f0], [stop_x0 + rim_t, y_b0 + stop_reach, zu + sm_pcb_t + 1]);
+
+        // the SGP41's block, its standoff and the ledge its bottom edge sits on
+        box3([ch_x1 + cradle_t - eps, back_t - eps, gy_hz - gy_standoff_d / 2 - rim_t],
+             [gy_xb, gy_hy + gy_standoff_d / 2 + rim_t, gy_hz + gy_standoff_d / 2 + rim_t]);
+        cyl_x(gy_hy, gy_hz, gy_standoff_d / 2, gy_xb - eps, gy_xs);
+        box3([ch_x1 + cradle_t - eps, back_t - eps, gy_z0 - pocket_fit - rim_t],
+             [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z0 - pocket_fit]);
+
+        // the nut bosses in the bottom corners, and the pin bosses and their pins in the top ones
+        for (x = nut_bx) cyl_y(x, nut_bz, nut_boss_d / 2, back_t - eps, y_in1);
+        for (x = [boss_inset, W - boss_inset]) {
+            cyl_y(x, H - boss_inset, boss_d / 2, back_t - eps, y_in1);
+            hull() {
+                cyl_y(x, H - boss_inset, pin_d / 2, y_in1 - eps, D - pin_d / 2 - 0.2);
+                translate([x, D - pin_d / 2 - 0.2, H - boss_inset]) sphere(d = pin_d);
             }
-            // inwards, a stop over each corner of the antenna end takes the push of plugging in. The
-            // middle of that end stays open, because the antenna loop lies in the board's plane past it.
-            for (zz = [z_board0, z_board1 - rim_t - stop_reach])
-                translate([stop_x0, back_t - eps, zz]) cube([rim_t, rim_hgt + eps, rim_t + stop_reach]);
-
-            // the SGP41's pedestal, under its far half only, with its rim on three sides - open towards
-            // the pins, whose wires leave the board's back - and the ledge its bare strip rests on
-            translate([gy_ped_x0, back_t - eps, gz0 - rim_t])
-                cube([gy_ped_x1 - gy_ped_x0, gy_floor - back_t + eps, gy_pocket_w + 2 * rim_t]);
-            for (zz = [gz0 - rim_t, gz1])
-                translate([gy_ped_x0, gy_floor - eps, zz]) cube([gy_ped_x1 - gy_ped_x0, gy_rim_h + eps, rim_t]);
-            translate([conn_hi ? gx0 - rim_t : gx1, gy_floor - eps, gz0 - rim_t])
-                cube([rim_t, gy_rim_h + eps, gy_pocket_w + 2 * rim_t]);
-            translate([gy_ledge_x0, gy_floor - eps, gz0])
-                cube([gy_ledge_x1 - gy_ledge_x0, gy_ledge_h + eps, gy_pocket_w]);
-            // and the standoff round the mounting hole, level with the ledge: the screw clamps the board
-            // onto it, the one bare patch of its underside that reaches past the strip
-            cyl_y(gy_hole_x, gy_hole_z, gy_standoff_d / 2, gy_floor - eps, gy_floor + gy_ledge_h);
-
-            // the cable channel: two upright walls under the board's power pins, each with a 45-degree
-            // lip over the slot, so the wires press in past the lips and stay. Its cross-section in X-Y,
-            // run up Z.
-            translate([0, 0, wch_z0]) linear_extrude(height = wch_z1 - wch_z0) {
-                xi0 = wch_cx - wire_slot_w / 2;   // the slot's two faces
-                xi1 = wch_cx + wire_slot_w / 2;
-                polygon([[xi0 - rib_t, back_t - eps], [xi0, back_t - eps], [xi0, back_t + wire_slot_d],
-                         [xi0 + wch_lip, wch_y1], [xi0 - rib_t, wch_y1]]);
-                polygon([[xi1 + rib_t, back_t - eps], [xi1, back_t - eps], [xi1, back_t + wire_slot_d],
-                         [xi1 - wch_lip, wch_y1], [xi1 + rib_t, wch_y1]]);
-            }
-
-            // the four bosses the cover screws into
-            for (b = bosses) cyl_y(b[0], b[1], boss_d / 2, back_t - eps, y_in1);
         }
-        // pilot holes - blind, so the plate behind stays whole
-        for (b = bosses) cyl_y(b[0], b[1], hole_r(pilot_d), back_t + 1.0, y_in1 + eps);
-        // the pilot for the SGP41's screw, blind, down from the ledge's top
-        cyl_y(gy_hole_x, gy_hole_z, hole_r(gy_pilot_d), gy_floor + gy_ledge_h - gy_pilot_depth,
-              gy_floor + gy_ledge_h + eps);
-        // the keyhole: the entry the wall screw's head passes, and the slot above it that the head then
-        // hangs over. A hole through the plate, so on the bed it is an opening in the first layers.
-        cyl_y(key_x, key_z0, hole_r(key_entry_d), -eps, back_t + eps);
-        hull() for (z = [key_z0, key_z1]) cyl_y(key_x, z, hole_r(key_slot_w), -eps, back_t + eps);
+    }
+    // the nuts' pockets, open to the wall, and the screw holes over them
+    for (x = nut_bx) nut_trap(x, nut_bz);
+    // the SGP41's pilot, sideways into its standoff and block
+    cyl_x(gy_hy, gy_hz, hole_r(gy_pilot_d), gy_xs - gy_pilot_depth, gy_xs + eps);
+    // the keyholes: each an entry the wall screw's head passes, and the slot above it the head then
+    // hangs over. Holes through the plate, so on the bed they are openings in the first layers.
+    for (x = key_xs) {
+        cyl_y(x, key_z0, hole_r(key_entry_d), -eps, back_t + eps);
+        hull() for (z = [key_z0, key_z1]) cyl_y(x, z, hole_r(key_slot_w), -eps, back_t + eps);
     }
 }
 
 // =================================================================== the cover, as installed
-module cover() {
+module cover() place() {
     difference() {
         slab_xz(0, W, back_t, D, 0, H, corner_r);
         // hollow it: four walls and a front
@@ -382,115 +354,107 @@ module cover() {
         // the window over the SPS30's air face - open at the back edge, so it is a notch, not a bridge
         translate([ch_x0 - cradle_t - part_fit, back_t - eps, -eps])
             cube([ch_in_w + 2 * (cradle_t + part_fit), y_in1 - back_t + eps, wall + 2 * eps]);
-        // the wall over the board's USB-C end, thinned from inside to port_wall and as tall as the
-        // board's tallest part - a notch open at the back edge. Its step back to the full wall is a
-        // 45-degree chamfer, not a square corner: pulling the plug loads this stretch of wall, and a
-        // crack would start at a sharp inside corner.
+        // the right-hand wall over the board's USB-C end, thinned from inside to port_wall over the board's
+        // whole width and height - a notch open at the back edge. Its steps back to the full wall are 45
+        // degrees, not square: pulling the plug loads this stretch of wall, and a crack would start at a
+        // sharp inside corner.
         hull() {
-            translate([conn_hi ? W - wall - eps : port_wall, back_t - eps, z_board_c - sm_pocket_h / 2])
-                cube([wall - port_wall + eps, sm_t + part_fit + eps, sm_pocket_h]);
-            translate([conn_hi ? W - wall - eps : wall - eps, back_t - eps,
-                       z_board_c - sm_pocket_h / 2 - (wall - port_wall)])
-                cube([2 * eps, sm_t + part_fit + (wall - port_wall) + eps, sm_pocket_h + 2 * (wall - port_wall)]);
+            box3([port_wall, back_t - eps, zu - part_fit],
+                 [wall + eps, y_b1 + pocket_fit + part_fit, zu + sm_t + part_fit]);
+            box3([wall - eps, back_t - eps, zu - part_fit - (wall - port_wall)],
+                 [wall + eps, y_b1 + pocket_fit + part_fit + (wall - port_wall),
+                  zu + sm_t + part_fit + (wall - port_wall)]);
         }
-        // the USB-C opening through it, the size of the socket's shell - also open at the back edge
-        translate([conn_hi ? W - wall - eps : -eps, back_t - eps, z_board_c - usb_shell_w / 2 - part_fit])
-            cube([wall + 2 * eps, usb_y + usb_shell_h / 2 + part_fit - back_t + eps,
-                  usb_shell_w + 2 * part_fit]);
-        // vents: in front of the SGP41, and in front of the board
-        vent_slots(gx0, gx1, gz0, gz1);
-        vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), z_board0 + rim_t, z_board1 - rim_t);
-        // clearance holes for the four screws
-        for (b = bosses) cyl_y(b[0], b[1], hole_r(screw_d), y_in1 - eps, D + eps);
+        // the USB-C opening through it, the size of the socket's shell
+        box3([-eps, y_bc - usb_shell_w / 2 - part_fit, z_uc - usb_shell_h / 2 - part_fit],
+             [port_wall + eps, y_bc + usb_shell_w / 2 + part_fit, z_uc + usb_shell_h / 2 + part_fit]);
+        // vents: in the left-hand wall over the SGP41's sensor, and in the front over the board
+        side_vents(gy_y0, gy_y1, gy_z0, gy_z1);
+        vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), zu + sm_t + gap, zu + sm_t + gap + 10);
+        // holes for the two bottom screws, and the two pins at the top
+        for (x = nut_bx) cyl_y(x, nut_bz, hole_r(screw_d), y_in1 - eps, D + eps);
+        for (x = [boss_inset, W - boss_inset]) cyl_y(x, H - boss_inset, hole_r(screw_d), y_in1 - eps, D + eps);
     }
-    // the partition between the inlet and outlet sides of the air gap in front of the sensor
+    // the partition between the inlet and outlet sides of the air gap in front of the sensor,
     // part_fit above the divider fin, which it slides past as the cover goes on
     translate([x_div - rib_t / 2, y_sps1 + sps_fit, z_sps0 + part_fit])
         cube([rib_t, y_in1 - y_sps1 - sps_fit + eps, sps_h - part_fit]);
-    // the baffle that closes that air gap off from the warm compartment above, part_fit over the
-    // sensor's top. With the partition it also keeps the SPS30 from tipping forward, sps_fit off its face.
+    // the baffle that closes that air gap off from the compartment above, part_fit over the sensor's top.
+    // With the partition it also keeps the SPS30 from tipping forward, sps_fit off its face.
     translate([ch_x0, y_sps1 + sps_fit, z_sps1 + part_fit])
         cube([ch_in_w, y_in1 - y_sps1 - sps_fit + eps, rib_t]);
+    // the board's front edge: a rim in front of it, from the shelf's level, and over its pad strip a lip,
+    // both from the 4th pin to the antenna end; and the front stop there. Ribs standing on the front, so
+    // on the cover's bed they are walls.
+    box3([sm_lip_x0, y_b1 + pocket_fit, z_f0], [sm_lip_x1, y_in1 + eps, zu + sm_pcb_t + pocket_fit + rim_t]);
+    box3([sm_lip_x0, y_b1 - sm_lip_over, zu + sm_pcb_t + pocket_fit],
+         [sm_lip_x1, y_in1 + eps, zu + sm_pcb_t + pocket_fit + rim_t]);
+    box3([stop_x0, y_b1 - stop_reach, z_f0], [stop_x0 + rim_t, y_in1 + eps, zu + sm_pcb_t + 1]);
 }
 
 // =================================================================== the SPS30's way in
 // The sensor goes in from the front, before the cover: its outline, nubs included, swept from its seat to
 // the cover's front. Nothing on the back plate may stand in it - check_insert intersects the two.
-module sps_insert_path()
+module sps_insert_path() place()
     translate([sps_x0 - sps_nub, back_t + 0.02, z_sps0 + 0.02])
         cube([sps_w + 2 * sps_nub, y_in1 - back_t, sps_h - 0.04]);
 
 // =================================================================== the SuperMini, piece by piece
-// Five pieces, so the slide-in check can sweep each one on its own: a hull of the whole board would fill
-// the space between its antenna wire and its edges, which is exactly where the rails' lips are.
+// Five pieces, so the slide-in check can sweep each one on its own.
 module sm_piece(i, s) {
-    if (i == 0)        // the bare PCB
-        color("teal") translate([sm_x0 + s, back_t + s, z_board_c - sm_w / 2 + s])
-            cube([sm_l - 2 * s, sm_pcb_t - 2 * s, sm_w - 2 * s]);
+    if (i == 0)        // the bare PCB, level on its shelf
+        color("teal") box3([sm_x0 + s, y_b0 + s, zu + s], [sm_x1 - s, y_b1 - s, zu + sm_pcb_t - s]);
     else if (i == 1)   // its parts, up to the tallest, clear of the pad strip along each long edge
-        color("teal") translate([sm_x0 + s, back_t + sm_pcb_t - s, z_board_c - sm_w / 2 + sm_edge + s])
-            cube([sm_l - 2 * s, sm_t - sm_pcb_t, sm_w - 2 * sm_edge - 2 * s]);
+        color("teal") box3([sm_x0 + s, y_b0 + sm_edge + s, zu + sm_pcb_t - s], [sm_x1 - s, y_b1 - sm_edge - s, zu + sm_t - s]);
     else if (i == 2)   // the USB-C shell, overhanging the PCB through the wall's opening
-        color("teal") translate([conn_hi ? sm_usb_x + s : sm_usb_x - usb_overhang + s, usb_y - usb_shell_h / 2 + s,
-                                 z_board_c - usb_shell_w / 2 + s])
-            cube([usb_overhang - 2 * s, usb_shell_h - 2 * s, usb_shell_w - 2 * s]);
+        color("teal") box3([sm_usb_x - usb_overhang + s, y_bc - usb_shell_w / 2 + s, zu + sm_pcb_t + s],
+                           [sm_usb_x - s, y_bc + usb_shell_w / 2 - s, zu + sm_pcb_t + usb_shell_h - s]);
     else if (i == 3)   // the antenna loop, in the board's plane past its end
-        color("orange") translate([conn_hi ? sm_ant_x - ant_over + s : sm_ant_x + s, back_t + sm_pcb_t + s,
-                                   z_board_c - sm_w / 2 + ant_loop_free + s])
-            cube([ant_over - 2 * s, 1 - 2 * s, sm_w - 2 * ant_loop_free - 2 * s]);
-    else if (i == 4)   // the antenna's straight wire
-        color("orange")
-            if (wire_perpendicular)
-                cyl_y(conn_hi ? sm_ant_x + 1.5 : sm_ant_x - 1.5, z_board_c, 0.5 - s,
-                      back_t + sm_pcb_t + s, back_t + ant_h - s);
-            else
-                translate([conn_hi ? sm_ant_x - ant_h + s : sm_ant_x + s, back_t + sm_pcb_t, z_board_c])
-                    cube([ant_h - 2 * s, 1, 1]);
+        color("orange") box3([sm_ant_x + s, y_b0 + ant_loop_free + s, zu + sm_pcb_t + s],
+                             [sm_ant_x + ant_over - s, y_b1 - ant_loop_free - s, zu + sm_pcb_t + 1 - s]);
+    else if (i == 4)   // the antenna's pole, standing up off the component side
+        color("orange") translate([sm_ant_x - pole_in, y_bc, zu + sm_pcb_t + s])
+            cylinder(r = 0.5 - s, h = ant_h - sm_pcb_t - 2 * s);
 }
 
-// The board's way in: each piece swept from clear of the plate's USB-C side to its seat against the stops.
-module sm_slide_path(s = 0.02) {
-    dx = conn_hi ? sm_l + ant_over + gap : -(sm_l + ant_over + gap);
-    for (i = [0 : 4]) hull() { sm_piece(i, s); translate([dx, 0, 0]) sm_piece(i, s); }
+// The board's way in: each piece lowered from in front onto the shelf, sm_back_lip + gap towards its USB-C
+// side, then swept along X to its seat against the stops.
+module sm_slide_path(s = 0.02) place() {
+    dx = -(sm_back_lip + gap);
+    for (i = [0 : 4]) {
+        hull() { translate([dx, 0, 0]) sm_piece(i, s); translate([dx, D, 0]) sm_piece(i, s); }
+        hull() { sm_piece(i, s); translate([dx, 0, 0]) sm_piece(i, s); }
+    }
 }
 
 // =================================================================== the components, for preview and checks
-module components(shrink = 0) {
+module components(shrink = 0) place() {
     s = shrink;
-    color("silver") translate([sps_x0 + s, back_t + s, z_sps0 + s])
-        cube([sps_w - 2 * s, sps_t - 2 * s, sps_h - 2 * s]);
+    color("silver") box3([sps_x0 + s, back_t + s, z_sps0 + s], [sps_x1 - s, back_t + sps_t - s, z_sps1 - s]);
     for (i = [0 : 4]) sm_piece(i, s);   // the SuperMini
     // the body of the largest compliant plug, seated, with the board pushed against its stops. Its
     // face can come right up to the socket's mouth, so that is where it is drawn.
-    color("dimgray") translate([conn_hi ? W + usb_proud_in + s : -usb_proud_in - 20 + s, usb_y - usb_plug_h / 2 + s,
-                                z_board_c - usb_plug_w / 2 + s])
-        cube([20 - 2 * s, usb_plug_h - 2 * s, usb_plug_w - 2 * s]);
-    // the GY-SGP41, as the envelope of every board thickness within the bounds: the bare strip on its
-    // ledge, and the half with the parts hanging towards the floor
+    color("dimgray") box3([-usb_proud_in - 20 + s, y_bc - usb_plug_w / 2 + s, z_uc - usb_plug_h / 2 + s],
+                          [-usb_proud_in - s, y_bc + usb_plug_w / 2 - s, z_uc + usb_plug_h / 2 - s]);
+    // the GY-SGP41 on edge, as the envelope of every board thickness within the bounds: the PCB and its
+    // sensor towards the wall, and behind it the parts on its underside - less the bare patch round the
+    // mounting hole (gy_hole_bare_d, read off photo 2), where the standoff bears
     color("green") {
-        translate([gy_bare_x0 + s, gy_floor + gy_ledge_h + s, gz0 + pocket_fit + s])
-            cube([gy_bare - 2 * s, gy_front_max + gy_sensor_h - gy_ledge_h - 2 * s, gy_w - 2 * s]);
-        // the half with its parts - less the bare patch round the mounting hole (gy_hole_bare_d, read off
-        // photo 2), where the standoff goes. Its own setting, so a standoff too wide shows as a collision.
+        box3([gy_xs + s, gy_y0 + pocket_fit + s, gy_z0 + s],
+             [gy_xs + gy_pcb_max + gy_sensor_h - s, gy_y1 + pocket_fit - s, gy_z1 - s]);
         difference() {
-            translate([gy_parts_x0 + s, gy_floor + gap + s, gz0 + pocket_fit + s])
-                cube([gy_l - gy_bare - 2 * s, gy_front_max + gy_sensor_h - gap - 2 * s, gy_w - 2 * s]);
-            cyl_y(gy_hole_x, gy_hole_z, gy_hole_bare_d / 2 - s, gy_floor, gy_floor + gy_front_max + gy_sensor_h);
+            box3([gy_xp + s, gy_y0 + pocket_fit + s, gy_z0 + s], [gy_xs + s, gy_y1 + pocket_fit - s, gy_z1 - s]);
+            cyl_x(gy_hy, gy_hz, gy_hole_bare_d / 2 - s, gy_xp, gy_xs + 2 * s);
         }
     }
-    // the room behind the pin half, wire_room deep, where the wires leave the board's back and bend over
-    color("purple") translate([gy_pin_half[0] + s, gy_floor + gy_ledge_h - wire_room + s, gz0 + s])
-        cube([gy_pin_half[1] - gy_pin_half[0] - 2 * s, wire_room - 2 * s, gy_pocket_w - 2 * s]);
-    // the screw's head, on the thickest board - the nearest it comes to the cover
-    color("silver") cyl_y(gy_hole_x, gy_hole_z, gy_head_d / 2 - s, gy_floor + gy_front_max + s,
-                          gy_floor + gy_front_max + gy_head_h - s);
-    // the wall screw's head behind the plate, all the way from the entry up to where it hangs, standing off
-    // the wall by up to key_slack more than the plate is thick
-    color("silver") hull() for (z = [key_z0, key_z1])
-        cyl_y(key_x, z, key_head_d / 2 - s, back_t + s, back_t + key_slack + key_head_h - s);
+    // the SGP41 screw's head, on the thickest board - the nearest it comes to the side wall
+    color("silver") cyl_x(gy_hy, gy_hz, gy_head_d / 2 - s, gy_xs + gy_pcb_max + s, gy_xs + gy_pcb_max + gy_head_h - s);
     // the SPS30's plug and the column its lead rises through before it bends over
-    color("orange") translate([lead_x0 + s, back_t + s, z_sps1 + s])
-        cube([lead_x1 - lead_x0 - 2 * s, sps_t - 2 * s, cable_zone_h - 2 * s]);
+    color("orange") box3([lead_x0 + s, back_t + s, z_sps1 + s], [lead_x1 - s, back_t + sps_t - s, z_sps1 + cable_zone_h - s]);
+    // the wall screws' heads behind the plate, each all the way from its entry up to where it hangs,
+    // standing off the wall by up to key_slack more than the plate is thick
+    for (x = key_xs) color("silver") hull() for (z = [key_z0, key_z1])
+        cyl_y(x, z, key_head_d / 2 - s, back_t + s, back_t + key_slack + key_head_h - s);
 }
 
 // =================================================================== what gets drawn
@@ -501,19 +465,19 @@ if (len(untested_fits) > 0)
 
 echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), and the ",
          "divider ", divider_proud, " mm below"));
-echo(str("keyhole: on the centre line, the screw ", key_z1, " mm up once hung; the entry ",
-         2 * hole_r(key_entry_d), " mm and the slot ", 2 * hole_r(key_slot_w), " mm as cut; set the screw's head ",
-         back_t, " to ", back_t + key_slack, " mm off the wall"));
 echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
-         " mm from the inlet end; depth set by the ", inner_d == sps_t + sps_fit + front_gap_min
-         ? "SPS30" : "antenna wire"));
-echo(str("SGP41: its sensor ", y_in1 - (gy_floor + gy_front_max + gy_sensor_h), " to ",
-         y_in1 - (gy_floor + gy_ledge_h + gy_pcb_min + gy_sensor_h), " mm behind the vents' inner face; its pedestal ",
-         loop_z0 - (gz1 + rim_t), " mm below the antenna loop; held by an M", gy_screw_d, " x ", gy_screw_l,
-         " screw in a ", gy_pilot_depth, " mm pilot"));
+         " mm from the inlet end"));
+echo(str("keyholes: ", key_xs[1] - key_xs[0], " mm apart, the screws ", key_z1, " mm up once hung; each entry ",
+         2 * hole_r(key_entry_d), " mm and slot ", 2 * hole_r(key_slot_w), " mm as cut; set the heads ",
+         back_t, " to ", back_t + key_slack, " mm off the wall"));
+echo(str("board: on a shelf ", zu, " mm up, its pole's tip ", zu + ant_h, " mm, the top wall's inside ", H - wall,
+         "; SGP41 on edge, ", W - wall - (gy_xs + gy_pcb_max + gy_sensor_h), " to ",
+         W - wall - (gy_xs + gy_pcb_min + gy_sensor_h), " mm behind the side wall's vents, held by an M",
+         gy_screw_d, " x ", gy_screw_l, " in a ", gy_pilot_depth, " mm pilot"));
+echo(str("cover: two M3 x ", cover_screw_l, " into nuts whose shoulder is ", nut_y1,
+         " mm from the back; two ", pin_d, " mm pins at the top"));
 echo(str("USB-C: the socket's mouth stands ", usb_proud_in, " to ", usb_proud + part_fit,
-         " mm past the outside face; any plug body up to ", 2 * usb_y,
-         " mm thick clears the mounting surface (a compliant one is at most ", usb_plug_h, ")"));
+         " mm past the outside face; the plug's body clears the mounting surface by ", y_bc - usb_plug_w / 2, " mm"));
 
 if (draw_model) {
     if (part == "back")

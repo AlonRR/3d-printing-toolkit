@@ -7,13 +7,16 @@
 Everything you SET for the print-chamber box. Render print-chamber-box.scad, not this file.
 
 The box for the node in firmware/print-chamber.yaml: an SPS30 particle sensor standing on edge with its
-air face DOWN, the ESP32-C3 SuperMini above it, and the GY-SGP41 between the two. Why that layout,
-with a source for each rule, is in docs/design.md; where each value came from, in docs/parameters.md.
+air face DOWN, the ESP32-C3 SuperMini lying level on a shelf above its lead with the antenna's pole
+standing up, and the GY-SGP41 on edge beside the SPS30, its sensor facing the side wall. It hangs on two
+wall screws by keyholes beside the SPS30's top corners. Why that layout, with a source for each rule, is
+in docs/design.md; where each value came from, in docs/parameters.md.
 
 COORDINATES are the box as INSTALLED: Y out from the mounting surface, Z up, and X - because the
 frame is right-handed - pointing to YOUR LEFT as you face the box. "Left" and "right" in the
 comments mean as you face it. The board's USB-C end faces the SPS30's connector, so the USB-C cable
-leaves at that end - on your RIGHT with the sensor in hand.
+leaves at that end - on your RIGHT with the sensor in hand. The model is drawn that way round, and
+mirrored whole when outlet_at_left is set.
 */
 
 /* [Which part] */
@@ -35,11 +38,11 @@ sm_w         = 18.03;  /* SuperMini width. Measured. */
 sm_pcb_t     = 0.85;   /* Bare PCB thickness. Measured. */
 sm_t         = 4.05;   /* PCB plus its tallest component - the USB-C shell - without the antenna. Measured. */
 usb_shell_h  = 3.16;   /* The USB-C shell's height. Measured. It sits on the component side (0.85 + 3.16 = 4.01, against sm_t 4.05), so its centre is sm_pcb_t + usb_shell_h / 2 above the PCB's underside. */
-wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part stands out of the component side, at an angle - the board leans on it when laid face down. */
-ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - it sets the box's depth. */
+wire_perpendicular = true;   /* SETTLED from photos, 2 Oct 2026: the straight part - the pole - stands out of the component side, at an angle - the board leans on it when laid face down. The layout needs it: the board lies level so the pole stands up. */
+ant_h        = 18.8;   /* Height of the antenna wire's tip above the PCB's UNDERSIDE, board lying flat. Measured 2 Oct 2026 - with the board level on its shelf, it sets the box's height. */
 ant_over     = 4.81;   /* How far the antenna LOOP reaches past the PCB's antenna end. It lies in the board's plane, so the middle of that end of the pocket is left open for it. Measured. */
 ant_loop_free = 4.3;   /* How much of the board's antenna end the loop leaves free beside it: 4.3 mm on one side and 5.45 on the other, measured 2 Oct 2026. The smaller is used on both sides, so the box fits the board either way round. */
-pin_mid      = 5.1;    /* The middle of the SuperMini's three power pins (5V, GND, 3V3), from its PCB's USB-C end. Photo 1, scaled against the board, reads 2.6, 5.1 and 7.7 mm. The cable channel stands under it, so the wires leave its top straight into those pads. */
+pin_mid      = 5.1;    /* The middle of the SuperMini's three power pins (5V, GND, 3V3), from its PCB's USB-C end. Photo 1, scaled against the board, reads 2.6, 5.1 and 7.7 mm. The lips that hold the board start past its fourth pin, clear of every pin the node solders to. */
 usb_overhang = 1.5;    /* How far the USB-C shell overhangs the PCB's edge. It passes through the wall, and its mouth reaches the outside face (see port_wall). Measured. */
 usb_shell_w  = 8.94;   /* The USB-C shell's width. Not measured, derived: the USB Type-C compliance document fixes the receptacle's inside opening at 8.34 x 2.56 mm, and the measured height 3.16 against that 2.56 gives a 0.30 mm shell wall - so 8.34 + 2 x 0.30. */
 gy_l        = 13.14;  /* GY-SGP41 module. Measured 2 Oct 2026. */
@@ -68,7 +71,7 @@ unmeasured = ["key_shank_d", "key_head_d", "key_head_h"];
 
 /* [The USB-C cable - sourced, so no cable needs measuring] */
 usb_plug_w = 12.35;   /* The widest a compliant plug's body may be: USB Type-C compliance document rev 1.2, Figure B-1, dimension 1. */
-usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mouth reaches the outside face, so the body never enters the box; it only has to clear the mounting surface and the tabs, and the model echoes the thickest body that does. */
+usb_plug_h = 6.5;     /* The thickest: same table, dimension 14. The socket's mouth reaches the outside face, so the body never enters the box; it only has to clear the mounting surface. */
 
 /* [Bounds, not measurements - the design works anywhere inside them] */
 gy_pcb_min = 0.8;   /* The thinnest the GY-SGP41's bare board could plausibly be; GY modules are usually 1.0-1.6 mm. The ledge is tall enough that parts on a board this thin still clear the floor. */
@@ -76,7 +79,7 @@ gy_pcb_max = 1.6;   /* The thickest, for the room left in front of it. */
 
 /* [The SGP41's screw - an M2.5 socket head cap screw, ISO 4762] */
 gy_screw_d = 2.5;   /* M2.5. */
-gy_screw_l = 8.0;   /* M2.5 x 8, from the M2.5 box. It cuts its own thread in the ledge's pilot. */
+gy_screw_l = 6.0;   /* M2.5 x 6, from the M2.5 box. It goes in sideways, through the module standing on edge, and cuts its own thread in the standoff's pilot. An 8 would run out of block before the SPS30's channel. */
 gy_head_d  = 4.5;   /* ISO 4762 head diameter for M2.5. */
 gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 
@@ -84,11 +87,12 @@ gy_head_h  = 2.5;   /* ISO 4762 head height for M2.5. */
 sps_fit    = 0.2;    /* Clearance per side around the SPS30. Tested 2 Oct 2026 (the clearance test, Inslogic ASA, MK3S): of 0.2, 0.3 and 0.4 the SPS30 took the tightest, 0.2, and it was snug (Alon) - so 0.2 stands, though nothing tighter was tried. Looked at closer on 3 Oct: flush across its thickness (Y), about 0.7 mm loose along its width (X) - the width allowance, sps_nub, is the datasheet's and waits on a caliper reading of the sensor. */
 pocket_fit = 0.2;    /* Clearance per side around the two boards. Tested 2 Oct 2026, same print: the SuperMini and the GY-SGP41 each took the tightest of 0.2, 0.3 and 0.4, and both were snug (Alon). */
 part_fit   = 0.3;    /* Clearance between a back-plate feature and the cover. Measured 3 Oct 2026 on the same print: peg 5.98, socket 6.50 (Y) and 6.55 (X), so 0.26 and 0.29 per side as printed - over the 0.15 below which the parts would bind. */
-pilot_d    = 2.3;    /* Pilot hole for the M3 x 14 self-tapping screws that close the cover. Tested 3 Oct 2026: of 2.3, 2.5 and 2.7, 2.5 was fine and 2.3 a little tight, "which might be preferable" (Alon); none split. 2.3, for a thread that is driven again each time the cover comes off. */
+pilot_d    = 2.3;    /* RETIRED 3 Oct 2026: the cover's bottom screws now go into nuts and its top sits on pins, so the box has no self-tapping M3 pilot. Kept only because the 2 Oct clearance test's group D tried it: of 2.3, 2.5 and 2.7, 2.5 was fine and 2.3 a little tight (Alon); none split. */
 screw_d    = 3.2;    /* Clearance hole for those screws in the cover. Tested 3 Oct 2026: of 3.2, 3.4 and 3.6, an M3 passes 3.2 freely. */
-gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). */
+gy_pilot_d = 2.1;    /* Pilot for the SGP41's M2.5 screw, which forms its own thread in it. Tested 3 Oct 2026 as a VERTICAL hole: of 2.0, 2.1 and 2.2, 2.1 is fine and 2.0 a little tight (Alon). The module now stands on edge and its screw goes in sideways - a horizontal hole on the bed, which prints tighter at its top - so it is untested again. */
+nut_fit    = 0.0;    /* The M3 nut's hex pocket, per side, on top of fdm_hole_comp: 0 should make it a press fit, so a nut stays put with its screw out (docs/mechanical-design-review.md, "Nuts stay put without their screw"). Untested. */
 
-untested_fits = [];
+untested_fits = ["nut_fit", "gy_pilot_d"];
 /* ASA shrinks more than PETG, and holes print undersize. Print a clearance ladder before the box, then
    clear this list. */
 
@@ -112,16 +116,17 @@ vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
 ledge  = 1.0;   /* How far the ledges reach under each end of the air face. Must stay clear of the openings. The SPS30 is put in from the front and stands on them; the cover's partition rib, 0.3 mm in front of its face, keeps it there. */
 sm_edge    = 1.0;   /* The strip along each long edge of the SuperMini's component side that holds only its castellated pads, nothing taller. Photo 1. The rails' lips may reach over it, no further. */
 sm_lip_over = 0.6;  /* How far each rail's lip reaches over the board's long edge, onto that pad strip. The board slides in under the lips, and they keep it down on the plate. */
-stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in from the rim over a corner; the middle stays open for the antenna loop. */
-wire_room  = 7.0;   /* Room behind the pin half of the SGP41's board, for its four wires. They are the lab's 22 AWG solid hookup wire (Alon, 2 Oct 2026: "solid wire thats owned"; HomeBox has five 10 m coils of 22 AWG solid, UL1007; Alon measured it at 1.56 mm over its insulation). Soldered to come out of its back, each leaves its pad straight for 1 mm, bends over on a 3 mm radius, and where two cross - the module's pins run in the reverse order of the board's - one lies behind the other. That takes 6.4 mm; assembly-views.scad draws the routes and checks them against this, and check_components keeps the pedestal out of it. Alon, 2 Oct 2026: "the wires could be solderd to come out on the back of sgp41. make 8 smaller." Before that they came out of its front, and this was the room in front, which pushed the sensor further from its vents. */
-wire_slot_w = 3.5;  /* The cable channel, standing upright under the board's power pins: its slot, across. The SPS30's five wires, about 1 mm each, lie in it; the SGP41's go straight across in front. */
-wire_slot_d = 4.0;  /* ... and how deep it is, from the plate. */
-wire_ch_l   = 6.0;  /* ... and how long, measured down from just below the board, so the wires leave its top straight into the power pins. Alon, 2 Oct 2026: the full drop from the SPS30 to the board was too long. */
-wire_lip_gap = 1.0; /* The opening between the channel's two 45-degree lips: a wire presses in past them and stays. */
+sm_back_lip = 6.0;  /* How long the lip over the board's back edge is, back from its antenna end. The board goes onto its shelf that far towards its USB-C side, then slides into the stops - so its standing pole never sweeps past the top pin. */
+stop_reach = 3.0;   /* The two stops at the board's antenna end take the push of plugging the cable in. Each reaches this far in over a corner - the back one from the plate, the front one from the cover - and the middle stays open for the antenna loop. */
 
 /* [Mounting and closing] */
-key_slack = 1.0;    /* How much further than back_t the wall screw's head may stand off the wall: the room behind the plate is that much deeper than the head. */
-boss_d    = 6.75;   /* The cover-screw bosses. */
+key_slack = 1.0;    /* How much further than back_t the wall screws' heads may stand off the wall: the room behind the plate is that much deeper than the head. */
+key_level_tol = 2.0;   /* How much lower one wall screw may sit than the other: each keyhole's slot is this much longer, so the lower screw's head is still clear of its entry. */
+boss_d    = 6.75;   /* The top bosses, which carry the pins the cover's top sits on. */
+pin_d     = 2.9;    /* Those pins, slipping into the cover's top holes. An M3 passes the 3.2 hole freely (the clearance test, 3 Oct 2026), and printed pins come out a little oversize, so 2.9. They only locate the cover's top; the two bottom screws hold it. */
+cover_screw_l = 20.0;   /* The two M3 screws through the cover's bottom corners into nuts in the back plate: M3 x 20, from the M3/M4/M5 box. */
+nut_af    = 5.5;    /* The M3 hex nut, across its flats - ISO 4032. */
+nut_h     = 2.4;    /* ... and its height - ISO 4032, the largest allowed. */
 corner_r  = 4.0;    /* Plan-view corner radius. ASA lifts at sharp corners; a radius is the permanent cure (fdm-design-rules §5b). */
 gap       = 1.0;    /* General clearance between internal features. */
 

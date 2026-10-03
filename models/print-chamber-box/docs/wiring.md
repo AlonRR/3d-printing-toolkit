@@ -26,9 +26,10 @@ SPS30's orange and yellow together first.
 
 ## The routes
 
-![the wires, each to its pin](assembly-wiring.png)
+![assembled, cover off, with the wiring table](assembly-open.png)
 
-![the wiring, closer](assembly-wiring-detail.png)
+**Not drawn for the 3 Oct 2026 layout yet** (Alon: *"Let's first get the layout right"*). The text below
+describes the routes of the layout before it.
 
 The routes are drawn by [`assembly-views.scad`](../assembly-views.scad). They are illustrative — a wire
 bends where it likes — but each ends on its pin from the table, and the drawing checks them (see

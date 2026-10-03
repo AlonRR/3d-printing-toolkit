@@ -3,8 +3,15 @@
 An enclosure for the printer chamber node: an ESP32-C3 SuperMini, a Sensirion SPS30 particle sensor and
 a GY-SGP41 VOC/NOx module, running [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml). It
 hangs on the wall outside the printer's enclosure, upright, with the SPS30's air face down. Two parts in
-ASA — a back plate and a cover held by four screws — 62.4 × 98.3 × 24 mm, hung on one wall screw by a
-keyhole in its back.
+ASA, 66.9 × 76.4 × 24 mm: a back plate, and a cover whose top sits on two pins and whose bottom corners
+are screwed into nuts. It hangs on two wall screws by keyholes beside the SPS30's top corners.
+
+> ⚠️ **The layout was rebuilt on 3 Oct 2026, and the topic pages below still describe the one before.**
+> The SuperMini now lies level on a shelf over the SPS30's lead with its antenna's pole up, the SGP41
+> stands on edge beside the SPS30 behind vents in the side wall, and two keyholes replace the one. The
+> model, its checks and the pictures here are the new layout; the pages follow.
+
+![assembled, cover off](docs/assembly-open.png)
 
 ![every part, moved apart along the way it goes in](docs/assembly-exploded.png)
 
@@ -14,10 +21,10 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** The clearance test has set every fit
-([the clearance test](docs/clearance-test.md)), and every dimension is measured or sourced but the wall
-screw's: its thread and head are placeholders until the screw that will hang the box is measured, and
-`scad-check.sh` exits 2 on purpose until then.
+**Modelled and checked; not printable as-is yet.** Two fits are untested: `nut_fit`, the press fit
+of the M3 nuts' pockets, and `gy_pilot_d`, which was tested upright and is now a sideways hole. The wall
+screws' thread and head are placeholders until the screw that will hang the box is measured.
+`scad-check.sh` exits 2 on purpose until all of that is settled.
 
 Before printing the back plate, check on the parts the values read off photos rather than calipers:
 `sm_edge`, `pin_mid`, `gy_hole_bare_d`, and which edge of its pocket the SGP41's mounting hole sits by
@@ -35,10 +42,9 @@ Before printing the back plate, check on the parts the values read off photos ra
 | Cover | [`print-chamber-box-cover.scad`](print-chamber-box-cover.scad) | front face down |
 | Clearance test | [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) | flat |
 
-**Hardware:** four M3 × 14 self-tapping screws for the cover, one M2.5 × 8 socket head cap screw for the
-SGP41, one wall screw of about 3.5 mm and its wall plug to hang it, and 22 AWG solid hookup wire for the
-SGP41. No tape, no
-glue.
+**Hardware:** two M3 × 20 screws and two M3 nuts for the cover, one M2.5 × 6 socket head cap screw for
+the SGP41, two wall screws of about 3.5 mm and their wall plugs to hang it, and 22 AWG solid hookup wire
+for the SGP41. No tape, no glue.
 
 ## Printing
 
@@ -64,7 +70,7 @@ opening is a hole in the first layers or a notch open at an edge.
 | [`print-chamber-box.params.scad`](print-chamber-box.params.scad) | every setting, measurement and fit — the one file to edit |
 | [`print-chamber-box.scad`](print-chamber-box.scad) | the model, its asserts and its collision checks |
 | `print-chamber-box-back.scad`, `-cover.scad`, `-fits.scad` | one part each; check and slice through these |
-| [`assembly-views.scad`](assembly-views.scad) | the assembly and wiring pictures, and the wire-route checks |
+| [`assembly-views.scad`](assembly-views.scad) | the assembly pictures: exploded, and open with the wiring table |
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
 | [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
 | [`sps30-measure.scad`](sps30-measure.scad) | the two widths to measure on the SPS30 |
