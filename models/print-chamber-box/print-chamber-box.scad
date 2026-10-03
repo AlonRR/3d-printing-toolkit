@@ -164,6 +164,24 @@ gy_hy   = gy_hole_front ? gy_y1 - gy_hole_side : gy_y0 + gy_hole_side;   // its 
 gy_hz   = gy_z0 + gy_hole_far;
 gy_pilot_depth = gy_screw_l - gy_pcb_min + 2 * fdm_layer_h;   // from the standoff's face
 
+// Its four wires leave its back, turn up its column and, once level, cross over the SPS30's top-left
+// corner in a short channel on the plate: a slot open to the front between two ribs, the wires side by side
+// across its depth. They press in from the front past a 45-degree lip on each rib, and the lips hold them.
+// The ribs print as walls, the lips as 45-degree ledges. Their lanes keep clear of the wall screw's head as
+// they rise up the column.
+gy_bend_r  = 3.0;                                             // the solid wire's tightest bend
+gy_stub    = 1.0;                                             // straight out of a solder joint first
+gy_pitch   = gy_wd + 0.34;                                    // the wires' spacing, centre to centre
+gy_x_up    = gy_xs - gy_wd / 2 - gy_stub - gy_bend_r;         // where they rise, up the column
+gy_ch_lane = [for (i = [0 : 3]) back_t + key_slack + key_head_h + 0.1 + gy_wd / 2 + i * gy_pitch];
+gy_ch_slot = gy_wd + 0.4;                                     // the slot, across: a wire, 0.2 either side
+gy_ch_zc   = z_sps1 + part_fit + rib_t + gy_ch_slot / 2;      // its middle: the floor rib part_fit over the SPS30
+gy_ch_x1   = gy_x_up - gy_bend_r - gap / 2;                   // it starts once the wires are level
+gy_ch_x0   = gy_ch_x1 - gy_ch_len;
+gy_ch_lip  = (gy_ch_slot - gy_ch_lip_gap) / 2;                // each lip's reach into the slot
+gy_ch_y0   = gy_ch_lane[3] + gy_wd / 2 + 0.2;                 // where the lips begin
+gy_ch_y1   = gy_ch_y0 + 2 * gy_ch_lip;                        // the ribs' front
+
 // =================================================================== the cover's screws and their nuts
 // The two bottom screws sit flush: each head in a counterbore in the cover's front, on a floor as thick as
 // the front. The front is thinner than a head is tall, so a boss on its inside carries the floor, and the
@@ -365,6 +383,14 @@ module gy_holder() {
 }
 module gy_pilot(d = gy_pilot_d) cyl_x(gy_hy, gy_hz, hole_r(d), gy_xs - gy_pilot_depth, gy_xs + eps);
 
+// The SGP41 wires' channel over the SPS30's top-left corner: a floor rib and a roof rib standing on the
+// plate, each with its lip at the front - a 45-degree ridge into the slot.
+module gy_channel() for (k = [-1, 1]) let(zr = gy_ch_zc + k * gy_ch_slot / 2) {
+    box3([gy_ch_x0, back_t - eps, k < 0 ? zr - rib_t : zr], [gy_ch_x1, gy_ch_y1, k < 0 ? zr : zr + rib_t]);
+    translate([gy_ch_x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = gy_ch_x1 - gy_ch_x0)
+        polygon([[gy_ch_y0, zr + k * eps], [gy_ch_y0 + gy_ch_lip, zr - k * gy_ch_lip], [gy_ch_y1, zr + k * eps]]);
+}
+
 // Mirror everything when the outlet - and so the connector, the board and its cable - is on the left.
 module place() {
     if (outlet_at_left) translate([W, 0, 0]) mirror([1, 0, 0]) children();
@@ -399,6 +425,8 @@ module back_plate() place() difference() {
 
         // the SGP41's block and standoff, and the ledge its bottom edge sits on
         gy_holder();
+        // the channel its wires cross the SPS30's top-left corner in
+        gy_channel();
         box3([ch_x1 + cradle_t - eps, back_t - eps, gy_z0 - pocket_fit - rim_t],
              [gy_xs + gy_pcb_max + gy_sensor_h, gy_y1 + pocket_fit, gy_z0 - pocket_fit]);
 

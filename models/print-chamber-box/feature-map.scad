@@ -66,6 +66,7 @@ if (view == "back") {
     marker(10, [ch_x1 - 4, y_ch1 + f, gy_z0 - 6]);                                  // ledge
     for (x = nut_bx) marker(11, [x, y_in1 + f, nut_bz + nut_boss_d / 2 + 3.5]);     // nut bosses
     marker(12, [W / 2, back_t + bump_out + f, u_z0 - 3.5]);                         // the bump at the top
+    marker(13, [(gy_ch_x0 + gy_ch_x1) / 2, gy_ch_y1 + f, gy_ch_zc + gy_ch_slot / 2 + rib_t + 3.5]);   // the SGP41 wires' channel
     legend(["BACK PLATE - as you face the box, cover off",
             "",
             " 1  the plate - against the wall",
@@ -79,7 +80,8 @@ if (view == "back") {
             " 9  pilot for the SGP41's M2.5 screw, sideways",
             "10  ledge - the SGP41's bottom edge sits on it",
             "11  nut bosses - an M3 nut pressed in from behind",
-            "12  bump - the cover's top locates on it"],
+            "12  bump - the cover's top locates on it",
+            "13  channel - holds the SGP41's wires"],
            [-18, 0, H + 34]);
     axes([-22, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
 }

@@ -56,10 +56,13 @@ go — a wire bends where it likes — but each ends on its pin from the table, 
 
 - **Solder them to come out of the module's back**, before it is screwed down: they leave towards the
   SPS30's channel, then turn up, at least 1 mm from the board and round no tighter than about 3 mm.
-- They rise up the module's column **slanting forward**, away from the plate, so they pass in front of
-  the right wall screw's head — gently, so the slant does not bring them together.
-- They cross over the SPS30's top in front of its plug, about 3 mm above the sensor: under the lead's
-  wires, and about 10 mm under the antenna.
+- They step out from the plate low in the module's column, below the right wall screw's head, and rise
+  straight past it.
+- Once level, they cross over the SPS30's top-left corner in **the wire channel** on the plate: press
+  them in from the front past its lips, SDA nearest the plate and VIN outermost.
+- Past the channel they **slant forward** — gently, so the slant does not bring them together — to cross
+  the rest of the SPS30's top in front of its plug, about 3 mm above the sensor: under the lead's wires,
+  and about 10 mm under the antenna.
 - At the board's USB-C end, **SDA and SCL** climb to lie against the board's underside and run back to
   GPIO5 and GPIO6; **VIN** climbs straight up into 3V3; **GND**, which passes behind VIN, slants up into
   its pad beside it.
@@ -107,7 +110,7 @@ Each check has a setting that breaks it, measured 3 Oct 2026:
 | `bend_r = 6` | segments too short for the bends asked of them | an assert |
 | `ant_clear = 5` | a limit the routes, at 4.2 mm, do not meet | an assert |
 | `back_wire_room = 2.5` | less room under the back pads than the stacked wires need | an assert |
-| `z_cross = 43.2` | the SGP41's wires lowered into the cover's baffle and the SPS30's channel walls | `check_wires`: 212 mm³ |
+| `z_cross = 45.5` | the SGP41's wires lifted half a millimetre in their channel, into its roof rib | `check_wires`: 4.8 mm³, all in the channel |
 
 The routes are laid out for the box as built, with the outlet at the right; the view refuses
 `outlet_at_left = true`.

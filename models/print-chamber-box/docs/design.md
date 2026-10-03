@@ -94,7 +94,8 @@ box is, the model draws the module's mirror image first and it comes out the rig
 ## Printing without support
 
 **The back plate prints on its back.** The keyholes are openings in its first layers. The channel
-walls, clips, stop, the SGP41's block and the bump are walls standing on it. The nut pockets open on the
+walls, clips, stop, the SGP41's block, the bump and the wire channel's ribs are walls standing on it; the
+wire channel's lips are 45° ledges at the ribs' tops. The nut pockets open on the
 bed side, and each pocket's ceiling is bridged in three layers — a slot the screw hole's width, then a
 square, then the round hole — so it needs no support. The SGP41's standoff is the one overhang: a 4 mm
 peg standing 2.7 mm out of the side of its block.

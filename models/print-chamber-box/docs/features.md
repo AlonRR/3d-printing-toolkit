@@ -33,6 +33,9 @@ As you face the box with the cover off:
 11. **Nut bosses** — one in each bottom corner. An M3 nut goes into each hex pocket from the wall side
     and is drawn up to its shoulder by the cover's screw.
 12. **Bump** — at the middle of the top. The cover's U straddles it, which locates the cover's top.
+13. **Wire channel** — over the SPS30's top-left corner: a slot between two ribs standing on the plate,
+    open to the front. The SGP41's four wires press in past a 45° lip on each rib and lie side by side
+    in it, where they turn out of the module's column over the sensor.
 
 More on 8–10 in [The SGP41's mount](sgp41-mount.md), and on 6 and 7 in [The USB-C end](usb-c-end.md).
 

@@ -128,6 +128,8 @@ thicknesses whole layers of `fdm_layer_h`, and the model asserts both.
 | `clip_room` | **2.1** | how far from the plate the back clips may reach over the board's pad row. Alon's figure, not measured; the parts envelope keeps out of it only where the clips are |
 | `clasp_len`, `clasp_low` | **5.0**, **3.0** | each back clip's length along the edge, and how far its lower jaw reaches under the board |
 | `stop_reach` | **3.0** | how far each stop at the antenna end reaches in from a long edge; the loop leaves 4.3 free |
+| `gy_wd` | **1.56** | the SGP41's wires: the lab's 22 AWG solid hookup wire, UL1007, measured over its insulation 2 Oct 2026. The wire channel's slot is sized from it |
+| `gy_ch_len`, `gy_ch_lip_gap` | **8.0**, **1.3** | the wire channel over the SPS30's top-left corner: its length, and the opening between its two lips — narrower than a wire, so each presses in past them and stays |
 | `gy_standoff_d`, `gy_screw_l` | **4.0**, **6.0** | the SGP41's standoff, inside the bare patch round its hole; its M2.5 screw's length — an 8 would reach the SPS30's channel |
 | `key_slack`, `key_level_tol` | **1.0**, **2.0** | how much further than the plate's thickness a wall screw's head may stand off the wall; how much lower one screw may sit than the other |
 | `back_wire_room` | **3.0** | the room kept under the board's back edge, over the wall screws' heads, for the wires to GPIO5 and GPIO6: two stacked there, the SGP41's 1.56 mm and a lead wire of about 1 mm. The keyholes sit low enough to leave it — see [Wiring](wiring.md) |
@@ -138,5 +140,4 @@ thicknesses whole layers of `fdm_layer_h`, and the model asserts both.
 
 ## Not in the params file
 
-The SGP41's wires are the lab's **22 AWG solid hookup wire, UL1007, 1.56 mm** over its insulation,
-measured 2 Oct 2026. Where they run is in [Wiring](wiring.md).
+Where the wires run, and their bend radii, are in [Wiring](wiring.md).

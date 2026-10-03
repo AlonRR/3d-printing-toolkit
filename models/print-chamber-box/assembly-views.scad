@@ -76,10 +76,9 @@ module m3s() for (x = nut_bx) color([0.55, 0.55, 0.60]) {   // head on the cover
 
 // ------------------------------------------------------------------ the wires
 wd          = 1.0;    // the SPS30 lead's wires, drawn 1 mm thick
-gy_wd       = 1.56;   // the SGP41's: the lab's 22 AWG solid hookup wire, measured over its insulation
-bend_r      = 3.0;    // the solid wire's tightest bend, on the centreline - about twice the wire
+bend_r      = gy_bend_r;   // the SGP41's 22 AWG solid wire's tightest bend, on the centreline (gy_wd: the params)
 lead_bend_r = 1.0;    // the lead's stranded wires bend tighter
-wire_stub   = 1.0;    // straight out of a solder joint before the first bend
+wire_stub   = gy_stub;     // straight out of a solder joint before the first bend
 ant_clear   = 3.0;    // no wire nearer the antenna's loop or pole than this, surface to surface
 pad_join    = 5.0;    // two wires that end on one pad may meet within this of it
 
@@ -144,19 +143,21 @@ lead_pads   = ["5V", "GPIO5", "GPIO6", "GND", "GND"];
 lead_colours = [[0.10, 0.10, 0.10], [0.85, 0.10, 0.10], [0.95, 0.95, 0.95], [0.95, 0.80, 0.10], [0.95, 0.45, 0.10]];
 
 // The SGP41's four: soldered into its pin holes from its back, they come out towards the SPS30's channel,
-// turn up its column - slanting forward as they rise, clear of the wall screw's head, gently enough that
-// the slant does not bring them together - and cross over the SPS30's top in front of its plug, under the
-// cable zone's lead wires and well under the antenna. At the board's USB-C end the two for the back pads
+// turn up its column - stepping out to their lanes low down, below the wall screw's head - and once level
+// cross the SPS30's top-left corner in
+// the plate's channel (gy_channel in the model). Past it they slant forward - gently, so the slant does not
+// bring them together - to pass in front of the SPS30's plug, under the cable zone's lead wires and well
+// under the antenna. At the board's USB-C end the two for the back pads
 // climb to lie against the board's underside and run back to them; VIN climbs straight up to 3V3 at the
 // front edge, and GND, which passes behind it, slants up to its pad beside it.
 function gy_pin_y(i) = gy_y0 + pocket_fit + 1.5 + i * pin_pitch;   // SDA, SCL, GND, VIN
 gy_pin_z = gy_z1 - 1.3;
-gy_x_up  = gy_xs - gy_wd / 2 - wire_stub - bend_r;              // where they rise, up the column
-z_cross  = z_sps1 + 3.1;                                        // where they cross the SPS30's top
-gy_pitch = gy_wd + 0.34;
-gy_lane  = [for (i = [0 : 3]) y_front_end - (3 - i) * gy_pitch];   // VIN's lane is the front pads' line
+z_cross  = gy_ch_zc;                                           // where they cross the SPS30's top: the channel's slot
+gy_lane  = [for (i = [0 : 3]) y_front_end - (3 - i) * gy_pitch];   // past the channel; VIN's is the front pads' line
+gy_slant = 20;                                                  // the run over which they slant forward
 function gy_start(i) = [[gy_xs - gy_wd / 2, gy_pin_y(i), gy_pin_z], [gy_x_up, gy_pin_y(i), gy_pin_z],
-    [gy_x_up, gy_lane[i], z_cross]];
+    [gy_x_up, gy_ch_lane[i], gy_pin_z + 6], [gy_x_up, gy_ch_lane[i], z_cross], [gy_ch_x0, gy_ch_lane[i], z_cross],
+    [gy_ch_x0 - gy_slant, gy_lane[i], z_cross]];
 function gy_to_back(i, x, y_flat) = concat(gy_start(i),
     [[x, gy_lane[i], z_cross], [x, y_flat, zg], [x, y_back_end, zg]]);
 gy_routes = [
