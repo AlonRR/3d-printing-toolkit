@@ -102,8 +102,9 @@ peg standing 2.7 mm out of the side of its block.
 **The cover prints front face down.** The window under the SPS30 is a notch open at the back edge, and
 the vents in the front are holes in its first layers. The counterbores the screw heads sit in open on the
 bed, and their floors are bridged the same three-layer way as the nut pockets. The partition, baffle,
-clasp, stop and U are walls standing on the front. The USB-C opening and the side vents are windows in a
-standing wall, with short bridged tops: 3.8 mm and 2 mm.
+clasp, stop and U are walls standing on the front. The side vents are windows in a standing wall, with short
+bridged tops, 2 mm. The USB-C opening is a stadium standing on end in that wall, and its top end closes in
+a 45° point, so it needs no bridge at all.
 
 **No skirt, no brim, no draft shield.** Rounded corners in plan view (`corner_r`) keep ASA's corners
 down instead.

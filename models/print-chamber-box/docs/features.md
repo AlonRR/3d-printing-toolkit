@@ -51,8 +51,9 @@ Seen from inside — from the wall — so its left and right are swapped against
    clamps on, and the back plate's nut boss meets that boss.
 5. **Window** — most of the bottom wall is open under the SPS30's air face, so its inlets and outlet
    breathe the room directly. Open at the back edge, so it prints without a bridge.
-6. **USB-C opening** — the size of the socket's metal shell. The socket's mouth reaches the outside face,
-   so any cable seats fully.
+6. **USB-C opening** — the shape and size of the socket's metal shell: a stadium, its end towards the
+   plate a 45° point so it prints without support. The socket's mouth reaches the outside face, so any
+   cable seats fully.
 7. **Thinned wall** — 0.9 mm over the board's USB-C end, so the board reaches into it and the socket
    reaches the outside. The board's corners bear on it when a plug is pulled; its 45° steps keep a crack
    from starting.

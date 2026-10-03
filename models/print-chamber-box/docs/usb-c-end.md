@@ -8,7 +8,10 @@ fits, and none needs measuring.
 The socket's shell overhangs the SuperMini's PCB by only 1.5 mm, so a normal 1.8 mm wall would leave the
 mouth inside it. Over the board's end the right-hand wall is therefore thinned from inside to `port_wall`
 (0.9 mm, two beads) across the board's whole width and height, and the PCB's end reaches into that
-recess. The opening through what is left is the size of the shell, not of a plug.
+recess. The opening through what is left is the size of the shell, not of a plug, and its shape: a
+stadium, round at both ends, `part_fit` clear all round. The cover prints front face down, so the end
+towards the back plate is the opening's top on the bed; there it closes in a 45° point instead of a
+round end, which would be an arch with nothing under it.
 
 The thinned stretch is the one a plug's pull bears on across the layer lines, so its steps back to the
 full wall are 45° chamfers rather than square inside corners, where a crack would start.

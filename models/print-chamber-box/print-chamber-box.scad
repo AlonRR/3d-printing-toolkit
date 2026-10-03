@@ -79,6 +79,10 @@ sm_ant_x  = sm_x1;                                          // the PCB's antenna
 pole_in   = 1.5;                                            // the pole stands this far in from that end
 usb_proud    = usb_overhang - port_wall - part_fit;         // the mouth, past the outside face, board at rest
 usb_proud_in = usb_proud - pocket_fit;                      // the same, with a plug pushing the board against its stops
+// The USB-C shell is a stadium - a rectangle with round ends - and the wall's opening is the same shape,
+// part_fit clear all round. Alon, 3 Oct 2026: "round (or best we can do 3d printing) the usbc port hole".
+usb_open_r = usb_shell_h / 2 + part_fit;                    // its ends' radius
+usb_open_c = usb_shell_w / 2 - usb_shell_h / 2;             // its ends' centres, either side of the board's middle
 // It is held by its long edges, not laid on a shelf, so the pins along them stay open from below. Its back
 // edge presses from the front into two clips on the plate - each a lower jaw, and an upper one whose
 // underside angles in from a wide mouth to a catch that pinches the PCB, and out again behind it, where the
@@ -435,9 +439,13 @@ module cover() place() {
                  [wall + eps, y_b1 + pocket_fit + part_fit + (wall - port_wall),
                   zu + sm_t + part_fit + (wall - port_wall)]);
         }
-        // the USB-C opening through it, the size of the socket's shell
-        box3([-eps, y_bc - usb_shell_w / 2 - part_fit, z_uc - usb_shell_h / 2 - part_fit],
-             [port_wall + eps, y_bc + usb_shell_w / 2 + part_fit, z_uc + usb_shell_h / 2 + part_fit]);
+        // the USB-C opening through it: the shell's stadium, part_fit clear. The cover prints front face
+        // down, so the opening's end towards the plate is its top on the bed: there it closes in a
+        // 45-degree point rather than a round end, which would be an arch with nothing under it.
+        translate([-eps, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = port_wall + 2 * eps) hull() {
+            for (dy = [-1, 1]) translate([y_bc + dy * usb_open_c, z_uc]) circle(r = usb_open_r, $fn = 48);
+            translate([y_bc - usb_open_c - usb_open_r * sqrt(2), z_uc]) square(0.01, center = true);
+        }
         // vents: in the left-hand wall over the SGP41's sensor, and in the front over the board
         side_vents(gy_y0, gy_y1, gy_z0, gy_z1);
         vent_slots(max(sm_x0, wall + gap), min(sm_x1, W - wall - gap), zu + sm_t + gap, zu + sm_t + gap + 10);
@@ -496,9 +504,9 @@ module sm_piece(i, s) {
                        // the back clips are, of all the room clip_room says they have. Plain boxes, so that
                        // the slide-in check can sweep each one without filling in the clips' notches.
         color("teal") for (b = parts_boxes(s)) box3(b[0], b[1]);
-    else if (i == 2)   // the USB-C shell, overhanging the PCB through the wall's opening
-        color("teal") box3([sm_usb_x - usb_overhang + s, y_bc - usb_shell_w / 2 + s, zu + sm_pcb_t + s],
-                           [sm_usb_x - s, y_bc + usb_shell_w / 2 - s, zu + sm_pcb_t + usb_shell_h - s]);
+    else if (i == 2)   // the USB-C shell, a stadium, overhanging the PCB through the wall's opening
+        color("teal") hull() for (dy = [-1, 1])
+            cyl_x(y_bc + dy * usb_open_c, z_uc, usb_shell_h / 2 - s, sm_usb_x - usb_overhang + s, sm_usb_x - s);
     else if (i == 3)   // the antenna loop, in the board's plane past its end
         color("orange") box3([sm_ant_x + s, y_b0 + ant_loop_free + s, zu + sm_pcb_t + s],
                              [sm_ant_x + ant_over - s, y_b1 - ant_loop_free - s, zu + sm_pcb_t + 1 - s]);
