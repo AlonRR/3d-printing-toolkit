@@ -59,13 +59,14 @@ conn_from    = 2.0;    /* The SPS30's plug and lead, along its top face, from th
 conn_to      = 10.5;
 cable_zone_h = 10.0;   /* Room above the SPS30's connector face: lead plugged in and bent over as tightly as it comfortably goes, from the sensor's top to the highest wire. Measured 2 Oct 2026. */
 
-/* The wall screw the box hangs on, by the keyhole in its back plate. Placeholders for a typical 3.5 mm
-   wood screw until the screw that will be used is measured. */
-key_shank_d = 3.5;   /* Its thread, across. */
-key_head_d  = 7.0;   /* Its head, across. */
-key_head_h  = 2.6;   /* Its head, tall. */
+/* The wall screws the box hangs on, by the two keyholes in its back plate: 4 x 20 chipboard screws,
+   measured 3 Oct 2026. A chipboard screw's head is usually countersunk; the room behind the plate is
+   drawn as a cylinder the head's full width and height, which holds for either shape. */
+key_shank_d = 4.0;    /* Its thread, across. The 2 Oct clearance test's G row agrees: of 3.8, 4.0 and 4.2 mm holes, it fits the 4.2. */
+key_head_d  = 7.9;    /* Its head, across. */
+key_head_h  = 2.68;   /* Its head, tall. */
 
-unmeasured = ["key_shank_d", "key_head_d", "key_head_h"];
+unmeasured = [];
 /* Delete a name from this list once its value is measured. While any remain, the model echoes a
    WARNING and scripts/scad-check.sh exits 2 - which is the INTENDED state until then. */
 

@@ -32,8 +32,9 @@ are for 1 / 2 / 3 dots.
 **The hole bar has one group of dots over each hole.** On the 2 Oct print the groups sit between its
 two rows, and count for both.
 
-The keyhole the box hangs by is not tried here: it is sized from the wall screw with room to spare —
-0.6 mm round the thread, at least 1 mm of plate under the head each side — once the screw is measured.
+The keyholes the box hangs by are not tried here: they are sized from the wall screw with room to spare
+— the slot 0.6 mm wider than the thread, at least 1 mm of plate under the head each side. G, below,
+confirms the thread's end of that.
 
 The values follow the settings, so after a setting changes, a reprint tries a new ladder round it. The
 table shows the ladder a reprint would try now; the results below give the one the print tried.
@@ -57,6 +58,7 @@ All from the one print of 2 Oct 2026.
 | 3 Oct 2026 | E | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | 2 dots fine; 1 dot a little tight | **2.1** |
 | 3 Oct 2026 | F | `screw_d` | 3.2 / 3.4 / 3.6 | 1 dot: an M3 passes freely | **3.2** |
 | 3 Oct 2026 | H | `part_fit` | — | peg 5.98; socket 6.50 in y, 6.55 in x — 0.26 and 0.29 per side | **0.3** |
+| 3 Oct 2026 | G | ~~`tab_hole_d`~~ | 3.8 / 4.0 / 4.2 | 3 dots fits the 4 × 20 wall screw | retired; the keyholes' slot is 4.9 as cut |
 
 - **A, B, C, D and F** each took the tightest try, so nothing tighter has been tried.
 - **A's x play was the width allowance, not the fit.** The frame's width was the datasheet's 41.2 mm
@@ -72,5 +74,6 @@ All from the one print of 2 Oct 2026.
   never short: its pilots are 18.8 mm deep, against the 12.2 mm of screw that passes through the cover.
 - **H**'s 0.26–0.29 mm is over the 0.15 mm floor, so `part_fit` stays at 0.3.
 
-**G is retired**, untested: on 3 Oct 2026 the box's mounting tabs, whose holes it tried, gave way to a
-keyhole for one wall screw.
+**G is retired**: on 3 Oct 2026 the box's mounting tabs, whose holes it tried, gave way to keyholes. It
+was still read, with the wall screw that will hang the box: the 4.0 mm thread fits the 4.2 mm hole, so
+the keyholes' 4.9 mm slot slides freely.

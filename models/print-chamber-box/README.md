@@ -3,7 +3,7 @@
 An enclosure for the printer chamber node: an ESP32-C3 SuperMini, a Sensirion SPS30 particle sensor and
 a GY-SGP41 VOC/NOx module, running [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml). It
 hangs on the wall outside the printer's enclosure, upright, with the SPS30's air face down. Two parts in
-ASA, 66.9 × 76.4 × 24 mm: a back plate, and a cover whose top locates on a bump in a U and whose bottom
+ASA, 68.7 × 76.4 × 24 mm: a back plate, and a cover whose top locates on a bump in a U and whose bottom
 corners are screwed into nuts. It hangs on two wall screws by keyholes beside the SPS30's top corners.
 
 > ⚠️ **The layout was rebuilt on 3 Oct 2026, and the topic pages below still describe the one before.**
@@ -21,14 +21,14 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; not printable as-is yet.** Two fits are untested: `nut_fit`, the press fit
-of the M3 nuts' pockets, and `gy_pilot_d`, which was tested upright and is now a sideways hole. The wall
-screws' thread and head are placeholders until the screw that will hang the box is measured.
-`scad-check.sh` exits 2 on purpose until all of that is settled.
+**Modelled and checked; not printable as-is yet.** Three fits are untested: `nut_fit`, the press fit
+of the M3 nuts' pockets; `gy_pilot_d`, which was tested upright and is now a sideways hole; and
+`clasp_pinch`, how hard the clips on the SuperMini's back edge grip it. `scad-check.sh` exits 2 on
+purpose until they are settled.
 
-Before printing the back plate, check on the parts the values read off photos rather than calipers:
-`sm_edge`, `pin_mid`, `gy_hole_bare_d`, and which edge of its pocket the SGP41's mounting hole sits by
-([parameters](docs/parameters.md)).
+Before printing the back plate, check on the parts the three values read off photos rather than
+calipers — `sm_edge`, `pin_mid` and `gy_hole_bare_d`. [What to measure](docs/board-measure.png), and
+where each came from: [parameters](docs/parameters.md).
 
 ## Building it
 
@@ -43,7 +43,7 @@ Before printing the back plate, check on the parts the values read off photos ra
 | Clearance test | [`print-chamber-box-fits.scad`](print-chamber-box-fits.scad) | flat |
 
 **Hardware:** two M3 × 20 screws and two M3 nuts for the cover, one M2.5 × 6 socket head cap screw for
-the SGP41, two wall screws of about 3.5 mm and their wall plugs to hang it, and 22 AWG solid hookup wire
+the SGP41, two 4 × 20 chipboard screws and their wall plugs to hang it, and 22 AWG solid hookup wire
 for the SGP41. No tape, no glue.
 
 ## Printing
@@ -74,4 +74,5 @@ opening is a hole in the first layers or a notch open at an edge.
 | [`feature-map.scad`](feature-map.scad) | the numbered feature pictures |
 | [`fits-map.scad`](fits-map.scad) | the lettered picture of the clearance test |
 | [`sps30-measure.scad`](sps30-measure.scad) | the two widths to measure on the SPS30 |
+| [`board-measure.scad`](board-measure.scad) | the three photo readings to check on the SuperMini and the GY-SGP41 |
 | [`docs/`](docs/) | the pages above and their pictures |

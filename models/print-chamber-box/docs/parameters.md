@@ -4,7 +4,7 @@ Every dimension has a name in [`print-chamber-box.params.scad`](../print-chamber
 value goes in against its name rather than a description. This page says where each came from.
 
 If a part changes, set the new value there. A value not yet measured goes in the `unmeasured` list,
-and the model warns until it is.
+and the model warns until it is. The list is empty now.
 
 ## Sourced
 
@@ -25,24 +25,27 @@ From the **USB Type-C specification**, rev 1.2, so that no cable needs measuring
 
 From **ISO 4762**, the SGP41's M2.5 × 8 socket head cap screw: `gy_head_d` **4.5**, `gy_head_h` **2.5**.
 
-## Not measured yet
+## The wall screws
 
-In the `unmeasured` list, so the model warns until they are set. They size the keyhole the box hangs by:
-the entry is the head plus 1 mm, the slot the thread plus 0.6 mm, and an assert keeps at least 1 mm of
-plate under the head on each side.
+The two 4 × 20 chipboard screws the box hangs on, measured 3 Oct 2026. They size the keyholes: the entry
+is the head plus 1 mm (9.2 mm as cut), the slot the thread plus 0.6 mm (4.9 mm as cut), and an assert
+keeps at least 1 mm of plate under the head on each side. The clearance test's G row agrees on the
+thread: of 3.8, 4.0 and 4.2 mm holes, the screw fits the 4.2.
 
-| Name | Placeholder | What |
+| Name | Value | What |
 |---|---|---|
-| `key_shank_d` | 3.5 | the wall screw's thread, across |
-| `key_head_d` | 7.0 | its head, across |
-| `key_head_h` | 2.6 | its head, tall |
-
-Placeholders for a typical 3.5 mm wood screw: measure the one that will hang the box.
+| `key_shank_d` | **4.0** | the thread, across |
+| `key_head_d` | **7.9** | the head, across |
+| `key_head_h` | **2.68** | the head, tall. A chipboard screw's head is usually countersunk; the room behind the plate is drawn as a cylinder the head's full size, which holds for either shape |
 
 ## Measured
 
 With calipers on the parts in hand, 2 Oct 2026 unless dated. Three are photo readings, marked; check them on the
-parts before printing the back plate.
+parts before printing the back plate — A, B and C here:
+
+![the three photo readings to check with calipers](board-measure.png)
+
+Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie on the table.
 
 | Name | Value | What |
 |---|---|---|

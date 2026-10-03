@@ -8,7 +8,7 @@
 - the ESP32-C3 SuperMini, the SPS30 with its lead, and the GY-SGP41;
 - four **M3 × 14 self-tapping** screws for the cover, and one **M2.5 × 8 socket head cap screw** for the
   SGP41;
-- one **wall screw** of about 3.5 mm, and its wall plug, to hang it;
+- two **4 × 20 chipboard screws**, and their wall plugs, to hang it;
 - **22 AWG solid hookup wire** for the SGP41's four wires;
 - no tape and no glue: everything is held by the printed parts.
 
