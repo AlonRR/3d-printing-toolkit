@@ -22,8 +22,8 @@ scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad  "$P"
 Each should report **one manifold part** and `fdm_*` values matching the profile: the back plate
 68.7 × 80.3 mm on the bed — the divider stands 4 mm below the box — and the cover 68.7 × 76.3 mm.
 
-- **Exit 2 is expected** for the back plate and the cover while `untested_fits` is not empty (and
-  `unmeasured`, which is empty now); exit 0 means both are clear. The clearance test reports neither, so
+- **Exit 2 is expected** for the back plate and the cover while `untested_fits` or `unmeasured` is not
+  empty; exit 0 means both are clear, as they both are now. The clearance test reports neither, so
   it exits 0.
 - `scad-check.sh` also fails a G-code with a skirt or a brim. The profile above has neither.
 - **Always check through the three wrapper files, never through `print-chamber-box.scad` itself.** The
@@ -60,7 +60,7 @@ Each setting breaks one thing; the check, or an assert, must catch it. Measured 
 | `check_parts` | `bump_z1 = 75` | the bump at the top into the cover's top wall | 14.4 mm³ |
 | `check_parts` | `nut_boss_y1 = 21.5` | the nut bosses run into the cover's screw bosses | 190.5 mm³ |
 | `check_components` | `z_f0 = 50` | the board lowered into the column the SPS30's lead rises through | 24.3 mm³ |
-| `check_components` | `gy_post_y1 = 18.4` | the SGP41's post pushed up into the module | 6.0 mm³ |
+| `check_components` | `gy_post_y1 = 18.4` | the SGP41's post pushed up into the module | 6.2 mm³ |
 | `check_components` | `gy_standoff_d = 5.6` | the post's top wider than the bare ring round the module's hole | 1.9 mm³ |
 | `check_components` | `key_xs = [6.25, 57]` | the left keyhole moved under the SPS30's channel wall: its screw head runs into it | 60.0 mm³ |
 | `check_components` | `clip_g_catch = 0.5` | the clips' catch pressing too far into the PCB | 0.61 mm³ |

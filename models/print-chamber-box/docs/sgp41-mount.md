@@ -21,7 +21,7 @@ notched there, so the parts on the module's underside clear it by a millimetre; 
 ## How it is held
 
 **One M2.5 × 6 socket head screw, from the front**, through its 3.13 mm mounting hole into a post that
-rises from the plate, where it cuts its own thread in an upright pilot (`gy_pilot_d`, 2.1 mm), 4.9 mm
+rises from the plate, where it cuts its own thread in an upright pilot (`gy_pilot_d`, 2.0 mm), 4.9 mm
 deep. Its head sits between the module and the cover, `part_fit` clear of the cover.
 
 **Its parts never bear load.** The module lies on two things: the post's top, 4.6 mm across
@@ -35,7 +35,8 @@ they are walls and an upright post, and the pilot is an upright hole. The first 
 edge by a peg standing sideways out of a block; that peg had nothing under it on the bed, and the second
 clearance test's three copies of it did not print usably.
 
-The post is narrower round the pilot than the boss the first clearance test tried the pilot in, so
-`gy_pilot_d` is untested again; the [clearance test](clearance-test.md)'s M tries it.
+The post is narrower round the pilot than the boss the first clearance test tried the pilot in, so the
+[clearance test](clearance-test.md)'s third round tried it again in the post itself: 2.0 mm bites
+firmly without splitting it.
 
 Its wires to the SuperMini are in [Wiring](wiring.md).

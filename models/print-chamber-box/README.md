@@ -20,11 +20,9 @@ its back, so on the bed its y is up.
 
 ## Status
 
-**Modelled and checked; print the third clearance test before the box.** The SGP41's first mount, on
-edge on a sideways standoff, did not print, so it now lies flat on a post with an upright pilot. That post
-is narrower round the pilot than the boss the first test tried, so `gy_pilot_d` is untested once more and
-`scad-check.sh` exits 2 on purpose; the [clearance test](docs/clearance-test.md)'s M — three of the new
-mount, about 33 min — settles it. Every other fit is tested.
+**Modelled, checked, and every fit tested — ready to print.** Three rounds of the
+[clearance test](docs/clearance-test.md) tried every fit in ASA on this printer, the last on 4 Oct 2026;
+`untested_fits` and `unmeasured` are both empty, so `scad-check.sh` passes the back plate and the cover.
 
 ## Building it
 

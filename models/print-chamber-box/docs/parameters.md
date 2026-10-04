@@ -94,12 +94,13 @@ Clearances that depend on the printer and the filament, found with [the clearanc
 | `sps_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round the SPS30. Flush across its thickness, about 0.7 mm loose along its width, until the width was measured (`sps_w`, `sps_nub` above) |
 | `pocket_fit` | **0.2** | tested 2 Oct 2026, snug — clearance per side round both boards |
 | `part_fit` | **0.3** | tested 3 Oct 2026, 0.26–0.29 per side as printed — between a back-plate feature and the cover |
-| `gy_pilot_d` | **2.1** | **untested** — pilot for the SGP41's M2.5 screw. Tested upright 3 Oct 2026 in a 6 mm boss, fine; tried sideways the same day by the second test's K, whose standoffs did not print. Upright again in the flat mount's post, but 4.6 mm across at its top: the third test's M |
+| `gy_pilot_d` | **2.0** | tested 4 Oct 2026, the third clearance test's M, 1 dot — pilot for the SGP41's M2.5 screw, upright in the flat mount's post. Tried upright in a 6 mm boss on 3 Oct, fine at 2.1, and sideways the same day by the second test's K, whose standoffs did not print |
 | `nut_fit` | **0** | tested 3 Oct 2026, the clearance test's J, 2 dots — the M3 nuts' hex pockets, per side on top of the hole compensation: a press fit |
 | `clasp_pinch` | **0.1** | tested 3 Oct 2026, the clearance test's L, 2 dots — how much the SuperMini's back clips pinch its PCB at their catch |
 | `screw_d` | **3.2** | tested 3 Oct 2026, passes an M3 freely — clearance hole for the M3 screws in the cover |
 
-The untested one is in `untested_fits`, and `scad-check.sh` exits 2 until it is cleared.
+Every fit is tested, so `untested_fits` is empty and `scad-check.sh` passes; a fit added later goes in it
+untested, and the check exits 2 until it is cleared.
 Two the first round tested have gone from the box: `pilot_d` with the self-tapping cover screws, and
 `tab_hole_d` with the mounting tabs.
 

@@ -1,12 +1,13 @@
 # The clearance test
 
-**Print [`print-chamber-box-fits.scad`](../print-chamber-box-fits.scad) before the box**, in the same ASA
-with the same profile: one flat part, about 33 min and 3.2 g. It tries each fit still untested three
-ways. Every piece is the box's own geometry — drawn by the box's own modules, with only the fit changed,
+**Every fit is tested now** — the last on 4 Oct 2026 — so the box needs no more of this. The test is
+kept for when a setting, the printer or the filament changes: then reprint
+[`print-chamber-box-fits.scad`](../print-chamber-box-fits.scad) before the box, in the same ASA with the
+same profile — one flat part, about 33 min and 3.2 g. It tries each fit three ways. Every piece is the box's own geometry — drawn by the box's own modules, with only the fit changed,
 and lying on the bed as it does in the back plate — so it tests exactly what the box will print.
 
-This is the third round. The first two, printed 2 and 3 Oct 2026, settled every fit they tried but one —
-their results are below — so none of their pieces is printed again; they are in the repository's history.
+It holds the third round. The first two, printed 2 and 3 Oct 2026, settled every fit they tried but one —
+their results are below — and their pieces are in the repository's history.
 
 ## Which piece is which
 
@@ -24,7 +25,7 @@ that a letter always means one piece.
 
 | | Pieces | Setting | 1 / 2 / 3 dots | Try | Pick |
 |---|---|---|---|---|---|
-| **M** | the three posts, each with its rib and ledge — the SGP41's mount | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | lay the GY-SGP41 on each post, sensor up and its bottom edge on the ledge, and drive the M2.5 × 6 through its hole into the pilot, fully in, then back out — once per post, since the first drive cuts the thread | the one that bites firmly without splitting the post's 4.6 mm top or taking real force |
+| **M** | the three posts, each with its rib and ledge — the SGP41's mount | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | lay the GY-SGP41 on each post, sensor up and its bottom edge on the ledge, and drive the M2.5 × 6 through its hole into the pilot, fully in, then back out — once per post, since the first drive cuts the thread | the one that bites firmly without splitting the post's 4.6 mm top or taking real force. No hole may go under 2 mm, so with the pilot at 2.0 a reprint tries 2.0 / 2.1 / 2.2 again: 1 dot is then the setting |
 
 The keyholes the box hangs by are not tried here: they are sized from the wall screw with room to spare
 — the slot 0.6 mm wider than the thread, at least 1 mm of plate under the head each side. The first
@@ -40,7 +41,14 @@ the wrong place: say so, and it moves.
 
 ## Results
 
-**Third round — M:** not printed yet.
+**Third round**, printed 4 Oct 2026:
+
+| Read | Group | Setting | Ladder | Pick | Now |
+|---|---|---|---|---|---|
+| 4 Oct 2026 | M | `gy_pilot_d` | 2.0 / 2.1 / 2.2 | 1 dot | **2.0** |
+
+- **M** took the tightest try, which is also as small as a hole may go, so nothing tighter can be tried.
+  It is the flat mount's post, upright, its top 4.6 mm across.
 
 **Second round**, printed 3 Oct 2026. Its groups were: J, the M3 nuts' pockets; K, the SGP41's first
 mount, on edge on a sideways standoff; L, pairs of the SuperMini's back clips.

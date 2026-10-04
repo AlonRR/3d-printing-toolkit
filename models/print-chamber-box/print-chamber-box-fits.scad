@@ -32,7 +32,9 @@ dot_d = 1.5;                // the tags: about three beads across, two layers pr
 base_t = 6 * fdm_layer_h;   // 1.2 mm: the floor everything stands on
 
 function ladder(v, s) = [v - s, v, v + s];
-gy_pilots = ladder(gy_pilot_d, fit_step);    // smaller is tighter
+// Smaller is tighter. No hole may go under 2 mm (the rules below), so with the pilot at 2.0 the ladder
+// starts there instead: 1 dot is then the setting itself.
+gy_pilots = ladder(max(gy_pilot_d, 2 + fit_step), fit_step);
 
 // The box's geometry is drawn in its own frame - X across, Y out from the wall, Z up - and the back plate
 // prints flat on its back. This is the turn its part file makes: the box's Y comes up off the bed.
