@@ -8,10 +8,18 @@ fits, and none needs measuring.
 The socket's shell overhangs the SuperMini's PCB by only 1.5 mm, so a normal 1.8 mm wall would leave the
 mouth inside it. Over the board's end the right-hand wall is therefore thinned from inside to `port_wall`
 (0.9 mm, two beads) across the board's whole width and height, and the PCB's end reaches into that
-recess. The opening through what is left is the size of the shell, not of a plug, and its shape: a
-stadium, round at both ends, `part_fit` clear all round. The cover prints front face down, so the end
-towards the back plate is the opening's top on the bed; there it closes in a 45° point instead of a
-round end, which would be an arch with nothing under it.
+recess. The opening through what is left is the size of the shell, not of a plug: round at its front
+end like the shell's, `part_fit` clear all round.
+
+**The opening runs on out to the cover's back edge.** The cover goes on straight back onto the plate,
+and by then the shell already stands out through where the wall will be — a wall closed behind the
+opening runs into it, and the box does not close (found on the first printed box, 4 Oct 2026). So the
+opening is a slot the shell's height, open at the cover's back edge, and the shell slides along it as
+the cover comes on. A **filler** on the back plate stands in the slot behind the shell, `part_fit` clear
+of its sides and of the shell, and closes the wall again. The cover prints front face down, so the
+slot's open end is its top on the bed and needs no bridge; the filler is a 2-bead wall on the plate.
+`check_cover_on` sweeps everything inside the box back to the plate, the way it moves against the cover
+as the cover comes on, and requires that sweep to miss the cover.
 
 The thinned stretch is the one a plug's pull bears on across the layer lines, so its steps back to the
 full wall are 45° chamfers rather than square inside corners, where a crack would start.

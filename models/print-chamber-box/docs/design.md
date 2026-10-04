@@ -104,8 +104,8 @@ block, and that peg did not print, which is why it now lies flat.
 **The cover prints front face down.** The window under the SPS30 is a notch open at the back edge, and
 the vents in the front are holes in its first layers. The counterbores the screw heads sit in open on the
 bed, and their floors are bridged the same three-layer way as the nut pockets. The partition, baffle,
-clasp, stop and U are walls standing on the front. The USB-C opening is a stadium standing on end in the
-right-hand wall, and its top end closes in a 45° point, so it needs no bridge at all.
+clasp, stop and U are walls standing on the front. The USB-C slot in the right-hand wall is open at the
+cover's back edge — its top on the bed — so it needs no bridge at all.
 
 **No skirt, no brim, no draft shield.** Rounded corners in plan view (`corner_r`) keep ASA's corners
 down instead.

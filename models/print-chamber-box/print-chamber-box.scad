@@ -83,6 +83,13 @@ usb_proud_in = usb_proud - pocket_fit;                      // the same, with a 
 // part_fit clear all round. Alon, 3 Oct 2026: "round (or best we can do 3d printing) the usbc port hole".
 usb_open_r = usb_shell_h / 2 + part_fit;                    // its ends' radius
 usb_open_c = usb_shell_w / 2 - usb_shell_h / 2;             // its ends' centres, either side of the board's middle
+// The cover goes on straight back onto the plate, and the shell stands out through the wall before it does,
+// so the opening runs on, the shell's height, out to the cover's back edge: the shell slides along it.
+// Alon, 4 Oct 2026, on the printed box: "cut the small area past -y the usbc slot in the cover and place a
+// makeup to the slot on the back plate". The filler stands on the plate in that slot, behind the shell,
+// part_fit clear of the slot's sides and of the shell, and closes the wall again.
+usb_notch_y0 = back_t - eps;                                // where the slot opens, at the cover's back edge
+usb_fill_h   = usb_open_r - part_fit;                       // the filler's half-height, the slot's less part_fit
 // It is held by its long edges, not laid on a shelf, so the pins along them stay open from below. Its back
 // edge presses from the front into two clips on the plate - each a lower jaw, and an upper one whose
 // underside angles in from a wide mouth to a catch that pinches the PCB, and out again behind it, where the
@@ -447,6 +454,12 @@ module back_plate() place() difference() {
         // the back stop at its antenna end, which takes the push of plugging in
         box3([stop_x0, back_t - eps, z_f0], [stop_x0 + rim_t, y_b0 + stop_reach, zu + sm_pcb_t + 1]);
 
+        // the filler in the cover's USB-C slot, behind the shell: a wall in the cover's wall's plane, its
+        // end hollowed round the shell's end
+        translate([0, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = port_wall) difference() {
+            translate([back_t - eps, z_uc - usb_fill_h]) square([y_bc - usb_open_c - back_t + eps, 2 * usb_fill_h]);
+            translate([y_bc - usb_open_c, z_uc]) circle(r = usb_open_r, $fn = 48);
+        }
         // the SGP41's post, rib and ledge
         gy_mount();
         // the channel its wires cross the SPS30's top-left corner in
@@ -489,12 +502,12 @@ module cover() place() {
                  [wall + eps, y_b1 + pocket_fit + part_fit + (wall - port_wall),
                   zu + sm_t + part_fit + (wall - port_wall)]);
         }
-        // the USB-C opening through it: the shell's stadium, part_fit clear. The cover prints front face
-        // down, so the opening's end towards the plate is its top on the bed: there it closes in a
-        // 45-degree point rather than a round end, which would be an arch with nothing under it.
+        // the USB-C opening through it: the shell's stadium, part_fit clear, round at its front end and
+        // running on out to the cover's back edge, so the cover slides on past the shell. The cover prints
+        // front face down, so that edge is the slot's top on the bed: open, it needs no bridge.
         translate([-eps, 0, 0]) rotate([90, 0, 90]) linear_extrude(height = port_wall + 2 * eps) hull() {
-            for (dy = [-1, 1]) translate([y_bc + dy * usb_open_c, z_uc]) circle(r = usb_open_r, $fn = 48);
-            translate([y_bc - usb_open_c - usb_open_r * sqrt(2), z_uc]) square(0.01, center = true);
+            translate([y_bc + usb_open_c, z_uc]) circle(r = usb_open_r, $fn = 48);
+            translate([usb_notch_y0, z_uc - usb_open_r]) square([y_bc - usb_notch_y0, 2 * usb_open_r]);
         }
         // vents in the front: over the SGP41's lower half, where its sensor is, clear of the bottom
         // screw's boss below - and over the board
@@ -529,6 +542,22 @@ module cover() place() {
          [sm_lip_x1, y_in1 + eps, zu + sm_pcb_t + 2 * pocket_fit + rim_t]);
     box3([sm_lip_x0, y_b1 - clasp_low, z_f0], [sm_lip_x1, y_in1 + eps, zu - pocket_fit]);
     box3([stop_x0, y_b1 - stop_reach, z_f0], [stop_x0 + rim_t, y_in1 + eps, zu + sm_pcb_t + 1]);
+}
+
+// =================================================================== the cover's way on
+// The cover goes straight back onto the plate, over everything already on it. Relative to the cover, each
+// part inside moves back to the plate as it comes on, so each is swept there here, piece by piece - a hull
+// of the whole would fill in the gaps between them - and check_cover_on intersects the sweep with the
+// cover as it sits. Alon, 4 Oct 2026, on the printed box: the USB-C socket stands out through the side
+// wall, and the wall behind its opening ran into it, so the box could not close.
+module cover_on_path(s = 0.02) place() {
+    for (i = [0, 2, 3, 4]) hull() { sm_piece(i, s); translate([0, -D, 0]) sm_piece(i, s); }
+    for (b = parts_boxes(s)) hull() { box3(b[0], b[1]); translate([0, -D, 0]) box3(b[0], b[1]); }
+    hull() for (dy = [0, -D]) translate([0, dy, 0])
+        box3([sps_x0 + s, back_t + s, z_sps0 + s], [sps_x1 - s, back_t + sps_t - s, z_sps1 - s]);
+    hull() for (dy = [0, -D]) translate([0, dy, 0])
+        box3([gy_x0 + s, gy_yp + s, gy_z0 + s], [gy_x1 - s, gy_yf + gy_sensor_h - s, gy_z1 - s]);
+    hull() for (dy = [0, -D]) translate([0, dy, 0]) cyl_y(gy_hx, gy_hz, gy_head_d / 2 - s, gy_yf + s, gy_yf + gy_head_h - s);
 }
 
 // =================================================================== the SPS30's way in
@@ -646,6 +675,8 @@ if (draw_model) {
         intersection() { back_plate(); sps_insert_path(); }
     else if (part == "check_slide")
         intersection() { back_plate(); sm_slide_path(); }
+    else if (part == "check_cover_on")
+        intersection() { cover(); cover_on_path(); }
     else
         assert(false, str("unknown part \"", part, "\" - use back, cover or assembly"));
 }

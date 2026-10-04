@@ -39,6 +39,8 @@ As you face the box with the cover off:
 13. **Wire channel** — over the SPS30's top-left corner: a slot between two ribs standing on the plate,
     open to the front. The SGP41's four wires press in past a 45° lip on each rib and lie side by side
     in it, where they turn out of the module's column over the sensor.
+14. **USB-C filler** — stands in the cover's USB-C slot behind the socket, and closes the wall there once
+    the cover is on. Its end is hollowed round the socket's.
 
 More on 8–10 in [The SGP41's mount](sgp41-mount.md), and on 6 and 7 in [The USB-C end](usb-c-end.md).
 
@@ -57,9 +59,9 @@ Seen from inside — from the wall — so its left and right are swapped against
    clamps on, and the back plate's nut boss meets that boss.
 5. **Window** — most of the bottom wall is open under the SPS30's air face, so its inlets and outlet
    breathe the room directly. Open at the back edge, so it prints without a bridge.
-6. **USB-C opening** — the shape and size of the socket's metal shell: a stadium, its end towards the
-   plate a 45° point so it prints without support. The socket's mouth reaches the outside face, so any
-   cable seats fully.
+6. **USB-C slot** — the socket's metal shell's size and round front end, running on out to the cover's
+   back edge, so the cover slides on past the socket; the back plate's filler closes it behind. The
+   socket's mouth reaches the outside face, so any cable seats fully.
 7. **Thinned wall** — 0.9 mm over the board's USB-C end, so the board reaches into it and the socket
    reaches the outside. The board's corners bear on it when a plug is pulled; its 45° steps keep a crack
    from starting.

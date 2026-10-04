@@ -66,6 +66,7 @@ if (view == "back") {
     for (x = nut_bx) marker(11, [x, y_in1 + f, nut_bz + nut_boss_d / 2 + 3.5]);     // nut bosses
     marker(12, [W / 2, back_t + bump_out + f, u_z0 - 3.5]);                         // the bump at the top
     marker(13, [(gy_ch_x0 + gy_ch_x1) / 2, gy_ch_y1 + f, gy_ch_zc + gy_ch_slot / 2 + rib_t + 3.5]);   // the SGP41 wires' channel
+    marker(14, [port_wall / 2, y_bc - usb_open_c - usb_open_r + f, z_uc + usb_fill_h + 3.5]);   // the USB-C filler
     legend(["BACK PLATE - as you face the box, cover off",
             "",
             " 1  the plate - against the wall",
@@ -80,7 +81,8 @@ if (view == "back") {
             "10  ledge - the SGP41's bottom edge sits on it",
             "11  nut bosses - an M3 nut pressed in from behind",
             "12  bump - the cover's top locates on it",
-            "13  channel - holds the SGP41's wires"],
+            "13  channel - holds the SGP41's wires",
+            "14  filler - closes the cover's USB-C slot"],
            [-18, 0, H + 34]);
     axes([-22, 0, -25], 20, [78, 0, 195], [[0, 0], [1.7, -0.3], [0, 0]]);   // the box's own axes, as every figure carries
 }
@@ -109,7 +111,7 @@ if (view == "cover") {
             " 3  vents in front of the board",
             " 4  bottom screws - their heads sit flush",
             " 5  window under the SPS30's air face",
-            " 6  USB-C opening - the shell passes through",
+            " 6  USB-C slot - the shell slides along it",
             " 7  wall thinned for the board's USB end",
             " 8  partition - splits the air, holds the SPS30 in",
             " 9  baffle - shuts the sensor's air off",

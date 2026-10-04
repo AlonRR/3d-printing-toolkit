@@ -44,9 +44,10 @@ check run one way only has passed a mirrored mistake before.
 | Check | What it intersects | Must be |
 |---|---|---|
 | `check_parts` | the back plate with the cover | **zero volume** — they meet only where they touch: the cover's back edge on the plate, and the nut bosses' ends on the cover's screw bosses |
-| `check_components` | both parts with everything inside: the SPS30; the SuperMini's PCB (less the clips' pinch, which is meant), its parts, USB-C shell, antenna loop and pole; the largest compliant plug's body, seated, with the board pushed against its stops; the column the SPS30's lead rises through; the SGP41 at every board thickness within the bounds, less the bare patch round its hole; its screw's head; and the wall screws' heads behind the plate, all the way from entry to hung | **empty** |
+| `check_components` | both parts with everything inside: the SPS30; the SuperMini's PCB (less the clips' pinch, which is meant), its parts, USB-C shell, antenna loop and pole; the largest compliant plug's body, seated, with the board pushed against its stops; the column the SPS30's lead rises through; the SGP41 lying flat, less the bare strip and the bare ring round its hole where it bears; its screw's head; and the wall screws' heads behind the plate, all the way from entry to hung | **empty** |
 | `check_slide` | the back plate with the SuperMini's way in: each of its pieces swept from in front of the box into its clips | **empty** |
 | `check_insert` | the back plate with the SPS30's way in: its outline, nubs included, swept from its seat to the cover's front | **empty** |
+| `check_cover_on` | the cover with its way on: everything inside the box — the SPS30, the SuperMini piece by piece, the SGP41 and its screw's head — swept back to the plate, the way each moves against the cover as the cover comes on | **empty** |
 
 "Empty" means OpenSCAD writes no file; "zero volume" means the STL it writes has none.
 
@@ -56,7 +57,7 @@ Each setting breaks one thing; the check, or an assert, must catch it. Measured 
 
 | Check | Setting | What it breaks | Measured |
 |---|---|---|---|
-| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 220.8 mm³ |
+| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 227.6 mm³ |
 | `check_parts` | `bump_z1 = 75` | the bump at the top into the cover's top wall | 14.4 mm³ |
 | `check_parts` | `nut_boss_y1 = 21.5` | the nut bosses run into the cover's screw bosses | 190.5 mm³ |
 | `check_components` | `z_f0 = 50` | the board lowered into the column the SPS30's lead rises through | 24.3 mm³ |
@@ -69,6 +70,8 @@ Each setting breaks one thing; the check, or an assert, must catch it. Measured 
 | `check_slide` | `stop_x0 = 20` | the stops moved into the board's way in | 2.9 mm³ |
 | `check_slide` | `clip_g_mouth = 0.6` | the clips' mouth narrower than the PCB | 0.59 mm³ |
 | `check_insert` | `ch_x1 = 50` | the channel's wall moved into the SPS30's way in | 760 mm³ |
+| `check_cover_on` | `usb_notch_y0 = 6.5` | the cover's USB-C slot closed behind the socket again, as the first printed cover was | 11.5 mm³ |
+| `check_parts` | `usb_fill_h = 2.0` | the back plate's filler taller than the slot it stands in | 1.4 mm³ |
 
 These fire an **assert** instead, which stops the render with an `ERROR: Assertion` line:
 

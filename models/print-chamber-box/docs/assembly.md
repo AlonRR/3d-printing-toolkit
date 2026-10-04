@@ -30,8 +30,9 @@ All of this happens before the cover goes on.
    on its ledge, and drive the M2.5 × 6 through its mounting hole into the post's pilot. The first drive
    cuts the thread.
 5. **Wire it** — see [Wiring](wiring.md).
-6. **Put the cover on**, straight onto the plate: the U at its top goes over the plate's bump, its front
-   clasp takes the board's front edge, and its partition slides past the divider. Then drive the two
+6. **Put the cover on**, straight onto the plate: the USB-C socket slides along the slot in its
+   right-hand wall until the plate's filler closes the slot behind it, the U at its top goes over the
+   plate's bump, its front clasp takes the board's front edge, and its partition slides past the divider. Then drive the two
    M3 × 20 screws through its bottom corners into the nuts. Their heads end flush with the front.
 
 The two "from the front" directions are not arbitrary. Each part's way in is checked against the back
