@@ -6,7 +6,7 @@
 
 - **The skeleton below is the full three-point node with the fan interlock.** The node actually in
   service is narrower: [`firmware/chamber-c3.yaml`](../../firmware/chamber-c3.yaml), chamber air
-  only. The planned full node is [`firmware/print-chamber.yaml`](../../firmware/print-chamber.yaml).
+  only. The planned full node is `firmware/print-chamber.yaml`, in the print-chamber-box repository.
 - **Where the build order stands:** step 1 is done (30 Aug). Step 2 is done in effect: the box
   was nearly closed on 9 Sep and fully closed from 19 Sep, and a short ASA print with it closed
   reached 45–46 °C ([measurements](measurements.md#closed-every-print-since-19-sep-2026)) — a first
