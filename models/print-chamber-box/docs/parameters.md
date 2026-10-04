@@ -56,7 +56,7 @@ Drawn by [`board-measure.scad`](../board-measure.scad), the boards as they lie o
 |---|---|---|
 | `sps_w` | **40.69** | across the SPS30's body, beside its side nubs — measured 3 Oct 2026, reading B in [the figure](sps30-measure.png) |
 | `sps_nub` | **0.155** | each side: 41.00 across the nubs (reading A), less the body, halved. The datasheet's 41.2 left the first clearance test's frame A about 0.7 mm loose |
-| `divider_from_inlet_end` | **17.7** | from the SPS30's inlet end to the middle of the blank gap before the outlet grille. Scaled off a straight-on photo against the sensor's 40.6 mm width; three features land within 0.4 mm of the datasheet, so the scale holds. The gap runs from `sps_inlet_end` 15.2 to `sps_outlet_from` 20.2, and an assert keeps the divider inside it |
+| `divider_from_inlet_end` | **17.7** | from the SPS30's inlet end to the middle of the blank gap before the outlet grille. Scaled off a straight-on photo against the sensor's 40.6 mm width; three features land within 0.4 mm of the datasheet, so the scale holds. The gap runs from `sps_inlet_end` 15.2 to `sps_outlet_from` 20.2, and the divider fills it round this middle |
 | `sm_l`, `sm_w` | **22.8 × 18.03** | the SuperMini's PCB, not counting the USB-C shell |
 | `sm_pcb_t`, `sm_t` | **0.85**, **4.05** | the bare PCB; the PCB with its tallest part, the USB-C shell, without the antenna |
 | `usb_shell_h`, `usb_overhang` | **3.16**, **1.5** | the USB-C shell's height, and how far it overhangs the PCB's edge |
@@ -112,10 +112,11 @@ thicknesses whole layers of `fdm_layer_h`, and the model asserts both.
 | Name | Value | What |
 |---|---|---|
 | `wall`, `back_t`, `front_t` | **1.8**, **2.4**, **1.8** | the cover's side, top and bottom walls (4 beads); the back plate (12 layers), which the wall screws' heads bear on; the cover's front (9 layers) |
-| `cradle_t`, `divider_t`, `rib_t` | **1.35** | the SPS30 channel's walls, the divider, and the cover's ribs and the clips' lower jaws: 3 beads |
+| `cradle_t`, `rib_t` | **1.35** | the SPS30 channel's walls, and the cover's ribs and the clips' lower jaws: 3 beads |
 | `rim_t`, `port_wall` | **0.9** | rims, jaws and stops: 2 beads. `port_wall` is the cover's wall thinned over the board's USB-C end, as thick as the shell's 1.5 mm overhang allows |
 | `ledge` | **1.0** | how far the ledges reach under each end of the SPS30's air face, clear of its openings |
-| `divider_proud` | **4.0** | how far the divider stands below the box, so the outlet's stream cannot loop straight back to the inlets |
+| `divider_clear` | **0.5** | the least room between the divider and the openings either side of it. The divider is derived: the gap round `divider_from_inlet_end`, less this each side, in whole beads — 3.6 mm, 0.7 clear of each. It covers the sensor's tolerance on where its openings are, and its float in the channel |
+| `divider_proud` | **0** | how far the divider stands below the box: 0 ends it flush with the bottom edge, where Sensirion's guide ends its separating wall |
 | `front_gap_min` | **2.5** | the least air gap in front of the SPS30's label face — one inlet wraps round onto it |
 | `vent_w`, `vent_rib` | **2.0**, **1.8** | each vent slot, and the material between two |
 | `sm_lip_over` | **0.9** | how far the front clasp's lip reaches over the board's front pad strip; an assert keeps it under `sm_edge` |

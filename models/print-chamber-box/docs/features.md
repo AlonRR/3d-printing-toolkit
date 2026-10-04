@@ -18,8 +18,9 @@ As you face the box with the cover off:
 3. **Channel walls** — the SPS30 is set between them from the front, and they hold it sideways. They
    have no lips: anything over the sensor's face would block its way in.
 4. **Ledges** — the sensor stands on these, one under each end of its air face, clear of the openings.
-5. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side. It
-   stands 4 mm below the box, so the outlet's air cannot loop straight back into the inlets.
+5. **Divider** — carries the middle of the sensor and splits its inlet side from its outlet side, so
+   the outlet's air cannot loop straight back into the inlets. A wall filling the blank band between
+   them, `divider_clear` short of each, it ends flush with the box's bottom edge.
 6. **Clips** — two, on the SuperMini's back edge: a lower jaw under the edge, and an upper jaw over its
    pad row whose underside angles in to a catch that pinches the PCB, then out again where the edge sits.
    The board's back edge is pushed into them from the front. One is just past the edge's second pin,

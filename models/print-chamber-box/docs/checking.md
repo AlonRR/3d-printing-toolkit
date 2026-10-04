@@ -19,8 +19,8 @@ scripts/scad-check.sh models/print-chamber-box/print-chamber-box-cover.scad "$P"
 scripts/scad-check.sh models/print-chamber-box/print-chamber-box-fits.scad  "$P" "Inslogic ASA"
 ```
 
-Each should report **one manifold part** and `fdm_*` values matching the profile: the back plate
-68.7 × 80.3 mm on the bed — the divider stands 4 mm below the box — and the cover 68.7 × 76.3 mm.
+Each should report **one manifold part** and `fdm_*` values matching the profile: the back plate and the
+cover each 68.7 × 76.3 mm on the bed.
 
 - **Exit 2 is expected** for the back plate and the cover while `untested_fits` or `unmeasured` is not
   empty; exit 0 means both are clear, as they both are now. The clearance test reports neither, so
@@ -57,7 +57,7 @@ Each setting breaks one thing; the check, or an assert, must catch it. Measured 
 
 | Check | Setting | What it breaks | Measured |
 |---|---|---|---|
-| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 227.6 mm³ |
+| `check_parts` | `part_fit = -0.6` | the cover's features overlap the plate's | 230.0 mm³ |
 | `check_parts` | `bump_z1 = 75` | the bump at the top into the cover's top wall | 14.4 mm³ |
 | `check_parts` | `nut_boss_y1 = 21.5` | the nut bosses run into the cover's screw bosses | 190.5 mm³ |
 | `check_components` | `z_f0 = 50` | the board lowered into the column the SPS30's lead rises through | 24.3 mm³ |
@@ -80,6 +80,7 @@ These fire an **assert** instead, which stops the render with an `ERROR: Asserti
 | `gy_yf = 19.8` | the SGP41's screw head reaches the cover's front |
 | `gy_screw_l = 18` | the SGP41's pilot runs out of its post into the plate |
 | `ch_notch = 16.6` | the SPS30 channel's wall left whole, within a gap of the SGP41's underside parts |
+| `divider_from_inlet_end = 19.3` | the divider's middle moved so near the outlet grille that the gap leaves it less than 3 beads |
 | `key_z1 = 25` | the keyholes run into the nut bosses below and the board's clips above |
 | `key_shank_d = 5.5` | the keyholes' slots leave the wall screws' heads less than 1 mm to bear on each side |
 | `cover_screw_l = 25` | an M3 × 25 through the cover's corner pokes out of the back plate |

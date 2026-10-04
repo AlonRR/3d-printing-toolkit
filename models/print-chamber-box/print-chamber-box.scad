@@ -61,6 +61,12 @@ ch_x1    = ch_x0 + ch_in_w;
 sps_x0   = ch_x0 + sps_fit + sps_nub;                       // the sensor body, nominally centred
 sps_x1   = sps_x0 + sps_w;
 x_div    = sps_x1 - divider_from_inlet_end;                 // the inlets are at the high-X end
+// The divider fills the blank gap between the inlets and the outlet grille, round its measured middle,
+// divider_clear short of each, in whole beads. It can be no wider: the inlets' far end is the slot by the
+// label face's edge, which is the sensor's second inlet. Alon, 4 Oct 2026, on the printed box: "a wall that
+// sits flush with the back and better fills the gap".
+divider_t = floor((2 * min(divider_from_inlet_end - sps_inlet_end, sps_outlet_from - divider_from_inlet_end)
+                   - 2 * divider_clear) / fdm_extrusion_w + 1e-6) * fdm_extrusion_w;
 div_clear_in  = divider_from_inlet_end - divider_t / 2 - sps_inlet_end;     // to the inlets' far end
 div_clear_out = sps_outlet_from - (divider_from_inlet_end + divider_t / 2);  // to the outlet grille
 key_xs   = [wall + part_fit + hole_r(key_entry_d), W - wall - part_fit - hole_r(key_entry_d)];
@@ -233,7 +239,11 @@ for (t = [["back_t", back_t], ["front_t", front_t], ["the nut's shoulder", nut_y
 assert(wire_perpendicular,
        "the layout lies the board level so its antenna's pole stands up - it needs the pole off the component side");
 
-assert(div_clear_in >= 0.5 && div_clear_out >= 0.5,
+assert(divider_t >= 3 * fdm_extrusion_w,
+       str("the gap between the inlets (to ", sps_inlet_end, " mm) and the outlet grille (from ", sps_outlet_from,
+           " mm) leaves room for a divider only ", divider_t, " mm wide round ", divider_from_inlet_end,
+           " mm - check divider_from_inlet_end"));
+assert(div_clear_in >= divider_clear - 1e-6 && div_clear_out >= divider_clear - 1e-6,
        str("the divider must sit in the blank gap between the inlets (to ", sps_inlet_end,
            " mm) and the outlet grille (from ", sps_outlet_from, " mm); it clears them by ",
            div_clear_in, " and ", div_clear_out, " mm"));
@@ -444,8 +454,8 @@ module back_plate() place() difference() {
         translate([ch_x0 - cradle_t / 2, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
         translate([ch_x1 - ledge_w, back_t - eps, 0]) cube([ledge_w + cradle_t / 2, sps_t + eps, z_sps0]);
 
-        // the divider: it also carries the sensor, and stands proud below the box. It rises from
-        // the very back (Y = 0) so that the part below the plate still starts on the bed.
+        // the divider: a wall that also carries the middle of the sensor, through the window to the box's
+        // bottom edge - divider_proud past it. It rises from the very back (Y = 0), so it starts on the bed.
         translate([x_div - divider_t / 2, 0, -divider_proud])
             cube([divider_t, y_in1 - part_fit, divider_proud + z_sps0]);
 
@@ -640,9 +650,10 @@ if (draw_model) {
         echo(str("WARNING: these fits have not been tested in ASA on this printer: ", untested_fits));
 
     echo(str("print-chamber box: ", W, " x ", H, " x ", D, " mm (width x height x depth, installed), and the ",
-             "divider ", divider_proud, " mm below"));
+             "divider ", divider_proud > 0 ? str(divider_proud, " mm below") : "flush with its bottom edge"));
     echo(str("outlet at the ", outlet_at_left ? "LEFT" : "RIGHT", " end; divider at ", divider_from_inlet_end,
-             " mm from the inlet end"));
+             " mm from the inlet end, ", divider_t, " mm wide, ", div_clear_in, " mm clear of the inlets and ",
+             div_clear_out, " of the outlet"));
     echo(str("keyholes: ", key_xs[1] - key_xs[0], " mm apart, the screws ", key_z1, " mm up once hung; each entry ",
              2 * hole_r(key_entry_d), " mm and slot ", 2 * hole_r(key_slot_w), " mm as cut; set the heads ",
              back_t, " to ", back_t + key_slack, " mm off the wall"));

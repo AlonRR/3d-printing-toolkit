@@ -104,13 +104,13 @@ wall      = 1.8;    /* Side, top and bottom walls of the cover: 4 beads. */
 back_t    = 2.4;    /* The back plate, printed flat: 12 layers. The keyhole runs through it, so it is also what the wall screw's head bears on. */
 front_t   = 1.8;    /* The cover's front, printed flat on the bed: 9 layers. */
 cradle_t  = 1.35;   /* The walls of the channel the SPS30 slides into: 3 beads. */
-divider_t = 1.35;   /* The divider between the inlet and outlet sides: 3 beads. */
 rib_t     = 1.35;   /* The cover's internal ribs: 3 beads. */
 rim_t     = 0.9;    /* The rims that locate the two boards: 2 beads. */
 port_wall = 0.9;    /* The cover's wall where the board's USB-C end meets it, thinned from inside so the socket's mouth reaches the outside face: 2 beads. With the 1.5 mm overhang this is as thick as it can be. */
 
 /* [Airflow] */
-divider_proud = 4.0;   /* How far the divider stands below the box, so the outlet's stream cannot loop straight back to the inlets. */
+divider_clear = 0.5;   /* Least room between the divider and the openings either side of it. The divider fills the blank gap between the inlets and the outlet grille round divider_from_inlet_end, less this each side, in whole beads. It covers the sensor's ISO 2768-m tolerance on the openings' positions and its sps_fit float in the channel. */
+divider_proud = 0.0;   /* How far the divider stands below the box. 0: it ends flush with the bottom edge. Sensirion's separating wall reaches the shell's opening and no further (mechanical design guide, section 2.1). */
 front_gap_min = 2.5;   /* Least air gap in front of the SPS30's label face - one inlet wraps round onto that face. */
 vent_w        = 2.0;   /* Width of each vent slot. */
 vent_rib      = 1.8;   /* Material between vent slots: 4 beads. */
