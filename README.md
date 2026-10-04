@@ -124,8 +124,8 @@ you debug* and recovers when you unplug, which reads as a flaky sensor rather th
 **ESPHome configuration** for the chamber sensors is also here. The chamber node has been
 built and run in the enclosure during live prints; the measurements and the reasoning behind the
 sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md). Its printed box — the
-SPS30, the SGP41 and the ESP32-C3 in one wall-mounted enclosure — has its own repository,
-**print-chamber-box**, together with the firmware of the node that lives in it.
+SPS30, the SGP41 and the ESP32-C3 in one wall-mounted enclosure — is the air-quality monitor, which
+has its own repository, **air-quality-monitor**, together with the firmware of the node in it.
 
 ## Documentation — `docs/`
 

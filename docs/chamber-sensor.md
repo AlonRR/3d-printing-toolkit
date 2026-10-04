@@ -14,7 +14,7 @@ They are split into the topic pages below; this page says where things stand and
   ESPHome over MQTT. Its history continues on the `sensor.print_chamber_chamber_*` entities. It
   replaced the ESP32-S3 camera node, which went to the cell-tester project
   ([the migration](chamber-sensor/s3-to-c3-migration.md)).
-- **Planned:** `firmware/print-chamber.yaml`, in the **print-chamber-box** repository — an ESP32-C3
+- **Planned:** `firmware/print-chamber.yaml`, in the **air-quality-monitor** repository — an ESP32-C3
   SuperMini carrying the SPS30 particle sensor and the SGP41 VOC/NOx sensor now, with the fume-fan
   control to join it later on pins already reserved. Decided 1 Oct 2026; until those
   move, `chamber-c3.yaml` stays the live chamber node. Its enclosure, in the same repository,
