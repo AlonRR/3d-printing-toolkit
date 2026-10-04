@@ -152,8 +152,8 @@ typical particle size), and two GY-SGP41s — Alon, 3 Oct 2026. These notes said
    already above the 10–40 °C the SPS30 performs best in, and the whole point of the enclosure work is
    to raise that number further. This is the blocker that matters, and it is a design conflict rather
    than a wiring problem. What happens past the ratings is in
-   the box's design notes, *Past the ratings* in `models/air-quality-monitor/docs/design.md` of the
-   air-quality-monitor repository.
+   [the box's design notes](https://github.com/AlonRR/air-quality-monitor/blob/main/models/air-quality-monitor/docs/design.md#past-the-ratings)
+   in the air-quality-monitor repository.
 3. ~~**There is exactly one SPS30 and it is already claimed.**~~ There are two (3 Oct 2026).
    [chamber-airflow](../chamber-airflow.md) wants one to verify the *scrubber* — measuring whether
    particulate actually falls when the fan runs, which a tachometer cannot tell you — and that no
