@@ -27,9 +27,6 @@ firmware/.esphome/
 firmware/.pioenvs/
 firmware/.piolibdeps/
 firmware/secrets.yaml
-firmware/espnow-c/build/
-firmware/espnow-c/sdkconfig
-firmware/espnow-c/sdkconfig.old
 
 # ESP-IDF generates these per project. sdkconfig in particular is DERIVED from
 # sdkconfig.defaults plus the chosen target, so committing it would create a
