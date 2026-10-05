@@ -121,12 +121,10 @@ with an active differential pair whenever a data-capable cable is attached — s
 you debug* and recovers when you unplug, which reads as a flaky sensor rather than a pin conflict.
 `firmware/prusa-cam-c/main/board_pins.h` records every claimed pin with its reason.
 
-**ESPHome configuration** for the chamber sensors is also here. The chamber node has been
-built and run in the enclosure during live prints; the measurements and the reasoning behind the
-sensor choices are in [`docs/chamber-sensor.md`](docs/chamber-sensor.md). Its printed box — the
-SPS30, the SGP41 and the ESP32-C3 in one wall-mounted enclosure — is the air-quality monitor, which
-has its own repository, [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor), together with the firmware of the node
-in it.
+**The enclosure's sensing and airflow** - the chamber node, its measurements and the fan plan - moved
+to their own repository in October 2026, with their history:
+[**printer-enclosure**](https://github.com/AlonRR/printer-enclosure). The particle and VOC/NOx monitor
+that hangs beside the enclosure is [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor).
 
 ## Documentation — `docs/`
 
@@ -137,8 +135,6 @@ in it.
 | [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
 | [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
-| [`chamber-sensor.md`](docs/chamber-sensor.md) | The chamber sensor node — what it measures, the measurements so far, its boards, WiFi and build. An entry page over ten topic pages in [`chamber-sensor/`](docs/chamber-sensor/) |
-| [`chamber-airflow.md`](docs/chamber-airflow.md) | Fume extraction and chamber airflow |
 | [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
 ## Licence

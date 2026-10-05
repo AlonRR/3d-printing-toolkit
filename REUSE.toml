@@ -19,7 +19,6 @@ path = [
   ".gitignore",
   ".gitattributes",
   "firmware/.gitignore",
-  "firmware/espnow-rssi/.gitignore",
   "REUSE.toml",
 ]
 SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"

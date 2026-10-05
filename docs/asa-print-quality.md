@@ -182,7 +182,7 @@ ASA wants a **warm, still chamber: 40–50 °C is the usual target**, and source
 70. ✅ **The enclosure has been closed since 19 Sep 2026, and an ASA print now holds the chamber at
 45–46 °C** (2 Oct 2026, room 26.6 °C) — inside the target on bed heat alone. Until then one side
 was deliberately open, which kept the chamber near room temperature and the airflow across the part
-asymmetric. Details: [chamber-sensor measurements](chamber-sensor/measurements.md#closed-every-print-since-19-sep-2026).
+asymmetric. Details: [chamber-sensor measurements](https://github.com/AlonRR/printer-enclosure/blob/main/docs/chamber-sensor/measurements.md#closed-every-print-since-19-sep-2026).
 ⚠️ **What closing has not yet been checked against is the Einsy** — see below; its bay has not been
 read with the box closed during an ASA print.
 
@@ -194,7 +194,7 @@ MK3S+ tolerates a closed enclosure — some run doors-closed without trouble —
 the situation where measuring beats reading forum posts.
 
 **The gating step was the chamber sensor, and it exists:** a node has measured the chamber air
-since September ([chamber-sensor](chamber-sensor.md)). The bay has no probe of its own (Alon,
+since September ([chamber-sensor](https://github.com/AlonRR/printer-enclosure/blob/main/docs/chamber-sensor.md)). The bay has no probe of its own (Alon,
 3 Oct 2026): it is read from the Einsy's own thermistor, at the printer.
 
 ⚠️ **The DHT11 is marginal for this specific job.** Ten are on hand, but its range tops out at
@@ -269,7 +269,7 @@ Drying fixes a wet spool. Storage stops you needing to.
    masquerades as everything else.
 5. **Then** the chamber sensor and closing the enclosure side — the biggest effect, the most
    work, and the only one that can damage hardware if done in the wrong order. Designed in
-   [chamber-sensor.md](chamber-sensor.md): three measurement points rather than one, and the
+   [chamber-sensor.md](https://github.com/AlonRR/printer-enclosure/blob/main/docs/chamber-sensor.md): three measurement points rather than one, and the
    electronics-bay probe is the one that makes the rest safe to attempt.
 
 Steps 1–4 need no purchase and no hardware. Step 5 needs a sensor wired to an ESP32 that is

@@ -8,7 +8,7 @@
  * esp_wifi_set_ps(WIFI_PS_NONE). With modem sleep active the radio dozes
  * between the AP's beacons, and a throughput test then measures the power
  * manager rather than the link. That is the same trap recorded in
- * espnow-c/main/espnow_test.c, where modem sleep silently prevented reception
+ * printer-enclosure's firmware/espnow-c/main/espnow_test.c, where modem sleep silently prevented reception
  * entirely.
  */
 
@@ -128,7 +128,7 @@ static void retry_cb(void *arg)
  * had to be power-cycled.
  *
  * The trigger was NOT signal, and this comment said it was until 10 Sep 2026.
- * Two later findings replaced it, and both are in docs/chamber-sensor.md:
+ * Two later findings replaced it, and both are in printer-enclosure's docs/chamber-sensor.md:
  *
  *   - The multi-day outages were THIS BUG, not a weak link: the give-up left
  *     the radio idle until a human power-cycled it. Duration was the defect.

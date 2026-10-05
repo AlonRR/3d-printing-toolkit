@@ -2,13 +2,6 @@
 # schema version: set by `ledger migrate` or `ledger init` -- do not edit by hand
 schema: 1
 projects:
-  - name:     Chamber family
-    kind:     build
-    state:    active
-    next:     "prove one ESP32 can carry fan PWM + tach + I2C, then build it"
-    trackers: [docs/chamber-sensor.md, docs/chamber-airflow.md]
-    review:   2026-09-20
-
   - name:     Prusa MK3S+ operations and ASA quality
     kind:     build
     state:    active

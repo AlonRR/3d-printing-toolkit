@@ -3,9 +3,9 @@
 
 # ESP32-S3-WROOM-1 N16R8 with an OV3660 on the camera FPC.
 #
-# Written from scratch rather than copied from ../espnow-c/sdkconfig.defaults,
+# Written from scratch rather than copied from printer-enclosure's firmware/espnow-c/sdkconfig.defaults,
 # which hardcodes CONFIG_ESPTOOLPY_FLASHSIZE_4MB - correct for the C3 and wrong
-# here. That exact trap is recorded in docs/chamber-sensor.md 3w: the flash size
+# here. That exact trap is recorded in printer-enclosure's docs/chamber-sensor.md 3w: the flash size
 # silently overrides the board and you lose three quarters of it with no error.
 
 CONFIG_IDF_TARGET="esp32s3"
@@ -40,7 +40,7 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 # (COM9), which is fed by UART0 on GPIO43/44 - the IDF default. Selecting
 # USB_SERIAL_JTAG would send every log line out the OTHER connector, and the
 # board would look dead while running perfectly. That is precisely what
-# happened with the C3-MINI-1 on COM8; see docs/chamber-sensor.md 3y.
+# happened with the C3-MINI-1 on COM8; see printer-enclosure's docs/chamber-sensor.md 3y.
 CONFIG_ESP_CONSOLE_UART_DEFAULT=y
 
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192

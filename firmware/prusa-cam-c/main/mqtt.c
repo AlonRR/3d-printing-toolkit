@@ -8,7 +8,7 @@
  * config entries - so discovery messages create the entities with no clicking
  * in the HA interface at all.
  *
- * The topics and unique_ids deliberately MATCH scripts/chamber-serial-log.py,
+ * The topics and unique_ids deliberately MATCH printer-enclosure's scripts/chamber-serial-log.py,
  * which does the same job from the server end for the ESP-NOW hub. They are two
  * routes to the same entities, so exactly ONE of them may run at a time; two
  * publishers would fight over the same state topic and the entity would flicker

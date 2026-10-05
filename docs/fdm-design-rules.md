@@ -458,7 +458,7 @@ gate before the technique.
 >   ignition sources out of the vapour path; motors and heaters count.
 >
 > A recirculate-only build therefore never opens this gate.
-> [chamber-sensor §8](chamber-sensor/heating-and-airflow.md) works through the airflow design that
+> [chamber-sensor §8](https://github.com/AlonRR/printer-enclosure/blob/main/docs/chamber-sensor/heating-and-airflow.md) works through the airflow design that
 > serves both.
 
 **When the gate opens: ASA and ABS solvent-weld in acetone, and that beats any

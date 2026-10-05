@@ -3,7 +3,7 @@
 
 /* Milestone 1: prove the hardware before building anything on it.
  *
- * WHY THIS SHAPE. The chamber-sensor work in this repo lost several days to a
+ * WHY THIS SHAPE. The chamber-sensor work (printer-enclosure) lost several days to a
  * network layer built on a radio that was never transmitting, and every symptom
  * pointed anywhere except the antenna. The lesson written down at the end of it
  * was to prove the physical layer first, with a check that can actually fail.
