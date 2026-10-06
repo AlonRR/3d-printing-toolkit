@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+#
+# The two settings the PrusaLink scripts here read: the printer's address and its PrusaLink API key,
+# in the form of a PrusaSlicer physical-printer profile. By default they read PrusaSlicer's own, the
+# profile it saves when the printer is added under Physical printers, in
+# %APPDATA%\PrusaSlicer\physical_printer\. Without one, copy this to printer.ini beside it, which is
+# gitignored because it holds the key in plain text, fill it in, and set PRUSA_PRINTER_INI to its path.
+print_host = printer.example
+printhost_apikey = YOUR_PRUSALINK_API_KEY

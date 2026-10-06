@@ -116,7 +116,9 @@ leaves `PRINTING` so a watcher is notified, and counts bed readings more than 5 
 useful when the stop was a bed-thermistor fault.
 
 Both PrusaLink scripts read the host and API key from a PrusaSlicer physical-printer profile, which
-is gitignored because it stores the key in plaintext. Point them elsewhere with `PRUSA_PRINTER_INI`.
+is gitignored because it stores the key in plaintext. Point them elsewhere with `PRUSA_PRINTER_INI`:
+[`scripts/mk3s-resume/printer.ini.example`](../scripts/mk3s-resume/printer.ini.example) shows the two
+settings they read, for a machine without that profile.
 
 ## 8. What a resume cannot fix
 

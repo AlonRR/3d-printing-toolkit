@@ -10,6 +10,8 @@
 # PrusaSlicer physical-printer configs hold plaintext API keys — never commit.
 physical_printer/
 *physical_printer*
+# ...and the stand-in for one that scripts/mk3s-resume/printer.ini.example says how to make.
+scripts/mk3s-resume/printer.ini
 
 __pycache__/
 *.pyc
@@ -23,26 +25,6 @@ preview/
 # a parameter that had since been renamed, so the preset silently set a variable
 # nothing read. The .scad is the source of truth.
 *.json
-firmware/.esphome/
-firmware/.pioenvs/
-firmware/.piolibdeps/
-firmware/secrets.yaml
-
-# ESP-IDF generates these per project. sdkconfig in particular is DERIVED from
-# sdkconfig.defaults plus the chosen target, so committing it would create a
-# second source of truth that silently wins over the defaults file.
-# managed_components/ is fetched by the component manager from idf_component.yml.
-firmware/prusa-cam-c/build/
-firmware/prusa-cam-c/sdkconfig
-firmware/prusa-cam-c/sdkconfig.old
-firmware/prusa-cam-c/managed_components/
-firmware/prusa-cam-c/dependencies.lock
-
-# WiFi credentials for the camera benchmark, generated from firmware/secrets.yaml.
-# Ignored BEFORE the file is created: the commit habit here is `git add
-# firmware/prusa-cam-c`, which would otherwise sweep it in. Git history is the
-# one thing in this project that is not reversible.
-firmware/prusa-cam-c/main/wifi_secrets.h
 
 # Vendor datasheets and any other third-party document. This is COPYRIGHT, not
 # privacy, which is why it is handled differently from a secret: dropping the
