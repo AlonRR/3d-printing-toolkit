@@ -18,15 +18,7 @@ path = [
   "PROJECT.yml",
   ".gitignore",
   ".gitattributes",
-  "firmware/.gitignore",
   "REUSE.toml",
 ]
 SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
 SPDX-License-Identifier = "CC-BY-4.0"
-
-# Firmware build configuration, so MPL-2.0 with the rest of firmware/. The ESP-IDF partition table
-# is parsed by column position; it accepts comments, but it is not a file worth adding one to.
-[[annotations]]
-path = ["firmware/prusa-cam-c/partitions.csv"]
-SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
-SPDX-License-Identifier = "MPL-2.0"

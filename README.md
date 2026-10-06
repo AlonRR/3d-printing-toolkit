@@ -1,14 +1,13 @@
-# 3D printing toolkit — profiles, design rules, part verification, firmware
+# 3D printing toolkit — profiles, design rules, part verification
 
 Print-process engineering around a single **Prusa MK3S+**, treated as production equipment rather
-than a hobby printer. Four things live here:
+than a hobby printer. Three things live here:
 
 | | |
 |---|---|
 | **Tuned slicer profiles** | 20 filament + 10 print + 1 printer preset, every number traced to a vendor datasheet or to a measurement on this machine |
 | **Design rules** | FDM constraints calibrated to *this* machine's measured extrusion width, not its nozzle diameter |
 | **Part verification** | A pipeline that renders, asserts, checks manifold, slices, and cross-checks a model against the profile it was actually sliced with |
-| **Firmware** | An ESP32-S3 camera node in plain C on ESP-IDF, plus ESPHome chamber sensor configuration |
 
 Every figure here is either read out of this repo's own sliced output or measured on the machine.
 Where a number is inherited or assumed rather than measured, it says so — that distinction is the
@@ -50,7 +49,6 @@ Two more from the same day, each of which cost a round trip:
 | [`models/`](models/) | Parametric OpenSCAD sources. The `.scad` is the artefact; STLs are build output and are not tracked |
 | [`models/lib/axes.scad`](models/lib/axes.scad) | The xyz arrows **every rendered figure carries** — red +x, green +y, blue +z, the drawn model's own axes — so a reading taken on a part in hand ("0.7 mm loose in x") maps onto the model without guessing |
 | [`docs/`](docs/) | The written material — see *Documentation* below |
-| [`firmware/`](firmware/) | ESP-IDF camera node and ESPHome sensor configuration |
 
 ## What's deliberately *not* here
 
@@ -101,30 +99,18 @@ against the slicer profile it was actually sliced with** — then exits non-zero
 part whose design assumptions have drifted from the profile it gets sliced with fails the check
 instead of failing on the bed.
 
-## Firmware — `firmware/`
+## Firmware — moved out
 
-**`prusa-cam-c/`** — an ESP32-S3 camera node in plain **ESP-IDF 5.5, no Arduino**, written as an
-alternative to the vendor's Arduino-based ESP32-Cam firmware.
+The firmware that lived here moved to repositories of its own in October 2026, each with its history:
 
-Bench milestone: 640×480 RGB565 captured and software-encoded to a valid JPEG in roughly 570 ms,
-with **byte-identical free heap across every cycle**. That last number is the one that matters in a
-camera loop — a leaked frame buffer exhausts a fixed pool and presents as a *hang* minutes later
-rather than as an error, so a stable heap is the check, not a nice statistic.
+- **The enclosure's sensing and airflow** — the chamber node, its measurements and the fan plan:
+  [**printer-enclosure**](https://github.com/AlonRR/printer-enclosure).
+- **The ESP32-S3 camera node**, in plain ESP-IDF C: `esp32-cam-for-prusa-connect`. It is not public yet;
+  it will be once it sends snapshots to Prusa Connect. Until then its code is in this repository's
+  history, under `firmware/prusa-cam-c/`.
 
-⚠️ The board has **two USB-C ports and they are not interchangeable** — one is native USB, the other
-a CH343 UART bridge. Selecting the wrong console target sends every log line out the other
-connector, and the board looks dead while running perfectly. `sdkconfig.defaults` pins the console
-to UART0 for this reason.
-
-⛔ **GPIO19 and GPIO20 are the native USB pins on the ESP32-S3.** A sensor on either shares its line
-with an active differential pair whenever a data-capable cable is attached — so it misbehaves *while
-you debug* and recovers when you unplug, which reads as a flaky sensor rather than a pin conflict.
-`firmware/prusa-cam-c/main/board_pins.h` records every claimed pin with its reason.
-
-**The enclosure's sensing and airflow** - the chamber node, its measurements and the fan plan - moved
-to their own repository in October 2026, with their history:
-[**printer-enclosure**](https://github.com/AlonRR/printer-enclosure). The particle and VOC/NOx monitor
-that hangs beside the enclosure is [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor).
+The particle and VOC/NOx monitor that hangs beside the enclosure is
+[**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor).
 
 ## Documentation — `docs/`
 
@@ -143,7 +129,7 @@ Two licences, because this repository holds two different kinds of work:
 
 | | |
 |---|---|
-| **Code** — `firmware/`, `scripts/` | **MPL-2.0** |
+| **Code** — `scripts/` | **MPL-2.0** |
 | **Everything else** — `docs/`, `slicer/`, `models/`, this README and the figures | **CC-BY-4.0** |
 
 The split is deliberate. Creative Commons advises against using a CC licence for software: it carries
