@@ -105,9 +105,9 @@ The firmware that lived here moved to repositories of its own in October 2026, e
 
 - **The enclosure's sensing and airflow** — the chamber node, its measurements and the fan plan:
   [**printer-enclosure**](https://github.com/AlonRR/printer-enclosure).
-- **The ESP32-S3 camera node**, in plain ESP-IDF C: `esp32-cam-for-prusa-connect`. It is not public yet;
-  it will be once it sends snapshots to Prusa Connect. Until then its code is in this repository's
-  history, under `firmware/prusa-cam-c/`.
+- **The ESP32-S3 camera node** for Prusa Connect, in plain ESP-IDF C: `esp32-cam-for-prusa-connect`. Its
+  repository is private for now; until it is public, its code is in this repository's history, under
+  `firmware/prusa-cam-c/`.
 
 The particle and VOC/NOx monitor that hangs beside the enclosure is
 [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor).
