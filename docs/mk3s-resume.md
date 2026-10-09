@@ -101,8 +101,14 @@ purge stripe across the part.
 ```
 make_resume.py  <original.gcode> <wall_z> <top_z> <live_z> <gap_mm> <out.gcode>
 upload_resume.py <file.gcode>     # PUT to PrusaLink with Print-After-Upload: ?0 - never auto-starts
+start_print.py <file.gcode>       # start the uploaded copy, only if it is this file and the printer is free
 print_monitor.py <log_dir> [max_seconds] [interval]
 ```
+
+`start_print.py` is the second, deliberate step after an upload, for any print rather than only a
+resume. It sends the start only when the printer's copy has the local file's exact size and the
+printer is `IDLE`, `READY` or `FINISHED`, then reads the job back: exit 0 means the printer reports
+`PRINTING` that file. `test_start_print.py` runs it against a stub PrusaLink, 7 cases, stdlib only.
 
 `make_resume.py` refuses impossible inputs and verifies its own output: the tail must be
 byte-identical to the original, homing must be exactly two `G28 X Y`, no probing command may appear,
@@ -115,7 +121,7 @@ elsewhere.
 leaves `PRINTING` so a watcher is notified, and counts bed readings more than 5 °C below target —
 useful when the stop was a bed-thermistor fault.
 
-Both PrusaLink scripts read the host and API key from a PrusaSlicer physical-printer profile, which
+The PrusaLink scripts read the host and API key from a PrusaSlicer physical-printer profile, which
 is gitignored because it stores the key in plaintext. Point them elsewhere with `PRUSA_PRINTER_INI`:
 [`scripts/mk3s-resume/printer.ini.example`](../scripts/mk3s-resume/printer.ini.example) shows the two
 settings they read, for a machine without that profile.
