@@ -47,6 +47,7 @@ Two more from the same day, each of which cost a round trip:
 | [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and cross-check its declared parameters against the profile actually used |
 | [`scripts/scad-preview.sh`](scripts/scad-preview.sh) | Previews and cross-sections. Sections import the **exported STL**, so an export bug cannot hide behind a correct-looking render |
 | [`models/`](models/) | Parametric OpenSCAD sources. The `.scad` is the artefact; STLs are build output and are not tracked |
+| [`models/fan-connector/`](models/fan-connector/) | A printed 2.54 mm fan connector, male and female, 2, 3 and 4 pins, its pins and contacts 22 AWG solid wire. Drawn and checked, not printed yet |
 | [`models/lib/axes.scad`](models/lib/axes.scad) | The xyz arrows **every rendered figure carries** — red +x, green +y, blue +z, the drawn model's own axes — so a reading taken on a part in hand ("0.7 mm loose in x") maps onto the model without guessing |
 | [`docs/`](docs/) | The written material — see *Documentation* below |
 
