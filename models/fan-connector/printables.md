@@ -3,7 +3,7 @@
 
 # Printables listing - draft
 
-Title: **2.54 mm fan connector, printed: male and female, 2, 3 and 4 pins**
+Title: **2.54 mm fan connector, Molex compatible: printed male and female, 2, 3 and 4 pins**
 
 Files to upload: `fan-connector.scad` and the seven STLs `scad-check.sh` makes beside it (`fan-connector-male-2`
 to `-4`, `fan-connector-female-2` to `-4`, `fan-connector-coupon`). Pictures: `fan-connector-pair.png`,
@@ -11,8 +11,8 @@ to `-4`, `fan-connector-female-2` to `-4`, `fan-connector-coupon`). Pictures: `f
 
 ---
 
-A printed male header and female plug for 2.54 mm fan connectors. The pins and contacts are 22 AWG solid wire: no
-crimp terminals.
+A printed, Molex compatible male header and female plug for 2.54 mm fan connectors. The pins and contacts are 22 AWG
+solid wire: no crimp terminals.
 
 ##### Parts:
 

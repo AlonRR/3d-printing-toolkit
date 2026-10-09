@@ -1,6 +1,6 @@
 # 2.54 mm fan connector
 
-A printed **male header** and **female plug**, 2, 3 or 4 pins, for the 2.54 mm connectors fans use. The 3-pin
+A printed, **Molex compatible** **male header** and **female plug**, 2, 3 or 4 pins, for the 2.54 mm connectors fans use. The 3-pin
 fits the usual fan plug of the KK 254 kind; the 4-pin is keyed as 4-pin fan connectors are, so a 3-pin plug goes on
 it too. The male's pins and the female's contacts are **22 AWG solid wire**, bared: no crimp terminals, no crimper.
 
@@ -91,5 +91,5 @@ The model's asserts, each seen to fire on the value that breaks it:
 
 ## Names
 
-"KK 254" is Molex's name for its connector family, used here only to say what the parts fit. This is not a Molex
-part, and the files say "fan connector".
+"Molex compatible" and "KK 254", Molex's name for its connector family, are used only to say what the parts fit
+(Alon, 9 Oct 2026). This is not a Molex part, and the files say "fan connector".
