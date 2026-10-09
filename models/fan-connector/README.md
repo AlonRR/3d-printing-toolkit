@@ -61,10 +61,10 @@ Drawn from one 3-pin fan plug measured with calipers (9 Oct 2026) and the 2.54 m
 | Length along the wires (C) | 12.77 mm | measured |
 | Text face to a hole's near wall (D) | 2.55 mm | measured |
 | A pin's hole | 1.45 mm | measured |
-| Ribs | 1.1 wide, 5.2 apart, 6.67 over them | measured |
-| The lip's length along the plug | 1.0 mm | **to confirm** |
+| Ribs | 1.1 wide, 5.2 apart, 6.67 over them | measured (an NZXT fan's: 0.92 wide, 1.08 proud) |
+| The lip's length along the plug | 2.2 mm | measured (an NZXT fan's plug: 1.9) |
 | 2-pin: the ribs' place | 0.3 mm in from the ends, as on the 3-pin | **to confirm** on a real 2-pin plug |
-| 22 AWG insulation's outside | 1.6 mm | **to confirm**: it sets the slots |
+| 22 AWG insulation's outside | 1.6 mm | measured |
 | The female's interference | 0.05 mm | **to find** with the coupon |
 
 ## Checks

@@ -24,13 +24,13 @@ plug_b = 5.2;           // MEASURED: its thickness without the ribs, over the li
 plug_c = 12.77;         // MEASURED: its length along the wires (C).
 plug_d = 2.55;          // MEASURED: from the text face to the near wall of a pin's hole (D).
 plug_hole = 1.45;       // MEASURED: a pin's hole in the open end.
-rib = [1.1, 5.2, 6.67]; // MEASURED: the ribs on the face opposite the text: width, the gap between them, and the plug's thickness over them.
-lip = [0.3, 1.0];       // The lip across the open end between the ribs: its height (MEASURED) and its length along the plug <<CONFIRM>>.
+rib = [1.1, 5.2, 6.67]; // MEASURED: the ribs on the face opposite the text: width, the gap between them, and the plug's thickness over them. An NZXT fan's ribs are 0.92 wide and stand 1.08 proud, where these stand 1.47.
+lip = [0.3, 2.2];       // MEASURED: the lip across the open end between the ribs: its height, and its length along the plug (an NZXT fan's: 1.9).
 rib_inset_2 = 0.3;      // <<CONFIRM>> 2-pin: the ribs stand this far in from the ends, as the 3-pin's do. 3 and 4 pins keep the 3-pin's ribs over pins 1-3.
 pitch = 2.54;
 
 /* [Wire: 22 AWG solid] */
-wire = [0.64, 1.6];     // The core, by the gauge (0.644), and the insulation's outside <<CONFIRM>>.
+wire = [0.64, 1.6];     // The core, by the gauge (0.644), and the insulation's outside (MEASURED).
 
 /* [Male] */
 male_pin = 6;           // How far each pin stands above the block: a header's mating length.
