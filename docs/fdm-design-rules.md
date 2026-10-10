@@ -281,6 +281,19 @@ L3  r2 fillets only   -> laid on the solid rectangle below
 Both spans under 10 mm, all three guards asserted in the model, and the sliced
 G-code confirms `support_material = 0`.
 
+### Simpler over a narrow slot: roof it at 45°
+
+A hole over a narrow slot needs no bridge at all. Roof the slot at 45° up to a
+ridge, and let the hole start where the ridge has narrowed to it. Every layer
+then sits 0.2 mm in from the one below it. The cost is half the slot's width in
+height above it.
+
+Measured on the fan connector's male (10 Oct 2026). A 0.94 mm hole over a 1.9 mm
+slot with a flat roof printed closed, and a wire core could not go in. The slicer
+had laid the hole's rim as overhang perimeters over air, eight of them in the
+first layer over the slot. With the 45° roof, none is left, and the roof also
+guides the wire into its hole.
+
 ## 4. Fasteners
 
 - **Edge distance is the thing people get wrong.** Material between a screw hole
