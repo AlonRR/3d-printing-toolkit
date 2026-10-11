@@ -16,6 +16,7 @@ path = [
   "models/**/*.png",
   "data/**",
   "PROJECT.yml",
+  ".repo-status",
   ".gitignore",
   ".gitattributes",
   "REUSE.toml",
