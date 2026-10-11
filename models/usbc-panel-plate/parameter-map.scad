@@ -25,7 +25,21 @@ draw_model = false MUST come after the include — in OpenSCAD the last assignme
 include <usbc-panel-plate.scad>
 draw_model = false;
 
-include <draw2d.scad>
+use <../../scad-tools/lib/draw2d.scad>
+/* The drawing's text size, line weight and arrowheads - scad-tools' draw2d reads them as $txt, $lw and $ah - and its
+   colours, one for each family of measurements; the key repeats them. */
+txt = 0.78;
+lw = 0.07;
+ah = 0.55;
+$txt = txt;
+$lw = lw;
+$ah = ah;
+C_OUT  = [0.13, 0.13, 0.13]; /* plate outline */
+C_PORT = [0.80, 0.28, 0.10]; /* the port opening / lip */
+C_FIX  = [0.10, 0.42, 0.75]; /* fasteners */
+C_POCK = [0.45, 0.20, 0.60]; /* pocket and boss */
+C_STAGE= [0.05, 0.50, 0.35]; /* the staged bridge layers */
+C_PART = [0.62, 0.72, 0.85]; /* the part itself */
 
 /* Where the two views sit, and the Z exaggeration on the section. */
 sec_y = -60.0;

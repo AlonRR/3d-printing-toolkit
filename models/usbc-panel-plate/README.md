@@ -10,7 +10,7 @@ Source is split like C:
 |---|---|
 | [`usbc-panel-plate.params.scad`](usbc-panel-plate.params.scad) | **the header** — every value you SET, and nothing else. No geometry, no derived values |
 | [`usbc-panel-plate.scad`](usbc-panel-plate.scad) | **the body** — derived values, modules, geometry, echoes, guards. Render this one |
-| [`draw2d.scad`](draw2d.scad) | drafting primitives — dimension lines, leaders, arrowheads, dashed runs. Shared by both diagrams |
+| [`scad-tools/lib/draw2d.scad`](https://github.com/AlonRR/scad-tools/blob/main/lib/draw2d.scad) | drafting primitives — dimension lines, leaders, arrowheads, dashed runs. Shared by both diagrams; scad-tools' since 11 Oct 2026, each diagram setting its sizes as `$txt`, `$lw` and `$ah` |
 | [`parameter-map.scad`](parameter-map.scad) | → `parameter-map.png`, the dimensioned drawing of every parameter |
 | [`flange-check.scad`](flange-check.scad) | → `flange-check.png`, the open measurement question. See "Retention" |
 

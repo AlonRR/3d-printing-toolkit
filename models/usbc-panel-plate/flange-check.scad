@@ -18,12 +18,15 @@ The section is cut through the HEIGHT deliberately. plate_h is gap_h + 2*overlap
 
 /* Include the BODY, not just the header: plate_w and plate_h are derived values and live there. draw_model = false after the include suppresses the part itself while keeping every variable — the same mechanism parameter-map.scad uses. */
 include <usbc-panel-plate.scad>
-include <draw2d.scad>
+use <../../scad-tools/lib/draw2d.scad>
 draw_model = false;
 
 txt = 0.62;
 lw  = 0.075;
 ah  = 0.5;
+$txt = txt;   /* scad-tools' draw2d reads the drawing's sizes from these */
+$lw = lw;
+$ah = ah;
 
 C_KNOWN = [0.13, 0.13, 0.13];
 C_ASK   = [0.85, 0.25, 0.05];

@@ -31,6 +31,10 @@ material and leaves a smaller foot**.
 
 ## Why it draws strokes where the reference sets cut voids
 
+The geometry is scad-tools' [`lib/gridfinity.scad`](https://github.com/AlonRR/scad-tools/blob/main/lib/gridfinity.scad)
+since 11 Oct 2026, for any model to `use`; this folder's file sets the size, the fit and the smoothness. Moved
+with nothing changed: the four negatives tried came out with the same facets, corners and volume.
+
 The profile is taken from `gridfinitybasket.scad` so both produce the same foot, but the solid is
 built differently, and the reason is worth keeping.
 

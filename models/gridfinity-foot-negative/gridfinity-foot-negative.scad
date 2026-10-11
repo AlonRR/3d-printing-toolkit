@@ -16,20 +16,11 @@
 // lies outside this footprint is untouched, so a model larger than the negative keeps a flat skirt
 // around the foot - which is usually what you want.
 //
-// THE PROFILE IS COPIED FROM gridfinitybasket.scad IN THIS FOLDER, deliberately, so both produce
-// the same foot. The four points are the gridfinity standard: up-and-out at 45 degrees for 0.7,
-// straight up for 1.8, then up-and-out at 45 degrees for 2.15 - 4.65 mm tall in total.
-//
-// HOW THE SOLID IS BUILT, and why not the way the basket builds it. The basket sweeps the profile
-// around a rounded rectangle with sweep_rounded(), which works but leaves 50 non-manifold edges
-// where the four wall segments meet the four corner rotate_extrudes. Here each section of the
-// profile is instead a hull() between two offset() rounded squares. A rounded square is convex, and
-// the hull of two parallel convex profiles is a convex frustum, so every section is manifold by
-// construction and the union of three stacked sections is too. Same geometry, no seams to fix.
-//
-// The cross-section at any height is simply the 34 mm core square offset outward by the profile's
-// x at that height - which is what makes the offset()/hull() construction exact rather than an
-// approximation of the swept version.
+// THE GEOMETRY is scad-tools' lib/gridfinity.scad (11 Oct 2026): the standard's profile, and why each
+// section is a hull() of two offset() rounded squares rather than a sweep. This file only sets the size,
+// the fit and the smoothness, and says what it drew.
+
+use <../../scad-tools/lib/gridfinity.scad>
 
 /* [Grid] */
 // cells along X
@@ -49,64 +40,9 @@ Smoothness = 64;
 
 /* [Hidden] */
 $fn = Smoothness;
-EPS = 0.001;
-
-// ---- gridfinity constants, names kept identical to gridfinitybasket.scad for traceability -----
-BASEPLATE_DIMENSIONS = [42, 42];
-BASEPLATE_OUTER_DIAMETER = 8;
-BASEPLATE_PROFILE = [
-    [0, 0],                         // innermost bottom point
-    [0.7, 0.7],                     // up and out at 45 degrees
-    [0.7, (0.7 + 1.8)],             // straight up
-    [(0.7 + 2.15), (0.7 + 1.8 + 2.15)],  // up and out at 45 degrees
-];
-BASEPLATE_OUTER_RADIUS = BASEPLATE_OUTER_DIAMETER / 2;          // 4.00
-BASEPLATE_INNER_RADIUS = BASEPLATE_OUTER_RADIUS - BASEPLATE_PROFILE[3].x;  // 1.15
-
-CORE = BASEPLATE_DIMENSIONS.x - BASEPLATE_OUTER_DIAMETER;       // 34 - the square being offset
-FOOT_H = BASEPLATE_PROFILE[3].y;                                // 4.65
-
-// offset of the wall from the core, at profile point i, minus any clearance
-function off(i) = BASEPLATE_INNER_RADIUS + BASEPLATE_PROFILE[i].x - Clearance;
-
-// ---- geometry ---------------------------------------------------------------------------------
-module rounded_core(r) {
-    // offset(r) on a CORE square yields a rounded square of side CORE+2r with corner radius r,
-    // which is exactly the gridfinity cross-section at the height that r came from.
-    offset(r = r) square([CORE, CORE], center = true);
-}
-
-module foot_section(i) {
-    z0 = BASEPLATE_PROFILE[i].y;
-    z1 = BASEPLATE_PROFILE[i + 1].y;
-    hull() {
-        translate([0, 0, z0])           linear_extrude(EPS) rounded_core(off(i));
-        translate([0, 0, z1 - EPS])     linear_extrude(EPS) rounded_core(off(i + 1));
-    }
-}
-
-module foot() {
-    for (i = [0 : len(BASEPLATE_PROFILE) - 2]) foot_section(i);
-}
-
-module foot_negative(nx, ny) {
-    difference() {
-        // Exactly FOOT_H tall, sitting on Z0. It is tempting to extend this below Z0 to avoid a
-        // coplanar face with the model's underside - do not. Below Z0 there is no foot to subtract
-        // from it, so the extension would be a solid slab spanning the whole footprint and would
-        // shave that much off the ENTIRE bottom of the model, not just around the feet.
-        translate([0, 0, FOOT_H / 2])
-            cube([nx * BASEPLATE_DIMENSIONS.x, ny * BASEPLATE_DIMENSIONS.y, FOOT_H], center = true);
-
-        for (x = [0 : nx - 1], y = [0 : ny - 1])
-            translate([(x - (nx - 1) / 2) * BASEPLATE_DIMENSIONS.x,
-                       (y - (ny - 1) / 2) * BASEPLATE_DIMENSIONS.y, 0])
-                foot();
-    }
-}
 
 echo(str("gridfinity foot negative ", GridX, "x", GridY,
-         "  footprint ", GridX * BASEPLATE_DIMENSIONS.x, " x ", GridY * BASEPLATE_DIMENSIONS.y,
-         " mm, height ", FOOT_H, " mm, clearance ", Clearance, " mm"));
+         "  footprint ", GridX * gridfinity_cell()[0], " x ", GridY * gridfinity_cell()[1],
+         " mm, height ", gridfinity_foot_h(), " mm, clearance ", Clearance, " mm"));
 
-foot_negative(GridX, GridY);
+gridfinity_foot_negative(GridX, GridY, Clearance);
