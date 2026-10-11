@@ -3,7 +3,7 @@ Lesson 6 - a real part, written the way this repository writes them.
 
 Check it end to end from the repository root:
 
-    scripts/scad-check.sh docs/openscad-basics/06-a-real-part/m3-spacer.scad
+    sh scad-tools/scripts/scad-check.sh docs/openscad-basics/06-a-real-part/m3-spacer.scad
 
 That renders it, runs its asserts, confirms the mesh is one manifold part, slices
 it, and compares the fdm_* values against the profile it was actually sliced with.

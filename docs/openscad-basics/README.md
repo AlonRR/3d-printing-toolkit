@@ -57,7 +57,7 @@ Do them in order. Lesson 6 uses something from each of the others.
 From the repository root:
 
 ```sh
-scripts/scad-check.sh docs/openscad-basics/06-a-real-part/m3-spacer.scad
+sh scad-tools/scripts/scad-check.sh docs/openscad-basics/06-a-real-part/m3-spacer.scad
 ```
 
 That renders the part, runs its asserts, checks the mesh is **one manifold part**, slices it, and

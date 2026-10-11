@@ -78,7 +78,7 @@ translate([20, 25, 0])
 //   touching along an EDGE                                       -> TWO parts
 // The 2021.01 release says "Object may not be a valid 2-manifold" for the edge
 // case; the 2026 nightly says nothing. A slicer may print two parts or refuse,
-// and scripts/scad-check.sh blocks any STL that is not exactly one part.
+// and scad-tools/scripts/scad-check.sh blocks any STL that is not exactly one part.
 translate([40, 25, 0]) {
     cube([8, 8, 3]);
     translate([8, 8, 0])

@@ -259,7 +259,7 @@ openscad -o usbc-panel-plate.stl usbc-panel-plate.scad
 Previews, cross-sections and thin slices:
 
 ```sh
-sh ../../scripts/scad-preview.sh usbc-panel-plate.scad out 1.2 1.4 1.6
+sh ../../scad-tools/scripts/scad-preview.sh usbc-panel-plate.scad out 1.2 1.4 1.6
 ```
 
 STL output is gitignored (repo convention — binaries live in

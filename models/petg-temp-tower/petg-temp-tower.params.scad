@@ -75,6 +75,6 @@ label_depth = 0.4;                 /* Two layers deep, leaving three layers of b
 /* [Modelling] */
 weld = 0.5;         /* How far each feature is buried INTO the body. Features that merely touch a face are not fused - CGAL reports them as separate volumes and the STL is multi-part, which scad-check.sh blocks. Coincident faces are a modelling bug, not a style choice. */
 
-/* [Print reality — cross-checked by scripts/scad-check.sh against the profile used] */
+/* [Print reality — cross-checked by scad-tools/scripts/scad-check.sh against the profile used] */
 fdm_layer_h     = 0.2;      /* Must match the print profile. band_h has to be a whole multiple of this. */
 fdm_extrusion_w = 0.45;     /* 0.4 nozzle. Feeds the thin-feature check on fin_w. */

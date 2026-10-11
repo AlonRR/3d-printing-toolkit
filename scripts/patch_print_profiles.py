@@ -28,7 +28,7 @@ only real differences remain. Comparing a single preset against the vendor bundl
 
   skirts = 0 / brim_type = no_brim / brim_width = 0   the profile names say exactly this - and since
       2 Oct 2026 it is a rule with no exceptions, Alon's own: never print a skirt, and a part designed
-      correctly needs no brim. scripts/scad-check.sh fails any G-code that has either.
+      correctly needs no brim. scad-tools/scripts/scad-check.sh fails any G-code that has either.
   draft_shield = disabled                             NEW, 2 Oct 2026. PrusaSlicer draws the shield FROM
       the skirt, so skirts = 0 already silences it; set explicitly so that turning a skirt back on can
       never bring a shield with it. The enclosure closes fully, which is what the shield stood in for.

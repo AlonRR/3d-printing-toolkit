@@ -134,7 +134,7 @@ stand-in for closing the enclosure's open side, and **the enclosure closes fully
 filament on every layer, which is why the first print to use it was stopped. ASA prints with the plain
 `0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter`, and warping is answered in the design
 — rounded corners in plan view first ([fdm-design-rules §5b](fdm-design-rules.md)).
-`scripts/scad-check.sh` now fails any G-code with a skirt or a brim, and
+`scad-tools/scripts/scad-check.sh` now fails any G-code with a skirt or a brim, and
 `scripts/patch_print_profiles.py` turns all three off in every preset.
 
 The ASA profile below was **deleted on 2 Oct 2026**, from the repo and from PrusaSlicer's presets.

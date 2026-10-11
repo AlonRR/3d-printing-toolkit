@@ -354,7 +354,7 @@ printer.
 §6 records that ASA's *small thin features lift at the corners*. The answer used to be process —
 the `ASA brim + draft shield` profile, `brim_width = 5` — and **that is ruled out since 2 Oct 2026**:
 never a skirt, and a part designed correctly needs no brim (Alon). So the geometry answer is the only
-one, and `scripts/scad-check.sh` fails any G-code with a skirt or a brim.
+one, and `scad-tools/scripts/scad-check.sh` fails any G-code with a skirt or a brim.
 
 - ⭐ **Round the corners as seen from above.** Lifting starts at a sharp corner in the plan view,
   where the largest contraction meets the smallest bonded area. A radius there is permanent, costs

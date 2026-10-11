@@ -44,10 +44,8 @@ Two more from the same day, each of which cost a round trip:
 | [`slicer/printer/`](slicer/printer/) | The printer preset itself |
 | [`slicer/reference/`](slicer/reference/) | Vendor data transcribed to Markdown, with what was taken and what was overridden |
 | [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates filament profiles from the vendor chain, because of the `inherits` trap above |
-| [`scripts/scad-check.sh`](scripts/scad-check.sh) | Verify a part end to end — render, asserts, manifold, slice — and cross-check its declared parameters against the profile actually used |
-| [`scripts/scad-preview.sh`](scripts/scad-preview.sh) | Previews and cross-sections. Sections import the **exported STL**, so an export bug cannot hide behind a correct-looking render |
+| [`scad-tools/`](https://github.com/AlonRR/scad-tools) | The shared OpenSCAD tools, a git submodule: `scad-check.sh` verifies a part end to end — render, asserts, manifold, slice — and cross-checks its declared parameters against the profile actually used; `scad-preview.sh` previews and cuts the **exported STL**, so an export bug cannot hide behind a correct-looking render; `scad-controls.sh` fires a model README's guard controls; `lib/axes.scad` is the xyz arrows every rendered figure carries |
 | [`models/`](models/) | Parametric OpenSCAD sources. The `.scad` is the artefact; STLs are build output and are not tracked |
-| [`models/lib/axes.scad`](models/lib/axes.scad) | The xyz arrows **every rendered figure carries** — red +x, green +y, blue +z, the drawn model's own axes — so a reading taken on a part in hand ("0.7 mm loose in x") maps onto the model without guessing |
 | [`docs/`](docs/) | The written material — see *Documentation* below |
 
 ## What's deliberately *not* here
@@ -59,8 +57,8 @@ Two more from the same day, each of which cost a round trip:
 - **The heated drybox and desiccant module.** Their documents, firmware and models moved to a
   repository of their own in September 2026, once that work had grown into a project rather than a
   corner of this one. It is not public, so there is no link to give. What stayed here is the material
-  the two share: the annealing page, the mechanical-design-review checklist, `scad-check.sh` and
-  `scad-controls.sh`.
+  the two share: the annealing page and the mechanical-design-review checklist. The OpenSCAD scripts both
+  use are [scad-tools](https://github.com/AlonRR/scad-tools)' now.
 - **The printed 2.54 mm fan connector**, male and female. It moved to a repository of its own on
   9 Oct 2026, with its history, ahead of its Printables listing. It is not public yet, so there is no
   link to give.
@@ -94,13 +92,36 @@ The document also records **claims deliberately not imported** from general desi
 steps that assume a 0.4 mm width, bridging figures well past this machine's measured ceiling, and
 text-orientation advice that is backwards here. Each is a generic figure meeting a measured one.
 
-## Part verification — `scripts/scad-check.sh`
+## Part verification — `scad-tools/scripts/scad-check.sh`
 
 CI discipline applied to physical parts. For a given model it renders, runs the model's own asserts,
 checks the mesh is manifold, slices it, and **cross-checks the model's declared `fdm_*` parameters
 against the slicer profile it was actually sliced with** — then exits non-zero on any mismatch. A
 part whose design assumptions have drifted from the profile it gets sliced with fails the check
-instead of failing on the bed.
+instead of failing on the bed. It is [scad-tools](https://github.com/AlonRR/scad-tools)', a git submodule here:
+clone with `git clone --recurse-submodules`, or run `git submodule update --init` after a plain clone. Then, from
+the repository's root:
+
+```sh
+sh scad-tools/scripts/scad-check.sh models/usbc-panel-plate/usbc-panel-plate.scad
+```
+
+A ZIP from GitHub comes without it: from the unpacked folder, fetch the version this repository is pinned to.
+In PowerShell:
+
+```powershell
+$pin = (Invoke-RestMethod https://api.github.com/repos/AlonRR/3d-printing-toolkit/contents/scad-tools).sha
+Invoke-WebRequest "https://github.com/AlonRR/scad-tools/archive/$pin.zip" -OutFile scad-tools.zip
+Remove-Item -Recurse -ErrorAction SilentlyContinue scad-tools
+Expand-Archive scad-tools.zip . ; Rename-Item "scad-tools-$pin" scad-tools ; Remove-Item scad-tools.zip
+```
+
+or in a POSIX shell:
+
+```sh
+pin=$(curl -s https://api.github.com/repos/AlonRR/3d-printing-toolkit/contents/scad-tools | sed -n 's/.*"sha": *"\([0-9a-f]*\)".*/\1/p')
+rm -rf scad-tools && mkdir scad-tools && curl -sL "https://github.com/AlonRR/scad-tools/archive/$pin.tar.gz" | tar xz --strip-components=1 -C scad-tools
+```
 
 ## Firmware — moved out
 
