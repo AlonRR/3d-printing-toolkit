@@ -385,6 +385,12 @@ apart by where they sat. A G-code that keeps a mark's strokes says nothing about
 them. Where a wall has no room for 5 mm digits, mark with a shape the nozzle draws whole - a notch, a
 count of notches, a chamfered corner - not a letter.
 
+The fan connector now counts in line notches, like Roman numerals (I to IIII): each 0.7 mm wide (an
+extrusion width and a bit, so the paths on either side leave it open), 1 mm deep (5 layers), 0.9 mm of
+wall between two (two lines), cut through the wall so it shows from in front as a gap in the wall's top.
+In the G-code every notch is a gap of its drawn width at its drawn place. Straight-sided, not a V: a V
+narrows below a line's width part way down, and the layers there run over it. Not printed yet.
+
 ## 6. Material notes for what's on the shelf
 
 | | Warp | Bed | Watch for |
