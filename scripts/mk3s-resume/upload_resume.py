@@ -40,6 +40,16 @@ with urllib.request.urlopen(urllib.request.Request(f"{base}/api/v1/status", head
     base = f"{final.scheme}://{final.netloc}"
 # /api/v1/status lists the writable storage as /local (the SD card is read-only)
 url = f"{base}/api/v1/files/local/{urllib.parse.quote(f.name)}"
+# A file of that name already on the printer: with Overwrite off, PrusaLink refuses the PUT, and behind the
+# proxy the refusal arrives as a connection reset mid-body, not as a 409. Measured 11 Oct 2026: three resets
+# for a name uploaded the day before, then a 201 under a new name. So ask first, and say so plainly.
+try:
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"X-Api-Key": key}), timeout=15):
+        print(f"{f.name} is already on the printer, and this never overwrites: upload it under another name")
+        sys.exit(1)
+except urllib.error.HTTPError as e:
+    if e.code != 404:
+        raise
 def put(url, data, key, hops=2):
     """PUT, following a redirect by hand.
 
