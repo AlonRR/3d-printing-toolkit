@@ -78,6 +78,15 @@ through a row of holes stepping 0.05 mm — gives the answer in a single print. 
 moves with extrusion width and with material shrinkage, so a bare number with no profile attached
 is the same trap §1 exists to prevent.
 
+⚠️ **A ladder whose rungs grow upwards is quantised by the layer.** The slicer cuts each layer at
+its mid-height, so a feature whose size runs in Z - a ridge with sloped faces, a clip's catch over
+a lip - prints as a staircase sampled every 0.2 mm, and rungs closer than that can slice alike. The
+fan connector's clip coupon (11 Oct 2026): clips reaching 0.1, 0.15, 0.2 and 0.25 mm over a lip
+caught it by 0.07, 0.15, 0.15 and 0.19 mm in the G-code - every reach from 0.15 to 0.22 sliced to the
+same first layer over the lip. Read each rung off the G-code (the perimeter path's position, layer
+by layer) and pick values that print distinct: 0.1, 0.125, 0.15 and 0.25 gave even steps of
+0.04 mm. A ladder that steps in XY, like the pin through holes above, does not have this problem.
+
 ## 3. Overhangs — the 45° rule is not the real rule
 
 45° is a *consequence*, not a law. The actual constraint is that **each new
