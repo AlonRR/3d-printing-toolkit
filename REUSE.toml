@@ -19,6 +19,7 @@ path = [
   ".repo-status",
   ".gitignore",
   ".gitattributes",
+  ".gitmodules",
   "REUSE.toml",
 ]
 SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
