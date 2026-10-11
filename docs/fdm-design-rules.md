@@ -378,6 +378,13 @@ A two-way rule. Both halves come from `models/petg-temp-tower`, which does each 
 Under about **5 mm digit height** the digits close up either way at a 0.4 nozzle, which is why that
 model uses 6.0 mm.
 
+**Measured again, smaller, 11 Oct 2026:** the fan connector's coupons carried 1.4 mm bold digits engraved
+0.4 mm into the top of a 1.8 mm wall, ASA at 0.2 mm layers. The G-code still ran a path round every
+stroke, leaving grooves about 0.3 mm wide - and printed, they were illegible: the pockets had to be told
+apart by where they sat. A G-code that keeps a mark's strokes says nothing about whether the eye can read
+them. Where a wall has no room for 5 mm digits, mark with a shape the nozzle draws whole - a notch, a
+count of notches, a chamfered corner - not a letter.
+
 ## 6. Material notes for what's on the shelf
 
 | | Warp | Bed | Watch for |
