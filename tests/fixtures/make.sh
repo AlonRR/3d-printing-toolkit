@@ -10,6 +10,8 @@ set -eu
 OPENSCAD=${OPENSCAD:-openscad}
 PSLICER=${PSLICER:-/c/Program Files/Prusa3D/PrusaSlicer/prusa-slicer-console.exe}
 "$OPENSCAD" -o box.stl box.scad
+# LF, as git keeps it: OpenSCAD on Windows writes CRLF, and add_brim_ears.py's refusal names the file's size.
+sed -i 's/\r$//' box.stl
 "$OPENSCAD" --export-format binstl -o ell.stl ell.scad
 "$PSLICER" --export-gcode --datadir "${DATADIR:-$APPDATA/PrusaSlicer}" \
     --printer-profile "Original Prusa i3 MK3S & MK3S+" \

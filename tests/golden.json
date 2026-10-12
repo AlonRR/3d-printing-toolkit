@@ -78,7 +78,7 @@
   "exit": 1,
   "files": {},
   "requests": null,
-  "stderr_last": "box.stl: not a binary STL, or truncated (header claims 538970637 facets = 26948531850 bytes, got 1487)",
+  "stderr_last": "box.stl: not a binary STL, or truncated (header claims 538976288 facets = 26948814400 bytes, got 1401)",
   "stdout": ""
  },
  "find-top": {
