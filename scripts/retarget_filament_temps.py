@@ -48,8 +48,12 @@ META = re.compile(r"^; (" + "|".join(KEYS) + r") = (\d+)")
 def retarget(lines, cfg):
     """lines with every heating command and config comment set to the profile's values: (new lines, changes),
     each change (line number, old command, new command)."""
-    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
-                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
+    noz1, noz, bed1, bed = (
+        cfg["first_layer_temperature"],
+        cfg["temperature"],
+        cfg["first_layer_bed_temperature"],
+        cfg["bed_temperature"],
+    )
     out = []
     seen_noz = seen_bed = False
     changes = []
@@ -58,7 +62,7 @@ def retarget(lines, cfg):
         m = NOZZLE_CMD.match(line)
         b = BED_CMD.match(line)
         g = META.match(line)
-        if m and int(m.group(2)) > 0:                 # S0 is shutdown - never touched
+        if m and int(m.group(2)) > 0:  # S0 is shutdown - never touched
             want = noz1 if not seen_noz else noz
             seen_noz = True
             new = NOZZLE_CMD.sub(rf"\1 S{want}", line, count=1)
@@ -67,10 +71,11 @@ def retarget(lines, cfg):
             seen_bed = True
             new = BED_CMD.sub(rf"\1 S{want}", line, count=1)
         elif g:
-            new = f"; {g.group(1)} = {cfg[g.group(1)]}" + line[g.end():]
+            new = f"; {g.group(1)} = {cfg[g.group(1)]}" + line[g.end() :]
         if new != line:
-            changes.append((i + 1, line.split(";")[0].strip() or line.strip(),
-                            new.split(";")[0].strip() or new.strip()))
+            changes.append(
+                (i + 1, line.split(";")[0].strip() or line.strip(), new.split(";")[0].strip() or new.strip())
+            )
         out.append(new)
     return out, changes
 
@@ -78,14 +83,18 @@ def retarget(lines, cfg):
 def verify(lines, written, header, changes, cfg):
     """Check the file as written: the header and the original's lines, only temperature lines changed, every
     heating command one of the four targets, and every shutdown line where it was."""
-    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
-                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
+    noz1, noz, bed1, bed = (
+        cfg["first_layer_temperature"],
+        cfg["temperature"],
+        cfg["first_layer_bed_temperature"],
+        cfg["bed_temperature"],
+    )
     assert len(written) == len(lines) + len(header), "line count changed beyond the header"
-    body = written[len(header):]
+    body = written[len(header) :]
     diff = [(i + 1, a, b_) for i, (a, b_) in enumerate(zip(lines, body, strict=False)) if a != b_]
     assert len(diff) == len(changes), "a line changed that was not recorded"
     for _, a, _ in diff:
-        ok = (NOZZLE_CMD.match(a) or BED_CMD.match(a) or META.match(a))
+        ok = NOZZLE_CMD.match(a) or BED_CMD.match(a) or META.match(a)
         assert ok, f"a NON-temperature line was modified: {a[:60]!r}"
     # every surviving command must now be one of the four targets, or an untouched shutdown
     for line in body:
@@ -94,10 +103,12 @@ def verify(lines, written, header, changes, cfg):
             assert int(m.group(2)) in (0, noz1, noz), f"stray nozzle temp: {line}"
         if b:
             assert int(b.group(2)) in (0, bed1, bed), f"stray bed temp: {line}"
-    assert sum(1 for x in body if x.startswith("M104 S0")) == \
-        sum(1 for x in lines if x.startswith("M104 S0")), "a shutdown line was altered"
-    assert sum(1 for x in body if x.startswith("M140 S0")) == \
-        sum(1 for x in lines if x.startswith("M140 S0")), "a shutdown line was altered"
+    assert sum(1 for x in body if x.startswith("M104 S0")) == sum(1 for x in lines if x.startswith("M104 S0")), (
+        "a shutdown line was altered"
+    )
+    assert sum(1 for x in body if x.startswith("M140 S0")) == sum(1 for x in lines if x.startswith("M140 S0")), (
+        "a shutdown line was altered"
+    )
     return body
 
 
@@ -120,8 +131,12 @@ def main(argv):
     cfg = read_temperatures(ini, KEYS)
     missing = [k for k in KEYS if k not in cfg]
     assert not missing, f"{ini.name} does not define {missing}"
-    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
-                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
+    noz1, noz, bed1, bed = (
+        cfg["first_layer_temperature"],
+        cfg["temperature"],
+        cfg["first_layer_bed_temperature"],
+        cfg["bed_temperature"],
+    )
     print(f"target profile: {ini.stem}")
     print(f"  nozzle  first layer {noz1}  then {noz}")
     print(f"  bed     first layer {bed1}  then {bed}")
@@ -131,12 +146,16 @@ def main(argv):
         out, changes = retarget(lines, cfg)
         # Empty under --no-header. Every check is written against len(header), so suppressing it
         # weakens nothing: the line-count assertion, the body slice and the diff all still hold.
-        header = [] if no_header else [
-            f"; Temperatures retargeted to {ini.stem} ({noz1}/{noz} nozzle, {bed1}/{bed} bed).",
-            f"; Source: {src.name}, sliced against its own profile - geometry is UNCHANGED.",
-            "; Only M104/M109/M140/M190 with S>0 and the matching config comments were rewritten;",
-            "; the M104 S0 / M140 S0 shutdown lines are untouched.",
-        ]
+        header = (
+            []
+            if no_header
+            else [
+                f"; Temperatures retargeted to {ini.stem} ({noz1}/{noz} nozzle, {bed1}/{bed} bed).",
+                f"; Source: {src.name}, sliced against its own profile - geometry is UNCHANGED.",
+                "; Only M104/M109/M140/M190 with S>0 and the matching config comments were rewritten;",
+                "; the M104 S0 / M140 S0 shutdown lines are untouched.",
+            ]
+        )
         dst = out_dir / src.name
         dst.write_text("\n".join(header + out), encoding="utf-8", newline="\n")
 

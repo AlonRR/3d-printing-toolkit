@@ -78,10 +78,27 @@ PROFILES = Path(__file__).resolve().parents[1] / "slicer" / "filament" / "unbran
 # reference glyph box is 3.2 mm. The formula lands on the reference's size without being fitted to it.
 #
 # Seven segments on a unit grid of (SEG, SEG); y=0 is the baseline, y=2 the cap height.
-SEGMENTS = {"a": (0, 2, 1, 2), "b": (1, 2, 1, 1), "c": (1, 1, 1, 0), "d": (0, 0, 1, 0),
-            "e": (0, 0, 0, 1), "f": (0, 1, 0, 2), "g": (0, 1, 1, 1)}
-DIGITS = {"0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc",
-          "5": "afgcd", "6": "afgedc", "7": "abc", "8": "abcdefg", "9": "abcdfg"}
+SEGMENTS = {
+    "a": (0, 2, 1, 2),
+    "b": (1, 2, 1, 1),
+    "c": (1, 1, 1, 0),
+    "d": (0, 0, 1, 0),
+    "e": (0, 0, 0, 1),
+    "f": (0, 1, 0, 2),
+    "g": (0, 1, 1, 1),
+}
+DIGITS = {
+    "0": "abcdef",
+    "1": "bc",
+    "2": "abged",
+    "3": "abgcd",
+    "4": "fgbc",
+    "5": "afgcd",
+    "6": "afgedc",
+    "7": "abc",
+    "8": "abcdefg",
+    "9": "abcdfg",
+}
 
 
 @dataclass(frozen=True)
@@ -247,7 +264,7 @@ def verify(p, written, total_path):
     code = [s.split(";")[0].strip() for s in written]
     zcmds = [float(c.split("Z")[1].split()[0]) for c in code if c.startswith("G1 Z")]
     assert zcmds[0] == p.layer_h, "first Z move is not the nominal first layer"
-    assert zcmds[1:1 + p.n_tags] == zs, f"ladder in file does not match: {zcmds[1:1 + p.n_tags]}"
+    assert zcmds[1 : 1 + p.n_tags] == zs, f"ladder in file does not match: {zcmds[1 : 1 + p.n_tags]}"
     assert zcmds[-1] > zs[-1], "does not lift at the end"
     assert sum(1 for c in code if c.startswith("G28")) == 1, "expected exactly one G28"
     assert sum(1 for c in code if c.startswith("G80")) == 1, "expected exactly one G80"
@@ -269,8 +286,9 @@ def verify(p, written, total_path):
     # larger than this bound, so deriving it keeps the check strict at any tag count instead of turning
     # it into a threshold that gets relaxed whenever it complains.
     e_tol = len(es) * 5e-6 + 1e-9
-    assert abs(sum(es) - total_path * p.e_per_mm) <= e_tol, \
+    assert abs(sum(es) - total_path * p.e_per_mm) <= e_tol, (
         f"E total {sum(es):.5f} does not match path {total_path * p.e_per_mm:.5f} (tolerance {e_tol:.5f})"
+    )
     intro = [c for c in code if c.startswith("G1 X") and " Y" not in c and _e.search(c)]
     assert len(intro) == 2, f"expected exactly 2 intro-line extrusions, found {len(intro)}"
     # Bounds are checked on EVERY point, and the limits are inclusive. The first version of this guard
@@ -280,8 +298,11 @@ def verify(p, written, total_path):
     # Y may legitimately reach -3: that is the front purge line, exactly as the reference set does it.
     _x = re.compile(r"\bX(-?[\d.]+)")
     _y = re.compile(r"\bY(-?[\d.]+)")
-    pts = [(float(_x.search(c).group(1)), float(_y.search(c).group(1)))
-           for c in code if c.startswith("G1 X") and _y.search(c)]
+    pts = [
+        (float(_x.search(c).group(1)), float(_y.search(c).group(1)))
+        for c in code
+        if c.startswith("G1 X") and _y.search(c)
+    ]
     assert pts, "no positioned moves found at all"
     off_x = [q for q in pts if not 0 <= q[0] <= BED_X]
     off_y = [q for q in pts if not -3 <= q[1] <= BED_Y]
@@ -315,7 +336,7 @@ def main(argv):
     # Control: the same formula must reproduce the 0.4 reference, whose first layer is 0.2 at width
     # 0.42 and which measures 0.03168 E/mm. A flow formula that cannot predict a known-good file is
     # not evidence, it is arithmetic.
-    ref = (0.2 * (0.42 - 0.2) + math.pi * 0.1 ** 2) / FIL_AREA
+    ref = (0.2 * (0.42 - 0.2) + math.pi * 0.1**2) / FIL_AREA
     assert abs(ref - 0.03168) / 0.03168 < 0.05, f"flow model does not match the reference: {ref:.5f}"
     assert p.zs == sorted(p.zs), "ladder not monotonic"
 
@@ -327,12 +348,18 @@ def main(argv):
     es, pts = verify(p, written, total_path)
     zs = p.zs
     print(f"wrote {out.name}: {n_tags} tags, Z {zs[0]:g}..{zs[-1]:g} step {z_step:g}")
-    print(f"  nozzle {nozzle:g}, first layer {layer_h:g}, width {width:g} -> {p.e_per_mm:.5f} E/mm "
-          f"(reference check {ref:.5f} vs measured 0.03168)")
-    print(f"  footprint X {min(x for x, _ in pts):.1f}..{max(x for x, _ in pts):.1f}  "
-          f"Y {min(y for _, y in pts):.1f}..{max(y for _, y in pts):.1f}")
-    print(f"  {len(es)} extrusions, {total_path:.0f} mm of path, {sum(es):.2f} mm filament; "
-          f"{len(written)} lines; all checks passed")
+    print(
+        f"  nozzle {nozzle:g}, first layer {layer_h:g}, width {width:g} -> {p.e_per_mm:.5f} E/mm "
+        f"(reference check {ref:.5f} vs measured 0.03168)"
+    )
+    print(
+        f"  footprint X {min(x for x, _ in pts):.1f}..{max(x for x, _ in pts):.1f}  "
+        f"Y {min(y for _, y in pts):.1f}..{max(y for _, y in pts):.1f}"
+    )
+    print(
+        f"  {len(es)} extrusions, {total_path:.0f} mm of path, {sum(es):.2f} mm filament; "
+        f"{len(written)} lines; all checks passed"
+    )
     return 0
 
 

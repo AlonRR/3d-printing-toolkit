@@ -5,6 +5,7 @@
 
 usage: uv run python scripts/mk3s-resume/test_start_print.py     (stdlib only; exit 0 = every case passed)
 """
+
 import http.server
 import json
 import os
@@ -16,7 +17,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 NAME = "plate.gcode"
-BODY = b"G28\n" * 100                      # the local file: 400 bytes
+BODY = b"G28\n" * 100  # the local file: 400 bytes
 
 
 class Stub(http.server.BaseHTTPRequestHandler):
@@ -67,13 +68,19 @@ def run(case, **kw):
         env = dict(os.environ, PRUSA_PRINTER_INI=str(ini), START_PRINT_POLL="0.05")
         # -E -s, not -I: isolated from PYTHON* variables and the user's site, but -I's -P would also drop the
         # script's own folder from sys.path, where prusalink.py is.
-        p = subprocess.run([sys.executable, "-E", "-s", str(HERE / "start_print.py"), str(g)],
-                           env=env, capture_output=True, text=True, timeout=60, check=False)
+        p = subprocess.run(
+            [sys.executable, "-E", "-s", str(HERE / "start_print.py"), str(g)],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
     srv.shutdown()
     return p.returncode, len(Stub.posts), (p.stdout + p.stderr).strip().splitlines()[-1:]
 
 
-CASES = [   # name, stub settings, expected exit code, expected number of POSTs
+CASES = [  # name, stub settings, expected exit code, expected number of POSTs
     ("idle, same size: starts", {}, 0, 1),
     ("finished, same size: starts", {"state": "FINISHED"}, 0, 1),
     ("already printing: refused", {"state": "PRINTING"}, 1, 0),

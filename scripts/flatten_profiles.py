@@ -149,8 +149,10 @@ def main(argv):
 
         gained = len(final) - len(overrides)
         la = "M900" in final.get("start_filament_gcode", "")
-        print(f"OK    {name:<30} {len(overrides):>2} -> {len(final):>3} keys "
-              f"(+{gained} from '{parent}')   LinearAdvance={'yes' if la else 'no'}")
+        print(
+            f"OK    {name:<30} {len(overrides):>2} -> {len(final):>3} keys "
+            f"(+{gained} from '{parent}')   LinearAdvance={'yes' if la else 'no'}"
+        )
     return 0
 
 

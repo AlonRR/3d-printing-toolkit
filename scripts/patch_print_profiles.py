@@ -110,8 +110,9 @@ def check_not_running(print_dir):
     if print_dir == LIVE_DIR:
         try:
             running = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=30, check=False).stdout
-            assert "prusa-slicer" not in running.lower(), \
+            assert "prusa-slicer" not in running.lower(), (
                 "PrusaSlicer is RUNNING - close it first or it will overwrite these files on exit"
+            )
         except FileNotFoundError:
             print("  (could not check for a running PrusaSlicer - close it before applying)")
     else:
@@ -153,9 +154,9 @@ def check_patch(name, lines, new, current, todo, seen):
     assert len(new.split("\n")) == len(lines) + len(set(todo) - seen), f"{name}: line count wrong"
     untouched_before = [x for x in lines if not ((m := KV.match(x)) and m.group(1) in todo)]
     untouched_after = [x for x in new.split("\n") if not ((m := KV.match(x)) and m.group(1) in todo)]
-    assert untouched_after == [*untouched_before] or \
-        [x for x in untouched_after if x not in untouched_before] == \
-        [f"{k} = {todo[k]}" for k in sorted(set(todo) - seen)], f"{name}: a non-target line moved"
+    assert untouched_after == [*untouched_before] or [x for x in untouched_after if x not in untouched_before] == [
+        f"{k} = {todo[k]}" for k in sorted(set(todo) - seen)
+    ], f"{name}: a non-target line moved"
 
 
 def write_and_prove(path, name, new, eol, todo, stamp):
@@ -169,10 +170,10 @@ def write_and_prove(path, name, new, eol, todo, stamp):
     before = bak.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
     after = path.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
     moved = [(x, y) for x, y in zip(before, after, strict=False) if x != y]
-    assert all(KV.match(y) and KV.match(y).group(1) in todo for _, y in moved), \
+    assert all(KV.match(y) and KV.match(y).group(1) in todo for _, y in moved), (
         f"{name}: a non-target line changed: {moved[:3]}"
-    assert bak.read_bytes().count(b"\r\n") == path.read_bytes().count(b"\r\n"), \
-        f"{name}: line endings were rewritten"
+    )
+    assert bak.read_bytes().count(b"\r\n") == path.read_bytes().count(b"\r\n"), f"{name}: line endings were rewritten"
     return bak
 
 

@@ -40,16 +40,32 @@ DEFAULT_TOUCH_XY = "19.156,105.5"
 TOUCH_NOZZLE = 170  # hot enough to be clean, too cold for PETG to ooze during the dwell
 DWELL_S = 420
 PRIME_MM = 8.0
-STATE_KEYS = ("fan", "M900 LA1.5", "M900 LA1.0", "M205 ST", "M205 XYZE", "M201", "M203", "M204",
-              "M221", "M907", "hotend", "bed")
+STATE_KEYS = (
+    "fan",
+    "M900 LA1.5",
+    "M900 LA1.0",
+    "M205 ST",
+    "M205 XYZE",
+    "M201",
+    "M203",
+    "M204",
+    "M221",
+    "M907",
+    "hotend",
+    "bed",
+)
 
 
 def lead_in(lines, start, nxt, resume_z):
     """The resume layer's lead-in - wipe and retract, then the Z move onto the layer - as (splice, retract,
     first_xy): the line the original resumes from, the retraction to undo, and the first point it travels to."""
     zmove = next(i for i in range(start, nxt) if re.fullmatch(rf"G1 Z{resume_z:g} F\d+", lines[i].strip()))
-    retract = -sum(float(m.group(1)) for i in range(start, zmove)
-                   for m in [re.search(r"\bE(-[\d.]+)", lines[i].split(";")[0])] if m)
+    retract = -sum(
+        float(m.group(1))
+        for i in range(start, zmove)
+        for m in [re.search(r"\bE(-[\d.]+)", lines[i].split(";")[0])]
+        if m
+    )
     assert 0.5 <= retract <= 2.0, f"unexpected lead-in retract {retract}"
     splice = zmove + 1
     first_xy = first_unretract = None
@@ -139,16 +155,16 @@ G1 E{PRIME_MM:g} F150 ; prime into the air at the corner
 G1 E-{retract:g} F2100
 M0 Remove strand, click
 G92 E0
-{state['M201']}
-{state['M203']}
-{state['M204']}
-{state['M205 XYZE']}
-{state['M205 ST']}
-{state['M221']}
-{state['M907']}
-{state['M900 LA1.5']}
-{state['M900 LA1.0']}
-{state['fan']}
+{state["M201"]}
+{state["M203"]}
+{state["M204"]}
+{state["M205 XYZE"]}
+{state["M205 ST"]}
+{state["M221"]}
+{state["M907"]}
+{state["M900 LA1.5"]}
+{state["M900 LA1.0"]}
+{state["fan"]}
 M117 Printing from Z {resume_z:g}
 G1 X{first_xy[0]:g} Y{first_xy[1]:g} F10800
 G1 Z{resume_z:g} F720 ; onto the resume layer
@@ -162,7 +178,7 @@ def verify(written, head, footer, body, *, z, top_z, resume_z, live_z, hot):
     ref_z, safe_z, approach_z, exact_z, clear_z = z
     hl = head.count("\n")
     fl = footer.count("\n")
-    assert written[hl:len(written) - fl] == body, "spliced body is not byte-identical to the original tail"
+    assert written[hl : len(written) - fl] == body, "spliced body is not byte-identical to the original tail"
     code = [s.split(";")[0].strip() for s in written]
     h = code[:hl]
     assert [c for c in code if c.startswith("G28")] == ["G28 X Y", "G28 X Y"], "unexpected homing"
@@ -171,17 +187,38 @@ def verify(written, head, footer, body, *, z, top_z, resume_z, live_z, hot):
         if c.startswith(("M0 ", "M117 ")):
             assert len(c.split(" ", 1)[1]) <= 20, f"LCD text over 20 characters: {c}"
     zcmds = [c for c in h if re.match(r"G(0|1|92)(\s|$)", c) and re.search(r"\bZ-?[\d.]", c)]
-    assert zcmds == [f"G92 Z{ref_z:g} E0", f"G1 Z{safe_z:g} F720", f"G1 Z{approach_z:g} F300", "G92 Z1",
-                     f"G92 Z{exact_z:g}", f"G1 Z{clear_z:g} F720", f"G1 Z{resume_z:g} F720"], zcmds
-    order = ["M84 S0", "M0 Gap measured? Click", f"G92 Z{ref_z:g} E0", f"G1 Z{safe_z:g} F720", "G28 X Y",
-             f"M109 S{TOUCH_NOZZLE}", f"G1 Z{approach_z:g} F300", "G92 Z1", f"G4 S{DWELL_S}",
-             "M0 Paper grips? Click", f"G92 Z{exact_z:g}", f"M850 Z{live_z:.3f}", f"G1 Z{clear_z:g} F720",
-             f"M109 S{hot}", "M0 Remove strand, click", f"G1 Z{resume_z:g} F720"]
+    assert zcmds == [
+        f"G92 Z{ref_z:g} E0",
+        f"G1 Z{safe_z:g} F720",
+        f"G1 Z{approach_z:g} F300",
+        "G92 Z1",
+        f"G92 Z{exact_z:g}",
+        f"G1 Z{clear_z:g} F720",
+        f"G1 Z{resume_z:g} F720",
+    ], zcmds
+    order = [
+        "M84 S0",
+        "M0 Gap measured? Click",
+        f"G92 Z{ref_z:g} E0",
+        f"G1 Z{safe_z:g} F720",
+        "G28 X Y",
+        f"M109 S{TOUCH_NOZZLE}",
+        f"G1 Z{approach_z:g} F300",
+        "G92 Z1",
+        f"G4 S{DWELL_S}",
+        "M0 Paper grips? Click",
+        f"G92 Z{exact_z:g}",
+        f"M850 Z{live_z:.3f}",
+        f"G1 Z{clear_z:g} F720",
+        f"M109 S{hot}",
+        "M0 Remove strand, click",
+        f"G1 Z{resume_z:g} F720",
+    ]
     idx = [h.index(c) for c in order]
     assert idx == sorted(idx), f"header order wrong: {list(zip(order, idx, strict=True))}"
     second_home = len(h) - 1 - h[::-1].index("G28 X Y")
     assert h.index(f"G1 Z{clear_z:g} F720") < second_home < h.index(f"M109 S{hot}"), "second XY home misplaced"
-    assert not any(c.startswith("G1") for c in h[:h.index(f"G92 Z{ref_z:g} E0")]), "move before the coarse G92"
+    assert not any(c.startswith("G1") for c in h[: h.index(f"G92 Z{ref_z:g} E0")]), "move before the coarse G92"
     assert safe_z >= top_z + HOMING_CLEARANCE and exact_z < approach_z < clear_z < safe_z + 1e-9
     body_z = [float(m.group(1)) for c in code[hl:] for m in [re.match(r"G1 Z(-?[\d.]+)", c)] if m]
     assert min(body_z) >= resume_z - 1e-6, "body goes below the resume layer"
@@ -213,24 +250,43 @@ def main(argv):
     state = machine_state(lines[:start])
 
     ref_z = round(wall_z + gap, 3)
-    z = (ref_z, round(max(ref_z, top_z + HOMING_CLEARANCE), 3), round(wall_z + APPROACH, 3),
-         round(wall_z + PAPER, 3), round(top_z + 5, 3))
-    head = header(src.name, wall_z=wall_z, top_z=top_z, live_z=live_z, gap=gap, resume_z=resume_z, start=start,
-                  splice=splice, z=z, touch=touch, state=state, retract=retract, first_xy=first_xy)
+    z = (
+        ref_z,
+        round(max(ref_z, top_z + HOMING_CLEARANCE), 3),
+        round(wall_z + APPROACH, 3),
+        round(wall_z + PAPER, 3),
+        round(top_z + 5, 3),
+    )
+    head = header(
+        src.name,
+        wall_z=wall_z,
+        top_z=top_z,
+        live_z=live_z,
+        gap=gap,
+        resume_z=resume_z,
+        start=start,
+        splice=splice,
+        z=z,
+        touch=touch,
+        state=state,
+        retract=retract,
+        first_xy=first_xy,
+    )
     footer = "\nM84 S60 ; restore the default idle stepper release\n"
     body = lines[splice:]
     out.write_text(head + "\n".join(body) + footer, encoding="utf-8", newline="\n")
 
     # --- verify what was written -----------------------------------------------------------------
     written = out.read_text(encoding="utf-8").split("\n")
-    hl = verify(written, head, footer, body, z=z, top_z=top_z, resume_z=resume_z, live_z=live_z,
-                hot=state["hotend"])
+    hl = verify(written, head, footer, body, z=z, top_z=top_z, resume_z=resume_z, live_z=live_z, hot=state["hotend"])
     ref_z, safe_z, approach_z, exact_z, _ = z
     tx, ty = touch
     print(f"wall {wall_z:g} / top {top_z:g} -> resume {resume_z:g} (orig line {start + 1}, splice {splice + 1})")
     print(f"touch X{tx:g} Y{ty:g} on extrusions in layers {wall_z:g} and {wall_z - 0.2:g}; retract {retract:g}")
-    print(f"G92 coarse Z{ref_z:g} (gap {gap:g}) -> safe Z{safe_z:g} -> approach Z{approach_z:g} -> "
-          f"exact Z{exact_z:g}; restore live Z {live_z:.3f}")
+    print(
+        f"G92 coarse Z{ref_z:g} (gap {gap:g}) -> safe Z{safe_z:g} -> approach Z{approach_z:g} -> "
+        f"exact Z{exact_z:g}; restore live Z {live_z:.3f}"
+    )
     print(f"wrote {out.name}: {len(written)} lines, {out.stat().st_size} bytes; header {hl} lines; all checks passed")
     return 0
 

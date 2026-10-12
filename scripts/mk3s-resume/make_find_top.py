@@ -138,10 +138,14 @@ def main(argv):
     # --- verify what was written ---------------------------------------------------------------
     written = out.read_text(encoding="utf-8").split("\n")
     verify(written, steps, tx, ty)
-    print(f"wrote {out.name}: reference at X{tx:g} Y{ty:g}; lift {LIFT:g}, drop {DROP:g} "
-          f"(margin {LIFT - DROP:g}), then {steps} x {STEP:g} mm = {steps * STEP:g} mm")
-    print(f"  {len(written)} lines, {out.stat().st_size} bytes; no probing, no Z homing, "
-          f"X/Y travel only while lifted; all checks passed")
+    print(
+        f"wrote {out.name}: reference at X{tx:g} Y{ty:g}; lift {LIFT:g}, drop {DROP:g} "
+        f"(margin {LIFT - DROP:g}), then {steps} x {STEP:g} mm = {steps * STEP:g} mm"
+    )
+    print(
+        f"  {len(written)} lines, {out.stat().st_size} bytes; no probing, no Z homing, "
+        f"X/Y travel only while lifted; all checks passed"
+    )
     return 0
 
 

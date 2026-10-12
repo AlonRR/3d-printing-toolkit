@@ -89,8 +89,11 @@ def anneal(a, name):
     done = 0.0
     for t in ramp:
         minutes = a.ramp_min if t < a.hold else 0
-        out += [say(f"Anneal ramp {t:g}C"), f"M190 S{t:g} ; wait for the bed",
-                *dwell(minutes, f"Ramp {t:g}C", done, total)]
+        out += [
+            say(f"Anneal ramp {t:g}C"),
+            f"M190 S{t:g} ; wait for the bed",
+            *dwell(minutes, f"Ramp {t:g}C", done, total),
+        ]
         done += minutes
     out += [say(f"Anneal hold {a.hold:g}C"), *dwell(a.hours * 60, f"Hold {a.hold:g}C", done, total)]
     done += a.hours * 60
@@ -118,8 +121,10 @@ def main(argv):
     out, ramp, total = anneal(a, name)
     path = a.out or Path(name)
     path.write_text("\n".join(out), encoding="utf-8", newline="\n")
-    print(f"{path}: ramp {', '.join(f'{t:g}' for t in ramp)} C; hold {a.hold:g} C {a.hours:g} h; "
-          f"cool in {a.cool_step:g} C steps to {a.cool_to:g} C; ~{total / 60:.1f} h planned, plus the ramp's heating")
+    print(
+        f"{path}: ramp {', '.join(f'{t:g}' for t in ramp)} C; hold {a.hold:g} C {a.hours:g} h; "
+        f"cool in {a.cool_step:g} C steps to {a.cool_to:g} C; ~{total / 60:.1f} h planned, plus the ramp's heating"
+    )
     return 0
 
 

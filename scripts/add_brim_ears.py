@@ -41,6 +41,7 @@ Ear height defaults to one first layer (0.2 mm on the MK3S+ profiles here). The
 slicer samples a layer at its mid-height, so a 0.2 mm ear appears in layer 1 and
 is gone by layer 2 for any first layer from ~0.1 to 0.4 mm.
 """
+
 import argparse
 import math
 import struct
@@ -52,6 +53,7 @@ import numpy as np
 
 # ---------------------------------------------------------------- STL I/O
 
+
 def read_stl(path):
     """Return (raw 50-byte facet records, Nx3x3 vertex array)."""
     with open(path, "rb") as f:
@@ -61,8 +63,7 @@ def read_stl(path):
         n = struct.unpack("<I", head[80:84])[0]
         body = f.read(n * 50)
     if len(body) != n * 50:
-        sys.exit(f"{path}: not a binary STL, or truncated "
-                 f"(header claims {n} facets = {n * 50} bytes, got {len(body)})")
+        sys.exit(f"{path}: not a binary STL, or truncated (header claims {n} facets = {n * 50} bytes, got {len(body)})")
     rec = np.frombuffer(body, dtype=np.uint8).reshape(n, 50)
     tri = rec[:, 12:48].copy().view("<f4").reshape(n, 3, 3)
     return rec, tri
@@ -99,14 +100,15 @@ def cylinder(cx, cy, z0, z1, r, seg=48):
         tj = np.array([x[j], y[j], z1])
         cb = np.array([cx, cy, z0])
         ct = np.array([cx, cy, z1])
-        tris.append((cb, bj, bi))          # bottom, normal -z
-        tris.append((ct, ti, tj))          # top, normal +z
-        tris.append((bi, bj, tj))          # side
+        tris.append((cb, bj, bi))  # bottom, normal -z
+        tris.append((ct, ti, tj))  # top, normal +z
+        tris.append((bi, bj, tj))  # side
         tris.append((bi, tj, ti))
     return tris
 
 
 # ------------------------------------------------------- first-layer raster
+
 
 def bed_faces(tri, z0, tol):
     """Triangles lying flat on the bed -- the actual first-layer contact."""
@@ -140,7 +142,7 @@ def rasterize(faces, cell, pad):
         l1 = ((b[1] - c[1]) * (X - c[0]) + (c[0] - b[0]) * (Y - c[1])) / det
         l2 = ((c[1] - a[1]) * (X - c[0]) + (a[0] - c[0]) * (Y - c[1])) / det
         l3 = 1 - l1 - l2
-        grid[j0:j1 + 1, i0:i1 + 1] |= (l1 >= -1e-9) & (l2 >= -1e-9) & (l3 >= -1e-9)
+        grid[j0 : j1 + 1, i0 : i1 + 1] |= (l1 >= -1e-9) & (l2 >= -1e-9) & (l3 >= -1e-9)
     return grid, lo
 
 
@@ -167,6 +169,7 @@ def components(mask):
 
 
 # ------------------------------------------------------------ corner finding
+
 
 def convex_hull(pts):
     """Andrew monotone chain, CCW, strict turns (collinear points dropped)."""
@@ -195,14 +198,14 @@ def corners(hull, straight, min_turn):
     Returns [(apex xy, outward unit vector, total turn in degrees)].
     """
     n = len(hull)
-    edge = np.roll(hull, -1, axis=0) - hull            # edge i: vertex i -> i+1
+    edge = np.roll(hull, -1, axis=0) - hull  # edge i: vertex i -> i+1
     elen = np.linalg.norm(edge, axis=1)
     with np.errstate(invalid="ignore", divide="ignore"):
         edir = edge / elen[:, None]
     # A vertex is "broken" when the edge arriving at it is long: that edge is a
     # straight side, so the corner ends there.
     breaks = [i for i in range(n) if elen[i - 1] > straight]
-    if not breaks:                                     # a circle: no corners
+    if not breaks:  # a circle: no corners
         return []
     out = []
     for k, start in enumerate(breaks):
@@ -219,8 +222,7 @@ def corners(hull, straight, min_turn):
         # Turn accumulated across the run: incoming edge before it, outgoing after.
         din = edir[(run[0] - 1) % n]
         dout = edir[run[-1] % n]
-        turn = math.degrees(math.atan2(din[0] * dout[1] - din[1] * dout[0],
-                                       din @ dout))
+        turn = math.degrees(math.atan2(din[0] * dout[1] - din[1] * dout[0], din @ dout))
         if turn < min_turn:
             continue
         # Apex: vertex at the middle of the run by arc length.
@@ -260,7 +262,7 @@ def edge_tabs(hull, spacing):
         if ln < spacing:
             continue
         d = d / ln
-        nrm = np.array([d[1], -d[0]])          # outward for a CCW hull
+        nrm = np.array([d[1], -d[0]])  # outward for a CCW hull
         k = int(ln // spacing)
         for j in range(k):
             out.append((a + d * ln * (j + 0.5) / k, nrm, 0.0))
@@ -268,6 +270,7 @@ def edge_tabs(hull, spacing):
 
 
 # ------------------------------------------------------------------- placing
+
 
 def disc_cells(grid_shape, lo, cell, cx, cy, r):
     ny, nx = grid_shape
@@ -331,8 +334,7 @@ def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say=print):
                 break
             ov = a.overlap
             while ov >= 1.5:
-                res = place(apex, bis, r, ov, mat_lab, void_lab, exterior,
-                            lo, a.cell, a.clearance, a.min_weld)
+                res = place(apex, bis, r, ov, mat_lab, void_lab, exterior, lo, a.cell, a.clearance, a.min_weld)
                 if isinstance(res, tuple):
                     placed = (res[0], res[1], r, ov, res[2])
                     break
@@ -345,23 +347,24 @@ def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say=print):
             # Two hull corners a few mm apart (a chamfer, say) give two discs
             # that merge into one blob -- more plastic, no more anchoring, and a
             # shape that no longer snips off cleanly. Keep the better-welded one.
-            clash = next(((i, e) for i, e in enumerate(ears)
-                          if math.dist((cx, cy), e[:2]) < 0.75 * (r + e[2])), None)
+            clash = next(((i, e) for i, e in enumerate(ears) if math.dist((cx, cy), e[:2]) < 0.75 * (r + e[2])), None)
             if clash:
                 i, e = clash
                 if weld <= e[3]:
                     dropped.append((apex, "overlaps a better-welded ear"))
-                    say(f"  SKIPPED  ({apex[0]:8.2f},{apex[1]:8.2f})  "
-                          f"{kind}  -- overlaps the ear at ({e[0]:.2f},{e[1]:.2f})")
+                    say(
+                        f"  SKIPPED  ({apex[0]:8.2f},{apex[1]:8.2f})  "
+                        f"{kind}  -- overlaps the ear at ({e[0]:.2f},{e[1]:.2f})"
+                    )
                     continue
-                say(f"  replaced the ear at ({e[0]:.2f},{e[1]:.2f}) "
-                      f"-- overlapping, and welded {e[3]:.1f} < {weld:.1f} mm^2")
+                say(
+                    f"  replaced the ear at ({e[0]:.2f},{e[1]:.2f}) "
+                    f"-- overlapping, and welded {e[3]:.1f} < {weld:.1f} mm^2"
+                )
                 ears.pop(i)
             ears.append((cx, cy, r, weld))
-            note = "" if (r == a.diameter / 2 and ov == a.overlap) else \
-                   f"   [shrunk: d={2 * r:.0f} overlap={ov:.2f}]"
-            say(f"  {kind} at ({apex[0]:8.2f},{apex[1]:8.2f})  turn {turn:5.1f} deg  "
-                  f"weld {weld:5.1f} mm^2{note}")
+            note = "" if (r == a.diameter / 2 and ov == a.overlap) else f"   [shrunk: d={2 * r:.0f} overlap={ov:.2f}]"
+            say(f"  {kind} at ({apex[0]:8.2f},{apex[1]:8.2f})  turn {turn:5.1f} deg  weld {weld:5.1f} mm^2{note}")
         else:
             dropped.append((apex, reason))
             say(f"  SKIPPED  ({apex[0]:8.2f},{apex[1]:8.2f})  turn {turn:5.1f} deg  -- {reason}")
@@ -369,30 +372,32 @@ def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say=print):
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("stl")
     ap.add_argument("-o", "--out")
     ap.add_argument("--preview", help="write a top-view PNG of the placement")
     ap.add_argument("--diameter", type=float, default=12.0, help="ear diameter mm (default 12)")
-    ap.add_argument("--overlap", type=float, default=3.0,
-                    help="how far the ear reaches into the part, mm (default 3)")
-    ap.add_argument("--height", type=float, default=0.2,
-                    help="ear height mm = one first layer (default 0.2)")
-    ap.add_argument("--straight", type=float, default=5.0,
-                    help="hull edge longer than this is a straight side, not a corner (mm)")
-    ap.add_argument("--min-turn", type=float, default=30.0,
-                    help="ignore hull corners that turn less than this (deg)")
-    ap.add_argument("--clearance", type=float, default=1.0,
-                    help="keep this clear of other islands and holes (mm)")
-    ap.add_argument("--edge-tabs", type=float, default=0.0, metavar="MM",
-                    help="also anchor long straight sides, one tab per MM of edge "
-                         "(default 0 = corners only)")
-    ap.add_argument("--min-weld", type=float, default=5.0,
-                    help="reject an ear welded to less than this much material (mm^2)")
+    ap.add_argument("--overlap", type=float, default=3.0, help="how far the ear reaches into the part, mm (default 3)")
+    ap.add_argument("--height", type=float, default=0.2, help="ear height mm = one first layer (default 0.2)")
+    ap.add_argument(
+        "--straight", type=float, default=5.0, help="hull edge longer than this is a straight side, not a corner (mm)"
+    )
+    ap.add_argument("--min-turn", type=float, default=30.0, help="ignore hull corners that turn less than this (deg)")
+    ap.add_argument("--clearance", type=float, default=1.0, help="keep this clear of other islands and holes (mm)")
+    ap.add_argument(
+        "--edge-tabs",
+        type=float,
+        default=0.0,
+        metavar="MM",
+        help="also anchor long straight sides, one tab per MM of edge (default 0 = corners only)",
+    )
+    ap.add_argument(
+        "--min-weld", type=float, default=5.0, help="reject an ear welded to less than this much material (mm^2)"
+    )
     ap.add_argument("--cell", type=float, default=0.4, help="raster cell size mm")
-    ap.add_argument("--flat-tol", type=float, default=0.001,
-                    help="how far above the lowest point still counts as bed contact")
+    ap.add_argument(
+        "--flat-tol", type=float, default=0.001, help="how far above the lowest point still counts as bed contact"
+    )
     ap.add_argument("--segments", type=int, default=48)
     ap.add_argument("--dry-run", action="store_true", help="report placement, write no STL")
     a = ap.parse_args(argv[1:])
@@ -412,7 +417,7 @@ def main(argv):
     mat_lab, n_isl = components(grid)
     void_lab, _ = components(~grid)
     exterior = int(void_lab[0, 0])
-    print(f"  first layer: {grid.sum() * a.cell ** 2:.0f} mm^2 in {n_isl} island(s)")
+    print(f"  first layer: {grid.sum() * a.cell**2:.0f} mm^2 in {n_isl} island(s)")
 
     hull = convex_hull(faces.reshape(-1, 3)[:, :2])
     cands = corners(hull, a.straight, a.min_turn)
@@ -445,18 +450,17 @@ def main(argv):
 
 def preview(path, title, faces, hull, ears, lo, grid, cell):
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.collections import PatchCollection
     from matplotlib.patches import Circle, Polygon
 
     fig, ax = plt.subplots(figsize=(11, 10))
-    ax.add_collection(PatchCollection([Polygon(t[:, :2]) for t in faces],
-                                      facecolor="#9fc0e8", edgecolor="none"))
+    ax.add_collection(PatchCollection([Polygon(t[:, :2]) for t in faces], facecolor="#9fc0e8", edgecolor="none"))
     ax.plot(*np.vstack([hull, hull[:1]]).T, "-", color="#888", lw=0.8, label="hull")
     for cx, cy, r, _ in ears:
-        ax.add_patch(Circle((cx, cy), r, facecolor="#e2504a", alpha=0.65,
-                            edgecolor="#8b1a16", lw=1.0))
+        ax.add_patch(Circle((cx, cy), r, facecolor="#e2504a", alpha=0.65, edgecolor="#8b1a16", lw=1.0))
         ax.plot([cx], [cy], "k+", ms=5)
     v = faces.reshape(-1, 3)
     m = 15

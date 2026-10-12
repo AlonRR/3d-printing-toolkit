@@ -38,20 +38,25 @@ def put(url, data, key, hops=2):
     Measured 17 Sep: status, file listings and the upload all returned 308 to the https form.
     """
     for hop in range(hops):
-        req = urllib.request.Request(url, data=data, method="PUT", headers={
-            "X-Api-Key": key,
-            "Content-Type": "text/x.gcode",
-            "Content-Length": str(len(data)),
-            "Print-After-Upload": "?0",
-            "Overwrite": "?0",
-        })
+        req = urllib.request.Request(
+            url,
+            data=data,
+            method="PUT",
+            headers={
+                "X-Api-Key": key,
+                "Content-Type": "text/x.gcode",
+                "Content-Length": str(len(data)),
+                "Print-After-Upload": "?0",
+                "Overwrite": "?0",
+            },
+        )
         try:
             with urllib.request.urlopen(req, timeout=600) as r:
                 return r.status, url
         except urllib.error.HTTPError as e:
             loc = e.headers.get("Location") if e.headers else None
             if e.code in (301, 302, 307, 308) and loc and hop < hops - 1:
-                url = urllib.parse.urljoin(url, loc)   # absolute or relative Location
+                url = urllib.parse.urljoin(url, loc)  # absolute or relative Location
                 continue
             body = e.read().decode("utf-8", "replace")[:300]
             print(f"PUT failed {e.code} {body}")

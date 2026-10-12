@@ -47,10 +47,15 @@ def get(base, key, path):
 def record(now, p, job):
     """One sample's log line, from the status's printer object and the job."""
     return {
-        "t": now.isoformat(timespec="seconds"), "state": p.get("state"), "z": p.get("axis_z"),
-        "bed": p.get("temp_bed"), "bed_target": p.get("target_bed"),
-        "nozzle": p.get("temp_nozzle"), "nozzle_target": p.get("target_nozzle"),
-        "progress": job.get("progress"), "time_remaining": job.get("time_remaining"),
+        "t": now.isoformat(timespec="seconds"),
+        "state": p.get("state"),
+        "z": p.get("axis_z"),
+        "bed": p.get("temp_bed"),
+        "bed_target": p.get("target_bed"),
+        "nozzle": p.get("temp_nozzle"),
+        "nozzle_target": p.get("target_nozzle"),
+        "progress": job.get("progress"),
+        "time_remaining": job.get("time_remaining"),
         "file": (job.get("file") or {}).get("display_name"),
     }
 
@@ -111,16 +116,21 @@ def main(argv):
         append(log_dir, now, json.dumps(rec, ensure_ascii=False))
         w = observe(w, rec)
         if rec["state"] != "PRINTING" and w.seen_printing:
-            print(f"{now:%H:%M:%S} printer left PRINTING -> {rec['state']}; last Z {rec['z']}, "
-                  f"bed {rec['bed']}/{rec['bed_target']}, dips {w.dips}, min bed while printing {w.min_bed}"
-                  + blind_note(w))
+            print(
+                f"{now:%H:%M:%S} printer left PRINTING -> {rec['state']}; last Z {rec['z']}, "
+                f"bed {rec['bed']}/{rec['bed_target']}, dips {w.dips}, min bed while printing {w.min_bed}"
+                + blind_note(w)
+            )
             return 0
         time.sleep(interval)
 
     last = w.last
-    print(f"window over: state {last and last['state']}, Z {last and last['z']}, progress "
-          f"{last and last['progress']}%, bed dips {w.dips}, min bed while printing {w.min_bed}"
-          + blind_note(w) + " - re-arm")
+    print(
+        f"window over: state {last and last['state']}, Z {last and last['z']}, progress "
+        f"{last and last['progress']}%, bed dips {w.dips}, min bed while printing {w.min_bed}"
+        + blind_note(w)
+        + " - re-arm"
+    )
     return 0
 
 
