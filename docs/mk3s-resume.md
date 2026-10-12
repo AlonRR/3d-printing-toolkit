@@ -250,6 +250,6 @@ reference at one spot and touching off at another feeds that difference straight
 `RESUME_TOUCH_XY` so both happen at one point, and the tilt cancels.
 
 ⚠️ **Pick that point from the geometry, not by eye.** A first guess at mid-span landed in a recess
-and was correctly refused. `scripts/mk3s-resume/probe_touch.py` replicates the generator's own
-`covered()` test and reports which points qualify in both layers; prefer the one with the widest
+and was correctly refused. `scripts/mk3s-resume/probe_touch.py` uses the generator's own
+`covered()` test, from `gcode_layers.py`, and reports which points qualify in both layers; prefer the one with the widest
 margin, so hand-positioning error and any X/Y registration residual are absorbed.

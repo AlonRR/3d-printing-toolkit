@@ -1,5 +1,4 @@
-# Models and sliced output live in OneDrive\3D printing\, not here.
-# This repo is documentation and slicer configuration only.
+# Rendered and sliced output lives in OneDrive\3D printing\, not here: the sources that make it are what is kept.
 *.stl
 *.3mf
 *.gcode

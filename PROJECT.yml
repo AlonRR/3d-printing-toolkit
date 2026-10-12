@@ -5,6 +5,6 @@ projects:
   - name:     Prusa MK3S+ operations and ASA quality
     kind:     build
     state:    active
-    next:     "ASA items 3-6; item 5 is the chamber family"
+    next:     "dry an ASA spool, 80 C for 4-6 h, and reprint a part that came out badly (ASA item 4)"
     trackers: [docs/asa-print-quality.md, docs/mk3s-resume.md]
-    review:   2026-09-20
+    review:   2026-10-12

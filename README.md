@@ -1,13 +1,14 @@
-# 3D printing toolkit — profiles, design rules, part verification
+# 3D printing toolkit — profiles, design rules, printer operations
 
 Print-process engineering around a single **Prusa MK3S+**, treated as production equipment rather
-than a hobby printer. Three things live here:
+than a hobby printer. What lives here:
 
 | | |
 |---|---|
-| **Tuned slicer profiles** | 20 filament + 10 print + 1 printer preset, every number traced to a vendor datasheet or to a measurement on this machine |
+| **Tuned slicer profiles** | 20 filament + 9 print + 1 printer preset, every number traced to a vendor datasheet or to a measurement on this machine |
 | **Design rules** | FDM constraints calibrated to *this* machine's measured extrusion width, not its nozzle diameter |
-| **Part verification** | A pipeline that renders, asserts, checks manifold, slices, and cross-checks a model against the profile it was actually sliced with |
+| **Printer operations** | Scripts for the jobs the slicer does not do: resuming a print the printer abandoned, annealing parts on the bed, Live adjust Z calibration tags, retargeting a sliced file's temperatures, keeping the presets in step with the house rules |
+| **Calibration models** | A PETG temperature tower and a gridfinity foot negative, in OpenSCAD, checked before they print |
 
 Every figure here is either read out of this repo's own sliced output or measured on the machine.
 Where a number is inherited or assumed rather than measured, it says so — that distinction is the
@@ -43,27 +44,21 @@ Two more from the same day, each of which cost a round trip:
 | [`slicer/print/`](slicer/print/) | The custom print profiles. ⚠️ One, `…lightning`, has `spiral_vase = 1` baked in — deliberate and documented, but it will surprise you if selected blind |
 | [`slicer/printer/`](slicer/printer/) | The printer preset itself |
 | [`slicer/reference/`](slicer/reference/) | Vendor data transcribed to Markdown, with what was taken and what was overridden |
-| [`scripts/flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates filament profiles from the vendor chain, because of the `inherits` trap above |
-| [`scad-tools/`](https://github.com/AlonRR/scad-tools) | The shared OpenSCAD tools, a git submodule: `scad-check.sh` verifies a part end to end — render, asserts, manifold, slice — and cross-checks its declared parameters against the profile actually used; `scad-preview.sh` previews and cuts the **exported STL**, so an export bug cannot hide behind a correct-looking render; `scad-controls.sh` fires a model README's guard controls; `lib/axes.scad` is the xyz arrows every rendered figure carries |
-| [`models/`](models/) | Parametric OpenSCAD sources. The `.scad` is the artefact; STLs are build output and are not tracked |
+| [`scripts/`](scripts/) | The printer-operation and profile scripts — see *Scripts* below |
+| [`tests/`](tests/) | What every script does, recorded and checked — see *Tests* below |
+| [`models/`](models/) | Parametric OpenSCAD sources: the temperature tower and the gridfinity foot negative. The `.scad` is the artefact; STLs are build output and are not tracked |
+| [`scad-tools/`](https://github.com/AlonRR/scad-tools) | The shared OpenSCAD tools, a git submodule — see *Part verification* below |
 | [`docs/`](docs/) | The written material — see *Documentation* below |
 
 ## What's deliberately *not* here
 
 - **Models and G-code.** STL, 3MF and G-code are large binaries and git is the wrong tool for them.
-  `.gitignore` enforces it.
+  `.gitignore` enforces it; the tests' small fixtures are the one exception.
 - **Physical-printer configs.** They hold PrusaLink API keys in plaintext. Also gitignored.
 - **The parametric CAD library** — a separate project.
-- **The heated drybox and desiccant module.** Their documents, firmware and models moved to a
-  repository of their own in September 2026, once that work had grown into a project rather than a
-  corner of this one. It is not public, so there is no link to give. What stayed here is the material
-  the two share: the annealing page and the mechanical-design-review checklist. The OpenSCAD scripts both
-  use are [scad-tools](https://github.com/AlonRR/scad-tools)' now.
-- **The printed 2.54 mm fan connector**, male and female. It moved to a repository of its own on
-  9 Oct 2026, with its history, ahead of its Printables listing. It is not public yet, so there is no
-  link to give.
 - **Procurement.** Prices that carry an argument stay; order references, vendors and what was paid
   belong in an inventory system, not a code repo.
+- **Projects that outgrew this repository** — see *Moved out* below.
 
 ---
 
@@ -91,6 +86,35 @@ the slicer cannot fill cleanly.
 The document also records **claims deliberately not imported** from general design advice — wall
 steps that assume a 0.4 mm width, bridging figures well past this machine's measured ceiling, and
 text-orientation advice that is backwards here. Each is a generic figure meeting a measured one.
+
+## Scripts — `scripts/`
+
+Each runs on its own, from the repository's root, with [uv](https://docs.astral.sh/uv/):
+`uv run scripts/<name>.py`. Each opens with what it does, why, and how to call it.
+
+| | |
+|---|---|
+| [`flatten_profiles.py`](scripts/flatten_profiles.py) | Regenerates the filament profiles from the vendor chain, because of the `inherits` trap above |
+| [`patch_print_profiles.py`](scripts/patch_print_profiles.py) | Applies the house rules — no skirt, no brim, cubic infill — to the print presets, live or in `slicer/print/`, changing nothing else; a dry run unless told `--apply` |
+| [`retarget_filament_temps.py`](scripts/retarget_filament_temps.py) | Rewrites a sliced file's temperatures for another filament profile, and proves nothing else changed |
+| [`make_live_z_tags.py`](scripts/make_live_z_tags.py) | A Live adjust Z calibration plate for any nozzle, each tag labelled with its height |
+| [`bed-anneal-gcode.py`](scripts/bed-anneal-gcode.py) | A G-code "print" that anneals parts on the heated bed: ramp, hold, slow cool — [`docs/annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) |
+| [`add_brim_ears.py`](scripts/add_brim_ears.py) | Mouse-ear tabs on the corners of an STL that can lift, in place of a full brim, kept off its holes and its other islands |
+| [`mk3s-resume/`](scripts/mk3s-resume/) | Resuming a print the printer abandoned, part still on the bed — [`docs/mk3s-resume.md`](docs/mk3s-resume.md) |
+
+The scripts that talk to the printer read its address and API key from PrusaSlicer's
+physical-printer profile, and never print either.
+
+## Tests — `tests/`
+
+```sh
+uv run pytest
+```
+
+Every script is run on fixed inputs and must do exactly what [`tests/golden.json`](tests/golden.json)
+recorded. That covers its exit code, its output, the requests a stub PrusaLink receives, and every file it
+writes. Nothing touches PrusaSlicer's own folders or a printer. [`tests/README.md`](tests/README.md) says how,
+and how to re-record a script that changed on purpose.
 
 ## Part verification — `scad-tools/scripts/scad-check.sh`
 
@@ -123,18 +147,20 @@ pin=$(curl -s https://api.github.com/repos/AlonRR/3d-printing-toolkit/contents/s
 rm -rf scad-tools && mkdir scad-tools && curl -sL "https://github.com/AlonRR/scad-tools/archive/$pin.tar.gz" | tar xz --strip-components=1 -C scad-tools
 ```
 
-## Firmware — moved out
+## Moved out
 
-The firmware that lived here moved to repositories of its own in October 2026, each with its history:
+Work that grew past a corner of this repository moved to one of its own, each with its history:
 
-- **The enclosure's sensing and airflow** — the chamber node, its measurements and the fan plan:
-  [**printer-enclosure**](https://github.com/AlonRR/printer-enclosure).
-- **The ESP32-S3 camera node** for Prusa Connect, in plain ESP-IDF C: `esp32-cam-for-prusa-connect`. Its
-  repository is private for now; until it is public, its code is in this repository's history, under
-  `firmware/prusa-cam-c/`.
+| | |
+|---|---|
+| [**printer-enclosure**](https://github.com/AlonRR/printer-enclosure) | The enclosure's sensing and airflow: the chamber node, its measurements, the fan plan and the scrubber. October 2026 |
+| [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor) | The particle and VOC/NOx monitor that hangs beside the enclosure. October 2026 |
+| [**parts**](https://github.com/AlonRR/parts) | Finished small parts, starting with the USB-C panel plate. 12 Oct 2026 |
+| **esp32-cam-for-prusa-connect** | The ESP32-S3 camera node for Prusa Connect, in plain ESP-IDF C. Private for now; until it is public, its code is in this repository's history, under `firmware/prusa-cam-c/` |
+| **The printed fan connector** | 2.54 mm, male and female. 9 Oct 2026, ahead of its Printables listing; not public yet |
+| **The heated drybox and desiccant module** | September 2026. Not public. What stayed here is what the two share: the annealing page and the mechanical-design-review checklist |
 
-The particle and VOC/NOx monitor that hangs beside the enclosure is
-[**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor).
+Ideas that are not yet parts are kept in a private workshop repository until they are.
 
 ## Documentation — `docs/`
 
@@ -144,6 +170,7 @@ The particle and VOC/NOx monitor that hangs beside the enclosure is
 | [`openscad-basics/`](docs/openscad-basics/) | Six hands-on OpenSCAD lessons, ending in a part written the way the models here are — every behaviour described was measured, not recalled |
 | [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
 | [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
+| [`mechanical-design-review.md`](docs/mechanical-design-review.md) | The questions a collision check never asks: a checklist for reviewing a printed mechanical assembly |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
 | [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
@@ -153,13 +180,13 @@ Two licences, because this repository holds two different kinds of work:
 
 | | |
 |---|---|
-| **Code** — `scripts/` | **MPL-2.0** |
+| **Code** — `scripts/`, `tests/`, `pyproject.toml` | **MPL-2.0** |
 | **Everything else** — `docs/`, `slicer/`, `models/`, this README and the figures | **CC-BY-4.0** |
 
 The split is deliberate. Creative Commons advises against using a CC licence for software: it carries
-no patent grant and says nothing about source availability, and a firmware or script consumer needs
-both. The rest is documentation, measured profile data and small printable parts, where CC-BY fits and
-matches the norm for shared models.
+no patent grant and says nothing about source availability, and a script consumer needs both. The rest
+is documentation, measured profile data and small printable parts, where CC-BY fits and matches the
+norm for shared models.
 
 Every file states its own licence, following the [REUSE](https://reuse.software/) specification —
 either as an `SPDX-License-Identifier` header or through `REUSE.toml` for files that cannot carry one.
@@ -173,7 +200,7 @@ here onward.
 
 ---
 
-*Hostnames, addresses and credentials in this repository are placeholders. Machine-specific values
-are supplied through ESPHome secrets and are not published here.*
+*Hostnames, addresses and credentials in this repository are placeholders. The printer's own address
+and key are read from a PrusaSlicer profile that is gitignored, and are not published here.*
 
 _Parts of this repository were drafted with the help of an LLM agent; reviewed and verified locally._
