@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 Alon A. Rabinowitz
+# SPDX-License-Identifier: MPL-2.0
+
+# The scripts' environment: what they need, and how they are tested and linted. Not a package - each script runs
+# on its own (uv run scripts/<name>.py). uv sync makes the environment; uv run pytest runs tests/.
+[project]
+name = "3d-printing-toolkit"
+version = "0"
+description = "Scripts for slicer profiles, G-code and printer operations on a Prusa MK3S+"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.8",  # add_brim_ears.py --preview
+    "numpy>=1.26",      # add_brim_ears.py
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["scad-tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "BLE", "PLW", "RUF"]

@@ -1,0 +1,615 @@
+{
+ "anneal-custom": {
+  "exit": 0,
+  "files": {
+   "a.gcode": {
+    "bytes": 8395,
+    "sha256": "818dcf4567e43d571e110ad687d468cf219afe5ea173c776586cacdd20d85515"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "a.gcode: ramp 40, 55, 70, 80 C; hold 80 C 0.5 h; cool in 10 C steps to 50 C; ~1.7 h planned, plus the ramp's heating\n"
+ },
+ "anneal-defaults": {
+  "exit": 0,
+  "files": {
+   "anneal-bed-95C-3h.gcode": {
+    "bytes": 31422,
+    "sha256": "6383ad238df258e0220f325c49596fc6727fd07dfdc88c07d550106177325839"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "anneal-bed-95C-3h.gcode: ramp 40, 50, 60, 70, 80, 90, 95 C; hold 95 C 3 h; cool in 5 C steps to 40 C; ~6.0 h planned, plus the ramp's heating\n"
+ },
+ "anneal-hold-too-hot": {
+  "exit": 2,
+  "files": {},
+  "requests": null,
+  "stderr_last": "bed-anneal-gcode.py: error: --hold must be 40-120 \u00b0C (the MK3S bed's range)",
+  "stdout": ""
+ },
+ "ears-defaults": {
+  "exit": 0,
+  "files": {
+   "ell-ears.stl": {
+    "bytes": 54084,
+    "sha256": "c33b94cc15a10143f348be5f3dcede01851898af3792d908e2d38c169522881c"
+   },
+   "ell.stl": {
+    "bytes": 6084,
+    "sha256": "5df54dfb47b6afc2fd7347f7f45c050ff371b770d1d28fca4ae1996ecae2c1b1"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "ell.stl\n  120 facets, z rests at 0.000, 30 bed-contact facets\n  first layer: 621 mm^2 in 1 island(s)\n  5 convex corner(s) on the hull\n\n  ear at (    0.00,    0.00)  turn  90.0 deg  weld   9.3 mm^2\n  ear at (   40.00,    0.00)  turn  90.0 deg  weld   9.3 mm^2\n  ear at (   40.00,   10.00)  turn  56.3 deg  weld   9.4 mm^2\n  ear at (   10.00,   30.00)  turn  33.7 deg  weld  10.2 mm^2\n  ear at (    0.00,   30.00)  turn  90.0 deg  weld   9.3 mm^2\n\n  5 ear(s), 960 added facets -> ell-ears.stl  (1080 facets total)\n"
+ },
+ "ears-dry-run": {
+  "exit": 1,
+  "files": {
+   "ell.stl": {
+    "bytes": 6084,
+    "sha256": "5df54dfb47b6afc2fd7347f7f45c050ff371b770d1d28fca4ae1996ecae2c1b1"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "ell.stl\n  120 facets, z rests at 0.000, 30 bed-contact facets\n  first layer: 621 mm^2 in 1 island(s)\n  5 convex corner(s) on the hull\n\n  SKIPPED  (    0.00,    0.00)  turn  90.0 deg  -- only 2.7 mm^2 of weld\n  SKIPPED  (   40.00,    0.00)  turn  90.0 deg  -- only 2.7 mm^2 of weld\n  SKIPPED  (   40.00,   10.00)  turn  56.3 deg  -- only 3.0 mm^2 of weld\n  SKIPPED  (   10.00,   30.00)  turn  33.7 deg  -- only 3.4 mm^2 of weld\n  SKIPPED  (    0.00,   30.00)  turn  90.0 deg  -- only 2.7 mm^2 of weld\n\n  --dry-run: no STL written\n"
+ },
+ "ears-edge-tabs": {
+  "exit": 0,
+  "files": {
+   "ell.stl": {
+    "bytes": 6084,
+    "sha256": "5df54dfb47b6afc2fd7347f7f45c050ff371b770d1d28fca4ae1996ecae2c1b1"
+   },
+   "o.stl": {
+    "bytes": 102084,
+    "sha256": "6517e71ab6bfe6ab2f92a491ffc1ed88a7b1aa4ae6d8e87fca8a5d5d7c9721cf"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "ell.stl\n  120 facets, z rests at 0.000, 30 bed-contact facets\n  first layer: 621 mm^2 in 1 island(s)\n  5 convex corner(s) on the hull + 8 mid-edge tab site(s) at 12.0 mm spacing\n\n  ear at (    0.00,    0.00)  turn  90.0 deg  weld   9.0 mm^2\n  ear at (   40.00,    0.00)  turn  90.0 deg  weld   9.0 mm^2\n  ear at (   40.00,   10.00)  turn  56.3 deg  weld   8.8 mm^2\n  ear at (   10.00,   30.00)  turn  33.7 deg  weld   9.1 mm^2\n  ear at (    0.00,   30.00)  turn  90.0 deg  weld   9.0 mm^2\n  tab at (    6.67,    0.00)  turn   0.0 deg  weld  18.9 mm^2\n  tab at (   20.00,    0.00)  turn   0.0 deg  weld  18.9 mm^2\n  tab at (   33.33,    0.00)  turn   0.0 deg  weld  14.9 mm^2   [shrunk: d=8 overlap=2.50]\n  SKIPPED  (   35.00,   13.33)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   25.00,   20.00)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   15.00,   26.67)  turn   0.0 deg  -- corner is not on any island\n  tab at (    0.00,   22.50)  turn   0.0 deg  weld  18.9 mm^2\n  tab at (    0.00,    7.50)  turn   0.0 deg  weld  18.9 mm^2\n\n  10 ear(s), 1920 added facets -> o.stl  (2040 facets total)\n  3 corner(s) got no ear (see SKIPPED above)\n"
+ },
+ "ears-not-binary": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "box.stl: not a binary STL, or truncated (header claims 538970637 facets = 26948531850 bytes, got 1487)",
+  "stdout": ""
+ },
+ "find-top": {
+  "exit": 0,
+  "files": {
+   "find-top.gcode": {
+    "bytes": 2442,
+    "sha256": "5ac3f08b73ce9a953c16157b22b57b81cd223b8d260e2661cde0146b48930d72"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "wrote find-top.gcode: reference at X60 Y21.47; lift 10, drop 8 (margin 2), then 40 x 0.1 mm = 4 mm\n  108 lines, 2442 bytes; no probing, no Z homing, X/Y travel only while lifted; all checks passed\n"
+ },
+ "find-top-too-few-steps": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: steps must be between 5 and 200",
+  "stdout": ""
+ },
+ "flatten-all": {
+  "exit": 0,
+  "files": {
+   "repo/slicer/filament/inslogic/Inslogic ASA.ini": {
+    "bytes": 43,
+    "sha256": "cae2dcf1c32c27050a8af1753ce48319aedb6464fc9e64c7f14b75e213c8c3ce"
+   },
+   "repo/slicer/filament/inslogic/Inslogic PLA Pro.ini": {
+    "bytes": 513,
+    "sha256": "6fc575e6b2c8b28184bf4e0eea4bda255fd5830d92d03fecb6638fa3371c3bf5"
+   },
+   "repo/slicer/filament/inslogic/Inslogic PLA Pro.ini.sparse-bak": {
+    "bytes": 212,
+    "sha256": "a540a3f9ad704f652a4d2b83265e107811361bf40f9aa7f3d5e5f10b29f16501"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "FAIL  Inslogic ASA  <- parent 'Prusament ASA' not found in vendor bundle\nSKIP  Inslogic ASA @0.8 nozzle  (no master file)\nSKIP  Inslogic ASA - thin wall  (no master file)\nSKIP  Inslogic ASA - thin wall, flat base  (no master file)\nSKIP  Inslogic TPU 95A  (no master file)\nSKIP  Inslogic TPU 95A @0.8 nozzle  (no master file)\nSKIP  Inslogic TPU 95A - fast  (no master file)\nOK    Inslogic PLA Pro                2 ->  13 keys (+11 from 'Generic PLA')   LinearAdvance=yes\nSKIP  Inslogic PLA Pro @0.8 nozzle  (no master file)\nSKIP  Inslogic PETG Pro  (no master file)\nSKIP  Inslogic PETG Pro @0.8 nozzle  (no master file)\nSKIP  PETG Basic NPETG087-ZX  (no master file)\nSKIP  PETG Basic NPETG087-ZX @0.8 nozzle  (no master file)\nSKIP  Yasin3D PLA  (no master file)\nSKIP  Yasin3D PETG  (no master file)\nSKIP  Yasin3D PETG @0.8 nozzle  (no master file)\nSKIP  Yasin3D ASA  (no master file)\n"
+ },
+ "flatten-one-twice": {
+  "exit": 0,
+  "files": {
+   "repo/slicer/filament/inslogic/Inslogic ASA.ini": {
+    "bytes": 43,
+    "sha256": "cae2dcf1c32c27050a8af1753ce48319aedb6464fc9e64c7f14b75e213c8c3ce"
+   },
+   "repo/slicer/filament/inslogic/Inslogic PLA Pro.ini": {
+    "bytes": 364,
+    "sha256": "3d7c97a0334a84bec0bbc2e91a4024202387cc5936cf543fa222baf484fd6b3e"
+   },
+   "repo/slicer/filament/inslogic/Inslogic PLA Pro.ini.sparse-bak": {
+    "bytes": 212,
+    "sha256": "a540a3f9ad704f652a4d2b83265e107811361bf40f9aa7f3d5e5f10b29f16501"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "OK    Inslogic PLA Pro                1 ->  13 keys (+12 from 'Generic PLA')   LinearAdvance=yes\n"
+ },
+ "flatten-unknown": {
+  "exit": 1,
+  "files": {
+   "repo/slicer/filament/inslogic/Inslogic ASA.ini": {
+    "bytes": 43,
+    "sha256": "cae2dcf1c32c27050a8af1753ce48319aedb6464fc9e64c7f14b75e213c8c3ce"
+   },
+   "repo/slicer/filament/inslogic/Inslogic PLA Pro.ini": {
+    "bytes": 212,
+    "sha256": "a540a3f9ad704f652a4d2b83265e107811361bf40f9aa7f3d5e5f10b29f16501"
+   }
+  },
+  "requests": null,
+  "stderr_last": "unknown profile(s): Inslogic PLA",
+  "stdout": ""
+ },
+ "monitor-finishes": {
+  "exit": 0,
+  "files": {
+   "log/DATE.jsonl": {
+    "bytes": 822,
+    "sha256": "3df9523fee4d497eea0ab3accfc9258273f1bafe8667e8acb71c610ad0762097"
+   }
+  },
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "HH:MM:SS printer left PRINTING -> FINISHED; last Z 1.8, bed 60.2/100, dips 1, min bed while printing 93.5, 1 blind samples (daemon restarting)\n"
+ },
+ "monitor-unreachable": {
+  "exit": 2,
+  "files": {
+   "log/DATE.jsonl": {
+    "bytes": 53,
+    "sha256": "5743bd95cf06a6b4ce61e0d5bdb8ad5da8bc9a2b8eb27f6ddb6f1ef1f5fd9049"
+   }
+  },
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "HH:MM:SS PrusaLink unreachable for 30 samples - exiting\n"
+ },
+ "monitor-window-over": {
+  "exit": 0,
+  "files": {
+   "log/DATE.jsonl": {
+    "bytes": 163,
+    "sha256": "bf38f591cce2a1e548fb9335faa72a3afca05f84f2f5d08006c9ce8e9af6ede2"
+   }
+  },
+  "requests": [
+   "GET /api/v1/job X-Api-Key=test-key",
+   "GET /api/v1/status X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "window over: state PRINTING, Z 1.8, progress 42%, bed dips 0, min bed while printing 99.9 - re-arm\n"
+ },
+ "patch-apply": {
+  "exit": 1,
+  "files": {
+   "print/0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini.bak-DATE": {
+    "bytes": 219,
+    "sha256": "4034531cf54464542bf4b8205b5bf2455d974d29294657b4de95f4ea62bb3919"
+   },
+   "print/0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 252,
+    "sha256": "c592bd1b0c68e9ce2b56c5fb3d92b86a3fff2158c1e4006b28f4aa09ce9224fe"
+   },
+   "print/0.20mm QUALITY @MK3 no skirt.ini": {
+    "bytes": 264,
+    "sha256": "bf99256132b1cbed73dca4075884272b4af85dbfe85448356586558e93ac4162"
+   },
+   "print/0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 251,
+    "sha256": "7514091acb935325a2e1aff070f1e0822eec8538d6e426dd60cb30d2239a7fa6"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning.ini": {
+    "bytes": 266,
+    "sha256": "45fc905bdd3994198ef81dfa33b5046d415eb0afa00626808ef564cc12357793"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.30mm DETAIL @0.8 nozzle - NO SKIRT.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.40mm QUALITY @0.8 nozzle - NO Skirt.ini": {
+    "bytes": 262,
+    "sha256": "d8b77fd56c4738753662b1dc62c1c9b38e0b70b3d00733c4f7b24c5ac32e5a43"
+   },
+   "print/0.40mm Uber strong @0.8 nozzle.ini": {
+    "bytes": 237,
+    "sha256": "edfee2432f73b7089e84f9e58a0555932f71e03625897f7dcbfae4d1223bce7c"
+   }
+  },
+  "requests": null,
+  "stderr_last": "AssertionError: 0.10mm DETAIL @MK3 - No skirt no brim no perimeter: a non-target line changed: [('brim_type = no_brim', 'avoid_crossing_perimeters_max_detour = 20'), ('brim_width = 0', 'brim_type = no_brim'), ('complete_objects = 0', 'brim_width = 0')]",
+  "stdout": "  (target is print - not PrusaSlicer's own directory, so no running-app check)\n\n0.10mm DETAIL @MK3 - No skirt no brim no perimeter\n   avoid_crossing_perimeters_max_detour           <absent>  ->  20\n"
+ },
+ "patch-dry-run": {
+  "exit": 0,
+  "files": {
+   "print/0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini": {
+    "bytes": 219,
+    "sha256": "4034531cf54464542bf4b8205b5bf2455d974d29294657b4de95f4ea62bb3919"
+   },
+   "print/0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 252,
+    "sha256": "c592bd1b0c68e9ce2b56c5fb3d92b86a3fff2158c1e4006b28f4aa09ce9224fe"
+   },
+   "print/0.20mm QUALITY @MK3 no skirt.ini": {
+    "bytes": 264,
+    "sha256": "bf99256132b1cbed73dca4075884272b4af85dbfe85448356586558e93ac4162"
+   },
+   "print/0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 251,
+    "sha256": "7514091acb935325a2e1aff070f1e0822eec8538d6e426dd60cb30d2239a7fa6"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning.ini": {
+    "bytes": 266,
+    "sha256": "45fc905bdd3994198ef81dfa33b5046d415eb0afa00626808ef564cc12357793"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.30mm DETAIL @0.8 nozzle - NO SKIRT.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.40mm QUALITY @0.8 nozzle - NO Skirt.ini": {
+    "bytes": 262,
+    "sha256": "d8b77fd56c4738753662b1dc62c1c9b38e0b70b3d00733c4f7b24c5ac32e5a43"
+   },
+   "print/0.40mm Uber strong @0.8 nozzle.ini": {
+    "bytes": 237,
+    "sha256": "edfee2432f73b7089e84f9e58a0555932f71e03625897f7dcbfae4d1223bce7c"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "  (target is print - not PrusaSlicer's own directory, so no running-app check)\n\n0.10mm DETAIL @MK3 - No skirt no brim no perimeter\n   avoid_crossing_perimeters_max_detour           <absent>  ->  20\n\n0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter\n   fill_pattern                                     gyroid  ->  cubic\n   skirts                                                1  ->  0\n\n0.20mm QUALITY @MK3 no skirt\n   brim_type                                    outer_only  ->  no_brim\n   brim_width                                            5  ->  0\n   draft_shield                                    enabled  ->  disabled\n\n0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter\n   already correct - untouched\n\n0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning\n   already correct - untouched\n\n0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter\n   already correct - untouched\n\n0.30mm DETAIL @0.8 nozzle - NO SKIRT\n   already correct - untouched\n\n0.40mm QUALITY @0.8 nozzle - NO Skirt\n   complete_objects                                      1  ->  0\n   wipe_tower                                            0  ->  1\n\n0.40mm Uber strong @0.8 nozzle\n   draft_shield                                   <absent>  ->  disabled\n\nDRY RUN: 9 key changes across 9 presets\nre-run with --apply to write them\n"
+ },
+ "patch-missing-preset": {
+  "exit": 1,
+  "files": {
+   "print/0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini": {
+    "bytes": 219,
+    "sha256": "4034531cf54464542bf4b8205b5bf2455d974d29294657b4de95f4ea62bb3919"
+   },
+   "print/0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 252,
+    "sha256": "c592bd1b0c68e9ce2b56c5fb3d92b86a3fff2158c1e4006b28f4aa09ce9224fe"
+   },
+   "print/0.20mm QUALITY @MK3 no skirt.ini": {
+    "bytes": 264,
+    "sha256": "bf99256132b1cbed73dca4075884272b4af85dbfe85448356586558e93ac4162"
+   },
+   "print/0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 251,
+    "sha256": "7514091acb935325a2e1aff070f1e0822eec8538d6e426dd60cb30d2239a7fa6"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning.ini": {
+    "bytes": 266,
+    "sha256": "45fc905bdd3994198ef81dfa33b5046d415eb0afa00626808ef564cc12357793"
+   },
+   "print/0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.40mm QUALITY @0.8 nozzle - NO Skirt.ini": {
+    "bytes": 262,
+    "sha256": "d8b77fd56c4738753662b1dc62c1c9b38e0b70b3d00733c4f7b24c5ac32e5a43"
+   },
+   "print/0.40mm Uber strong @0.8 nozzle.ini": {
+    "bytes": 237,
+    "sha256": "edfee2432f73b7089e84f9e58a0555932f71e03625897f7dcbfae4d1223bce7c"
+   }
+  },
+  "requests": null,
+  "stderr_last": "AssertionError: preset file(s) not found: ['0.30mm DETAIL @0.8 nozzle - NO SKIRT']",
+  "stdout": "  (target is print - not PrusaSlicer's own directory, so no running-app check)\n"
+ },
+ "patch-no-such-dir": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: not a directory: nowhere",
+  "stdout": ""
+ },
+ "probe": {
+  "exit": 0,
+  "files": {},
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "layer 1.6: 178 extruded segments;  layer 1.4: 186\n\n X     Y window covered in BOTH layers 1.6 and 1.4   (width)\n   35.0    20.04 ..  23.00   mid 21.520   (2.96 mm)\n   40.0    19.94 ..  23.00   mid 21.470   (3.06 mm)\n   45.0    19.94 ..  23.00   mid 21.470   (3.06 mm)\n   50.0    19.94 ..  23.00   mid 21.470   (3.06 mm)\n   55.0    19.94 ..  23.00   mid 21.470   (3.06 mm)\n   60.0    19.94 ..  23.00   mid 21.470   (3.06 mm)\n   65.0    20.04 ..  23.00   mid 21.520   (2.96 mm)\n\nWIDEST: X60 Y21.47  (covered 19.94..23, 3.06 mm of margin either side)\n  RESUME_TOUCH_XY=60,21.47\n"
+ },
+ "probe-first-layers": {
+  "exit": 0,
+  "files": {},
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "layer 0.4: 186 extruded segments;  layer 0.2: 176\n\n X     Y window covered in BOTH layers 0.4 and 0.2   (width)\n   40.0    20.12 ..  23.00   mid 21.560   (2.88 mm)\n   45.0    20.12 ..  23.00   mid 21.560   (2.88 mm)\n   50.0    20.12 ..  23.00   mid 21.560   (2.88 mm)\n   55.0    20.12 ..  23.00   mid 21.560   (2.88 mm)\n   60.0    20.12 ..  23.00   mid 21.560   (2.88 mm)\n\nWIDEST: X60 Y21.56  (covered 20.12..23, 2.88 mm of margin either side)\n  RESUME_TOUCH_XY=60,21.56\n"
+ },
+ "resume": {
+  "exit": 0,
+  "files": {
+   "resume.gcode": {
+    "bytes": 31953,
+    "sha256": "a095631277898647ae02ec07ab755252153191761eab65d2aec24d8510f8e220"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "wall 1.6 / top 1.6 -> resume 1.8 (orig line 1839, splice 1857)\ntouch X50 Y20.2 on extrusions in layers 1.6 and 1.4; retract 0.8\nG92 coarse Z6.6 (gap 5) -> safe Z9.6 -> approach Z2 -> exact Z1.7; restore live Z -1.200\nwrote resume.gcode: 1049 lines, 31953 bytes; header 50 lines; all checks passed\n"
+ },
+ "resume-gap-too-small": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: gap must be a caliper reading between 1 and 150 mm",
+  "stdout": ""
+ },
+ "resume-top-above-wall": {
+  "exit": 0,
+  "files": {
+   "resume.gcode": {
+    "bytes": 31955,
+    "sha256": "22026310b96ba068fed880b8999b55d1a53d26ec08760de62126f1e06785c682"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "wall 1.4 / top 1.6 -> resume 1.8 (orig line 1839, splice 1857)\ntouch X50 Y20.2 on extrusions in layers 1.4 and 1.2; retract 0.8\nG92 coarse Z6.4 (gap 5) -> safe Z9.6 -> approach Z1.8 -> exact Z1.5; restore live Z -1.200\nwrote resume.gcode: 1049 lines, 31955 bytes; header 50 lines; all checks passed\n"
+ },
+ "resume-touch-off-the-part": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: touch point not on an extrusion in layer 1.6",
+  "stdout": ""
+ },
+ "retarget": {
+  "exit": 0,
+  "files": {
+   "out/box.gcode": {
+    "bytes": 73236,
+    "sha256": "19f117703c70f3216640bb2116086fc5c9f94df146b57009209fdcf1da58a62b"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "target profile: filament\n  nozzle  first layer 238  then 244\n  bed     first layer 78  then 72\n\nbox.gcode -> out/box.gcode\n   line     29: M104 S260                    ->  M104 S238\n   line     30: M140 S105                    ->  M140 S78\n   line     31: M190 S105                    ->  M190 S72\n   line     32: M109 S260                    ->  M109 S244\n   line    326: M104 S255                    ->  M104 S244\n   line    327: M140 S110                    ->  M140 S72\n   line   2488: ; bed_temperature = 110      ->  ; bed_temperature = 72\n   line   2607: ; first_layer_bed_temperature = 105 ->  ; first_layer_bed_temperature = 78\n   line   2613: ; first_layer_temperature = 260 ->  ; first_layer_temperature = 238\n   line   2803: ; temperature = 255          ->  ; temperature = 244\n   10 lines changed, 2853 body lines identical otherwise; checks passed\n"
+ },
+ "retarget-no-header": {
+  "exit": 0,
+  "files": {
+   "out/box.gcode": {
+    "bytes": 72953,
+    "sha256": "fa779be0c927cefd091d381c960a57dcf6eafb1dc06e2493524046f384efd972"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "target profile: filament\n  nozzle  first layer 238  then 244\n  bed     first layer 78  then 72\n\nbox.gcode -> out/box.gcode\n   line     29: M104 S260                    ->  M104 S238\n   line     30: M140 S105                    ->  M140 S78\n   line     31: M190 S105                    ->  M190 S72\n   line     32: M109 S260                    ->  M109 S244\n   line    326: M104 S255                    ->  M104 S244\n   line    327: M140 S110                    ->  M140 S72\n   line   2488: ; bed_temperature = 110      ->  ; bed_temperature = 72\n   line   2607: ; first_layer_bed_temperature = 105 ->  ; first_layer_bed_temperature = 78\n   line   2613: ; first_layer_temperature = 260 ->  ; first_layer_temperature = 238\n   line   2803: ; temperature = 255          ->  ; temperature = 244\n   10 lines changed, 2853 body lines identical otherwise; checks passed\n"
+ },
+ "retarget-unknown-flag": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: unknown flag(s): ['--nohead']",
+  "stdout": ""
+ },
+ "start-finished": {
+  "exit": 0,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "POST /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "printer has plate.gcode, 400 bytes; local 400 bytes; printer FINISHED\nstart: 204\njob: PRINTING | plate.gcode | time left 60 s\n"
+ },
+ "start-idle": {
+  "exit": 0,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "POST /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "printer has plate.gcode, 400 bytes; local 400 bytes; printer IDLE\nstart: 204\njob: PRINTING | plate.gcode | time left 60 s\n"
+ },
+ "start-not-listed": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key"
+  ],
+  "stderr_last": "REFUSED: plate.gcode is not on the printer (HTTP 404) - upload it first",
+  "stdout": ""
+ },
+ "start-other-job": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "POST /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "GET /api/v1/job X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "printer has plate.gcode, 400 bytes; local 400 bytes; printer IDLE\nstart: 204\njob: PRINTING | other.gcode | time left 60 s\n"
+ },
+ "start-other-size": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key"
+  ],
+  "stderr_last": "REFUSED: the printer's copy is not the local file - upload it again",
+  "stdout": "printer has plate.gcode, 399 bytes; local 400 bytes; printer IDLE\n"
+ },
+ "start-paused": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key"
+  ],
+  "stderr_last": "REFUSED: the printer is PAUSED, not one of IDLE, READY, FINISHED",
+  "stdout": "printer has plate.gcode, 400 bytes; local 400 bytes; printer PAUSED\n"
+ },
+ "start-printing": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key"
+  ],
+  "stderr_last": "REFUSED: the printer is PRINTING, not one of IDLE, READY, FINISHED",
+  "stdout": "printer has plate.gcode, 400 bytes; local 400 bytes; printer PRINTING\n"
+ },
+ "tags-0.4-fixture-profile": {
+  "exit": 0,
+  "files": {
+   "tags.gcode": {
+    "bytes": 22735,
+    "sha256": "41409cff0c0f4b8c355e291d9b8da3aae50caddb079d01c1dd8a50774e3513eb"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "temps from filament.ini: nozzle 238 C, bed 78 C\nwrote tags.gcode: 9 tags, Z 0.25..0.45 step 0.025\n  nozzle 0.4, first layer 0.2, width 0.45 -> 0.03385 E/mm (reference check 0.03135 vs measured 0.03168)\n  footprint X 0.0..144.5  Y 40.0..200.0\n  507 extrusions, 7374 mm of path, 249.59 mm filament; 896 lines; all checks passed\n"
+ },
+ "tags-defaults": {
+  "exit": 0,
+  "files": {
+   "tags.gcode": {
+    "bytes": 21162,
+    "sha256": "b974f35689c9716633f8f0bf73b30e6603d7a6d409d96891b3005d296662bebd"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "temps from PETG Basic NPETG087-ZX @0.8 nozzle.ini: nozzle 240 C, bed 75 C\nwrote tags.gcode: 11 tags, Z 0.4..0.9 step 0.05\n  nozzle 0.8, first layer 0.3, width 0.85 -> 0.09799 E/mm (reference check 0.03135 vs measured 0.03168)\n  footprint X 0.0..144.5  Y 40.0..200.0\n  403 extrusions, 5030 mm of path, 492.86 mm filament; 876 lines; all checks passed\n"
+ },
+ "tags-start-below-nominal": {
+  "exit": 1,
+  "files": {},
+  "requests": null,
+  "stderr_last": "AssertionError: ladder must start ABOVE nominal - never approach from below",
+  "stdout": "temps from filament.ini: nozzle 238 C, bed 78 C\n"
+ },
+ "upload-listed": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "plate.gcode is already on the printer, and this never overwrites: upload it under another name\n"
+ },
+ "upload-new": {
+  "exit": 0,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "PUT /api/v1/files/local/plate.gcode 400 bytes X-Api-Key=test-key Print-After-Upload=?0 Overwrite=?0",
+   "GET /api/v1/status X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "PUT 201 400 bytes (via http)\nprinter state after upload: READY\n"
+ },
+ "upload-redirect": {
+  "exit": 0,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "PUT /api/v1/files/local/plate.gcode 400 bytes X-Api-Key=test-key Print-After-Upload=?0 Overwrite=?0",
+   "PUT /moved/api/v1/files/local/plate.gcode 400 bytes X-Api-Key=test-key Print-After-Upload=?0 Overwrite=?0",
+   "GET /api/v1/status X-Api-Key=test-key"
+  ],
+  "stderr_last": "",
+  "stdout": "PUT 201 400 bytes (via http)\nprinter state after upload: READY\n"
+ },
+ "upload-refused": {
+  "exit": 1,
+  "files": {},
+  "requests": [
+   "GET /api/v1/status X-Api-Key=test-key",
+   "GET /api/v1/files/local/plate.gcode X-Api-Key=test-key",
+   "PUT /api/v1/files/local/plate.gcode 400 bytes X-Api-Key=test-key Print-After-Upload=?0 Overwrite=?0"
+  ],
+  "stderr_last": "",
+  "stdout": "PUT failed 500 {\"error\": \"disk full\"}\n"
+ }
+}

@@ -24,3 +24,9 @@ path = [
 ]
 SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# The tests' inputs and record, and the lock file uv writes: data for the code, under the code's licence.
+[[annotations]]
+path = ["tests/fixtures/**", "tests/golden.json", "uv.lock"]
+SPDX-FileCopyrightText = "2026 Alon A. Rabinowitz"
+SPDX-License-Identifier = "MPL-2.0"
