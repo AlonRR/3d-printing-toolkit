@@ -32,49 +32,24 @@ Three kinds of temperature command, and conflating them is how you corrupt a fil
 The config comments at the end are updated too, because PrusaLink reads them for display and a file
 whose metadata disagrees with its own commands is a trap for the next reader.
 """
+
 import re
-import shutil
 import sys
 from pathlib import Path
 
-KEYS = ("first_layer_temperature", "temperature",
-        "first_layer_bed_temperature", "bed_temperature")
+from preset import read_temperatures
 
-# Flags are pulled out BEFORE positional parsing, so adding one can never shift the file arguments
-# out from under an existing call. An unknown flag is rejected rather than silently treated as a
-# path, which is how a typo becomes "no G-code files given" three lines later.
-flags = {a for a in sys.argv[1:] if a.startswith("--")}
-args = [a for a in sys.argv[1:] if not a.startswith("--")]
-assert flags <= {"--no-header"}, f"unknown flag(s): {sorted(flags - {'--no-header'})}"
-NO_HEADER = "--no-header" in flags
-
-ini = Path(args[0])
-out_dir = Path(args[1])
-sources = [Path(p) for p in args[2:]]
-assert sources, "no G-code files given"
-out_dir.mkdir(parents=True, exist_ok=True)
-
-# --- targets, read from the profile -----------------------------------------------------------
-cfg = {}
-for line in ini.read_text(encoding="utf-8").splitlines():
-    if " = " in line:
-        k, v = line.split(" = ", 1)
-        if k.strip() in KEYS:
-            cfg[k.strip()] = int(float(v.split(",")[0].strip()))
-missing = [k for k in KEYS if k not in cfg]
-assert not missing, f"{ini.name} does not define {missing}"
-NOZ1, NOZ, BED1, BED = (cfg["first_layer_temperature"], cfg["temperature"],
-                        cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
-print(f"target profile: {ini.stem}")
-print(f"  nozzle  first layer {NOZ1}  then {NOZ}")
-print(f"  bed     first layer {BED1}  then {BED}")
-
+KEYS = ("first_layer_temperature", "temperature", "first_layer_bed_temperature", "bed_temperature")
 NOZZLE_CMD = re.compile(r"^(M10[49]) S(\d+)")
 BED_CMD = re.compile(r"^(M1[49]0) S(\d+)")
 META = re.compile(r"^; (" + "|".join(KEYS) + r") = (\d+)")
 
-for src in sources:
-    lines = src.read_text(encoding="utf-8").split("\n")
+
+def retarget(lines, cfg):
+    """lines with every heating command and config comment set to the profile's values: (new lines, changes),
+    each change (line number, old command, new command)."""
+    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
+                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
     out = []
     seen_noz = seen_bed = False
     changes = []
@@ -84,11 +59,11 @@ for src in sources:
         b = BED_CMD.match(line)
         g = META.match(line)
         if m and int(m.group(2)) > 0:                 # S0 is shutdown - never touched
-            want = NOZ1 if not seen_noz else NOZ
+            want = noz1 if not seen_noz else noz
             seen_noz = True
             new = NOZZLE_CMD.sub(rf"\1 S{want}", line, count=1)
         elif b and int(b.group(2)) > 0:
-            want = BED1 if not seen_bed else BED
+            want = bed1 if not seen_bed else bed
             seen_bed = True
             new = BED_CMD.sub(rf"\1 S{want}", line, count=1)
         elif g:
@@ -97,40 +72,82 @@ for src in sources:
             changes.append((i + 1, line.split(";")[0].strip() or line.strip(),
                             new.split(";")[0].strip() or new.strip()))
         out.append(new)
+    return out, changes
 
-    # Empty under --no-header. Every check below is written against len(header), so suppressing it
-    # weakens nothing: the line-count assertion, the body slice and the diff all still hold.
-    header = [] if NO_HEADER else [
-        f"; Temperatures retargeted to {ini.stem} ({NOZ1}/{NOZ} nozzle, {BED1}/{BED} bed).",
-        f"; Source: {src.name}, sliced against its own profile - geometry is UNCHANGED.",
-        "; Only M104/M109/M140/M190 with S>0 and the matching config comments were rewritten;",
-        "; the M104 S0 / M140 S0 shutdown lines are untouched.",
-    ]
-    dst = out_dir / src.name
-    dst.write_text("\n".join(header + out), encoding="utf-8", newline="\n")
 
-    # --- verify what was written --------------------------------------------------------------
-    W = dst.read_text(encoding="utf-8").split("\n")
-    assert len(W) == len(lines) + len(header), "line count changed beyond the header"
-    body = W[len(header):]
-    diff = [(i + 1, a, b_) for i, (a, b_) in enumerate(zip(lines, body)) if a != b_]
+def verify(lines, written, header, changes, cfg):
+    """Check the file as written: the header and the original's lines, only temperature lines changed, every
+    heating command one of the four targets, and every shutdown line where it was."""
+    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
+                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
+    assert len(written) == len(lines) + len(header), "line count changed beyond the header"
+    body = written[len(header):]
+    diff = [(i + 1, a, b_) for i, (a, b_) in enumerate(zip(lines, body, strict=False)) if a != b_]
     assert len(diff) == len(changes), "a line changed that was not recorded"
-    for _, a, b_ in diff:
+    for _, a, _ in diff:
         ok = (NOZZLE_CMD.match(a) or BED_CMD.match(a) or META.match(a))
         assert ok, f"a NON-temperature line was modified: {a[:60]!r}"
     # every surviving command must now be one of the four targets, or an untouched shutdown
     for line in body:
         m, b = NOZZLE_CMD.match(line), BED_CMD.match(line)
         if m:
-            assert int(m.group(2)) in (0, NOZ1, NOZ), f"stray nozzle temp: {line}"
+            assert int(m.group(2)) in (0, noz1, noz), f"stray nozzle temp: {line}"
         if b:
-            assert int(b.group(2)) in (0, BED1, BED), f"stray bed temp: {line}"
-    assert sum(1 for l in body if l.startswith("M104 S0")) == \
-        sum(1 for l in lines if l.startswith("M104 S0")), "a shutdown line was altered"
-    assert sum(1 for l in body if l.startswith("M140 S0")) == \
-        sum(1 for l in lines if l.startswith("M140 S0")), "a shutdown line was altered"
+            assert int(b.group(2)) in (0, bed1, bed), f"stray bed temp: {line}"
+    assert sum(1 for x in body if x.startswith("M104 S0")) == \
+        sum(1 for x in lines if x.startswith("M104 S0")), "a shutdown line was altered"
+    assert sum(1 for x in body if x.startswith("M140 S0")) == \
+        sum(1 for x in lines if x.startswith("M140 S0")), "a shutdown line was altered"
+    return body
 
-    print(f"\n{src.name} -> {dst}")
-    for ln, a, b_ in changes:
-        print(f"   line {ln:>6}: {a:<28} ->  {b_}")
-    print(f"   {len(changes)} lines changed, {len(body)} body lines identical otherwise; checks passed")
+
+def main(argv):
+    # Flags are pulled out BEFORE positional parsing, so adding one can never shift the file arguments
+    # out from under an existing call. An unknown flag is rejected rather than silently treated as a
+    # path, which is how a typo becomes "no G-code files given" three lines later.
+    flags = {a for a in argv[1:] if a.startswith("--")}
+    args = [a for a in argv[1:] if not a.startswith("--")]
+    assert flags <= {"--no-header"}, f"unknown flag(s): {sorted(flags - {'--no-header'})}"
+    no_header = "--no-header" in flags
+
+    ini = Path(args[0])
+    out_dir = Path(args[1])
+    sources = [Path(p) for p in args[2:]]
+    assert sources, "no G-code files given"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # --- targets, read from the profile -----------------------------------------------------------
+    cfg = read_temperatures(ini, KEYS)
+    missing = [k for k in KEYS if k not in cfg]
+    assert not missing, f"{ini.name} does not define {missing}"
+    noz1, noz, bed1, bed = (cfg["first_layer_temperature"], cfg["temperature"],
+                            cfg["first_layer_bed_temperature"], cfg["bed_temperature"])
+    print(f"target profile: {ini.stem}")
+    print(f"  nozzle  first layer {noz1}  then {noz}")
+    print(f"  bed     first layer {bed1}  then {bed}")
+
+    for src in sources:
+        lines = src.read_text(encoding="utf-8").split("\n")
+        out, changes = retarget(lines, cfg)
+        # Empty under --no-header. Every check is written against len(header), so suppressing it
+        # weakens nothing: the line-count assertion, the body slice and the diff all still hold.
+        header = [] if no_header else [
+            f"; Temperatures retargeted to {ini.stem} ({noz1}/{noz} nozzle, {bed1}/{bed} bed).",
+            f"; Source: {src.name}, sliced against its own profile - geometry is UNCHANGED.",
+            "; Only M104/M109/M140/M190 with S>0 and the matching config comments were rewritten;",
+            "; the M104 S0 / M140 S0 shutdown lines are untouched.",
+        ]
+        dst = out_dir / src.name
+        dst.write_text("\n".join(header + out), encoding="utf-8", newline="\n")
+
+        # --- verify what was written --------------------------------------------------------------
+        body = verify(lines, dst.read_text(encoding="utf-8").split("\n"), header, changes, cfg)
+        print(f"\n{src.name} -> {dst}")
+        for ln, a, b_ in changes:
+            print(f"   line {ln:>6}: {a:<28} ->  {b_}")
+        print(f"   {len(changes)} lines changed, {len(body)} body lines identical otherwise; checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

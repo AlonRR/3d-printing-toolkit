@@ -30,10 +30,13 @@ That matters because the vendor bundle updates: re-running every job after a
 PrusaSlicer update rewrites already-flattened profiles with upstream changes,
 which turns an unrelated commit into a bundle-drift commit.
 """
+
 import re
 import shutil
 import sys
 from pathlib import Path
+
+from preset import key_values
 
 APPDATA = Path.home() / "AppData/Roaming/PrusaSlicer"
 VENDOR = APPDATA / "vendor/PrusaResearch.ini"
@@ -61,29 +64,21 @@ JOBS = {
     "Yasin3D PETG":                        ("yasin3d",  "Generic PETG",              "Yasin3D PLA @0.8 nozzle"),
     "Yasin3D PETG @0.8 nozzle":            ("yasin3d",  "Generic PETG @0.8 nozzle",  "Yasin3D PLA @0.8 nozzle"),
     "Yasin3D ASA":                         ("yasin3d",  "Prusament ASA",             "Yasin3D ASA @0.8 nozzle"),
-}
-
-KV = re.compile(r"^([a-z_0-9]+) = (.*)$")
+}  # fmt: skip
 
 
 def parse_ini(path):
-    """Read a flat key = value preset, preserving leading comment lines."""
-    out, comments = {}, []
-    for line in Path(path).read_text(encoding="utf-8").splitlines():
-        if line.startswith("#"):
-            comments.append(line)
-            continue
-        m = KV.match(line)
-        if m:
-            out[m.group(1)] = m.group(2)
-    return out, comments
+    """Read a flat key = value preset: (its keys, its leading comment lines)."""
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    return key_values(lines), [line for line in lines if line.startswith("#")]
 
 
-def vendor_blocks():
-    txt = VENDOR.read_text(encoding="utf-8", errors="replace")
+def vendor_blocks(path=VENDOR):
+    """Each [filament:<name>] section of the vendor bundle: name -> its body."""
+    txt = path.read_text(encoding="utf-8", errors="replace")
     return {
         m.group(1): m.group(2)
-        for m in re.finditer(r"^\[filament:([^\]]+)\]\r?\n(.*?)(?=^\[|\Z)", txt, re.S | re.M)
+        for m in re.finditer(r"^\[filament:([^\]]+)\]\r?\n(.*?)(?=^\[|\Z)", txt, re.DOTALL | re.MULTILINE)
     }
 
 
@@ -93,12 +88,7 @@ def resolve_chain(name, blocks, seen=None):
     if name not in blocks or name in seen:
         return {}
     seen.add(name)
-    body = blocks[name]
-    own = {}
-    for line in body.splitlines():
-        m = KV.match(line)
-        if m:
-            own[m.group(1)] = m.group(2)
+    own = key_values(blocks[name].splitlines())
     merged = {}
     for parent in [p.strip() for p in own.get("inherits", "").split(";") if p.strip()]:
         merged.update(resolve_chain(parent, blocks, seen))
@@ -107,11 +97,24 @@ def resolve_chain(name, blocks, seen=None):
     return merged
 
 
-def main():
-    wanted = sys.argv[1:]
+def flattened(base, resolved, overrides, parent):
+    """The complete preset: template < resolved parent chain < the author's overrides, inheriting parent."""
+    final = {**base, **resolved, **overrides}
+    final["inherits"] = parent
+    final["filament_settings_id"] = ""
+    # `renamed_from` is a vendor-bundle migration key ("Generic PET" became
+    # "Generic PETG"). Resolving the chain drags it along, and a user preset
+    # carrying it claims to BE the renamed preset - four PETG profiles here
+    # would all claim to be the old "Generic PET" at once. Never inherit it.
+    final.pop("renamed_from", None)
+    return final
+
+
+def main(argv):
+    wanted = argv[1:]
     unknown = [n for n in wanted if n not in JOBS]
     if unknown:
-        raise SystemExit(f"unknown profile(s): {', '.join(unknown)}")
+        return f"unknown profile(s): {', '.join(unknown)}"
 
     blocks = vendor_blocks()
     for name, (folder, parent, template) in JOBS.items():
@@ -133,22 +136,14 @@ def main():
         if not resolved:
             print(f"FAIL  {name}  <- parent '{parent}' not found in vendor bundle")
             continue
-
-        final = {**base, **resolved, **overrides}
-        final["inherits"] = parent
-        final["filament_settings_id"] = ""
-        # `renamed_from` is a vendor-bundle migration key ("Generic PET" became
-        # "Generic PETG"). Resolving the chain drags it along, and a user preset
-        # carrying it claims to BE the renamed preset - four PETG profiles here
-        # would all claim to be the old "Generic PET" at once. Never inherit it.
-        final.pop("renamed_from", None)
+        final = flattened(base, resolved, overrides, parent)
 
         # back up the sparse original once, then write the flattened version
         bak = sparse_path.with_suffix(".ini.sparse-bak")
         if not bak.exists():
             shutil.copy2(sparse_path, bak)
 
-        lines = comments + [""] if comments else []
+        lines = [*comments, ""] if comments else []
         lines += [f"{k} = {final[k]}" for k in sorted(final)]
         sparse_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -156,7 +151,8 @@ def main():
         la = "M900" in final.get("start_filament_gcode", "")
         print(f"OK    {name:<30} {len(overrides):>2} -> {len(final):>3} keys "
               f"(+{gained} from '{parent}')   LinearAdvance={'yes' if la else 'no'}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))

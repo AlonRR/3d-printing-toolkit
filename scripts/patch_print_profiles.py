@@ -56,17 +56,16 @@ feature slows down both the print and the G-code generation." The MK3S is DIRECT
 of Prusa's 699 print sections enable it. Kept because it was chosen independently on seven presets
 and PETG scarring is a real defect - but it is a deliberate deviation, not a default.
 """
-import re
+
 import shutil
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
 
+from preset import KV, key_values
+
 LIVE_DIR = Path.home() / "AppData/Roaming/PrusaSlicer/print"
-_dir = [a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--dir=")]
-PRINT_DIR = Path(_dir[0]) if _dir else LIVE_DIR
-assert PRINT_DIR.is_dir(), f"not a directory: {PRINT_DIR}"
 
 HOUSE = {
     "skirts": "0",
@@ -102,47 +101,33 @@ JOBS = {
     "0.40mm Uber strong @0.8 nozzle": {},
 }
 
-KV = re.compile(r"^([a-z_0-9]+) = (.*)$")
-apply = "--apply" in sys.argv
 
-# A running PrusaSlicer rewrites ITS OWN preset files on exit, silently reverting everything
-# here. That cannot happen to the repo masters, so the guard applies only to the live
-# directory - refusing to patch version-controlled files because an unrelated application
-# is open would be a restriction with no mechanism behind it.
-if PRINT_DIR == LIVE_DIR:
-    try:
-        running = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=30).stdout
-        assert "prusa-slicer" not in running.lower(), \
-            "PrusaSlicer is RUNNING - close it first or it will overwrite these files on exit"
-    except FileNotFoundError:
-        print("  (could not check for a running PrusaSlicer - close it before applying)")
-else:
-    print(f"  (target is {PRINT_DIR} - not PrusaSlicer's own directory, so no running-app check)")
+def check_not_running(print_dir):
+    """A running PrusaSlicer rewrites ITS OWN preset files on exit, silently reverting everything
+    here. That cannot happen to the repo masters, so the guard applies only to the live
+    directory - refusing to patch version-controlled files because an unrelated application
+    is open would be a restriction with no mechanism behind it."""
+    if print_dir == LIVE_DIR:
+        try:
+            running = subprocess.run(["tasklist"], capture_output=True, text=True, timeout=30, check=False).stdout
+            assert "prusa-slicer" not in running.lower(), \
+                "PrusaSlicer is RUNNING - close it first or it will overwrite these files on exit"
+        except FileNotFoundError:
+            print("  (could not check for a running PrusaSlicer - close it before applying)")
+    else:
+        print(f"  (target is {print_dir} - not PrusaSlicer's own directory, so no running-app check)")
 
-missing = [n for n in JOBS if not (PRINT_DIR / f"{n}.ini").exists()]
-assert not missing, f"preset file(s) not found: {missing}"
 
-stamp = date.today().isoformat()
-total_changed = 0
-for name, rules in JOBS.items():
-    path = PRINT_DIR / f"{name}.ini"
-    # Detect and reproduce the file's OWN line endings. Presets written by PrusaSlicer are CRLF,
-    # but a hand-edited one can be LF - and a default write_text() rewrites every line ending to
-    # the platform default. That turned a one-key edit into a 199-line whole-file diff on the one
-    # LF preset here, which is exactly the "nothing else changes" promise this script makes.
-    raw = path.read_bytes()
-    eol = "\r\n" if b"\r\n" in raw else "\n"
-    original = raw.decode("utf-8")
-    lines = original.replace("\r\n", "\n").split("\n")
-    current = {m.group(1): m.group(2) for m in (KV.match(l) for l in lines) if m}
-
+def wanted_values(rules):
+    """The house delta for one preset: less its deliberate exceptions, plus its own fixes."""
     wanted = {k: v for k, v in HOUSE.items() if k not in rules.get("skip", [])}
     wanted.update(rules.get("extra", {}))
-    todo = {k: v for k, v in wanted.items() if current.get(k) != v}
-    if not todo:
-        print(f"\n{name}\n   already correct - untouched")
-        continue
+    return wanted
 
+
+def patched(lines, todo):
+    """lines with each key in todo set to its value - in place where the key is, and in sorted position, as
+    PrusaSlicer writes them, where it is not: (new lines, the keys that were found in place)."""
     out, seen = [], set()
     for line in lines:
         m = KV.match(line)
@@ -153,47 +138,90 @@ for name, rules in JOBS.items():
             out.append(line)
     # keys absent from the file are inserted in sorted position, as PrusaSlicer writes them
     for k in sorted(set(todo) - seen):
-        pos = next((i for i, l in enumerate(out)
-                    if (mm := KV.match(l)) and mm.group(1) > k), len(out))
+        pos = next((i for i, x in enumerate(out) if (mm := KV.match(x)) and mm.group(1) > k), len(out))
         out.insert(pos, f"{k} = {todo[k]}")
-    new = "\n".join(out)
+    return out, seen
 
-    # ---- verify before writing anything -------------------------------------------------------
-    after = {m.group(1): m.group(2) for m in (KV.match(l) for l in new.split("\n")) if m}
+
+def check_patch(name, lines, new, current, todo, seen):
+    """Before writing anything: every target took its value, no other key changed, and no other line moved."""
+    after = key_values(new.split("\n"))
     for k, v in todo.items():
         assert after[k] == v, f"{name}: {k} did not take the value {v}"
     changed = {k for k in set(current) | set(after) if current.get(k) != after.get(k)}
     assert changed == set(todo), f"{name}: unexpected keys changed: {changed - set(todo)}"
     assert len(new.split("\n")) == len(lines) + len(set(todo) - seen), f"{name}: line count wrong"
-    untouched_before = [l for l in lines if not ((m := KV.match(l)) and m.group(1) in todo)]
-    untouched_after = [l for l in new.split("\n")
-                       if not ((m := KV.match(l)) and m.group(1) in todo)]
-    assert untouched_after == untouched_before + [] or \
-        [l for l in untouched_after if l not in untouched_before] == \
+    untouched_before = [x for x in lines if not ((m := KV.match(x)) and m.group(1) in todo)]
+    untouched_after = [x for x in new.split("\n") if not ((m := KV.match(x)) and m.group(1) in todo)]
+    assert untouched_after == [*untouched_before] or \
+        [x for x in untouched_after if x not in untouched_before] == \
         [f"{k} = {todo[k]}" for k in sorted(set(todo) - seen)], f"{name}: a non-target line moved"
 
-    print(f"\n{name}")
-    for k in sorted(todo):
-        was = current.get(k, "<absent>")
-        print(f"   {k:<42} {was:>12}  ->  {todo[k]}")
-    total_changed += len(todo)
 
-    if apply:
-        bak = path.with_suffix(f".ini.bak-{stamp}")
-        if not bak.exists():
-            shutil.copy2(path, bak)
-        path.write_text(new, encoding="utf-8", newline=eol)
-        # Prove the ONLY byte-level difference is the intended keys - not just that the parsed
-        # values agree. A whole-file line-ending rewrite passes a key-by-key check untouched.
-        before = bak.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
-        after = path.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
-        moved = [(x, y) for x, y in zip(before, after) if x != y]
-        assert all(KV.match(y) and KV.match(y).group(1) in todo for _, y in moved), \
-            f"{name}: a non-target line changed: {moved[:3]}"
-        assert bak.read_bytes().count(b"\r\n") == path.read_bytes().count(b"\r\n"), \
-            f"{name}: line endings were rewritten"
-        print(f"   written; backup {bak.name}")
+def write_and_prove(path, name, new, eol, todo, stamp):
+    """Back the preset up once a day, write it in its own line endings, and prove the ONLY byte-level difference
+    is the intended keys - not just that the parsed values agree. A whole-file line-ending rewrite passes a
+    key-by-key check untouched."""
+    bak = path.with_suffix(f".ini.bak-{stamp}")
+    if not bak.exists():
+        shutil.copy2(path, bak)
+    path.write_text(new, encoding="utf-8", newline=eol)
+    before = bak.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
+    after = path.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
+    moved = [(x, y) for x, y in zip(before, after, strict=False) if x != y]
+    assert all(KV.match(y) and KV.match(y).group(1) in todo for _, y in moved), \
+        f"{name}: a non-target line changed: {moved[:3]}"
+    assert bak.read_bytes().count(b"\r\n") == path.read_bytes().count(b"\r\n"), \
+        f"{name}: line endings were rewritten"
+    return bak
 
-print(f"\n{'APPLIED' if apply else 'DRY RUN'}: {total_changed} key changes across {len(JOBS)} presets")
-if not apply:
-    print("re-run with --apply to write them")
+
+def main(argv):
+    dirs = [a.split("=", 1)[1] for a in argv[1:] if a.startswith("--dir=")]
+    print_dir = Path(dirs[0]) if dirs else LIVE_DIR
+    assert print_dir.is_dir(), f"not a directory: {print_dir}"
+    apply = "--apply" in argv
+    check_not_running(print_dir)
+
+    missing = [n for n in JOBS if not (print_dir / f"{n}.ini").exists()]
+    assert not missing, f"preset file(s) not found: {missing}"
+
+    stamp = date.today().isoformat()
+    total_changed = 0
+    for name, rules in JOBS.items():
+        path = print_dir / f"{name}.ini"
+        # Detect and reproduce the file's OWN line endings. Presets written by PrusaSlicer are CRLF,
+        # but a hand-edited one can be LF - and a default write_text() rewrites every line ending to
+        # the platform default. That turned a one-key edit into a 199-line whole-file diff on the one
+        # LF preset here, which is exactly the "nothing else changes" promise this script makes.
+        raw = path.read_bytes()
+        eol = "\r\n" if b"\r\n" in raw else "\n"
+        lines = raw.decode("utf-8").replace("\r\n", "\n").split("\n")
+        current = key_values(lines)
+        todo = {k: v for k, v in wanted_values(rules).items() if current.get(k) != v}
+        if not todo:
+            print(f"\n{name}\n   already correct - untouched")
+            continue
+
+        out, seen = patched(lines, todo)
+        new = "\n".join(out)
+        check_patch(name, lines, new, current, todo, seen)
+
+        print(f"\n{name}")
+        for k in sorted(todo):
+            was = current.get(k, "<absent>")
+            print(f"   {k:<42} {was:>12}  ->  {todo[k]}")
+        total_changed += len(todo)
+
+        if apply:
+            bak = write_and_prove(path, name, new, eol, todo, stamp)
+            print(f"   written; backup {bak.name}")
+
+    print(f"\n{'APPLIED' if apply else 'DRY RUN'}: {total_changed} key changes across {len(JOBS)} presets")
+    if not apply:
+        print("re-run with --apply to write them")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
