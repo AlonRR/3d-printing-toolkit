@@ -30,6 +30,18 @@
   "stderr_last": "bed-anneal-gcode.py: error: --hold must be 40-120 \u00b0C (the MK3S bed's range)",
   "stdout": ""
  },
+ "anneal-long-labels": {
+  "exit": 0,
+  "files": {
+   "anneal-bed-100.5C-2.5h.gcode": {
+    "bytes": 30719,
+    "sha256": "5d34284fbc36d93d90b2b5ed44103037c47f76ad65c079312672bd7aff9d31b1"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "anneal-bed-100.5C-2.5h.gcode: ramp 40, 50, 60, 70, 80, 90, 100, 100.5 C; hold 100.5 C 2.5 h; cool in 5 C steps to 40 C; ~5.8 h planned, plus the ramp's heating\n"
+ },
  "ears-defaults": {
   "exit": 0,
   "files": {
@@ -80,6 +92,38 @@
   "requests": null,
   "stderr_last": "box.stl: not a binary STL, or truncated (header claims 538976288 facets = 26948814400 bytes, got 1401)",
   "stdout": ""
+ },
+ "ears-replaced": {
+  "exit": 0,
+  "files": {
+   "ell.stl": {
+    "bytes": 6084,
+    "sha256": "5df54dfb47b6afc2fd7347f7f45c050ff371b770d1d28fca4ae1996ecae2c1b1"
+   },
+   "o.stl": {
+    "bytes": 111684,
+    "sha256": "83e05bdfaf1d8aebbc8789c868837e1dd4252488d5dbcdcafecadc4ef797eebc"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "ell.stl\n  120 facets, z rests at 0.000, 30 bed-contact facets\n  first layer: 621 mm^2 in 1 island(s)\n  5 convex corner(s) on the hull + 25 mid-edge tab site(s) at 5.0 mm spacing\n\n  ear at (    0.00,    0.00)  turn  90.0 deg  weld   9.3 mm^2\n  ear at (   40.00,    0.00)  turn  90.0 deg  weld   9.3 mm^2\n  ear at (   40.00,   10.00)  turn  56.3 deg  weld   9.4 mm^2\n  ear at (   10.00,   30.00)  turn  33.7 deg  weld  10.2 mm^2\n  ear at (    0.00,   30.00)  turn  90.0 deg  weld   9.3 mm^2\n  replaced the ear at (-2.12,-2.12) -- overlapping, and welded 9.3 < 20.2 mm^2\n  tab at (    2.50,    0.00)  turn   0.0 deg  weld  20.2 mm^2\n  replaced the ear at (2.50,-3.00) -- overlapping, and welded 20.2 < 24.3 mm^2\n  tab at (    7.50,    0.00)  turn   0.0 deg  weld  24.3 mm^2\n  SKIPPED  (   12.50,    0.00)  tab  -- overlaps the ear at (7.50,-3.00)\n  tab at (   17.50,    0.00)  turn   0.0 deg  weld  24.3 mm^2\n  SKIPPED  (   22.50,    0.00)  tab  -- overlaps the ear at (17.50,-3.00)\n  tab at (   27.50,    0.00)  turn   0.0 deg  weld  24.3 mm^2\n  SKIPPED  (   32.50,    0.00)  tab  -- overlaps the ear at (27.50,-3.00)\n  replaced the ear at (42.12,-2.12) -- overlapping, and welded 9.3 < 20.2 mm^2\n  tab at (   37.50,    0.00)  turn   0.0 deg  weld  20.2 mm^2\n  replaced the ear at (42.65,11.42) -- overlapping, and welded 9.4 < 20.2 mm^2\n  tab at (   40.00,    2.50)  turn   0.0 deg  weld  20.2 mm^2\n  SKIPPED  (   40.00,    7.50)  tab  -- overlaps the ear at (43.00,2.50)\n  tab at (   37.86,   11.43)  turn   0.0 deg  weld   9.1 mm^2\n  SKIPPED  (   33.57,   14.29)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   29.29,   17.14)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   25.00,   20.00)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   20.71,   22.86)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   16.43,   25.71)  turn   0.0 deg  -- corner is not on any island\n  SKIPPED  (   12.14,   28.57)  turn   0.0 deg  -- corner is not on any island\n  replaced the ear at (10.87,32.87) -- overlapping, and welded 10.2 < 20.2 mm^2\n  tab at (    7.50,   30.00)  turn   0.0 deg  weld  20.2 mm^2\n  replaced the ear at (-2.12,32.12) -- overlapping, and welded 9.3 < 20.2 mm^2\n  tab at (    2.50,   30.00)  turn   0.0 deg  weld  20.2 mm^2\n  SKIPPED  (    0.00,   27.50)  tab  -- overlaps the ear at (2.50,33.00)\n  tab at (    0.00,   22.50)  turn   0.0 deg  weld  24.3 mm^2\n  SKIPPED  (    0.00,   17.50)  tab  -- overlaps the ear at (-3.00,22.50)\n  tab at (    0.00,   12.50)  turn   0.0 deg  weld  24.3 mm^2\n  SKIPPED  (    0.00,    7.50)  tab  -- overlaps the ear at (-3.00,12.50)\n  tab at (    0.00,    2.50)  turn   0.0 deg  weld  20.2 mm^2\n\n  11 ear(s), 2112 added facets -> o.stl  (2232 facets total)\n  13 corner(s) got no ear (see SKIPPED above)\n"
+ },
+ "ears-shrunk": {
+  "exit": 0,
+  "files": {
+   "ell-ears.stl": {
+    "bytes": 44484,
+    "sha256": "9b149582fdd361f1ac0d174a1d29778f2422b4ccb7d90ed40658e8a9db53886b"
+   },
+   "ell.stl": {
+    "bytes": 6084,
+    "sha256": "5df54dfb47b6afc2fd7347f7f45c050ff371b770d1d28fca4ae1996ecae2c1b1"
+   }
+  },
+  "requests": null,
+  "stderr_last": "",
+  "stdout": "ell.stl\n  120 facets, z rests at 0.000, 30 bed-contact facets\n  first layer: 621 mm^2 in 1 island(s)\n  5 convex corner(s) on the hull\n\n  ear at (    0.00,    0.00)  turn  90.0 deg  weld  13.9 mm^2\n  SKIPPED  (   40.00,    0.00)  turn  90.0 deg  -- only 2.7 mm^2 of weld\n  ear at (   40.00,   10.00)  turn  56.3 deg  weld   5.1 mm^2   [shrunk: d=12 overlap=2.00]\n  ear at (   10.00,   30.00)  turn  33.7 deg  weld  15.0 mm^2\n  ear at (    0.00,   30.00)  turn  90.0 deg  weld  13.9 mm^2\n\n  4 ear(s), 768 added facets -> ell-ears.stl  (888 facets total)\n  1 corner(s) got no ear (see SKIPPED above)\n"
  },
  "find-top": {
   "exit": 0,

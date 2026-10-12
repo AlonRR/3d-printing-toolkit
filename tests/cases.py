@@ -358,6 +358,8 @@ CASES = [
         outputs=("*.gcode",),
     ),
     Case("anneal-hold-too-hot", "bed-anneal-gcode.py", ("--hold", "130"), outputs=("*.gcode",)),
+    # LCD text past the display's 20 characters: "Hold 100.5C 280m left" is cut
+    Case("anneal-long-labels", "bed-anneal-gcode.py", ("--hold", "100.5", "--hours", "2.5"), outputs=("*.gcode",)),
     # ---- make_live_z_tags.py
     Case("tags-defaults", "make_live_z_tags.py", ("tags.gcode",), outputs=("*.gcode",)),
     Case(
@@ -451,6 +453,22 @@ CASES = [
         outputs=("*.stl",),
     ),
     Case("ears-not-binary", "add_brim_ears.py", ("box.stl",), setup=_copy("box.stl"), outputs=("*-ears.stl",)),
+    # An ear that only fits once its overlap has stepped down - to 2.00 from 3.75, in quarters
+    Case(
+        "ears-shrunk",
+        "add_brim_ears.py",
+        ("ell.stl", "--clearance", "6", "--overlap", "3.75"),
+        setup=_copy("ell.stl"),
+        outputs=("*.stl",),
+    ),
+    # Tabs close enough to merge: the better-welded of two keeps its place, and replaces the other
+    Case(
+        "ears-replaced",
+        "add_brim_ears.py",
+        ("ell.stl", "--edge-tabs", "5", "-o", "o.stl"),
+        setup=_copy("ell.stl"),
+        outputs=("*.stl",),
+    ),
     # ---- mk3s-resume/make_find_top.py
     Case("find-top", "mk3s-resume/make_find_top.py", ("40", "60", "21.47", "find-top.gcode"), outputs=("*.gcode",)),
     Case(
