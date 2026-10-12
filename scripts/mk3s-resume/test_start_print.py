@@ -65,7 +65,9 @@ def run(case, **kw):
         g = Path(d) / NAME
         g.write_bytes(BODY)
         env = dict(os.environ, PRUSA_PRINTER_INI=str(ini), START_PRINT_POLL="0.05")
-        p = subprocess.run([sys.executable, "-I", str(HERE / "start_print.py"), str(g)],
+        # -E -s, not -I: isolated from PYTHON* variables and the user's site, but -I's -P would also drop the
+        # script's own folder from sys.path, where prusalink.py is.
+        p = subprocess.run([sys.executable, "-E", "-s", str(HERE / "start_print.py"), str(g)],
                            env=env, capture_output=True, text=True, timeout=60, check=False)
     srv.shutdown()
     return p.returncode, len(Stub.posts), (p.stdout + p.stderr).strip().splitlines()[-1:]

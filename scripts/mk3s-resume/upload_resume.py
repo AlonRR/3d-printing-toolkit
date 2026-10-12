@@ -6,50 +6,28 @@
 usage: upload_resume.py <file.gcode>
 The API key is read from the PrusaSlicer physical-printer profile and never printed.
 """
+
 import json
-import os
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
-f = Path(sys.argv[1])
-# The PrusaLink host and API key come from a PrusaSlicer physical-printer profile, which is
-# gitignored because it holds the key in plaintext. Override the path with PRUSA_PRINTER_INI.
-# ⚠️ Resolved lazily on purpose. The obvious one-liner puts the APPDATA lookup in os.environ.get()'s
-# DEFAULT argument, which Python evaluates EAGERLY - so it raises on any host without APPDATA even
-# when the override is set, which is precisely when someone is pointing this at a stub or a Linux box.
-_override = os.environ.get("PRUSA_PRINTER_INI")
-ini = Path(_override) if _override else (
-    Path(os.environ["APPDATA"]) / "PrusaSlicer" / "physical_printer" / "Prusa mk3S+.ini")
-cfg = dict(l.split(" = ", 1) for l in ini.read_text(encoding="utf-8").splitlines() if " = " in l)
-host = cfg["print_host"].strip()
-base = host if host.startswith("http") else "http://" + host
-key = cfg["printhost_apikey"].strip()
+import prusalink
 
-data = f.read_bytes()
-# Resolve redirects with a small GET BEFORE sending the file. Behind the proxy, plain http answers
-# every request with 308 to https - and on a PUT the server may answer and close while the body is
-# still going out. Measured 2 Oct 2026: the first 2.9 MB upload followed the 308 and landed; the
-# second died mid-body with ConnectionAbortedError and left nothing on the printer. urllib follows
-# a GET's redirects itself, so its final URL gives the scheme and host to PUT to directly.
-with urllib.request.urlopen(urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key}),
-                            timeout=15) as r:
-    final = urllib.parse.urlparse(r.geturl())
-    base = f"{final.scheme}://{final.netloc}"
-# /api/v1/status lists the writable storage as /local (the SD card is read-only)
-url = f"{base}/api/v1/files/local/{urllib.parse.quote(f.name)}"
-# A file of that name already on the printer: with Overwrite off, PrusaLink refuses the PUT, and behind the
-# proxy the refusal arrives as a connection reset mid-body, not as a 409. Measured 11 Oct 2026: three resets
-# for a name uploaded the day before, then a 201 under a new name. So ask first, and say so plainly.
-try:
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"X-Api-Key": key}), timeout=15):
-        print(f"{f.name} is already on the printer, and this never overwrites: upload it under another name")
-        sys.exit(1)
-except urllib.error.HTTPError as e:
-    if e.code != 404:
-        raise
+
+def on_printer(url, key):
+    """Whether the printer already has a file at url: a 404 says not, any other error is raised."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"X-Api-Key": key}), timeout=15):
+            return True
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            raise
+    return False
+
+
 def put(url, data, key, hops=2):
     """PUT, following a redirect by hand.
 
@@ -82,11 +60,37 @@ def put(url, data, key, hops=2):
     sys.exit(1)
 
 
-status, final = put(url, data, key)
-# Report the scheme actually used, never the host - this output can end up in a transcript.
-print("PUT", status, len(data), "bytes", f"(via {urllib.parse.urlparse(final).scheme})")
+def main(argv):
+    f = Path(argv[1])
+    base, key = prusalink.connection()
+    data = f.read_bytes()
+    # Resolve redirects with a small GET BEFORE sending the file. Behind the proxy, plain http answers
+    # every request with 308 to https - and on a PUT the server may answer and close while the body is
+    # still going out. Measured 2 Oct 2026: the first 2.9 MB upload followed the 308 and landed; the
+    # second died mid-body with ConnectionAbortedError and left nothing on the printer. urllib follows
+    # a GET's redirects itself, so its final URL gives the scheme and host to PUT to directly.
+    status_req = urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key})
+    with urllib.request.urlopen(status_req, timeout=15) as r:
+        base = prusalink.origin(r.geturl())
+    # /api/v1/status lists the writable storage as /local (the SD card is read-only)
+    url = f"{base}/api/v1/files/local/{urllib.parse.quote(f.name)}"
+    # A file of that name already on the printer: with Overwrite off, PrusaLink refuses the PUT, and behind the
+    # proxy the refusal arrives as a connection reset mid-body, not as a 409. Measured 11 Oct 2026: three resets
+    # for a name uploaded the day before, then a 201 under a new name. So ask first, and say so plainly.
+    if on_printer(url, key):
+        print(f"{f.name} is already on the printer, and this never overwrites: upload it under another name")
+        return 1
 
-# read back: the file must be listed and the printer must NOT be printing
-st = urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key})
-with urllib.request.urlopen(st, timeout=10) as r:
-    print("printer state after upload:", json.load(r)["printer"]["state"])
+    status, final = put(url, data, key)
+    # Report the scheme actually used, never the host - this output can end up in a transcript.
+    print("PUT", status, len(data), "bytes", f"(via {urllib.parse.urlparse(final).scheme})")
+
+    # read back: the file must be listed and the printer must NOT be printing
+    st = urllib.request.Request(f"{base}/api/v1/status", headers={"X-Api-Key": key})
+    with urllib.request.urlopen(st, timeout=10) as r:
+        print("printer state after upload:", json.load(r)["printer"]["state"])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
