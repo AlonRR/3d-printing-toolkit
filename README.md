@@ -156,7 +156,7 @@ Work that grew past a corner of this repository moved to one of its own, each wi
 | [**printer-enclosure**](https://github.com/AlonRR/printer-enclosure) | The enclosure's sensing and airflow: the chamber node, its measurements, the fan plan and the scrubber. October 2026 |
 | [**air-quality-monitor**](https://github.com/AlonRR/air-quality-monitor) | The particle and VOC/NOx monitor that hangs beside the enclosure. October 2026 |
 | [**parts**](https://github.com/AlonRR/parts) | Finished small parts, starting with the USB-C panel plate. 12 Oct 2026 |
-| **esp32-cam-for-prusa-connect** | The ESP32-S3 camera node for Prusa Connect, in plain ESP-IDF C. Private for now; until it is public, its code is in this repository's history, under `firmware/prusa-cam-c/` |
+| **esp32-cam-for-prusa-connect** | The ESP32-S3 camera node for Prusa Connect, in plain ESP-IDF C, and the notes on what the Prusa Connect API can and cannot automate - checked against its live endpoints; the short version is that there is no endpoint to upload a file. Private for now; until it is public, both are in this repository's history, under `firmware/prusa-cam-c/` and `docs/prusa-connect-api.md` (the notes moved 12 Oct 2026) |
 | **The printed fan connector** | 2.54 mm, male and female. 9 Oct 2026, ahead of its Printables listing; not public yet |
 | **The heated drybox and desiccant module** | September 2026. Not public. What stayed here is what the two share: the annealing page and the mechanical-design-review checklist |
 
@@ -172,7 +172,6 @@ Ideas that are not yet parts are kept in a private workshop repository until the
 | [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
 | [`mechanical-design-review.md`](docs/mechanical-design-review.md) | The questions a collision check never asks: a checklist for reviewing a printed mechanical assembly |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
-| [`prusa-connect-api.md`](docs/prusa-connect-api.md) | What the Prusa Connect API can and cannot automate, checked against live endpoints rather than forum posts. Short version: you can read and manage the queue, start prints and read progress — **there is no endpoint to upload a file** |
 
 ## Licence
 
