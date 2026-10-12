@@ -37,24 +37,20 @@ Z_MIN_POS 0.15 - so the nozzle stays physically at the part top while the number
 Jog up with LCD Move Z, read the new Z over PrusaLink, and the gap is that reading minus 0.15,
 measured by the machine's own leadscrew instead of by eye.
 """
+
 import sys
 from pathlib import Path
 
-steps = int(sys.argv[1])
-tx, ty = float(sys.argv[2]), float(sys.argv[3])
-out = Path(sys.argv[4])
-assert 5 <= steps <= 200, "steps must be between 5 and 200"
-assert 0 <= tx <= 250 and 0 <= ty <= 210, "touch point outside the MK3S bed"
-
 STEP = 0.1
-LIFT = 10.0          # relative, from contact - clears the part for the X/Y home
-DROP = 8.0           # back down, leaving LIFT-DROP = 2 mm of margin for bed tilt
-TOUCH_NOZZLE = 170   # as make_resume.py: clean tip, same thermal expansion as the real touch-off,
-                     # so the two references agree. Too cold for PETG to ooze during the dwell.
-assert LIFT - DROP > 0, "the drop must leave margin"
-assert steps * STEP > (LIFT - DROP), "not enough fine travel to reach the part"
+LIFT = 10.0  # relative, from contact - clears the part for the X/Y home
+DROP = 8.0  # back down, leaving LIFT-DROP = 2 mm of margin for bed tilt
+TOUCH_NOZZLE = 170  # as make_resume.py: clean tip, same thermal expansion as the real touch-off,
+# so the two references agree. Too cold for PETG to ooze during the dwell.
 
-head = f"""; ==== FIND TOP at X{tx:g} Y{ty:g} - {steps} steps of {STEP:g} mm
+
+def find_top(steps, tx, ty):
+    """The whole file: lift, home X/Y, heat, travel to the touch point, drop, then `steps` clicks of STEP."""
+    head = f"""; ==== FIND TOP at X{tx:g} Y{ty:g} - {steps} steps of {STEP:g} mm
 ; PRECONDITION: the nozzle is JUST TOUCHING a solid, flat part of the print. If it is not, press
 ; RESET now - every distance below is measured relative to that contact.
 ; No probing, no Z homing, no bed mesh. Z moves up first, and only ever down in {STEP:g} mm steps after.
@@ -78,53 +74,76 @@ G1 Z-{DROP:g} F300 ; back down, leaving {LIFT - DROP:g} mm of margin for bed til
 M117 0.1mm to contact
 M0 Stop at contact
 """
-body = "".join(f"G1 Z-{STEP:g} F100\nM0 Click = down {STEP:g}mm\n" for _ in range(steps))
-tail = """G90
+    body = "".join(f"G1 Z-{STEP:g} F100\nM0 Click = down {STEP:g}mm\n" for _ in range(steps))
+    tail = """G90
 M104 S0
 M117 Travel used up
 M0 No contact - stop
 """
-out.write_text(head + body + tail, encoding="utf-8", newline="\n")
+    return head + body + tail
 
-# --- verify what was written ---------------------------------------------------------------
-W = out.read_text(encoding="utf-8").split("\n")
-code = [s.split(";")[0].strip() for s in W]
-assert not any(c.startswith(("G29", "G30", "G80")) for c in code), "probing command present"
-assert [c for c in code if c.startswith("G28")] == ["G28 X Y"], "unexpected homing"
-fine = [c for c in code if c == f"G1 Z-{STEP:g} F100"]
-assert len(fine) == steps, f"expected {steps} fine steps, wrote {len(fine)}"
-zmoves = [c for c in code if c.startswith("G1") and "Z" in c]
-assert zmoves == [f"G1 Z{LIFT:g} F720", f"G1 Z-{DROP:g} F300"] + fine, f"unexpected Z sequence: {zmoves[:4]}"
-assert not any("X" in c or "Y" in c for c in zmoves), "a Z move carries X or Y"
-# the only X/Y travel must happen while the nozzle is lifted, i.e. after the lift and before the drop
-xy = [i for i, c in enumerate(code) if c.startswith("G1") and ("X" in c or "Y" in c)]
-assert len(xy) == 1, "expected exactly one X/Y travel"
-assert code.index(f"G1 Z{LIFT:g} F720") < xy[0] < code.index(f"G1 Z-{DROP:g} F300"), "X/Y travel not while lifted"
-assert code.index("G28 X Y") < xy[0], "travel before homing X/Y"
-# Mode matters, not the count. Walk the file and check every move happened in the mode it was
-# written for. The first version of this guard asserted "3 G90 and 3 G91", which is simply the
-# wrong number - the file needs 3 and 2 - so it failed correct output. A count is a proxy; the
-# property is that no move is ever interpreted in the wrong frame, and that is what this checks.
-mode = None
-seen = []
-for c in code:
-    if c == "G90":
-        mode = "abs"
-    elif c == "G91":
-        mode = "rel"
-    elif c.startswith("G1"):
-        seen.append((c, mode))
-assert seen[0] == (f"G1 Z{LIFT:g} F720", "rel"), f"lift not relative: {seen[0]}"
-assert seen[1] == (f"G1 X{tx:g} Y{ty:g} F6000", "abs"), f"X/Y travel not absolute: {seen[1]}"
-assert seen[2] == (f"G1 Z-{DROP:g} F300", "rel"), f"drop not relative: {seen[2]}"
-assert all(m == "rel" for _, m in seen[3:]), "a fine 0.1 mm step is not in relative mode"
-assert len(seen) == steps + 3, f"unexpected move count {len(seen)}"
-assert mode == "abs", "file ends in relative mode"
-for c in code:
-    if c.startswith(("M0 ", "M117 ")):
-        assert len(c.split(" ", 1)[1]) <= 20, f"LCD text over 20 characters: {c}"
-assert len([c for c in code if c.startswith("M0 ")]) == steps + 4, "prompt count does not match steps"
-print(f"wrote {out.name}: reference at X{tx:g} Y{ty:g}; lift {LIFT:g}, drop {DROP:g} "
-      f"(margin {LIFT - DROP:g}), then {steps} x {STEP:g} mm = {steps * STEP:g} mm")
-print(f"  {len(W)} lines, {out.stat().st_size} bytes; no probing, no Z homing, "
-      f"X/Y travel only while lifted; all checks passed")
+
+def verify(written, steps, tx, ty):
+    """Check the file as written: no probing, one X/Y home, the Z moves in order and in the frame each was written
+    for, the only X/Y travel while lifted, LCD text that fits, and one prompt per step."""
+    code = [s.split(";")[0].strip() for s in written]
+    assert not any(c.startswith(("G29", "G30", "G80")) for c in code), "probing command present"
+    assert [c for c in code if c.startswith("G28")] == ["G28 X Y"], "unexpected homing"
+    fine = [c for c in code if c == f"G1 Z-{STEP:g} F100"]
+    assert len(fine) == steps, f"expected {steps} fine steps, wrote {len(fine)}"
+    zmoves = [c for c in code if c.startswith("G1") and "Z" in c]
+    assert zmoves == [f"G1 Z{LIFT:g} F720", f"G1 Z-{DROP:g} F300", *fine], f"unexpected Z sequence: {zmoves[:4]}"
+    assert not any("X" in c or "Y" in c for c in zmoves), "a Z move carries X or Y"
+    # the only X/Y travel must happen while the nozzle is lifted, i.e. after the lift and before the drop
+    xy = [i for i, c in enumerate(code) if c.startswith("G1") and ("X" in c or "Y" in c)]
+    assert len(xy) == 1, "expected exactly one X/Y travel"
+    assert code.index(f"G1 Z{LIFT:g} F720") < xy[0] < code.index(f"G1 Z-{DROP:g} F300"), "X/Y travel not while lifted"
+    assert code.index("G28 X Y") < xy[0], "travel before homing X/Y"
+    # Mode matters, not the count. Walk the file and check every move happened in the mode it was
+    # written for. The first version of this guard asserted "3 G90 and 3 G91", which is simply the
+    # wrong number - the file needs 3 and 2 - so it failed correct output. A count is a proxy; the
+    # property is that no move is ever interpreted in the wrong frame, and that is what this checks.
+    mode = None
+    seen = []
+    for c in code:
+        if c == "G90":
+            mode = "abs"
+        elif c == "G91":
+            mode = "rel"
+        elif c.startswith("G1"):
+            seen.append((c, mode))
+    assert seen[0] == (f"G1 Z{LIFT:g} F720", "rel"), f"lift not relative: {seen[0]}"
+    assert seen[1] == (f"G1 X{tx:g} Y{ty:g} F6000", "abs"), f"X/Y travel not absolute: {seen[1]}"
+    assert seen[2] == (f"G1 Z-{DROP:g} F300", "rel"), f"drop not relative: {seen[2]}"
+    assert all(m == "rel" for _, m in seen[3:]), "a fine 0.1 mm step is not in relative mode"
+    assert len(seen) == steps + 3, f"unexpected move count {len(seen)}"
+    assert mode == "abs", "file ends in relative mode"
+    for c in code:
+        if c.startswith(("M0 ", "M117 ")):
+            assert len(c.split(" ", 1)[1]) <= 20, f"LCD text over 20 characters: {c}"
+    assert len([c for c in code if c.startswith("M0 ")]) == steps + 4, "prompt count does not match steps"
+
+
+def main(argv):
+    steps = int(argv[1])
+    tx, ty = float(argv[2]), float(argv[3])
+    out = Path(argv[4])
+    assert 5 <= steps <= 200, "steps must be between 5 and 200"
+    assert 0 <= tx <= 250 and 0 <= ty <= 210, "touch point outside the MK3S bed"
+    assert LIFT - DROP > 0, "the drop must leave margin"
+    assert steps * STEP > (LIFT - DROP), "not enough fine travel to reach the part"
+
+    out.write_text(find_top(steps, tx, ty), encoding="utf-8", newline="\n")
+
+    # --- verify what was written ---------------------------------------------------------------
+    written = out.read_text(encoding="utf-8").split("\n")
+    verify(written, steps, tx, ty)
+    print(f"wrote {out.name}: reference at X{tx:g} Y{ty:g}; lift {LIFT:g}, drop {DROP:g} "
+          f"(margin {LIFT - DROP:g}), then {steps} x {STEP:g} mm = {steps * STEP:g} mm")
+    print(f"  {len(written)} lines, {out.stat().st_size} bytes; no probing, no Z homing, "
+          f"X/Y travel only while lifted; all checks passed")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
