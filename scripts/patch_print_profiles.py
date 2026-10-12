@@ -159,21 +159,29 @@ def check_patch(name, lines, new, current, todo, seen):
     ], f"{name}: a non-target line moved"
 
 
-def write_and_prove(path, name, new, eol, todo, stamp):
+def write_and_prove(path, name, new, eol, todo, inserted, stamp):
     """Back the preset up once a day, write it in its own line endings, and prove the ONLY byte-level difference
     is the intended keys - not just that the parsed values agree. A whole-file line-ending rewrite passes a
-    key-by-key check untouched."""
+    key-by-key check untouched. `inserted` is how many of the keys were absent and went in as new lines."""
     bak = path.with_suffix(f".ini.bak-{stamp}")
     if not bak.exists():
         shutil.copy2(path, bak)
     path.write_text(new, encoding="utf-8", newline=eol)
-    before = bak.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
-    after = path.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
-    moved = [(x, y) for x, y in zip(before, after, strict=False) if x != y]
-    assert all(KV.match(y) and KV.match(y).group(1) in todo for _, y in moved), (
-        f"{name}: a non-target line changed: {moved[:3]}"
-    )
-    assert bak.read_bytes().count(b"\r\n") == path.read_bytes().count(b"\r\n"), f"{name}: line endings were rewritten"
+    old_bytes, new_bytes = bak.read_bytes(), path.read_bytes()
+    before = old_bytes.decode("utf-8").replace("\r\n", "\n").split("\n")
+    after = new_bytes.decode("utf-8").replace("\r\n", "\n").split("\n")
+    after_keys = key_values(after)
+    assert all(after_keys.get(k) == v for k, v in todo.items()), f"{name}: a target did not take its value on disk"
+    # The other lines, compared as sequences. Compared line by line, a key inserted where it was absent shifts
+    # every line after it, and each of those reads as changed (12 Oct 2026: --apply wrote such a preset, then
+    # stopped on its own check before the presets after it).
+    kept_before = [x for x in before if not ((m := KV.match(x)) and m.group(1) in todo)]
+    kept_after = [x for x in after if not ((m := KV.match(x)) and m.group(1) in todo)]
+    moved = [(x, y) for x, y in zip(kept_before, kept_after, strict=False) if x != y]
+    assert kept_before == kept_after, f"{name}: a non-target line changed: {moved[:3]}"
+    # Each inserted line takes the file's own ending, so a CRLF preset gains one CRLF per inserted key.
+    gained = inserted if eol == "\r\n" else 0
+    assert new_bytes.count(b"\r\n") == old_bytes.count(b"\r\n") + gained, f"{name}: line endings were rewritten"
     return bak
 
 
@@ -215,7 +223,7 @@ def main(argv):
         total_changed += len(todo)
 
         if apply:
-            bak = write_and_prove(path, name, new, eol, todo, stamp)
+            bak = write_and_prove(path, name, new, eol, todo, len(set(todo) - seen), stamp)
             print(f"   written; backup {bak.name}")
 
     print(f"\n{'APPLIED' if apply else 'DRY RUN'}: {total_changed} key changes across {len(JOBS)} presets")

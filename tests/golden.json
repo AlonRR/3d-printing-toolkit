@@ -282,7 +282,7 @@
   "stdout": "window over: state PRINTING, Z 1.8, progress 42%, bed dips 0, min bed while printing 99.9 - re-arm\n"
  },
  "patch-apply": {
-  "exit": 1,
+  "exit": 0,
   "files": {
    "print/0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini": {
     "bytes": 262,
@@ -293,10 +293,18 @@
     "sha256": "4034531cf54464542bf4b8205b5bf2455d974d29294657b4de95f4ea62bb3919"
    },
    "print/0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini": {
+    "bytes": 251,
+    "sha256": "7514091acb935325a2e1aff070f1e0822eec8538d6e426dd60cb30d2239a7fa6"
+   },
+   "print/0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini.bak-DATE": {
     "bytes": 252,
     "sha256": "c592bd1b0c68e9ce2b56c5fb3d92b86a3fff2158c1e4006b28f4aa09ce9224fe"
    },
    "print/0.20mm QUALITY @MK3 no skirt.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.20mm QUALITY @MK3 no skirt.ini.bak-DATE": {
     "bytes": 264,
     "sha256": "bf99256132b1cbed73dca4075884272b4af85dbfe85448356586558e93ac4162"
    },
@@ -318,16 +326,24 @@
    },
    "print/0.40mm QUALITY @0.8 nozzle - NO Skirt.ini": {
     "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.40mm QUALITY @0.8 nozzle - NO Skirt.ini.bak-DATE": {
+    "bytes": 262,
     "sha256": "d8b77fd56c4738753662b1dc62c1c9b38e0b70b3d00733c4f7b24c5ac32e5a43"
    },
    "print/0.40mm Uber strong @0.8 nozzle.ini": {
+    "bytes": 262,
+    "sha256": "9982e804502a2025356eca3e7532659b654067f78a9d4d75484dffeae991e1e2"
+   },
+   "print/0.40mm Uber strong @0.8 nozzle.ini.bak-DATE": {
     "bytes": 237,
     "sha256": "edfee2432f73b7089e84f9e58a0555932f71e03625897f7dcbfae4d1223bce7c"
    }
   },
   "requests": null,
-  "stderr_last": "AssertionError: 0.10mm DETAIL @MK3 - No skirt no brim no perimeter: a non-target line changed: [('brim_type = no_brim', 'avoid_crossing_perimeters_max_detour = 20'), ('brim_width = 0', 'brim_type = no_brim'), ('complete_objects = 0', 'brim_width = 0')]",
-  "stdout": "  (target is print - not PrusaSlicer's own directory, so no running-app check)\n\n0.10mm DETAIL @MK3 - No skirt no brim no perimeter\n   avoid_crossing_perimeters_max_detour           <absent>  ->  20\n"
+  "stderr_last": "",
+  "stdout": "  (target is print - not PrusaSlicer's own directory, so no running-app check)\n\n0.10mm DETAIL @MK3 - No skirt no brim no perimeter\n   avoid_crossing_perimeters_max_detour           <absent>  ->  20\n   written; backup 0.10mm DETAIL @MK3 - No skirt no brim no perimeter.ini.bak-2026-10-12\n\n0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter\n   fill_pattern                                     gyroid  ->  cubic\n   skirts                                                1  ->  0\n   written; backup 0.15mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter.ini.bak-2026-10-12\n\n0.20mm QUALITY @MK3 no skirt\n   brim_type                                    outer_only  ->  no_brim\n   brim_width                                            5  ->  0\n   draft_shield                                    enabled  ->  disabled\n   written; backup 0.20mm QUALITY @MK3 no skirt.ini.bak-2026-10-12\n\n0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter\n   already correct - untouched\n\n0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter, lightning\n   already correct - untouched\n\n0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter\n   already correct - untouched\n\n0.30mm DETAIL @0.8 nozzle - NO SKIRT\n   already correct - untouched\n\n0.40mm QUALITY @0.8 nozzle - NO Skirt\n   complete_objects                                      1  ->  0\n   wipe_tower                                            0  ->  1\n   written; backup 0.40mm QUALITY @0.8 nozzle - NO Skirt.ini.bak-2026-10-12\n\n0.40mm Uber strong @0.8 nozzle\n   draft_shield                                   <absent>  ->  disabled\n   written; backup 0.40mm Uber strong @0.8 nozzle.ini.bak-2026-10-12\n\nAPPLIED: 9 key changes across 9 presets\n"
  },
  "patch-dry-run": {
   "exit": 0,
