@@ -103,7 +103,7 @@ clone with `git clone --recurse-submodules`, or run `git submodule update --init
 the repository's root:
 
 ```sh
-sh scad-tools/scripts/scad-check.sh models/usbc-panel-plate/usbc-panel-plate.scad
+sh scad-tools/scripts/scad-check.sh models/petg-temp-tower/petg-temp-tower.scad
 ```
 
 A ZIP from GitHub comes without it: from the unpacked folder, fetch the version this repository is pinned to.

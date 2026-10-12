@@ -66,7 +66,7 @@ its own, and the two that exist do not agree:
 
 | model | clearance | on what |
 |---|---|---|
-| `usbc-panel-plate` | **0.25 mm/side** | a pocket over a boss |
+| [`usbc-panel-plate`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate) (in `parts`) | **0.25 mm/side** | a pocket over a boss |
 | `gridfinity-foot-negative` | **0** nominal, 0.1–0.25 suggested only if it seats tightly | a foot in a baseplate |
 
 Both are values that happened to work, not measurements. The generic figure quoted online is around
@@ -531,7 +531,7 @@ the gate opens, since shipping flammable solvent is a non-starter.
 
 ## Applied: the USB-C panel plate
 
-Audit of [`models/usbc-panel-plate/`](../models/usbc-panel-plate/), against §1
+Audit of [`models/usbc-panel-plate/`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate), now in the `parts` repository, against §1
 and §4. The `.scad` echoes all of these on every render — and, since the review
 of 18 Aug 2026, computes them from the **as-cut** dimensions rather than the
 nominal ones.
@@ -595,7 +595,7 @@ imports them later by accident:
 | the poster says | this repo measures | why they differ |
 |---|---|---|
 | wall steps 0.8 / 1.2 / 1.6 mm | **0.90 / 1.35 / 1.80** | it assumes a 0.4 mm extrusion width; §1 uses the width the slicer actually emits, **0.45** |
-| bridges of "2 cm+" | **~10 mm** | asserted in `usbc-panel-plate.scad` against the ceiling this machine was measured at |
+| bridges of "2 cm+" | **~10 mm** | asserted in [`usbc-panel-plate.scad`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate) against the ceiling this machine was measured at |
 | engrave text into vertical faces | **raise** it on vertical faces | §5c — engraved text at readable sizes fills in here |
 
 ⭐ **The pattern is worth more than the three corrections.** Every conflict is a generic figure
