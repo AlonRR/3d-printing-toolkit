@@ -71,6 +71,10 @@ def _plain(text, tmp):
     return text.replace("\\", "/").replace("\r\n", "\n")
 
 
+def _undated(text):
+    return re.sub(r"\d{4}-\d{2}-\d{2}", "DATE", text)
+
+
 def run_case(case, tmp):
     """Run one case in the empty folder tmp; return what it did, as plain data."""
     root = toolkit_root()
@@ -108,15 +112,17 @@ def run_case(case, tmp):
         if srv:
             srv.shutdown()
             srv.server_close()
-    stdout = _plain(p.stdout, tmp)
+    # The day it runs is no part of the record: a backup named for today's date, in the files and in what the
+    # script prints about them, reads the same on any day (patch-apply's golden held 12 Oct 2026, and failed after).
+    stdout = _undated(_plain(p.stdout, tmp))
     if case.normalise:
         stdout = case.normalise(stdout)
-    err = [line for line in _plain(p.stderr, tmp).splitlines() if line.strip()]
+    err = [line for line in _undated(_plain(p.stderr, tmp)).splitlines() if line.strip()]
     files = {}
     for pattern in case.outputs:
         for f in sorted(tmp.glob(pattern)):
             if f.is_file():
-                key = re.sub(r"\d{4}-\d{2}-\d{2}", "DATE", f.relative_to(tmp).as_posix())
+                key = _undated(f.relative_to(tmp).as_posix())
                 files[key] = _digest(f, case.jsonl_drop)
     return {
         "exit": p.returncode,
