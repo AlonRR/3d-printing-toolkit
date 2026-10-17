@@ -234,8 +234,8 @@ There is no dryer in this lab. The options, cheapest first:
 - The **12 V 50 W PTC heater** — ⚠️ **no longer available to this build.** Reallocated to the active drybox on 3 Sep 2026 — that build moved to its own repository; reviving this needs a second element at ₪39. In a sealed box, 50 W
   is modest but a small insulated box is a small volume. Needs a >4 A 12 V supply, which the
   PD trigger board is not.
-- Desiccant storage to stop the problem recurring: filamentcenter sells 2 kg alumina at ₪89 and
-  2 kg indicating silica gel at ₪69, orange-to-clear so it shows when it is spent.
+- Desiccant storage to stop the problem recurring: 2 kg of alumina is ₪89 at Israeli retail, and
+  2 kg of indicating silica gel ₪69, orange-to-clear so it shows when it is spent.
 
 Drying fixes a wet spool. Storage stops you needing to.
 

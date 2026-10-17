@@ -30,9 +30,9 @@ the printer profile is set to 0.8. That's why each material needs two files, not
 
 ### 1. Prices — only PETG is a current listing
 
-Yasin3D's Israeli seller is [filamentcenter.co.il](https://filamentcenter.co.il/). Checked
-29 Aug 2026, their **entire** Yasin3D range is two products: **PETG 1 kg at ₪39** and
-**ABS 1 kg at ₪49**. There is no Yasin3D PLA and no Yasin3D ASA in the catalogue.
+Checked at Israeli retail on 29 Aug 2026, Yasin3D's **entire** range on sale is two products:
+**PETG 1 kg at ₪39** and **ABS 1 kg at ₪49**. There is no Yasin3D PLA and no Yasin3D ASA
+on sale there.
 
 So `filament_cost` splits two ways:
 

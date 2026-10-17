@@ -182,10 +182,9 @@ their layers never reach the floor. Worked through in
 
 ## `Inslogic PLA Pro` and `Inslogic PETG Pro` — one rule, two deviations
 
-Added 29 Aug 2026 from the PLA Pro and PETG Pro data sheets. Both are the plain grades sold by
-[filamentcenter.co.il](https://filamentcenter.co.il/), Inslogic's Israeli distributor:
-**PLA Pro ₪59/kg** and **PETG Pro ₪49/kg**, incl. VAT, checked 29 Aug 2026. Those are the
-numbers in `filament_cost`.
+Added 29 Aug 2026 from the PLA Pro and PETG Pro data sheets. Both are the plain grades; at
+Israeli retail they cost **PLA Pro ₪59/kg** and **PETG Pro ₪49/kg**, incl. VAT, checked
+29 Aug 2026. Those are the numbers in `filament_cost`.
 
 ### The rule the temperatures follow
 
@@ -275,9 +274,8 @@ plausible — 82 and 85 against a real 79 — which is worse than being obviousl
 believable inherited number reads as a deliberate one. The tell was that **all three TPU files
 disagreed with each other** while none of the three matched a price anyone had ever paid.
 
-Real prices are Inslogic's Israeli distributor,
-[filamentcenter.co.il](https://filamentcenter.co.il/), checked 29 Aug 2026, per 1 kg spool
-incl. VAT: **ASA ₪69 · TPU 95A ₪79 · PLA Pro ₪59 · PETG Pro ₪49**.
+The real prices, at Israeli retail on 29 Aug 2026, per 1 kg spool incl. VAT, are:
+**ASA ₪69 · TPU 95A ₪79 · PLA Pro ₪59 · PETG Pro ₪49**.
 
 `filament_cost` is now an explicit override in every sparse master here, so it can no longer be
 supplied by a parent without anyone noticing. The general rule: **a key you never set is not a
