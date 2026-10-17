@@ -105,18 +105,18 @@ and the filament-used estimate, so if either matters, weigh a known length and c
 
 ### The bed temperature is the one number backed by a print
 
-The label permits **90 °C**, and that is more tempting than the Inslogic case precisely because it
-is *inside* vendor spec. Being inside spec changes nothing about the sheet: PETG at that
-temperature bonds to a smooth PEI sheet strongly enough to **tear PEI off it on removal**.
+The label permits **90 °C**, inside vendor spec. On a smooth PEI sheet that would still be a
+risk, since PETG at that temperature bonds strongly enough to **tear PEI off it on removal**; but
+this printer's sheet is a **Prusa satin** (17 Oct 2026, [print-sheet.md](../../../docs/print-sheet.md)), on which
+Prusa prints PETG with no release layer.
 
 These profiles run **75/75 °C**, 5 °C above the bottom of the label's range. That number is
 measured on this printer rather than inherited: the schubox warped at 70/70, and the lid printed at
 75/75 with no warping — same filament, same sheet, same large flat-bottomed geometry, so the bed
 temperature is the variable that changed. It is the one setpoint in these profiles backed by a
 print instead of by a data sheet; the Inslogic PETG profile settled on 70/70, and this is where the
-two deliberately part company. If the first layer will not stick, raise toward 85/90 — and put
-down a thin glue-stick release layer first, which is what makes the higher bed *safe* rather than
-what makes it *work*.
+two deliberately part company. If the first layer will not stick, raise toward 85/90: on satin
+nothing else is needed, and on a smooth sheet a thin glue-stick release layer goes down first.
 
 ## Cost
 

@@ -228,13 +228,13 @@ there the parent already runs 100 %, so no fan override appears in that file eit
 
 Inslogic says 60–70 °C; Prusa's PETG profiles run 85 °C first layer / 90 °C. These profiles
 take the vendor's ceiling, **70/70** — the same "hottest the vendor sanctions" logic as the ASA
-bed below, but with a second argument the ASA case does not have: **PETG bonds to smooth PEI
-above roughly 85 °C hard enough to tear PEI off the sheet on removal.** Here the
-vendor-faithful number is also the one that protects the sheet.
+bed below. On a **smooth PEI** sheet it would also protect the sheet: PETG above roughly 85 °C
+bonds to smooth PEI hard enough to tear PEI off on removal. This printer's sheet is a **Prusa
+satin** (17 Oct 2026, [print-sheet.md](../../../docs/print-sheet.md)), on which Prusa prints PETG with no release
+layer, so that argument does not apply here; the vendor's range still does.
 
-If the first layer will not stick at 70 °C, raise toward 85/90 — and lay down a thin glue-stick
-release layer first. The glue is what makes the hotter bed *safe*; it is not what makes it
-work.
+If the first layer will not stick at 70 °C, raise toward 85/90. On satin nothing else is needed;
+on a smooth sheet, lay down a thin glue-stick release layer first.
 
 ---
 
@@ -362,11 +362,12 @@ outright**, on the two general-purpose profiles — a hotter bed keeps the lower
 longer, so the part relieves stress instead of curling its corners up, and there is no reason
 to wait for a failed print to find that out.
 
-⚠️ **This is only safe because a glue stick goes down on this machine for every print.** ASA on
-a **bare** smooth PEI sheet at 110 °C bonds hard enough to
+**On this printer's sheet the 110 °C holds the part rather than risking the sheet.** It is a
+Prusa satin (17 Oct 2026, [print-sheet.md](../../../docs/print-sheet.md)), on which Prusa says ASA adheres *less*
+than on smooth PEI; the glue stick that goes down for every print helps it hold, since no brim or
+draft shield is printed. On a **bare smooth** PEI sheet the same 110 °C bonds hard enough to
 [tear PEI off the sheet](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/)
-on removal — the same over-adhesion the PETG profiles here dodge by running a 70 °C bed. No
-glue, no 110: drop back to 100/100.
+on removal: there it would want glue as a release layer, or 100/100.
 
 **The two `- thin wall` profiles stay at 100/100.** They are the only print-validated ASA
 profiles in this folder, the vase-mode parts they exist for have almost no cross-section to
@@ -428,9 +429,11 @@ chain already lands on the vendor's numbers, and the only real change is the bed
 1. **Dry the filament** — ASA 80 °C/4 h; TPU, PLA Pro and PETG Pro all 50 °C/4 h. All are
    hygroscopic; TPU especially so, and wet TPU prints badly in ways easily mistaken for a bad
    profile.
-2. **TPU: fit the textured PEI sheet.** On smooth PEI, TPU can bond hard enough to damage
-   the sheet on removal. PLA Pro's sheet asks for the textured sheet too, and **PETG on smooth
-   PEI is the other case that damages sheets** — see Deviation 2 above.
+2. **The sheet is a Prusa satin** ([print-sheet.md](../../../docs/print-sheet.md)): not the textured sheet the TPU
+   and PLA Pro data sheets ask for, nor the smooth one ASA's and PETG's name. Prusa prints all four
+   on satin: **a glue stick for TPU**, which goes down for every print here anyway; PLA and PETG
+   need nothing; ASA adheres less than on smooth PEI. The smooth-sheet damage cases (TPU, PETG
+   over 85 °C, ASA at 110 °C on bare PEI) do not arise on it.
 3. **ASA: use the enclosure**, and mind the fumes — this is exactly the case the fume extractor
    project is for (`alon/homelab` → `docs/manual/fume-fan-esp32.md`).
 4. **Print a temperature tower or one of the filament sample swatches** in

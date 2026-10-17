@@ -7,9 +7,10 @@ Items 3–6 have not been: nothing else was changed.
 
 The setup this is written against: **Prusa MK3S+, open frame, inside an IKEA Lack enclosure
 closed since 19 Sep 2026 (one side was left open for venting until then), printing
-Inslogic ASA at 255 °C / 100 °C bed with 20 % fan — and a glue stick on the sheet for every
-print, on every material.** That last one is not incidental: it removes the prerequisite from
-item 2 and changes how the sheet gets cleaned in item 3. Some of the advice below is generic ASA
+Inslogic ASA at 255 °C / 100 °C bed with 20 % fan, on a Prusa satin sheet — and a glue stick
+on the sheet for every print, on every material.** That last one is not incidental: on this
+sheet it helps hold an ASA first layer in item 2, and it changes how the sheet gets cleaned in
+item 3. The sheet is in [print-sheet.md](print-sheet.md). Some of the advice below is generic ASA
 practice; the first item is specific to these profiles and is the one worth reading first.
 
 ---
@@ -100,17 +101,17 @@ so the part relieves stress instead of curling the corners up.
 The Inslogic README already named this as the first thing to try if parts lift. There is no
 reason to wait for a failed print to find that out, which is why it was simply applied.
 
-**The one risk that comes with it is already covered here.** ASA on a **smooth PEI** sheet at
-110 °C can bond hard enough to tear PEI off the sheet on removal — [a documented Prusa-forum
-failure](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/),
-and the same over-adhesion mechanism the PETG profiles in this repo avoid by running a 70 °C
-bed. Prusa's answer is a thin **glue-stick layer as a release agent**, not a lower bed — and on
-this machine glue goes down for every print anyway.
+**The sheet decides what risk comes with it, and this printer's is a Prusa satin sheet**
+(powder-coated PEI, identified 17 Oct 2026: [print-sheet.md](print-sheet.md)). On a **smooth
+PEI** sheet, ASA at 110 °C can bond hard enough to tear PEI off the sheet on removal — [a
+documented Prusa-forum failure](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/) —
+and Prusa's answer there is a thin glue-stick layer as a release agent. Satin goes the other
+way: Prusa says ASA adheres *less* on it than on the smooth sheet, and that prints often need a
+brim or a draft shield.
 
-So there is no prerequisite: **raise the bed and print.** The caveat is recorded because it is
-the reason the glue matters rather than being cosmetic, and because it is what would bite if
-that habit ever lapsed — a bare smooth sheet plus a 110 °C ASA first layer is how PEI gets
-pulled off.
+Neither is printed here, so on this sheet the hotter bed is what holds the part, with the glue
+stick that goes down for every print and the closed enclosure. **Raise the bed and print**; if a
+corner still lifts, fresh glue on a clean sheet comes before anything else.
 
 ---
 
@@ -124,6 +125,9 @@ pulled off.
   when the sheet is bare and actually oily, which is
   [Prusa's escalation](https://help.prusa3d.com/article/first-layer-issues_1804) for the
   no-glue case.
+- **On this satin sheet** ([print-sheet.md](print-sheet.md)): dry it as soon as it is washed,
+  since it is not to be left wet; **never acetone**, which microfractures the coating; and a
+  plastic spatula only. Let it cool and flex it, and prints come off.
 - ~~**Brim, at least 5 mm**, on anything tall or with a small footprint.~~
 - ~~**Use PrusaSlicer's draft shield**~~, a wall printed round the part to hold warm still air
   against it.
@@ -254,8 +258,8 @@ Drying fixes a wet spool. Storage stops you needing to.
 ## Order to actually do this in
 
 1. ~~**Raise the bed to 105/110 °C.**~~ ✅ **Done 30 Aug 2026**, installed and verified in the
-   G-code. No prerequisite was needed — the glue stick that makes it safe is already standing
-   practice here. `- thin wall` and `- thin wall, flat base` deliberately left at 100/100.
+   G-code. No prerequisite was needed: on this printer's satin sheet, ASA at 110 °C sticks less
+   than on smooth PEI, not more ([print-sheet.md](print-sheet.md)). `- thin wall` and `- thin wall, flat base` deliberately left at 100/100.
 2. ~~**Fix `min_print_speed`** (item 1).~~ ✅ **Done.** Applied to both Inslogic ASA profiles
    29 Aug 2026, installed on 30 Aug once PrusaSlicer was closed, and confirmed against the live
    config: the same tube now slices with a slowest move of 5.00 mm/s and a 13.41 s layer,
@@ -287,6 +291,7 @@ already at the printer.
 ## Sources
 
 - [ASA — Prusa Knowledge Base](https://help.prusa3d.com/article/asa_1809) — 105/110 bed, enclosure, glue stick on smooth PEI, brim ≥ 3 mm
+- [Satin steel sheet — Prusa Knowledge Base](https://help.prusa3d.com/article/satin-steel-sheet_196526) — ASA and PC Blend adhere less on satin than on smooth; a glue stick for TPU; never acetone
 - [First layer issues — Prusa Knowledge Base](https://help.prusa3d.com/article/first-layer-issues_1804) — IPA, then dish soap
 - [Prusament ASA sticking too well on PEI](https://forum.prusa3d.com/forum/original-prusa-i3-mk3s-mk3-how-do-i-print-this-printing-help/prusament-asa-sticking-too-well-on-pei-sheet/) — the over-adhesion failure
 - [How to succeed when 3D printing with ASA — MatterHackers](https://www.matterhackers.com/articles/how-to-succeed-when-3d-printing-with-asa-filament)

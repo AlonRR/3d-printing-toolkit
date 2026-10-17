@@ -169,6 +169,7 @@ Ideas that are not yet parts are kept in a private workshop repository until the
 | [`fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to this printer |
 | [`openscad-basics/`](docs/openscad-basics/) | Six hands-on OpenSCAD lessons, ending in a part written the way the models here are — every behaviour described was measured, not recalled |
 | [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
+| [`print-sheet.md`](docs/print-sheet.md) | The printer's sheet, a Prusa satin: what each material needs on it, and how to care for it |
 | [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
 | [`mechanical-design-review.md`](docs/mechanical-design-review.md) | The questions a collision check never asks: a checklist for reviewing a printed mechanical assembly |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |

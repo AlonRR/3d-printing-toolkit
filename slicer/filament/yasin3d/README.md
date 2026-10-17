@@ -65,12 +65,12 @@ differ only in temperature and price. Same reasoning, same trap, as the
 
 ## Before the first print
 
-1. **The PETG bed is 85 °C first layer / 90 °C, inherited.** That is hot enough for PETG to
-   bond to a smooth PEI sheet strongly enough to pull PEI off it on removal. Use the textured
-   sheet, or a thin glue-stick release layer, or drop the bed to 70–75 °C. The Inslogic PETG
-   profiles take the last option because Inslogic's own data sheet sanctions 60–70 °C; there
-   is no Yasin3D sheet to sanction anything, so the parent's value is left in place here
-   rather than invented.
+1. **The PETG bed is 85 °C first layer / 90 °C, inherited.** On this printer's **Prusa satin**
+   sheet (17 Oct 2026, [print-sheet.md](../../../docs/print-sheet.md)) PETG needs no release layer at that heat. On a
+   smooth PEI sheet it bonds strongly enough to pull PEI off on removal: there, a thin
+   glue-stick release layer or a bed of 70–75 °C. The Inslogic PETG profiles run 70 °C because
+   Inslogic's own data sheet sanctions 60–70 °C; there is no Yasin3D data sheet to sanction
+   anything, so the parent's value is left in place here rather than invented.
 2. **Dry the filament.** No vendor drying spec exists; the usual figures for the material type
    apply — PLA and PETG around 50 °C, ASA around 80 °C, 4 h.
 3. **ASA needs the enclosure and produces fumes worth extracting** — same conditions as the
