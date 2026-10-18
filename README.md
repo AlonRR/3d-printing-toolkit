@@ -98,7 +98,7 @@ Each runs on its own, from the repository's root, with [uv](https://docs.astral.
 | [`patch_print_profiles.py`](scripts/patch_print_profiles.py) | Applies the house rules — no skirt, no brim, cubic infill — to the print presets, live or in `slicer/print/`, changing nothing else; a dry run unless told `--apply` |
 | [`retarget_filament_temps.py`](scripts/retarget_filament_temps.py) | Rewrites a sliced file's temperatures for another filament profile, and proves nothing else changed |
 | [`make_live_z_tags.py`](scripts/make_live_z_tags.py) | A Live adjust Z calibration plate for any nozzle, each tag labelled with its height |
-| [`bed-anneal-gcode.py`](scripts/bed-anneal-gcode.py) | A G-code "print" that anneals parts on the heated bed: ramp, hold, slow cool — [`docs/annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) |
+| [`bed-anneal-gcode.py`](scripts/bed-anneal-gcode.py) | A G-code "print" that anneals parts on the heated bed: ramp, hold, slow cool. Why and when to anneal is in the `printed-part-engineering` skill ([`docs/annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) says where) |
 | [`add_brim_ears.py`](scripts/add_brim_ears.py) | Mouse-ear tabs on the corners of an STL that can lift, in place of a full brim, kept off its holes and its other islands |
 | [`mk3s-resume/`](scripts/mk3s-resume/) | Resuming a print the printer abandoned, part still on the bed — [`docs/mk3s-resume.md`](docs/mk3s-resume.md) |
 
@@ -158,7 +158,7 @@ Work that grew past a corner of this repository moved to one of its own, each wi
 | [**parts**](https://github.com/AlonRR/parts) | Finished small parts, starting with the USB-C panel plate. 12 Oct 2026 |
 | **esp32-cam-for-prusa-connect** | The ESP32-S3 camera node for Prusa Connect, in plain ESP-IDF C, and the notes on what the Prusa Connect API can and cannot automate - checked against its live endpoints; the short version is that there is no endpoint to upload a file. Private for now; until it is public, both are in this repository's history, under `firmware/prusa-cam-c/` and `docs/prusa-connect-api.md` (the notes moved 12 Oct 2026) |
 | **The printed fan connector** | 2.54 mm, male and female. 9 Oct 2026, ahead of its Printables listing; not public yet |
-| **The heated drybox and desiccant module** | September 2026. Not public. What stayed here is what the two share: the annealing page and the mechanical-design-review checklist |
+| **The heated drybox and desiccant module** | September 2026. Not public. The annealing page and the mechanical-design-review checklist the two shared stayed here until October 2026; their general content is now the `printed-part-engineering` skill (below), and both pages point there |
 
 Ideas that are not yet parts are kept in a private workshop repository until they are.
 
@@ -166,13 +166,18 @@ Ideas that are not yet parts are kept in a private workshop repository until the
 
 | | |
 |---|---|
-| [`fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to this printer |
+| [`fdm-design-rules.md`](docs/fdm-design-rules.md) | Design rules calibrated to this printer: walls, holes, overhangs, bridges, fasteners, warping and text, the fits measured on coupons, and the filaments on its shelf with their data sheets |
 | [`openscad-basics/`](docs/openscad-basics/) | Six hands-on OpenSCAD lessons, ending in a part written the way the models here are — every behaviour described was measured, not recalled |
 | [`asa-print-quality.md`](docs/asa-print-quality.md) | Getting better ASA prints, ordered by payoff |
 | [`print-sheet.md`](docs/print-sheet.md) | The printer's sheet, a Prusa satin: what each material needs on it, and how to care for it |
-| [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | What annealing does and does not do, and why HDT is not a service temperature once a part is loaded |
-| [`mechanical-design-review.md`](docs/mechanical-design-review.md) | The questions a collision check never asks: a checklist for reviewing a printed mechanical assembly |
+| [`annealing-and-hot-service.md`](docs/annealing-and-hot-service.md) | A pointer: annealing, and parts that carry load while hot, moved to the `printed-part-engineering` skill |
+| [`mechanical-design-review.md`](docs/mechanical-design-review.md) | A pointer: the review questions and checklist for a printed mechanical assembly moved to the `printed-part-engineering` skill |
 | [`mk3s-resume.md`](docs/mk3s-resume.md) | Restarting a print the printer has already abandoned |
+
+What makes a printed part good whatever printer makes it lives in two skills in the owner's
+engineering-practices collection, private for now: `printed-part-design` (the design principles) and
+`printed-part-engineering` (the physics - load, tolerance stacks, fasteners, seals, heat, annealing,
+materials, adhesives). These pages hold this printer's side.
 
 ## Licence
 

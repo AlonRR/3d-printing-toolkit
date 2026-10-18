@@ -104,7 +104,7 @@ material.** A clearance ladder — the same pin through a row of holes stepping 
 answer in a single print. Fit moves with extrusion width and with the material's shrinkage, so a
 coupon in another material measures another fit. Record the result **against the material and
 profile it was printed in**, as the table does: a bare number with neither attached is the same
-trap §1 exists to prevent. This replaces the older advice under §6 to fit-test in PLA.
+trap §1 exists to prevent.
 
 ⚠️ **A ladder whose rungs grow upwards is quantised by the layer.** The slicer cuts each layer at
 its mid-height, so a feature whose size runs in Z - a ridge with sloped faces, a clip's catch over
@@ -218,18 +218,11 @@ undersized per §2.
 
 ## 3b. Standing design rules
 
-Two, and they decide most of the choices below before the geometry is drawn:
-
-> **Prefer no support.**
-> **Prefer permanent over sacrificial.**
-
-If a design seems to need a sacrificial feature, that is usually a signal a
-better design exists — not a licence to add the sacrificial feature. Snipping,
-drilling and cleanup are recurring costs paid on every copy, and each one is a
-chance to damage the part.
-
-So of the techniques below, the **geometry** ones are first choice; the
-**sacrificial** ones are listed to be recognised, not reached for.
+**Prefer no support, and prefer permanent geometry over sacrificial.** Both rules, and why
+needing a sacrificial feature signals a better design, are part design: they are in the
+`printed-part-design` skill, in the owner's engineering-practices collection (private for now).
+On this printer they decide the techniques below: of §3c's, the **geometry** ones are first
+choice, and the **sacrificial** ones are listed to be recognised, not reached for.
 
 ## 3c. The named bridging techniques
 
@@ -348,9 +341,11 @@ the 45° roof the G-code has none. The roofed version has not been printed yet.
   and the part edge is a thin wall that will be *actively pulled apart* by the
   screw. **3 perimeters (1.35 mm) is the printing floor**, and 1.80 mm is better:
   §1 gives nothing thinner to anything that takes force, and a screw pulls. It is
-  a floor, not a strength rating. How much edge a loaded screw needs, about max(d, 2t), is a
-  question for the engineering principles, and the answer is usually more: at
-  least the screw's own diameter, 3 mm for an M3.
+  a floor, not a strength rating. How much edge a loaded screw needs is a question
+  for the engineering principles (the `printed-part-engineering` skill): at least
+  the hole's diameter or twice the part's thickness, whichever is greater, so
+  usually more - 3.6 mm for an M3 clearance hole in a 1.8 mm part. Where both
+  apply, the larger wins.
 - If the geometry genuinely can't afford it, an **edge-open U-slot** is stronger
   than a thin bridge — there's nothing left to split.
 - Screws threading *into* plastic want a pilot around **0.8 × the thread
@@ -364,8 +359,9 @@ Two named features, in the §3c style, so a design conversation can point at one
   the rod, and it is permanent geometry rather than an added part.
 - **Compliant feature** — a deliberately thinned or slotted section that flexes so two parts
   push together and stay. §3b prefers this to a sacrificial alignment aid. ⚠️ It is a flexure,
-  so if it is both preloaded *and* hot, the stress-relaxation caution in
-  [annealing-and-hot-service.md](annealing-and-hot-service.md) applies to it.
+  so if it is both preloaded *and* hot, the stress-relaxation caution in the
+  `printed-part-engineering` skill applies to it (see
+  [annealing-and-hot-service.md](annealing-and-hot-service.md)).
 
 ## 5. Corners
 
@@ -407,7 +403,9 @@ part designed correctly needs no brim. So the geometry answer is the only one, a
   nothing per copy, and stays on the part.
 - **Mouse ears** — small thin discs at the corners, trimmed off afterwards. ⛔ **Sacrificial, so
   §3b applies.** They are the same class of answer as a brim, which is ruled out, just with less
-  cleanup. Recognise them; use the radius.
+  cleanup. Recognise them; use the radius. [`scripts/add_brim_ears.py`](../scripts/add_brim_ears.py)
+  still adds them to an STL: it stays as a tool for other people's parts, drawn without this
+  printer in mind. The house designs here don't use ears - design the warping out instead.
 - Concentric slits cut into the underside of a large flat part are sometimes offered as stress
   relief. Not tested here, and it trades a sealed base for a slotted one — recorded for
   completeness, not recommended.
@@ -460,22 +458,28 @@ width (Oct 2026); never printed.
 
 ## 6. Material notes for what's on the shelf
 
-| | Warp | Bed | Watch for |
-|---|---|---|---|
-| **PLA** | low | 60 | Most dimensionally predictable — use it for fit tests even if the real part is ASA |
-| **ASA** | **high** | 100 | Small thin features lift at the corners. Aggressive cooling splits layers — the tuned `Inslogic ASA - thin wall` profile runs 70 % fan and is single-wall only for that reason |
-| **TPU** | n/a | 50 | Ignore tolerance rules; it deforms to fit. Slow retractions |
+How each material behaves on this printer. Temperatures are not repeated here: the filament
+profiles under [`slicer/filament/`](../slicer/filament/) are their source of truth, the bed's
+included.
 
-For a **fit test**, print in PLA regardless of the final material. You are
-checking geometry, and PLA lies to you least.
+| | Warp | Watch for |
+|---|---|---|
+| **PLA** | low | Most dimensionally predictable of the three |
+| **ASA** | **high** | Small thin features lift at the corners. Aggressive cooling splits layers — the tuned `Inslogic ASA - thin wall` profile runs 70 % fan and is single-wall only for that reason |
+| **TPU** | n/a | Ignore tolerance rules; it deforms to fit. Slow retractions |
 
-### 6b. Choosing a material by what the part has to survive
+A fit test is printed on the production profile in the production material, whatever is easiest
+to print: §2.
 
-The §6 table above ranks materials by how hard they are to *print*. This one
-ranks them by how the finished part fails, using the numbers from Inslogic's own
-data sheets, transcribed in
-[`../slicer/reference/inslogic-filament-data.md`](../slicer/reference/inslogic-filament-data.md),
-rather than folklore.
+### 6b. The filaments on this shelf, by what the part has to survive
+
+How to choose a material - by what the part must survive, why an HDT is not a service
+temperature, why a data sheet's test bars overstate a printed part, and the findings that hold
+beyond this shelf - is in the `printed-part-engineering` skill, in the owner's
+engineering-practices collection (private for now). This section is the data it is used with:
+the §6 table above ranks the shelf by how hard each material is to *print*; this one by how the
+finished part fails, from Inslogic's own data sheets, transcribed in
+[`../slicer/reference/inslogic-filament-data.md`](../slicer/reference/inslogic-filament-data.md).
 
 | | **PLA Pro** | **PETG Pro** | **ASA** |
 |---|---|---|---|
@@ -487,25 +491,23 @@ rather than folklore.
 | **HDT @ 0.45 MPa** | 55.0 °C | 72 °C | **98 °C** |
 | Glass transition | 65.3 °C | 65.5 °C | **108 °C** |
 
-Two results here contradict the usual rules of thumb, and both matter:
+What the table says about this shelf:
 
-**PLA Pro is the toughest of the three on impact — 4.2× this PETG.** "PETG is
-tougher than PLA" is true of *commodity* PLA, which runs 2–5 kJ/m². PLA Pro is a
-toughened grade; its own sheet claims "impact strength similar to ABS" and the
-18.3 vs 20.1 against ASA bears that out. For a part whose failure mode is being
-dropped, PLA Pro is the strongest thing on this shelf.
+- **PLA Pro is the toughest of the three on impact — 4.2× this PETG** on notched Izod. PLA Pro
+  is a toughened grade; its own sheet claims "impact strength similar to ABS", and the 18.3 vs
+  20.1 against ASA bears that out. PETG Pro's low figure is notch sensitivity: read its
+  elongation beside it. For a part whose failure mode is being dropped, PLA Pro is the strongest
+  thing on this shelf.
+- **ASA wins on heat by a mile, and that is often the real constraint.** HDT 98 °C at 0.45 MPa
+  against PLA Pro's 55 °C. A part left in a car in an Israeli summer sees 60–70 °C in the cabin
+  and more on a dashboard — PLA Pro sags there, PETG is marginal, ASA does not care. Add UV
+  stability and ASA is the only one of the three that survives outdoors long-term.
+- **PETG Pro's sheet gives a glass transition (65.5 °C) below its own HDT (72 °C)**, which cannot
+  both be right for an amorphous plastic; published PETG figures are nearer 78–85 °C. Treat 65.5 as the
+  conservative figure, as the transcription above explains.
 
-**ASA wins on heat by a mile, and that is often the real constraint.** HDT 98 °C
-against PLA's 55 °C. A part left in a car in an Israeli summer sees 60–70 °C in
-the cabin and more on a dashboard — PLA Pro sags there, PETG is marginal, ASA
-does not care. Add UV stability and ASA is the only one of the three that
-survives outdoors long-term.
-
-⚠️ **These are ISO test bars, not printed parts.** Injection-moulded specimens
-are isotropic; a printed part is much weaker across layers, typically by half or
-worse. Use the table to rank materials against each other, never as an absolute
-strength for a printed part. Orientation still decides more than material — see
-§2.
+These are test bars, not printed parts: rank the three against each other with the table, never
+read it as a printed part's strength, and orient the part so its load runs along the layers — §3.
 
 **So, by what the part must survive:**
 
@@ -517,9 +519,8 @@ strength for a printed part. Orientation still decides more than material — se
 | Held to a tight dimension | **PLA** | Least warp, most predictable. §6 |
 
 ⛔ **Avoid Matte PLA for anything structural.** The matting additive is a filler,
-and it costs strength: measured layer adhesion on matte grades runs around **a
-third** of the same maker's standard PLA, with bending strength roughly 53 MPa
-against 76. It is a lovely finish for a display piece and the wrong choice for a
+and it costs layer adhesion most; the figures are in the `printed-part-engineering`
+skill. It is a lovely finish for a display piece and the wrong choice for a
 toy. If the appeal was that matte hides layer lines and takes primer well, five
 minutes with 200-grit on PLA Pro buys the same surface and costs no strength.
 
@@ -538,9 +539,11 @@ minutes with 200-grit on PLA Pro buys the same surface and costs no strength.
 
 ### 6a. Joining two printed parts
 
-The house rule mirrors §3b: prefer the permanent, structural option. For ASA and
-ABS that option is a solvent weld — but it is **currently gated**, so read the
-gate before the technique.
+The house rule mirrors §3b: prefer the permanent, structural option. Design the
+joint out first - print it as one part, or add a fastener - as the
+`printed-part-design` skill says. Where a bond is still needed on ASA and ABS, the
+strongest is a solvent weld — but it is **currently gated**, so read the gate
+before the technique.
 
 > ⛔ **ACETONE IS RULED OUT UNTIL THE FILTRATION SYSTEM IS RUNNING.**
 > Alon's decision, 21 Aug 2026, restated as a condition rather than a permanent
@@ -563,36 +566,17 @@ gate before the technique.
 > [chamber-sensor §8](https://github.com/AlonRR/printer-enclosure/blob/main/docs/chamber-sensor/heating-and-airflow.md) works through the airflow design that
 > serves both.
 
-**When the gate opens: ASA and ABS solvent-weld in acetone, and that beats any
-adhesive.** Wet both mating faces, clamp, and the surfaces chemically fuse into a
-single piece — roughly as strong as the surrounding print. Free gap filler, from
-waste: dissolve failed ASA prints in acetone to a syrup, which is adhesive,
-filler and colour-match at once.
-
-**Meanwhile — what to actually use.** In rough order of joint strength:
-
-1. **Design the joint out.** Print it as one part, or add a fastener. §3b already
-   prefers permanent geometry over sacrificial; a screw into a printed boss or a
-   captive nut beats every adhesive on this list and is reversible.
-2. **Two-part epoxy** for anything structural. It is the closest non-solvent
-   substitute for a weld: it fills gaps — which matters, because FDM mating faces
-   are never truly flat — and it bonds ASA, ABS, PLA and PETG alike. Slower and
-   messier than CA, and that is the trade.
-3. **Cyanoacrylate for what CA is actually good at**: TPU, PLA, dissimilar
-   materials, and tacking parts in place before a fastener or epoxy goes in.
-
-**Why CA is third and not first.** It bonds only to the outer skin, so a CA joint
-on an FDM part fails by **peeling the outer perimeter off the layer beneath it** —
-a different failure mode from the material's own strength, at a much lower load.
-It also fills no gaps. It is a positioning adhesive here, not a structural one.
+**When the gate opens**, ASA and ABS solvent-weld in acetone. **Meanwhile**, a
+bond that is still needed takes two-part epoxy where it is structural, and
+cyanoacrylate only to tack parts in place or for TPU, PLA and dissimilar
+materials. How each of these holds a print, in order of joint strength - and why a
+CA joint peels the outer perimeter off the layer beneath it - is in the
+`printed-part-engineering` skill.
 
 **Do not mail-order cyanoacrylate.** It has a short shelf life and polymerises
 in the bottle with age and heat, so slow shipping through a hot summer is the
 worst case for it. Buy it locally and fresh — and buy acetone locally too, when
 the gate opens, since shipping flammable solvent is a non-starter.
-
-- [Prusa — The great guide to gluing and assembling 3D prints](https://blog.prusa3d.com/the-great-guide-to-gluing-and-assembling-3d-prints_44908/)
-- [Formfutura — The ultimate 3D prints bonding guide](https://www.formfutura.com/blog/blogs-1/the-ultimate-3d-prints-bonding-guide-50)
 
 ---
 

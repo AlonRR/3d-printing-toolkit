@@ -15,7 +15,8 @@ bed and never heats the nozzle. It only:
   1. ramps the bed from cold in steps, waiting at each (the part comes up with the "oven", not into it);
   2. holds the target for --hours;
   3. steps the bed down slowly to --cool-to, then switches it off (a slow cool is what stops new stress
-     being frozen in - docs/annealing-and-hot-service.md, on main, sec. 5).
+     being frozen in - the annealing schedule in the printed-part-engineering skill, which
+     docs/annealing-and-hot-service.md points to).
 
 Every wait is a string of short G4 dwells rather than one long one. Streamed from PrusaLink, the
 firmware counts a print as running only while commands keep arriving, and a single hour-long dwell

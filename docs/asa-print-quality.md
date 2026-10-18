@@ -283,10 +283,11 @@ already at the printer.
 
 ## See also
 
-- **[Annealing, and plastic parts that carry load while hot](annealing-and-hot-service.md)** — what
-  annealing does and does not do to ASA (amorphous, so no crystallinity to gain and no HDT rise), a
-  95 °C schedule, why a preloaded flexure must never be annealed under load, and why HDT is not a
-  service temperature once a part is loaded above the test case.
+- **The `printed-part-engineering` skill**, in the owner's engineering-practices collection (private
+  for now) — what annealing does and does not do to ASA (amorphous, so no crystallinity to gain and no
+  HDT rise), a starting schedule, why a preloaded flexure must never be annealed under load, and why
+  HDT is not a service temperature once a part is loaded above the test case. It replaced
+  [annealing-and-hot-service.md](annealing-and-hot-service.md), which now points there.
 
 ## Sources
 
