@@ -79,22 +79,32 @@ undersize on a 0.4 nozzle.
 
 ### Clearance between parts that have to fit together
 
-⚠️ **There is no house default, and that is a gap rather than a decision.** Every model here picks
-its own, and the two that exist do not agree:
+**The measured house fits.** Each was found with a printed coupon on this printer, and each holds
+for the material and profile it was measured in; for anything else, print a ladder (below). Values
+are as cut in the model, hole compensation included. "House 0.2 mm profile" is
+`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter`: 0.2 mm layers, 0.45 mm width.
 
-| model | clearance | on what |
-|---|---|---|
-| [`usbc-panel-plate`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate) (in `parts`) | **0.25 mm/side** | a pocket over a boss |
-| `gridfinity-foot-negative` | **0** nominal, 0.1–0.25 suggested only if it seats tightly | a foot in a baseplate |
+| Fit | Value | What it is, and what the coupon showed | Measured in | When, and where it is recorded |
+|---|---|---|---|---|
+| **Pull-nut seat**, M3 | **5.7 mm** across the flats: 0.1 mm a side over the nut (0.15 compensation, −0.05 play) | A hex seat a nut is pulled up into once, with a spare screw, and stays in. Seats 5.5 to 5.9 tried: 5.5 would not go in, 5.6 too tight, 5.7 just right, 5.8 held, 5.9 let the nut slip out | ASA, house 0.2 mm profile | 10 Oct 2026. printer-enclosure `docs/bentobox-scrubber.md`, *The samples* (`bd5c933`); scad-tools `lib/nuts.scad`, `pull_nut_pocket`'s default fit (`1caee0a`) |
+| **Side nut slot with a nut-shaped end**, M3 | **6.1 mm** across the flats: 0.3 mm a side (0.15 compensation, 0.15 play) | A slot a nut slides into from the side, its back end the nut's own shape: it held the nut still and kept it in. A square end as wide jammed the nut, and a narrower square end (5.8 mm) let it fall out easily | ASA, house 0.2 mm profile | 10 Oct 2026. printer-enclosure `docs/bentobox-scrubber.md`, *The samples* (`bd5c933`); scad-tools `lib/nuts.scad`, `nut_slot_hex_end`'s default fit (`ad8e628`) |
+| **Friction grip** on a bought part | Ribs biting **0.05 mm** into its faces | Round ribs up a header's end walls, biting a fan plug's end faces: it goes on and off by hand and holds. 0.15, 0.25 and 0.35 mm were too tight. 0.05 was the smallest tried; nothing looser was printed | ASA, house 0.2 mm profile | 11 Oct 2026. fan-connector `README.md`, *The grip coupon* (`0860e86`) |
+| **Clip over a lip** | Reach **0.1 mm** past a 0.3 mm lip, so the part squeezes past by 0.05 mm | A ridge with a 45° underside that the mating part's lip rides over and clicks under: it clicks on, holds and comes off by hand. 0.125, 0.15 and 0.25 mm were too tight; 0.1 was the smallest tried. A Z-quantised ladder, so it holds at 0.2 mm layers only | ASA, house 0.2 mm profile | 11 Oct 2026. fan-connector `README.md`, *The clip coupon* (`0860e86`) |
+| **Hole for a solid wire core** | **1.04 mm** for a 22 AWG core (0.64 mm): 0.2 mm a side (0.15 compensation, 0.05 play) | A vertical hole through a 2 mm floor, with a 0.4 mm 45° lead-in at the bed: it lets the core through and holds it upright. 0.84 and 0.94 mm did not let it through | ASA, house 0.2 mm profile | 11 Oct 2026. fan-connector `README.md`, *The coupons' holes* (`5406e64`) |
+| **Entrance for a TPU grommet** | A **0.6 mm** 45° chamfer round the hole's mouth | For a TPU grommet with a 45° lip, 0.1 mm proud of its hole all round, to click in: at 0.5 mm it clicked in but was a little hard; at 0.6 mm it was good | Coupon in **PETG** (what was loaded), grommet in TPU, the model drawn for the house 0.2 mm profile; the part it is for prints in ASA, where 0.6 is not yet proven | 11 to 14 Oct 2026. printer-enclosure `docs/bentobox-scrubber.md`, *The samples* (`d06c972`, `9ab731d`) |
+| **A printed TPU bead's height** | Prints about **0.2 mm under** its drawn height | A hollow 2 mm bead, its wall one perimeter, drawn 0.4 mm proud of its land, stood 0.16 to 0.20 mm proud, and still sealed. Draw a printed seal's squeeze with this loss in it | TPU 95A, house 0.2 mm profile | 9 Oct 2026. printer-enclosure `docs/bentobox-scrubber.md`, *The samples* (`a5df3fa`) |
 
-Both are values that happened to work, not measurements. The generic figure quoted online is around
-0.3 mm/side; it is **not** a number from this printer and is not adopted here.
+Two older model values were never measured: 0.25 mm a side for a pocket over a boss (the
+`usbc-panel-plate` model, in the `parts` repository) and 0 nominal for a gridfinity foot in its
+baseplate (`models/gridfinity-foot-negative`, 0.1 to 0.25 suggested only if it seats tightly). The generic figure quoted online is
+around 0.3 mm a side; it is **not** a number from this printer and is not adopted here.
 
-⭐ **Settle it with a test print rather than by picking one.** A clearance ladder — the same pin
-through a row of holes stepping 0.05 mm — gives the answer in a single print. Record the result
-**against the profile it was measured on**, exactly as §1 does for extrusion width: fit tolerance
-moves with extrusion width and with material shrinkage, so a bare number with no profile attached
-is the same trap §1 exists to prevent.
+⭐ **Settle a new fit with a coupon, printed on the production profile in the production
+material.** A clearance ladder — the same pin through a row of holes stepping 0.05 mm — gives the
+answer in a single print. Fit moves with extrusion width and with the material's shrinkage, so a
+coupon in another material measures another fit. Record the result **against the material and
+profile it was printed in**, as the table does: a bare number with neither attached is the same
+trap §1 exists to prevent. This replaces the older advice under §6 to fit-test in PLA.
 
 ⚠️ **A ladder whose rungs grow upwards is quantised by the layer.** The slicer cuts each layer at
 its mid-height, so a feature whose size runs in Z - a ridge with sloped faces, a clip's catch over
