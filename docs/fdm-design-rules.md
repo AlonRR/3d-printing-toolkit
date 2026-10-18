@@ -347,8 +347,8 @@ the 45° roof the G-code has none. The roofed version has not been printed yet.
 - **Edge distance is the thing people get wrong.** Material between a screw hole
   and the part edge is a thin wall that will be *actively pulled apart* by the
   screw. **3 perimeters (1.35 mm) is the printing floor**, and 1.80 mm is better:
-  below that the material does not print as a wall at all. It is a floor, not a
-  strength rating. How much edge a loaded screw needs, about max(d, 2t), is a
+  §1 gives nothing thinner to anything that takes force, and a screw pulls. It is
+  a floor, not a strength rating. How much edge a loaded screw needs, about max(d, 2t), is a
   question for the engineering principles, and the answer is usually more: at
   least the screw's own diameter, 3 mm for an M3.
 - If the geometry genuinely can't afford it, an **edge-open U-slot** is stronger
