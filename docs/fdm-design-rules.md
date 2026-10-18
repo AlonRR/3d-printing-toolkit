@@ -424,18 +424,39 @@ A two-way rule. Both halves come from `models/petg-temp-tower`, which does each 
 Under about **5 mm digit height** the digits close up either way at a 0.4 nozzle, which is why that
 model uses 6.0 mm.
 
-**Measured again, smaller, 11 Oct 2026:** the fan connector's coupons carried 1.4 mm bold digits engraved
-0.4 mm into the top of a 1.8 mm wall, ASA at 0.2 mm layers. The G-code still ran a path round every
-stroke, leaving grooves about 0.3 mm wide - and printed, they were illegible: the pockets had to be told
-apart by where they sat. A G-code that keeps a mark's strokes says nothing about whether the eye can read
-them. Where a wall has no room for 5 mm digits, mark with a shape the nozzle draws whole - a notch, a
-count of notches, a chamfered corner - not a letter.
+**Size a mark by its stroke, not its height.** A stroke wants at least two extrusions (0.9 mm)
+across. In Liberation Sans Bold, the font OpenSCAD ships with, the stem is **0.21 ×** the cap
+height and the crossbar **0.17 ×**: `text(size = 10)` draws caps 9.55 mm tall, stems 2.00 mm wide
+and crossbars 1.65 mm (Arial Bold: 0.20 and 0.17). So 0.9 mm strokes need caps of about 4.3 mm
+for the stems and 5.3 mm for the crossbars, and that is where the 5 mm rule above comes from: the
+extrusion width showing through the font. A lighter font needs taller letters. Measured from
+OpenSCAD's SVG export (Oct 2026).
 
-The fan connector now counts in line notches, like Roman numerals (I to IIII): each 0.7 mm wide (an
-extrusion width and a bit, so the paths on either side leave it open), 1 mm deep (5 layers), 0.9 mm of
-wall between two (two lines), cut through the wall so it shows from in front as a gap in the wall's top.
-In the G-code every notch is a gap of its drawn width at its drawn place. Straight-sided, not a V: a V
-narrows below a line's width part way down, and the layers there run over it. Not printed yet.
+**Check that the font resolves.** OpenSCAD substitutes another face, without an error, when the
+named font is not installed. Measured here (Oct 2026): `DejaVu Sans:style=Bold`, not installed,
+rendered exactly as Liberation Sans Bold and as a made-up font name in the 2021.01 release, and as a
+different face again in the nightly. Name a font that ships with OpenSCAD, or check the render.
+
+**A G-code that keeps a mark's strokes says nothing about whether the eye can read it.** Measured on
+coupons in ASA at 0.2 mm layers (Oct 2026): 1.4 mm bold digits engraved 0.4 mm into a wall's top
+kept a path round every stroke in the G-code, leaving grooves about 0.3 mm wide, as the stroke ratios
+predict, and printed illegible.
+
+**Where there is no room for 5 mm letters, mark with a shape the nozzle draws whole: recessed round
+dots, counted.** The current mark is a dot **1.6 mm across and 0.6 mm deep** (three layers at
+0.2 mm), dots **3 mm apart** centre to centre, recessed into the face that prints on the bed. Guard
+each one: two extrusions across, two layers deep or more, and two extrusions of face between
+neighbours. Read in the G-code that each dot stays open through its layers. Proven legible in PETG,
+on a fit coupon printed face down (Oct 2026); not yet proven in ASA.
+
+**Keep marks off working surfaces**: not on a face that presses, seals, slides or carries load.
+Line notches across a wall's top (0.7 mm wide, through the wall, counted I to IIII) were dropped
+before they were printed, because they cut into walls that a mating plug presses on.
+
+**An engraved gap is straight-sided and wider than one extrusion**, about 0.7 mm, so the paths on
+either side leave it open. A V narrows below a line's width part way down, and the layers there run
+over it. From the notches' G-code, where each 0.7 mm straight-sided notch stayed a gap of its drawn
+width (Oct 2026); never printed.
 
 ## 6. Material notes for what's on the shelf
 
