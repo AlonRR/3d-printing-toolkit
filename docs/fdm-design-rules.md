@@ -2,8 +2,8 @@
 
 Generic guides quote "1.2 mm minimum wall" and "0.4 mm nozzle". Neither is the
 number that matters here. What governs is the **extrusion width the slicer
-actually uses**, and on the MK3S+ profiles in this repo that is **0.45 mm**, not
-0.4 — read straight out of a sliced file:
+actually uses**, and on the six 0.4 mm-nozzle MK3S+ profiles in this repo that is
+**0.45 mm**, not 0.4 — read straight out of a sliced file:
 
 ```
 ; extrusion_width                    = 0.45
@@ -13,8 +13,11 @@ actually uses**, and on the MK3S+ profiles in this repo that is **0.45 mm**, not
 ; first_layer_height                 = 0.2
 ```
 
-Everything below is derived from those, so it applies to *these* profiles rather
-than to FDM in the abstract.
+The three 0.8 mm-nozzle profiles (`... @0.8 nozzle ...` in `slicer/print/`) use
+**0.90 mm**, with 0.3 or 0.4 mm layers over a 0.3 mm first layer. Everything
+below is derived from the 0.45 mm profiles unless it says otherwise; on a 0.8 mm
+profile, double every width. Read the width and the layer heights out of the
+profile you will slice with, never from this page or a generic table.
 
 ---
 
@@ -34,17 +37,21 @@ or over-extrude to close it. **Design thin walls at multiples of 0.45 mm.**
 
 The in-between values are the trap. **1.1 mm is worse than 0.90 mm** — it's two
 perimeters plus a 0.2 mm gap the slicer has to fudge, so you get a void, not a
-thicker wall.
+thicker wall. On a 0.8 mm-nozzle profile the series is 0.90 / 1.80 / 2.70 mm.
 
-Same idea vertically. `0.2 + n × 0.15` are the only heights a feature can
-actually land on:
+Same idea vertically. A feature can only land on **first layer + n × layer
+height**, so the series depends on the profile:
 
 ```
-0.35  0.50  0.65  0.80  0.95  1.10  1.25 ...
+0.15 mm profile   0.2 + n x 0.15   0.35  0.50  0.65  0.80  0.95  1.10 ...
+0.2 mm profiles   0.2 + n x 0.2    0.40  0.60  0.80  1.00  1.20  1.40 ...
+0.10 mm profile   0.2 + n x 0.1    0.30  0.40  0.50  0.60  0.70  0.80 ...
 ```
 
-A 0.8 mm lip is exactly `0.2 + 4 × 0.15` — five clean layers. A 0.75 mm lip
-would land mid-layer and round to the same thing anyway, just unpredictably.
+A 0.8 mm lip lands on all three: five layers at 0.15, four at 0.2, seven at
+0.10. A 0.75 mm lip would land mid-layer and round to a neighbour anyway, just
+unpredictably. Choose heights for the profile the part will print on, and
+recheck them if the profile changes.
 
 ## 2. Holes print undersize
 
@@ -52,10 +59,21 @@ Two causes stack: the extrusion is laid on the *inside* of the arc, and each
 segment cuts the chord rather than following the curve. Expect **0.1–0.3 mm**
 undersize on a 0.4 nozzle.
 
-- Grow modelled holes by ~**0.15 mm on the radius** (that's what `hole_comp`
-  does in the plate model).
-- Below **2 mm diameter** holes distort badly or close up. Print a pilot and
-  drill.
+- Grow modelled holes by ~**0.15 mm on the radius** (`fdm_hole_comp` in the
+  models that follow the scad-tools layout).
+- **Holes under 2 mm print, but size them from a printed ladder**, not from the
+  compensation alone, and never start one in a bridged layer:
+  - A vertical hole through a floor, with a 45° lead-in at the bed so the first
+    layer's squish cannot close it, prints open and usable at 1.04 mm as cut.
+    Measured on a coupon in ASA at 0.2 mm layers (Oct 2026): holes cut 0.84,
+    0.94, 1.04 and 1.14 mm (0.82 to 1.12 mm in the G-code) through a 2 mm floor,
+    each with a 0.4 mm lead-in; 1.04 mm was the smallest that let a 0.64 mm
+    wire core through and held it upright. The 0.84 and 0.94 mm holes did not
+    let it through.
+  - A hole that starts in a bridged layer prints closed: a 0.94 mm hole over a
+    slot with a flat roof printed shut. §3c gives the measurement and the fix,
+    a 45° roof.
+  - A drill is the repair for a hole that printed tight, not the design: §3b.
 - A horizontal hole (axis parallel to the bed) prints as an oval and needs a
   **teardrop** profile to avoid the unsupported top arc.
 
@@ -80,12 +98,14 @@ is the same trap §1 exists to prevent.
 
 ⚠️ **A ladder whose rungs grow upwards is quantised by the layer.** The slicer cuts each layer at
 its mid-height, so a feature whose size runs in Z - a ridge with sloped faces, a clip's catch over
-a lip - prints as a staircase sampled every 0.2 mm, and rungs closer than that can slice alike. The
-fan connector's clip coupon (11 Oct 2026): clips reaching 0.1, 0.15, 0.2 and 0.25 mm over a lip
-caught it by 0.07, 0.15, 0.15 and 0.19 mm in the G-code - every reach from 0.15 to 0.22 sliced to the
-same first layer over the lip. Read each rung off the G-code (the perimeter path's position, layer
-by layer) and pick values that print distinct: 0.1, 0.125, 0.15 and 0.25 gave even steps of
-0.04 mm. A ladder that steps in XY, like the pin through holes above, does not have this problem.
+a lip - prints as a staircase sampled once per layer, and rungs closer than that can slice alike.
+Read each rung off the G-code (the perimeter path's position, layer by layer) and pick values that
+print distinct; the result holds only at the layer height it was sliced at. A ladder that steps in
+XY, like the pin through holes above, does not have this problem.
+Measured on a clip coupon's G-code at 0.2 mm layers (Oct 2026): clips reaching 0.1, 0.15, 0.2 and
+0.25 mm over a lip caught it by 0.07, 0.15, 0.15 and 0.19 mm, since every reach from 0.15 to 0.22
+sliced to the same first layer over the lip; reaches of 0.1, 0.125, 0.15 and 0.25 gave even steps
+of 0.04 mm.
 
 ## 3. Overhangs — the 45° rule is not the real rule
 
@@ -102,8 +122,8 @@ overhang angle from vertical   =  atan(step / layer_height)
 default for a 0.4 nozzle (0.2 mm layers, 0.4 mm width) — which is why the number
 got quoted everywhere. **It is not our profile.**
 
-Extrusion width is **0.45 mm on every profile in this repo**, 0.2 and 0.15 alike.
-Layer height is what varies, and it moves the answer:
+Extrusion width is **0.45 mm on every 0.4 mm-nozzle profile in this repo**, 0.10,
+0.15 and 0.2 alike. Layer height is what varies, and it moves the answer:
 
 | Step per layer | Supported | @ 0.15 mm layers | @ 0.20 mm layers |
 |---:|---:|---:|---:|
@@ -111,10 +131,15 @@ Layer height is what varies, and it moves the answer:
 | **0.20 mm** | 56 % | **53°** | **45°** |
 | 0.15 mm | 67 % | 45° | 37° |
 
-**Thin layers buy overhang.** On the 0.15 profiles the layer is a third of the
+**Thin layers buy overhang.** On the 0.15 profile the layer is a third of the
 extrusion width and 53° holds; on the 0.20 profiles the same 0.2 mm step is
-exactly the textbook 45°. Check which profile you're slicing with before
-trusting an angle.
+exactly the textbook 45°; at the same step the 0.10 profile takes about 63°.
+Check which profile you're slicing with before trusting an angle.
+
+The 0.8 mm-nozzle profiles keep the same ratios at twice the size (0.90 mm
+width over 0.3 or 0.4 mm layers), so the table holds for them with every step
+doubled: the 0.3 mm profile reads like the 0.15 column, the 0.4 mm profiles like
+the 0.20 column.
 
 ### The 0.2 mm step — faking a 90° overhang
 
@@ -144,7 +169,15 @@ The cost is height, and the exchange rate is `layer_height / step`:
 
 So before staircasing anything, check the depth is there — and check it against
 the profile you'll actually print with. Coarser layers make a staircase cost
-*more* height, not less, which is the opposite of most people's intuition.
+*more* height, not less, which is the opposite of most people's intuition. A
+staircase that fits at one layer height can stop fitting at another with nothing
+in the model moved.
+Worked on a panel plate's pocket-to-lip step as first drawn (Aug 2026): 2.20 mm
+of reach in 1.70 mm of depth needed 1.65 mm at 0.15 mm layers, which fitted by
+0.05 mm, and 2.20 mm at 0.20 mm layers, 0.50 mm short.
+
+Where the full staircase does not fit, take the steps that do, one layer each,
+and bridge the rest in one jump if the span is short and the face is hidden.
 
 ### Holes with a horizontal axis
 
@@ -279,35 +312,35 @@ is removed afterwards, and the sliced G-code should carry
 `support_material = 0`. That is what makes this preferable to a sacrificial
 bridge layer for the same problem — see §3b.
 
-Worked example, the USB-C plate's pocket → lip:
-
-```
-L1  slot 9.6 x 8.8    -> two strips spanning 8.8 mm, anchored both ends
-L2  9.6 x 3.9 square  -> the other two sides bridge 9.6 mm onto those strips
-L3  r2 fillets only   -> laid on the solid rectangle below
-```
-
-Both spans under 10 mm, all three guards asserted in the model, and the sliced
-G-code confirms `support_material = 0`.
+Example, a panel plate's pocket opening into a smaller lip (the `usbc-panel-plate` model in
+the `parts` repository): L1 a 9.6 × 8.8 slot, two strips spanning 8.8 mm; L2 a 9.6 × 3.9
+rectangle, its other sides bridging 9.6 mm onto the strips; L3 the r2 fillets only. Both spans
+under 10 mm, all three guards asserted in the model, and `support_material = 0` in the G-code.
 
 ### Simpler over a narrow slot: roof it at 45°
 
 A hole over a narrow slot needs no bridge at all. Roof the slot at 45° up to a
 ridge, and let the hole start where the ridge has narrowed to it. Every layer
 then sits 0.2 mm in from the one below it. The cost is half the slot's width in
-height above it.
+height above it. Check every hole that starts over a cavity before the first
+print: under a flat roof the slicer lays the hole's rim as overhang perimeters
+over air, and the hole prints closed. A roof that narrows to the hole also guides
+whatever goes into it, a wire's core for instance.
 
-Measured on the fan connector's male (10 Oct 2026). A 0.94 mm hole over a 1.9 mm
-slot with a flat roof printed closed, and a wire core could not go in. The slicer
-had laid the hole's rim as overhang perimeters over air, eight of them in the
-first layer over the slot. With the 45° roof, none is left, and the roof also
-guides the wire into its hole.
+Measured on a part in ASA at 0.2 mm layers (Oct 2026): a 0.94 mm hole over a
+1.9 mm slot with a flat roof printed closed, and a wire core could not go in;
+its G-code had eight overhang perimeters in the first layer over the slot. With
+the 45° roof the G-code has none. The roofed version has not been printed yet.
 
 ## 4. Fasteners
 
 - **Edge distance is the thing people get wrong.** Material between a screw hole
   and the part edge is a thin wall that will be *actively pulled apart* by the
-  screw. Give it **3 perimeters (1.35 mm) minimum**, and prefer 1.80 mm.
+  screw. **3 perimeters (1.35 mm) is the printing floor**, and 1.80 mm is better:
+  below that the material does not print as a wall at all. It is a floor, not a
+  strength rating. How much edge a loaded screw needs, about max(d, 2t), is a
+  question for the engineering principles, and the answer is usually more: at
+  least the screw's own diameter, 3 mm for an M3.
 - If the geometry genuinely can't afford it, an **edge-open U-slot** is stronger
   than a thin bridge — there's nothing left to split.
 - Screws threading *into* plastic want a pilot around **0.8 × the thread
@@ -338,9 +371,12 @@ carries `spiral_vase = 1`, `perimeters = 1`, `top_solid_layers = 0` and
 `fill_density = 0%`. Slice a functional part with it and you get a single-wall
 open shell — it will look plausible in preview and be useless in the hand.
 
-The two safe 0.2 mm profiles are `0.20mm QUALITY @MK3 no skirt` and
-`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` (no `lightning`
-suffix). Worth grepping the sliced G-code rather than trusting the dropdown:
+The three safe 0.2 mm profiles are `0.20mm QUALITY @MK3 no skirt`,
+`0.2mm QUALITY @MK3 - no skirt, no brim, no crossing perimeter` and
+`0.2mm QUALITY @MK3 - ULG, no skirt, no brim, no crossing perimeter` (no
+`lightning` suffix). `scad-tools/scripts/scad-check.sh` refuses a G-code with
+`spiral_vase = 1`. Worth grepping the sliced G-code rather than trusting the
+dropdown:
 
 ```sh
 grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
@@ -351,10 +387,10 @@ grep -E "^; (spiral_vase|perimeters|layer_height) " out.gcode
 ⚠️ **Untested here.** Reasoning plus one measured fact from this repo, not a result from this
 printer.
 
-§6 records that ASA's *small thin features lift at the corners*. The answer used to be process —
-the `ASA brim + draft shield` profile, `brim_width = 5` — and **that is ruled out since 2 Oct 2026**:
-never a skirt, and a part designed correctly needs no brim (Alon). So the geometry answer is the only
-one, and `scad-tools/scripts/scad-check.sh` fails any G-code with a skirt or a brim.
+§6 records that ASA's *small thin features lift at the corners*. A brim is not the answer: **no
+skirt, no brim and no draft shield on any print** (a draft shield is drawn from the skirt), and a
+part designed correctly needs no brim. So the geometry answer is the only one, and
+`scad-tools/scripts/scad-check.sh` fails any G-code with a skirt or a brim.
 
 - ⭐ **Round the corners as seen from above.** Lifting starts at a sharp corner in the plan view,
   where the largest contraction meets the smallest bonded area. A radius there is permanent, costs
@@ -529,59 +565,24 @@ the gate opens, since shipping flammable solvent is a non-starter.
 
 ---
 
-## Applied: the USB-C panel plate
+## Applied: auditing a part against §1 and §4
 
-Audit of [`models/usbc-panel-plate/`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate), now in the `parts` repository, against §1
-and §4. The `.scad` echoes all of these on every render — and, since the review
-of 18 Aug 2026, computes them from the **as-cut** dimensions rather than the
-nominal ones.
-
-| Feature | As cut | Perimeters | Verdict |
-|---|---:|---:|---|
-| `web above/below` | 5.60 mm | 12.4 | ✅ |
-| `outboard of screw` | 2.70 mm | 6.0 | ✅ |
-| `frame beside port` | 2.55 mm | 5.7 | ✅ |
-| `web beside pocket` | 1.20 mm | 2.7 | ⚠️ between 2 and 3 perimeters |
-| `frame over/under` | 1.10 mm | 2.4 | ⚠️ same |
-| `prot -> screw` | 0.95 mm | 2.1 | ⚠️ same |
-| `lap left at notch` | 0.55 mm | — | ⚠️ thin, but it is lap not structure |
-| `lip_t` | 0.80 mm | 4 layers | ✅ whole layers at 0.2 mm |
-
-### The trap this section exists to record
-
-`outboard of screw` used to read **0.55 mm** here and was graded a failure. It
-was worse than that: the echo computed `(plate_w - screw_span - screw_d) / 2`
-from the *nominal* hole, while the cut was grown by `hole_comp`. The real figure
-was **0.40 mm** — under a single extrusion.
+- **Grade every thin feature in perimeters.** Divide each web, frame and edge distance by the
+  extrusion width: a feature between two whole counts (2.4 or 2.7 perimeters) prints as the lower
+  count plus a gap the slicer fudges, so it is a warning, not a pass. Have the model echo each of
+  them on every render, so the grade cannot go stale. Example: the `usbc-panel-plate` model (in
+  the `parts` repository) grades its features from 5.60 mm (12.4 perimeters) down to 0.95 mm (2.1),
+  three of them between 2 and 3.
+- **Audit from the dimensions the geometry is cut with, never the nominal ones.** Define the as-cut
+  sizes once at file scope, and derive every echo, assert and cut from them, so the audited number
+  and the built geometry have no chance to disagree.
+  Found in that plate's audit (Aug 2026): the echo computed the material outboard of a screw from
+  the nominal hole while the cut was grown by the hole compensation, and reported 0.55 mm where
+  0.40 mm, under one extrusion, was cut.
 
 > **A diagnostic that measures something adjacent to what it claims is worse
-> than no diagnostic.** It had been quoted a dozen times as evidence the part
-> was merely marginal.
-
-Every echo and assert in that model now derives from as-cut names defined once
-at file scope. The fix was not the arithmetic; it was removing the *opportunity*
-for the audited number and the built geometry to disagree.
-
-### Why the staircase was abandoned
-
-Printed back-face-down, the step from the rear pocket to the lip is a flat 90°
-ceiling. §3's staircase would need `reach × (layer_h / step)` of depth:
-
-```
-horizontal reach : 2.25 mm   (Y governs, measured from the ledge edge)
-depth available  : 1.20 mm   (plate_t 2.4 - lip_t 0.8 - two ledges 0.4)
-
-@ 0.20 mm layers : needs 2.25 mm  -> DOES NOT FIT, short by 1.05 mm
-```
-
-It fitted by 0.05 mm at 0.15 mm layers and stopped fitting the moment the
-profile moved to 0.20 — the geometry never changed. That is the whole reason the
-exchange-rate table above is keyed by layer height.
-
-What the model does instead is **two ledges, one layer each**: a rounded step
-matching the lip profile, then two relief lines. Together they cost 0.4 mm of
-pocket depth. The remaining reach is made in one jump, which is fine — a bridge
-of this span is well within the machine, on a face hidden against the connector.
+> than no diagnostic.** The 0.55 mm figure had been quoted a dozen times as
+> evidence the part was merely marginal.
 
 ---
 
@@ -594,7 +595,7 @@ imports them later by accident:
 
 | the poster says | this repo measures | why they differ |
 |---|---|---|
-| wall steps 0.8 / 1.2 / 1.6 mm | **0.90 / 1.35 / 1.80** | it assumes a 0.4 mm extrusion width; §1 uses the width the slicer actually emits, **0.45** |
+| wall steps 0.8 / 1.2 / 1.6 mm | **0.90 / 1.35 / 1.80** | it assumes a 0.4 mm extrusion width; §1 uses the width the slicer actually emits, **0.45** on the 0.4 mm nozzle |
 | bridges of "2 cm+" | **~10 mm** | asserted in [`usbc-panel-plate.scad`](https://github.com/AlonRR/parts/tree/main/models/usbc-panel-plate) against the ceiling this machine was measured at |
 | engrave text into vertical faces | **raise** it on vertical faces | §5c — engraved text at readable sizes fills in here |
 
