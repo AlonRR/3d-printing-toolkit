@@ -36,8 +36,9 @@ completion and hover documentation.
 **Read the Console pane.** `echo()` output, warnings and failed asserts appear there, not in the view.
 
 **Which build.** Two are in common use: the **2021.01 release** and the **nightly** snapshots. The
-nightly renders far faster, which matters on large models. But when you need to know whether a part
-passed its checks, use the release — see *Checking your work*.
+nightly renders far faster, which matters on large models, and it is what the checks here run on.
+Whichever you use, judge a part by what the Console says, not by whether the build finished — see
+*Checking your work*.
 
 ## The lessons
 
@@ -74,12 +75,14 @@ Measured on lesson 6, each result predicted before running:
 | `length = 10.1` | `BLOCKED`, exit 1 — 50.5 layers |
 | `length = 10.2` | `PASS`, exit 0 — 51 layers, though `10.2 / 0.2` is not exactly 51 (lesson 3) |
 
-⚠️ **`scad-check.sh` uses the 2021.01 release, and that is deliberate.** On the nightly, a failed
-`assert` stopped the build in every simple case tried while writing these lessons — at the top level,
-in a module, a function, an `if`, a `for`, and an included file. But in one larger model in a sibling
-project, the nightly printed the assertion **and exited 0 with an STL written**, where the release
-stopped. The cause was not isolated. So **never read a nightly's exit code as proof that a part
-passed** — read its Console, or run the check.
+⚠️ **`scad-check.sh` judges by what OpenSCAD prints, not by its exit code.** It runs whichever
+`openscad` comes first on `PATH`, or the one `OPENSCAD` names; the checks here run on a nightly. On the
+nightly, a failed `assert` stopped the build in every simple case tried while writing these lessons —
+at the top level, in a module, a function, an `if`, a `for`, and an included file. But in one larger
+model in a sibling project, the nightly printed the assertion **and exited 0 with an STL written**,
+where the release stopped. The cause was not isolated. So **never read an exit code alone as proof
+that a part passed** — read the Console, or run the check. scad-tools' `docs/running-and-checking.md`
+has the rest.
 
 ## Resetting a lesson
 
