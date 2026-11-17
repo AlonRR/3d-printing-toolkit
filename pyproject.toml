@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "pytest-cov>=6", "coverage>=7.10", "diff-cover>=9", "basedpyright>=1.31"]
 
 [tool.uv]
 package = false
@@ -22,6 +22,31 @@ package = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
+
+# The gate, in order: tools/check.sh. Coverage follows the scripts the tests run as child processes; the floor is
+# set by tools/coverage_ratchet.py raise, never by hand, and only rises.
+# Some cases run a copy of scripts/ in a temporary repo/ folder (flatten_profiles.py), so the files are matched by
+# pattern, not by a source folder, and [paths] counts the copy as scripts/.
+[tool.coverage.run]
+branch = true
+include = ["*/scripts/*"]
+omit = ["*/test_*.py", "*/.venv/*", "*/scad-tools/*"]
+patch = ["subprocess"]
+
+[tool.coverage.paths]
+scripts = ["scripts/", "*/repo/scripts/"]
+
+[tool.coverage.report]
+fail_under = 94
+show_missing = true
+skip_empty = true
+
+# Only new errors fail: the ones already there are in .basedpyright/baseline.json, rewritten only to drop fixed ones.
+[tool.basedpyright]
+typeCheckingMode = "standard"
+include = ["scripts", "tests", "tools"]
+exclude = ["scad-tools", ".venv", "**/__pycache__"]
+extraPaths = ["tests", "scripts", "scripts/mk3s-resume"]
 
 [tool.ruff]
 line-length = 120

@@ -2,7 +2,25 @@
 
 ```sh
 uv run pytest
+sh tools/check.sh      # before every commit: the whole gate, below
 ```
+
+## The gate
+
+[`tools/check.sh`](../tools/check.sh) runs these in order, and stops at the first that fails:
+
+- ruff's lint and format checks;
+- the tests, with branch coverage of every script they run, child processes included. A run under
+  `fail_under` in `pyproject.toml` fails. The floor started at the measured 94 % and only rises: after a
+  passing run that measured more, `uv run python tools/coverage_ratchet.py raise` moves it up, and the
+  bump goes in the commit that earned it;
+- `diff-cover`: every new or changed line under `scripts/` since `gitea/main` is run by a test;
+- the ratchet's guard: the floor is not lower than on `gitea/main`;
+- basedpyright in standard mode: no type error beyond those in `.basedpyright/baseline.json`. Rewrite the
+  baseline (`uv run basedpyright --writebaseline`) only to drop errors that were fixed.
+
+How and why each gate works: the `python-testing-practice` skill in engineering-practices, where
+`tools/coverage_ratchet.py` comes from.
 
 - **[`test_golden.py`](test_golden.py):** every script under `scripts/` runs on fixed inputs and must do exactly
   what [`golden.json`](golden.json) recorded. That covers its exit code, its output, the last line of any error,

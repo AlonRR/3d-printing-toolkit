@@ -16,6 +16,10 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+# tools/check.sh's coverage data and reports
+.coverage
+.coverage.*
+coverage.xml
 
 
 # scad-preview.sh scratch output
@@ -49,3 +53,5 @@ preview/
 !tests/fixtures/*.stl
 !tests/fixtures/*.gcode
 !tests/golden.json
+# The type checker's record of the errors already there: only a new one fails tools/check.sh.
+!.basedpyright/baseline.json

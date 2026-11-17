@@ -1,0 +1,156 @@
+{
+    "files": {
+        "./scripts/add_brim_ears.py": [
+            {
+                "code": "reportGeneralTypeIssues",
+                "range": {
+                    "startColumn": 20,
+                    "endColumn": 78,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportPossiblyUnboundVariable",
+                "range": {
+                    "startColumn": 34,
+                    "endColumn": 40,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportPossiblyUnboundVariable",
+                "range": {
+                    "startColumn": 88,
+                    "endColumn": 94,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./scripts/make_live_z_tags.py": [
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 29,
+                    "endColumn": 34,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 28,
+                    "endColumn": 33,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 58,
+                    "endColumn": 63,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./scripts/mk3s-resume/make_resume.py": [
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 59,
+                    "endColumn": 64,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 105,
+                    "endColumn": 110,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 67,
+                    "endColumn": 72,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 54,
+                    "endColumn": 59,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 51,
+                    "endColumn": 56,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./scripts/mk3s-resume/start_print.py": [
+            {
+                "code": "reportOptionalSubscript",
+                "range": {
+                    "startColumn": 12,
+                    "endColumn": 14,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 40,
+                    "endColumn": 43,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./scripts/mk3s-resume/test_start_print.py": [
+            {
+                "code": "reportIncompatibleMethodOverride",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 19,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./scripts/mk3s-resume/test_upload_resume.py": [
+            {
+                "code": "reportIncompatibleMethodOverride",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 19,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./tests/cases.py": [
+            {
+                "code": "reportIncompatibleMethodOverride",
+                "range": {
+                    "startColumn": 12,
+                    "endColumn": 23,
+                    "lineCount": 1
+                }
+            }
+        ],
+        "./tools/coverage_ratchet.py": [
+            {
+                "code": "reportOptionalMemberAccess",
+                "range": {
+                    "startColumn": 53,
+                    "endColumn": 58,
+                    "lineCount": 1
+                }
+            }
+        ]
+    }
+}
