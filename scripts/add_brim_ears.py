@@ -44,6 +44,7 @@ is gone by layer 2 for any first layer from ~0.1 to 0.4 mm.
 
 import argparse
 import math
+import os
 import struct
 import sys
 from collections import deque
@@ -61,9 +62,12 @@ def read_stl(path):
         if len(head) < 84:
             sys.exit(f"{path}: too short to be a binary STL")
         n = struct.unpack("<I", head[80:84])[0]
+        # Check the size before reading: a text STL's count is ASCII, often hundreds of millions of facets, and
+        # asking for that many bytes can raise MemoryError before the check below is reached.
+        have = os.fstat(f.fileno()).st_size - 84
+        if have < n * 50:
+            sys.exit(f"{path}: not a binary STL, or truncated (header claims {n} facets = {n * 50} bytes, got {have})")
         body = f.read(n * 50)
-    if len(body) != n * 50:
-        sys.exit(f"{path}: not a binary STL, or truncated (header claims {n} facets = {n * 50} bytes, got {len(body)})")
     rec = np.frombuffer(body, dtype=np.uint8).reshape(n, 50)
     tri = rec[:, 12:48].copy().view("<f4").reshape(n, 3, 3)
     return rec, tri
