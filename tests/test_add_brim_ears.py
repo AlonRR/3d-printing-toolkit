@@ -89,3 +89,24 @@ def test_trailing_bytes_still_accepted(asked, tmp_path):
     padded.write_bytes((ROOT / "tests" / "fixtures" / "ell.stl").read_bytes() + b"\0" * 7)
     rec, _ = add_brim_ears.read_stl(padded)
     assert len(rec) > 0
+
+
+def test_preview_writes_a_png(tmp_path):
+    """--preview draws through matplotlib and Pillow, which no golden case runs: a dependency bump can break it."""
+    from PIL import Image
+
+    png = tmp_path / "ell.png"
+    rc = add_brim_ears.main(
+        [
+            "add_brim_ears.py",
+            str(ROOT / "tests" / "fixtures" / "ell.stl"),
+            "-o",
+            str(tmp_path / "out.stl"),
+            "--preview",
+            str(png),
+        ]
+    )
+    assert rc == 0
+    assert png.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+    with Image.open(png) as im:
+        assert im.width > 500 and im.height > 500

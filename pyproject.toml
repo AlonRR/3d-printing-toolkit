@@ -37,7 +37,7 @@ patch = ["subprocess"]
 scripts = ["scripts/", "*/repo/scripts/"]
 
 [tool.coverage.report]
-fail_under = 94
+fail_under = 95
 show_missing = true
 skip_empty = true
 

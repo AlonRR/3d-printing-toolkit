@@ -29,7 +29,8 @@ How and why each gate works: the `python-testing-practice` skill in engineering-
   it refuses.
 - **[`test_stub_scripts.py`](test_stub_scripts.py):** the stub tests in `scripts/mk3s-resume/` pass.
 - **[`test_add_brim_ears.py`](test_add_brim_ears.py):** `add_brim_ears.py` refuses a text STL from the file's
-  size, without first asking for the bytes its header seems to claim (about 27 GB for the box fixture).
+  size, without first asking for the bytes its header seems to claim (about 27 GB for the box fixture), and its
+  `--preview` writes a PNG, the one path that uses matplotlib and Pillow.
 - **[`test_gcode_layers.py`](test_gcode_layers.py):** `gcode_layers.py` on G-code written for each rule.
 
 Nothing here touches PrusaSlicer's own folders or a printer:
