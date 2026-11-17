@@ -70,6 +70,20 @@ def test_binary_stl_still_reads(asked, tmp_path):
     assert rec.shape[1] == 50 and tri.shape == (len(rec), 3, 3)
 
 
+@pytest.mark.parametrize(
+    ("option", "value", "floor"),
+    [("--diameter", "3", "the smallest ear tried is 4 mm"), ("--overlap", "1", "the smallest overlap tried is 1.5 mm")],
+)
+def test_sizes_that_cannot_place_an_ear_are_refused(option, value, floor, tmp_path, capsys):
+    """Below these, place_ears tries no size at all, and used to crash on its unset skip reason."""
+    stl = tmp_path / "ell.stl"
+    stl.write_bytes((ROOT / "tests" / "fixtures" / "ell.stl").read_bytes())
+    with pytest.raises(SystemExit) as exc:
+        add_brim_ears.main(["add_brim_ears.py", str(stl), option, value, "--dry-run"])
+    assert exc.value.code == 2
+    assert floor in capsys.readouterr().err
+
+
 def test_trailing_bytes_still_accepted(asked, tmp_path):
     padded = tmp_path / "padded.stl"
     padded.write_bytes((ROOT / "tests" / "fixtures" / "ell.stl").read_bytes() + b"\0" * 7)

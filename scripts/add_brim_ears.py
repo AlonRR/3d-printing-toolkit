@@ -405,6 +405,11 @@ def main(argv):
     ap.add_argument("--segments", type=int, default=48)
     ap.add_argument("--dry-run", action="store_true", help="report placement, write no STL")
     a = ap.parse_args(argv[1:])
+    # place_ears tries radii down to 2 mm and overlaps down to 1.5 mm; below those it would try nothing.
+    if a.diameter < 4:
+        ap.error(f"--diameter {a.diameter:g}: the smallest ear tried is 4 mm")
+    if a.overlap < 1.5:
+        ap.error(f"--overlap {a.overlap:g}: the smallest overlap tried is 1.5 mm")
 
     src = Path(a.stl)
     out = Path(a.out) if a.out else src.with_name(src.stem + "-ears.stl")
