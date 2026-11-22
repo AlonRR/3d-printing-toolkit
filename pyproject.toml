@@ -22,6 +22,7 @@ dev = [
     "diff-cover>=9",
     "basedpyright>=1.31",
     "pyrefly>=1.5.0",
+    "deptry>=0.25.1",
 ]
 
 [tool.uv]
@@ -69,3 +70,8 @@ select = ["E", "F", "W", "I", "UP", "B", "BLE", "PLW", "RUF"]
 project-includes = ["scripts", "tests", "tools"]
 project-excludes = ["scad-tools", ".venv", "**/__pycache__"]
 search-path = [".", "tests", "scripts", "scripts/mk3s-resume"]
+
+[tool.deptry]
+# scad-tools is a submodule with its own dependencies. The scripts import each other by bare name.
+extend_exclude = ["scad-tools"]
+known_first_party = ["preset", "gcode_layers", "prusalink"]

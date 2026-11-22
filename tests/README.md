@@ -22,7 +22,9 @@ fails:
   and column only, so a new error at a baselined column passes: keep it small, and rewrite it
   (`uv run pyrefly check --baseline=pyrefly-baseline.json --update-baseline`) only to drop errors that were fixed.
   Annotate every parameter that has a default: Pyrefly types an unannotated one as `Any`, so a `None` passed to it
-  goes unseen.
+  goes unseen;
+- deptry: every third-party import is declared in `pyproject.toml`, and every declared dependency is used. The
+  scripts that import each other by bare name are listed in `[tool.deptry]` `known_first_party`.
 
 basedpyright in standard mode, with `.basedpyright/baseline.json`, stays in the dev group as a weekly report outside
 the gate (run by a scheduled weekly job): it catches what Pyrefly misses and what its baseline hides. Pyrefly took 0.6 s

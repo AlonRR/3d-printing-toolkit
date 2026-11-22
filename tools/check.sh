@@ -28,4 +28,6 @@ uv run --locked python tools/coverage_ratchet.py guard --against "$base"
 # No type error beyond those in pyrefly-baseline.json. basedpyright, with .basedpyright/baseline.json, is kept as a
 # weekly report outside the gate (a scheduled weekly job), since Pyrefly's baseline matches file, rule and column only.
 uv run --locked pyrefly check --baseline=pyrefly-baseline.json
+# Every third-party import is declared in pyproject.toml, and every declared dependency is imported.
+uv run --locked deptry .
 echo "check.sh: all passed. If coverage rose, raise the floor: uv run python tools/coverage_ratchet.py raise"
