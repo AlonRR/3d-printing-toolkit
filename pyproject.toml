@@ -14,7 +14,15 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6", "pytest-cov>=6", "coverage>=7.10", "diff-cover>=9", "basedpyright>=1.31"]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "pytest-cov>=6",
+    "coverage>=7.10",
+    "diff-cover>=9",
+    "basedpyright>=1.31",
+    "pyrefly>=1.5.0",
+]
 
 [tool.uv]
 package = false
@@ -55,3 +63,9 @@ extend-exclude = ["scad-tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "BLE", "PLW", "RUF"]
+
+[tool.pyrefly]
+# The gate's type check. Paths as basedpyright's: scripts import each other by bare name, and so do the tests.
+project-includes = ["scripts", "tests", "tools"]
+project-excludes = ["scad-tools", ".venv", "**/__pycache__"]
+search-path = [".", "tests", "scripts", "scripts/mk3s-resume"]

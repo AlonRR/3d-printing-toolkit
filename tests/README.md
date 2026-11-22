@@ -7,8 +7,10 @@ sh tools/check.sh      # before every commit: the whole gate, below
 
 ## The gate
 
-[`tools/check.sh`](../tools/check.sh) runs these in order, and stops at the first that fails:
+[`tools/check.sh`](../tools/check.sh) runs these in order, through `uv run --locked`, and stops at the first that
+fails:
 
+- no untracked `.py` file: `diff-cover` reads git's diff, so a file not yet added would escape it;
 - ruff's lint and format checks;
 - the tests, with branch coverage of every script they run, child processes included. A run under
   `fail_under` in `pyproject.toml` fails. The floor started at the measured 94 % and only rises: after a
@@ -16,8 +18,15 @@ sh tools/check.sh      # before every commit: the whole gate, below
   bump goes in the commit that earned it;
 - `diff-cover`: every new or changed line under `scripts/` since `gitea/main` is run by a test;
 - the ratchet's guard: the floor is not lower than on `gitea/main`;
-- basedpyright in standard mode: no type error beyond those in `.basedpyright/baseline.json`. Rewrite the
-  baseline (`uv run basedpyright --writebaseline`) only to drop errors that were fixed.
+- Pyrefly: no type error beyond those in `pyrefly-baseline.json`. Its baseline matches an error by file, rule
+  and column only, so a new error at a baselined column passes: keep it small, and rewrite it
+  (`uv run pyrefly check --baseline=pyrefly-baseline.json --update-baseline`) only to drop errors that were fixed.
+  Annotate every parameter that has a default: Pyrefly types an unannotated one as `Any`, so a `None` passed to it
+  goes unseen.
+
+basedpyright in standard mode, with `.basedpyright/baseline.json`, stays in the dev group as a weekly report outside
+the gate (run by a scheduled weekly job): it catches what Pyrefly misses and what its baseline hides. Pyrefly took 0.6 s
+a warm run here against basedpyright's 4.9 s, and the gate runs often.
 
 How and why each gate works: the `python-testing-practice` skill in engineering-practices, where
 `tools/coverage_ratchet.py` comes from.

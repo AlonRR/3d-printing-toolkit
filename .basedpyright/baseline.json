@@ -112,36 +112,6 @@
                 }
             }
         ],
-        "./scripts/mk3s-resume/test_start_print.py": [
-            {
-                "code": "reportIncompatibleMethodOverride",
-                "range": {
-                    "startColumn": 8,
-                    "endColumn": 19,
-                    "lineCount": 1
-                }
-            }
-        ],
-        "./scripts/mk3s-resume/test_upload_resume.py": [
-            {
-                "code": "reportIncompatibleMethodOverride",
-                "range": {
-                    "startColumn": 8,
-                    "endColumn": 19,
-                    "lineCount": 1
-                }
-            }
-        ],
-        "./tests/cases.py": [
-            {
-                "code": "reportIncompatibleMethodOverride",
-                "range": {
-                    "startColumn": 12,
-                    "endColumn": 23,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./tools/coverage_ratchet.py": [
             {
                 "code": "reportOptionalMemberAccess",

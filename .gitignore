@@ -55,3 +55,4 @@ preview/
 !tests/golden.json
 # The type checker's record of the errors already there: only a new one fails tools/check.sh.
 !.basedpyright/baseline.json
+!pyrefly-baseline.json
