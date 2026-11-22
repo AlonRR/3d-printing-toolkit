@@ -73,7 +73,7 @@ def parse_ini(path):
     return key_values(lines), [line for line in lines if line.startswith("#")]
 
 
-def vendor_blocks(path=VENDOR):
+def vendor_blocks(path: Path = VENDOR):
     """Each [filament:<name>] section of the vendor bundle: name -> its body."""
     txt = path.read_text(encoding="utf-8", errors="replace")
     return {
@@ -82,7 +82,7 @@ def vendor_blocks(path=VENDOR):
     }
 
 
-def resolve_chain(name, blocks, seen=None):
+def resolve_chain(name, blocks, seen: set[str] | None = None):
     """Fully resolve one vendor profile: parents first, child overrides last."""
     seen = seen or set()
     if name not in blocks or name in seen:

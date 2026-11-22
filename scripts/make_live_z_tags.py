@@ -137,7 +137,7 @@ class Plate:
         return [round(self.z_start + i * self.z_step, 3) for i in range(self.n_tags)]
 
 
-def extrude(p, x0, y0, x1, y1, feed=None):
+def extrude(p, x0, y0, x1, y1, feed: int | None = None):
     """One extruding move, E from the measured bead area: (lines, its length)."""
     d = math.hypot(x1 - x0, y1 - y0)
     lines = [f"G1 F{feed}"] if feed else []

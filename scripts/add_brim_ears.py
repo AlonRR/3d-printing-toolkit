@@ -48,6 +48,7 @@ import os
 import struct
 import sys
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -73,7 +74,7 @@ def read_stl(path):
     return rec, tri
 
 
-def write_stl(path, rec, extra_tris, header=b""):
+def write_stl(path, rec, extra_tris, header: bytes = b""):
     """Copy the original facet records verbatim, append extra triangles."""
     n = len(rec) + len(extra_tris)
     with open(path, "wb") as f:
@@ -90,7 +91,7 @@ def write_stl(path, rec, extra_tris, header=b""):
     return n
 
 
-def cylinder(cx, cy, z0, z1, r, seg=48):
+def cylinder(cx, cy, z0, z1, r, seg: int = 48):
     """Closed cylinder, outward winding: bottom cap, top cap, side wall."""
     ang = np.linspace(0, 2 * math.pi, seg, endpoint=False)
     x = cx + r * np.cos(ang)
@@ -325,7 +326,7 @@ def place(apex, bis, r, overlap, mat_lab, void_lab, exterior, lo, cell, clearanc
     return (float(cx), float(cy), weld)
 
 
-def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say=print):
+def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say: Callable[[str], object] = print):
     """An ear for each candidate where one fits: a smaller overlap, then a smaller radius, before giving up - and of
     two ears that would merge, the better welded. Each placement or skip is reported to say() as it is decided.
     Returns (ears as (cx, cy, r, weld), dropped as (apex, reason))."""

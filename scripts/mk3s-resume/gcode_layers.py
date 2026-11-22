@@ -42,7 +42,7 @@ def extruded_segments(lines, start, end):
     return out
 
 
-def covered(segs, px, py, tol=0.3):
+def covered(segs, px, py, tol: float = 0.3):
     """Whether (px, py) lies within tol of one of the segments."""
     for x, y, nx, ny in segs:
         dx, dy = nx - x, ny - y

@@ -28,7 +28,7 @@ def on_printer(url, key):
     return False
 
 
-def put(url, data, key, hops=2):
+def put(url, data, key, hops: int = 2):
     """PUT, following a redirect by hand.
 
     urllib will NOT auto-follow a redirect for PUT: HTTPRedirectHandler only re-issues GET and

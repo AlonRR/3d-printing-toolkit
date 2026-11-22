@@ -10,12 +10,13 @@ these scripts' output can end up in a transcript.
 
 import os
 import urllib.parse
+from collections.abc import Mapping
 from pathlib import Path
 
 PROFILE = Path("PrusaSlicer") / "physical_printer" / "Prusa mk3S+.ini"
 
 
-def profile_path(environ=os.environ):
+def profile_path(environ: Mapping[str, str] = os.environ):
     """The physical-printer profile: PRUSA_PRINTER_INI, or PrusaSlicer's own under APPDATA.
 
     ⚠️ Resolved lazily on purpose. The obvious one-liner puts the APPDATA lookup in environ.get()'s DEFAULT
@@ -31,7 +32,7 @@ def read_profile(path):
     return dict(line.split(" = ", 1) for line in path.read_text(encoding="utf-8").splitlines() if " = " in line)
 
 
-def connection(environ=os.environ):
+def connection(environ: Mapping[str, str] = os.environ):
     """(base URL, API key) from the physical-printer profile; a bare host is taken as http."""
     cfg = read_profile(profile_path(environ))
     host = cfg["print_host"].strip()
