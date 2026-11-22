@@ -56,6 +56,14 @@ STATE_KEYS = (
 )
 
 
+def field(pattern, c, refusal):
+    """The first group of pattern in G-code line c; a line without it stops the run with refusal, which names it."""
+    m = re.search(pattern, c)
+    if m is None:
+        raise ValueError(refusal)
+    return m.group(1)
+
+
 def lead_in(lines, start, nxt, resume_z):
     """The resume layer's lead-in - wipe and retract, then the Z move onto the layer - as (splice, retract,
     first_xy): the line the original resumes from, the retraction to undo, and the first point it travels to."""
@@ -77,7 +85,8 @@ def lead_in(lines, start, nxt, resume_z):
         e = re.search(r"\bE(-?[\d.]+)", c)
         assert not re.search(r"\bZ", c), f"Z move before first extrusion at line {i + 1}"
         if has_xy and first_xy is None:
-            first_xy = (float(re.search(r"X(-?[\d.]+)", c).group(1)), float(re.search(r"Y(-?[\d.]+)", c).group(1)))
+            why = f"line {i + 1} of the original: the first travel needs X and Y, got {c}"
+            first_xy = (float(field(r"X(-?[\d.]+)", c, why)), float(field(r"Y(-?[\d.]+)", c, why)))
         if e and not has_xy and float(e.group(1)) > 0 and first_unretract is None:
             first_unretract = float(e.group(1))
         if e and has_xy and float(e.group(1)) > 0:
@@ -99,15 +108,17 @@ def machine_state(lines):
         if w in ("M106", "M107"):
             state["fan"] = c
         elif w == "M900":
-            state["M900 LA1.5" if float(re.search(r"K([\d.]+)", c).group(1)) < 10 else "M900 LA1.0"] = c
+            state[
+                "M900 LA1.5" if float(field(r"K([\d.]+)", c, f"M900 without its K value: {c}")) < 10 else "M900 LA1.0"
+            ] = c
         elif w == "M205":
             state["M205 ST" if re.search(r"\bS", c) else "M205 XYZE"] = c
         elif w in ("M201", "M203", "M204", "M221", "M907"):
             state[w] = c
         elif w in ("M104", "M109"):
-            state["hotend"] = re.search(r"S(\d+)", c).group(1)
+            state["hotend"] = field(r"S(\d+)", c, f"{w} without its S value: {c}")
         elif w in ("M140", "M190"):
-            state["bed"] = re.search(r"S(\d+)", c).group(1)
+            state["bed"] = field(r"S(\d+)", c, f"{w} without its S value: {c}")
     for k in STATE_KEYS:
         assert k in state, f"state {k} not found"
     return state
