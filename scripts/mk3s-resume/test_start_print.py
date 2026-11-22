@@ -23,7 +23,7 @@ BODY = b"G28\n" * 100  # the local file: 400 bytes
 class Stub(http.server.BaseHTTPRequestHandler):
     state, size, listed, posts, job_name = "IDLE", len(BODY), True, [], NAME
 
-    def log_message(self, *a):
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     def send(self, code, obj=None):

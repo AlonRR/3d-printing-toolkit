@@ -24,7 +24,7 @@ BODY = b"G28\n" * 100
 class Stub(http.server.BaseHTTPRequestHandler):
     listed, puts = False, []
 
-    def log_message(self, *a):
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     def send(self, code, obj=None):

@@ -218,7 +218,7 @@ def _stub(respond):
     state = {}
 
     class Handler(http.server.BaseHTTPRequestHandler):
-        def log_message(self, *a):
+        def log_message(self, format: str, *args: object) -> None:
             pass
 
         def _answer(self, method):

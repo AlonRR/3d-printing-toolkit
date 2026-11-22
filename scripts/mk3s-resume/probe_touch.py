@@ -19,7 +19,7 @@ from pathlib import Path
 from gcode_layers import covered, extruded_segments, layer_range, layer_starts
 
 
-def runs(ys):
+def runs(ys: list[float]) -> list[list[float]]:
     """Split a sorted list of Y values, 0.02 mm apart where they are contiguous, into its contiguous runs."""
     out, cur = [], [ys[0]]
     for a, b in pairwise(ys):
