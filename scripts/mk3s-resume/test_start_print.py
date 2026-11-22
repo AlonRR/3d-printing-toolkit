@@ -22,6 +22,7 @@ BODY = b"G28\n" * 100  # the local file: 400 bytes
 
 class Stub(http.server.BaseHTTPRequestHandler):
     state, size, listed, posts, job_name = "IDLE", len(BODY), True, [], NAME
+    empty = ()  # paths answered 204 with no body
 
     def log_message(self, format: str, *args: object) -> None:
         pass
@@ -36,7 +37,9 @@ class Stub(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         S = type(self)
-        if self.path == "/api/v1/status":
+        if self.path in S.empty:
+            self.send(204)
+        elif self.path == "/api/v1/status":
             self.send(200, {"printer": {"state": S.state}})
         elif self.path == "/api/v1/files/local/" + NAME:
             self.send(200, {"name": NAME, "size": S.size}) if S.listed else self.send(404, {})
@@ -56,6 +59,7 @@ class Stub(http.server.BaseHTTPRequestHandler):
 
 def run(case, **kw):
     Stub.state, Stub.size, Stub.listed, Stub.posts, Stub.job_name = "IDLE", len(BODY), True, [], NAME
+    Stub.empty = ()
     for k, v in kw.items():
         setattr(Stub, k, v)
     srv = http.server.HTTPServer(("127.0.0.1", 0), Stub)
@@ -80,7 +84,7 @@ def run(case, **kw):
     return p.returncode, len(Stub.posts), (p.stdout + p.stderr).strip().splitlines()[-1:]
 
 
-CASES = [  # name, stub settings, expected exit code, expected number of POSTs
+CASES = [  # name, stub settings, expected exit code, expected number of POSTs[, text the last line starts with]
     ("idle, same size: starts", {}, 0, 1),
     ("finished, same size: starts", {"state": "FINISHED"}, 0, 1),
     ("already printing: refused", {"state": "PRINTING"}, 1, 0),
@@ -88,11 +92,25 @@ CASES = [  # name, stub settings, expected exit code, expected number of POSTs
     ("printer's copy a different size: refused", {"size": len(BODY) - 1}, 1, 0),
     ("not on the printer: refused", {"listed": False}, 1, 0),
     ("started, but the job is another file: fails", {"job_name": "other.gcode"}, 1, 1),
+    (
+        "status answered with no body: refused",
+        {"empty": ("/api/v1/status",)},
+        1,
+        0,
+        "REFUSED: the printer sent no status",
+    ),
+    (
+        "file answered with no body: refused",
+        {"empty": ("/api/v1/files/local/" + NAME,)},
+        1,
+        0,
+        "REFUSED: the printer sent nothing",
+    ),
 ]
 failed = 0
-for name, kw, want_rc, want_posts in CASES:
+for name, kw, want_rc, want_posts, *want_text in CASES:
     rc, posts, last = run(name, **kw)
-    ok = rc == want_rc and posts == want_posts
+    ok = rc == want_rc and posts == want_posts and all(last and last[0].startswith(w) for w in want_text)
     failed += not ok
     print(f"{'ok  ' if ok else 'FAIL'}  {name:<46} exit {rc}, {posts} start(s)  {last}")
 print(f"{len(CASES) - failed} of {len(CASES)} cases passed")

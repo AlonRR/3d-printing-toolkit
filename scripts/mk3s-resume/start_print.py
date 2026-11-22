@@ -49,6 +49,8 @@ def main(argv):
     # (upload_resume.py's docstring), so the POST goes straight to the final scheme and host.
     _, st, final = get(base, key, "/api/v1/status")
     base = prusalink.origin(final)
+    if st is None:
+        return "REFUSED: the printer sent no status (HTTP 204) - check it, then run this again"
 
     state = st["printer"]["state"]
     path = "/api/v1/files/local/" + urllib.parse.quote(f.name)
@@ -56,6 +58,8 @@ def main(argv):
         _, info, _ = get(base, key, path)
     except urllib.error.HTTPError as e:
         return f"REFUSED: {f.name} is not on the printer (HTTP {e.code}) - upload it first"
+    if info is None:
+        return f"REFUSED: the printer sent nothing about {f.name} (HTTP 204) - upload it again"
     print(f"printer has {f.name}, {info.get('size')} bytes; local {size} bytes; printer {state}")
     why = refusal(size, info, state)
     if why:
