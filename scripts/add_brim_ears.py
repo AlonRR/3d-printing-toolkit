@@ -313,7 +313,9 @@ def place(apex, bis, r, overlap, mat_lab, void_lab, exterior, lo, cell, clearanc
         return "corner is not on any island"
     own = int(np.bincount(near_apex).argmax())
     # Grown disc: the clearance check has to see material just outside the ear too.
-    gbox, ginside = disc_cells(mat_lab.shape, lo, cell, cx, cy, r + clearance)
+    grown = disc_cells(mat_lab.shape, lo, cell, cx, cy, r + clearance)
+    assert grown is not None, "the same centre is on the grid at a smaller radius"
+    gbox, ginside = grown
     near = mat_lab[gbox][ginside]
     if np.any((near != 0) & (near != own)):
         return "would bridge to another island"
@@ -334,6 +336,7 @@ def choose_ears(cands, a, mat_lab, void_lab, exterior, lo, say: Callable[[str], 
     for apex, bis, turn in cands:
         kind = "ear" if turn else "tab"
         placed = None
+        reason = "no ear size tried"  # main refuses the sizes that would leave it
         for r in (a.diameter / 2, a.diameter / 2 - 1, a.diameter / 2 - 2):
             if r < 2:
                 break

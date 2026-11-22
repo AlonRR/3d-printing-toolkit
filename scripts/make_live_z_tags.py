@@ -275,8 +275,7 @@ def verify(p, written, total_path):
     # carrying both X and Y, which are exactly what total_path accumulates. The two intro lines are
     # deliberate, are not part of that sum, and are checked separately below.
     _e = re.compile(r"\bE(-?[\d.]+)")
-    tag_moves = [c for c in code if c.startswith("G1 X") and " Y" in c and _e.search(c)]
-    es = [float(_e.search(c).group(1)) for c in tag_moves]
+    es = [float(m.group(1)) for c in code if c.startswith("G1 X") and " Y" in c and (m := _e.search(c))]
     assert es and all(e > 0 for e in es), "a non-positive extrusion was written"
     # The tolerance tracks the QUANTISATION rather than being a round number. E is written with five
     # decimals, so every move carries up to 5e-6 of rounding and N moves accumulate N x 5e-6. A flat
@@ -299,9 +298,9 @@ def verify(p, written, total_path):
     _x = re.compile(r"\bX(-?[\d.]+)")
     _y = re.compile(r"\bY(-?[\d.]+)")
     pts = [
-        (float(_x.search(c).group(1)), float(_y.search(c).group(1)))
+        (float(mx.group(1)), float(my.group(1)))
         for c in code
-        if c.startswith("G1 X") and _y.search(c)
+        if c.startswith("G1 X") and (my := _y.search(c)) and (mx := _x.search(c))
     ]
     assert pts, "no positioned moves found at all"
     off_x = [q for q in pts if not 0 <= q[0] <= BED_X]
